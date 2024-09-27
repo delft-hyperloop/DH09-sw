@@ -1,0 +1,18 @@
+[package]
+name = "boot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+embassy-stm32.workspace = true
+embassy-sync.workspace = true
+embassy-boot.workspace = true
+embassy-boot-stm32.workspace = true
+embassy-executor.workspace = true
+panic-halt.workspace = true
+cortex-m.workspace = true
+cortex-m-rt.workspace = true
+cortex-m-semihosting.workspace = true
+embedded-storage.workspace = true
+# defmt.workspace = true
+# defmt-rtt.workspace = true

@@ -22,6 +22,14 @@ embassy-executor = { version = "*", features = [
     # "defmt",
     "integrated-timers",
 ] }
+embassy-net = {version = "*", features = [
+    "medium-ethernet",
+    "proto-ipv4",
+    "tcp",
+    "dns",
+    "dhcpv4",
+]}
+embassy-time = {version = "*"}
 
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",
@@ -52,3 +60,5 @@ embassy-sync = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee
 embassy-boot = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
 embassy-boot-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
 embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }

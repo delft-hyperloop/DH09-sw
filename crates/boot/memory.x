@@ -12,10 +12,10 @@ MEMORY
 */
 
 
-  FLASH                             : ORIGIN = 0x00000000, LENGTH = 256K
-  BOOTLOADER_STATE                  : ORIGIN = 0x00040000, LENGTH = 8K
-  ACTIVE                            : ORIGIN = 0x00082000, LENGTH = 256K
-  DFU                               : ORIGIN = 0x000C2000, LENGTH = 260K
+  FLASH                             : ORIGIN = 0x08000000, LENGTH = 512K
+  BOOTLOADER_STATE                  : ORIGIN = 0x08080000, LENGTH = 8K
+  ACTIVE                            : ORIGIN = 0x080C2000, LENGTH = 256K
+  DFU                               : ORIGIN = 0x08202000, LENGTH = 260K
   RAM                         (rwx) : ORIGIN = 0x20000000, LENGTH = 128K
 }
 

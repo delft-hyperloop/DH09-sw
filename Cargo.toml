@@ -1,10 +1,11 @@
 [workspace]
 members = ["crates/*"]
+default-members = ["crates/main"]
 resolver = "2"
 
 [workspace.dependencies]
 embassy-stm32 = { version = "*", features = [
-    # "defmt",
+    "defmt",
     "stm32h743zi",
     "time-driver-any",
     "exti",
@@ -14,22 +15,23 @@ embassy-stm32 = { version = "*", features = [
 ] }
 embassy-boot = "*"
 embassy-boot-stm32 = "*"
-embassy-sync = "*"
+embassy-sync = { version = "*", features = ["defmt"] }
 embassy-executor = { version = "*", features = [
     "task-arena-size-32768",
     "arch-cortex-m",
     "executor-thread",
-    # "defmt",
+    "defmt",
     "integrated-timers",
 ] }
-embassy-net = {version = "*", features = [
+embassy-net = { version = "*", features = [
     "medium-ethernet",
     "proto-ipv4",
     "tcp",
     "dns",
     "dhcpv4",
-]}
-embassy-time = {version = "*"}
+    "defmt",
+] }
+embassy-time = { version = "*" }
 
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",
@@ -43,7 +45,7 @@ embedded-hal-async = { version = "1.0" }
 embedded-nal-async = { version = "0.7.1" }
 embedded-io-async = { version = "0.6.1" }
 embedded-storage = { version = "0.3.1" }
-# panic-probe = { version = "0.3", features = ["print-defmt"] }
+panic-probe = { version = "0.3", features = ["print-defmt"] }
 panic-halt = "0.2.0"
 futures = { version = "0.3.17", default-features = false, features = [
     "async-await",
@@ -51,8 +53,11 @@ futures = { version = "0.3.17", default-features = false, features = [
 heapless = { version = "0.8", default-features = false }
 rand_core = "0.6.3"
 static_cell = "2"
-# defmt = "0.3"
-# defmt-rtt = "0.4"
+defmt = "0.3"
+defmt-rtt = "0.4"
+defmt-semihosting = "*"
+defmt-decoder = { version = "*", features = ["unstable"] }
+anyhow = "1"
 
 [patch.crates-io]
 embassy-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
@@ -62,3 +67,8 @@ embassy-boot-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6
 embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
 embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
 embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+
+defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
+defmt-rtt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
+defmt-semihosting = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
+defmt-decoder = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }

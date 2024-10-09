@@ -1,0 +1,12 @@
+cargo-features = ["per-package-target"]
+
+[package]
+name = "lemur"
+version = "0.1.0"
+edition = "2021"
+
+forced-target = "x86_64-apple-darwin"
+
+[dependencies]
+anyhow.workspace = true
+defmt-decoder.workspace = true

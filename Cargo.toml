@@ -52,7 +52,7 @@ futures = { version = "0.3.17", default-features = false, features = [
 ] }
 heapless = { version = "0.8", default-features = false }
 rand_core = "0.6.3"
-static_cell = "2"
+static_cell = { version = "2", features = ["nightly"] }
 defmt = "0.3"
 defmt-rtt = "0.4"
 defmt-semihosting = "*"

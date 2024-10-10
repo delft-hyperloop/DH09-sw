@@ -19,7 +19,7 @@ use defmt_semihosting as _;
 // use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
 use panic_probe as _;
 
-use cortex_m_semihosting::hprintln;
+use embassy_time::Timer;
 use embassy_stm32::bind_interrupts;
 
 use embassy_stm32::can;
@@ -40,9 +40,86 @@ async fn main(spawner: Spawner) -> ! {
 
     let mut config = embassy_stm32::Config::default();
     {
-        use embassy_stm32::rcc::*;
+        use embassy_stm32::rcc;
+        config.rcc.hse = Some(rcc::Hse {
+            freq: embassy_stm32::time::Hertz(25_000_000),
+            mode: rcc::HseMode::Oscillator,
+        });
+        config.rcc.mux.fdcansel = rcc::mux::Fdcansel::HSE;
     }
     let p = embassy_stm32::init(config);
 
-    loop {}
+    info!("Embassy initialized!");
+
+    let mut can = can::CanConfigurator::new(p.FDCAN1, p.PA11, p.PA12, Irqs);
+
+    // 250k bps
+    can.set_bitrate(250_000);
+
+    let mut can = can.into_internal_loopback_mode();
+    // let mut can = can.into_normal_mode();
+
+    info!("CAN Configured");
+
+    let mut i = 0;
+    let mut last_read_ts = embassy_time::Instant::now();
+
+    loop {
+        let frame = can::frame::Frame::new_extended(0x123456F, &[i; 8]).unwrap();
+        info!("Writing frame");
+        _ = can.write(&frame).await;
+
+        match can.read().await {
+            Ok(envelope) => {
+                let (rx_frame, ts) = envelope.parts();
+                let delta = (ts - last_read_ts).as_millis();
+                last_read_ts = ts;
+                info!(
+                    "Rx: {:x} {:x} {:x} {:x} --- NEW {}",
+                    rx_frame.data()[0],
+                    rx_frame.data()[1],
+                    rx_frame.data()[2],
+                    rx_frame.data()[3],
+                    delta,
+                )
+            }
+            Err(_err) => error!("Error in frame"),
+        }
+
+        Timer::after_millis(250).await;
+
+        i += 1;
+        if i > 3 {
+            break;
+        }
+    }
+
+    let (mut tx, mut rx, _props) = can.split();
+    // With split
+    loop {
+        let frame = can::frame::Frame::new_extended(0x123456F, &[i; 8]).unwrap();
+        info!("Writing frame");
+        _ = tx.write(&frame).await;
+
+        match rx.read().await {
+            Ok(envelope) => {
+                let (rx_frame, ts) = envelope.parts();
+                let delta = (ts - last_read_ts).as_millis();
+                last_read_ts = ts;
+                info!(
+                    "Rx: {:x} {:x} {:x} {:x} --- NEW {}",
+                    rx_frame.data()[0],
+                    rx_frame.data()[1],
+                    rx_frame.data()[2],
+                    rx_frame.data()[3],
+                    delta,
+                )
+            }
+            Err(_err) => error!("Error in frame"),
+        }
+
+        Timer::after_millis(250).await;
+
+        i = i.wrapping_add(1);
+    }
 }

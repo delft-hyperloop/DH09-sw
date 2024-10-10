@@ -17,7 +17,7 @@ const CAN_RX_PUBLISHERS: usize = 1;
 
 #[derive(Debug, Clone)]
 pub struct CanEnvelope {
-    envelope: embassy_stm32::can::frame::Envelope,
+    envelope: embassy_stm32::can::frame::FdEnvelope,
 }
 
 impl core::cmp::PartialEq for CanEnvelope {
@@ -71,7 +71,7 @@ type CanRxPublisher<'a> = Publisher<
 async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>) -> ! {
     let mut error_counter: usize = 0;
     loop {
-        match can.read().await {
+        match can.read_fd().await {
             Ok(envelope) => {
                 publisher.publish(CanEnvelope { envelope }).await;
             }
@@ -105,7 +105,7 @@ async fn can_tx_task(
 ) -> ! {
     loop {
         let envelope = rx.receive().await;
-        let frame = can.write(&envelope.envelope.frame).await;
+        let frame = can.write_fd(&envelope.envelope.frame).await;
         match frame {
             None => {
                 // Success

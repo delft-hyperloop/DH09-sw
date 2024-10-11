@@ -1,5 +1,6 @@
 use defmt::unwrap;
 use embassy_executor::Spawner;
+use embassy_net::StackResources;
 use embassy_stm32::{
     eth::{generic_smi::GenericSMI, Ethernet},
     peripherals::ETH,
@@ -19,7 +20,7 @@ pub struct GsMaster<C: GsCommsLayer> {
 }
 
 impl GsMaster<GsCommsLayerImpl> {
-    pub async fn new<I>(comms: I, spawner: Spawner) -> &'static GsMaster<I>
+    pub async fn new<I>(comms: I, spawner: Spawner) -> &'static GsMaster<GsCommsLayerImpl>
     where
         I: GsCommsLayerInitializable<CommsLayer = GsCommsLayerImpl>,
     {
@@ -34,8 +35,8 @@ struct GsToPodMessage {}
 struct PodToGsMessage {}
 
 pub trait GsCommsLayer {
-    async fn send(&self, data: &PodToGsMessage);
-    async fn receive(&self) -> GsToPodMessage;
+    async fn send(&mut self, data: &PodToGsMessage);
+    async fn receive(&mut self) -> GsToPodMessage;
 }
 
 pub trait GsCommsLayerInitializable {

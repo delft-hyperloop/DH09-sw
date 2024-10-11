@@ -88,13 +88,13 @@ async fn main(spawner: Spawner) -> ! {
 
     // let mut can = can::CanConfigurator::new(p.FDCAN1, p.PA11, p.PA12, Irqs);
 
-    // 250k bps
+    // // 250k bps
     // can.set_bitrate(250_000);
 
-    // let mut can = can.into_internal_loopback_mode();
+    // // let mut can = can.into_internal_loopback_mode();
     // let mut can = can.into_normal_mode();
 
-    // let can = CanInterface::new(can, &spawner);
+    // let can = CanInterface::new(can, spawner);
 
     info!("CAN Configured");
 

@@ -138,7 +138,7 @@ impl CanInterface {
     /// It takes in the CAN peripheral, which should be initialized and configured
     /// before calling this function, and a spawner, which is used to spawn the
     /// RX and TX tasks.
-    pub fn new(can: Can<'static>, spawner: &Spawner) -> &'static Self {
+    pub fn new(can: Can<'static>, spawner: Spawner) -> &'static Self {
         static CAN_INTERFACE: StaticCell<CanInterface> = StaticCell::new();
 
         let rx_channel = CanRxChannel::new();

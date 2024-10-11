@@ -1,7 +1,7 @@
 [target.thumbv7em-none-eabihf]
 # add `-d cpu,guest_errors` to debug guest errors
 # runner = "qemu-system-arm -cpu cortex-m7 -machine mps2-an500 -nographic -semihosting-config enable=on,target=native -kernel"
-runner = "gdb -q -x openocd.gdb"
+runner = "gdb-multiarch -q -x openocd.gdb"
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
 # uncomment ONE of these three option to make `cargo run` start a GDB session

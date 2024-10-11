@@ -1,196 +1,346 @@
 #![no_std]
 #![no_main]
 
+use core::borrow::BorrowMut;
 use core::cell::RefCell;
+use core::mem::MaybeUninit;
+use core::num;
+use core::assert;
 
 use embassy_boot::BootLoaderConfig;
 use embassy_executor::Spawner;
-use embassy_net::tcp::TcpSocket;
-use embassy_net::{Ipv4Address, Ipv4Cidr, StackResources};
-use embassy_stm32::eth::generic_smi::GenericSMI;
-use embassy_stm32::eth::{self, Ethernet, PacketQueue};
-use embassy_stm32::flash::{Bank1Region, Blocking, BANK1_REGION};
-use embassy_stm32::peripherals;
-use embassy_stm32::rng::{self, Rng};
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::blocking_mutex::Mutex;
-use embassy_time::Timer;
-use heapless::Vec;
-use rand_core::RngCore;
-use embedded_io_async::Write;
-use embassy_stm32::peripherals::ETH;
+use embassy_stm32::lptim::pwm::Ch1;
+use embassy_stm32::peripherals::{self, TIM1, TIM3};
+use embassy_stm32::time::{Hertz};
+use embassy_stm32::timer::{Channel};
+use embassy_stm32::timer::simple_pwm::{PwmPin, SimplePwm};
+use embassy_stm32::gpio::{AnyPin, Input, Level, Output, Pin, Pull, Speed, OutputType};
+use embassy_time::{Duration, Timer, Instant};
 // pick a panicking behavior
 use panic_halt as _;
-// use defmt::*;
-// use defmt_rtt as _;
-// use panic_abort as _; // requires nightly
-// use panic_itm as _; // logs messages over ITM; requires ITM support
-// use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
 
-use cortex_m_semihosting::hprintln;
-use embassy_boot_stm32::BootLoader;
-use embassy_boot_stm32::{BlockingFirmwareUpdater, FirmwareUpdaterConfig};
-use embassy_stm32::{bind_interrupts, flash::Flash};
-use static_cell::StaticCell;
 
-bind_interrupts!(
-    struct Irqs {
-        ETH => eth::InterruptHandler;
-        RNG => rng::InterruptHandler<peripherals::RNG>;
-    }
-);
+use cortex_m_semihosting::{hprintln};
 
-unsafe fn get_bootloader_state_slice() -> &'static mut [u8] {
-    extern "C" {
-        static __bootloader_state_start: u8;
-        static __bootloader_state_end: u8;
-    }
-    let len = &__bootloader_state_end as *const u8 as usize
-        - &__bootloader_state_start as *const u8 as usize;
-    unsafe { core::slice::from_raw_parts_mut(__bootloader_state_end as *mut u8, len) }
+macro_rules! debug_hprintln {
+    ($($e:expr),+) => {
+        {
+            #[cfg(debug_assertions)]
+            {
+                hprintln!($($e),+)
+            }
+        }
+    };
 }
+    
+// #[embassy_executor::task(pool_size=3)]
+// async fn blink(pwm: RefCell<SimplePwm<'static, TIM3>>, channel: Channel) {
+//     let mut intensity = 0;
 
-// unsafe fn get_bootloader_flash_slice() -> &'static mut [u8] {
-//     extern "C" {
-//         static __bootloader_active_start: u8;
-//         static __bootloader_active_end: u8;
+//     pwm.borrow_mut().enable(channel);
+
+//     loop {
+//         intensity += 1;
+
+//         let duty = (pwm.borrow().get_max_duty() * intensity) / 100;
+//         pwm.borrow_mut().set_duty(channel, duty);
+
+//         if intensity > 100 {
+//             intensity = 0;
+//         }
+
+//         Timer::after_millis(10).await;
 //     }
-//     let len = &__bootloader_active_end as *const u8 as usize
-//         - &__bootloader_active_start as *const u8 as usize;
-//     unsafe { core::slice::from_raw_parts_mut(__bootloader_active_start as *mut u8, len) }
 // }
 
-type FlashRef<'a> = Mutex<NoopRawMutex, RefCell<Bank1Region<'a, Blocking>>>;
+// #[embassy_executor::main]
+// async fn main(spawner: Spawner) {
+//     let p = embassy_stm32::init(Default::default());
+    
+//     let pwm = RefCell::new(SimplePwm::new(
+//         p.TIM3,  
+//         None,
+//         None,
+//         Some(PwmPin::new_ch3(p.PB0, OutputType::PushPull)), 
+//         None, 
+//         Hertz::hz(100),
+//         embassy_stm32::timer::low_level::CountingMode::CenterAlignedBothInterrupts
+//     ));
 
-fn boot_firmware(flash: &FlashRef) -> ! {
-    let bootloader_config = BootLoaderConfig::from_linkerfile_blocking(&flash, &flash, &flash);
-    let offset = bootloader_config.active.offset();
+//     // debug_hprintln!("Hello world!");
 
-    let bl = BootLoader::prepare::<_, _, _, 8192>(bootloader_config);
-    let start = BANK1_REGION.base + offset;
+//     spawner.spawn(blink(pwm, Channel::Ch1)).unwrap(); // Green LED
+//     // spawner.spawn(blink(p.PE1.degrade())).unwrap();
+//     // spawner.spawn(blink(p.PB14.degrade())).unwrap(); 
+// }
 
-    unsafe { bl.load(start) }
+#[embassy_executor::task(pool_size=3)]
+async fn blink(pwm: &'static mut SimplePwm<'static, TIM3>, channel: Channel) {
+    let mut intensity = 0;
+
+    pwm.enable(channel);
+
+    let mut dir: i32 = 1;
+
+    loop {
+        intensity += dir;
+
+        let duty = (pwm.get_max_duty() * (intensity as u32))/100;
+        pwm.set_duty(channel, duty);
+
+
+        if dir == 1 && intensity >= 50 {
+            dir = -1;
+        }
+
+        if dir == -1 && intensity <= 1 {
+            dir = 1;
+        }
+
+        Timer::after_millis(10).await;
+    }
+}   
+
+type IdFilter = fn(u32) -> bool; 
+
+static mut PWM: MaybeUninit<SimplePwm<'static, TIM3>> = MaybeUninit::uninit();
+static mut i: u32 = 0;
+static mut lookup: [[u32; 32]; 64] = [[0; 32]; 64];
+static mut lookup_func: [IdFilter; 64] = [|_| { false }; 64];
+
+static num_subs: usize = 3;
+
+
+fn linear_lookup_enumerate(id: u32) {
+    for (sub_num, component) in unsafe{ lookup.iter().enumerate() } {
+        if sub_num == num_subs { break; }
+        for subscribed in component.iter() {
+            if (*subscribed == 0) { break; }
+            if (*subscribed == id) {
+                unsafe {i += 1;}
+                break;
+            }
+        }
+    }
 }
 
-unsafe fn update_firmware(flash: &FlashRef) {
-    let config = FirmwareUpdaterConfig::from_linkerfile_blocking(&flash, &flash);
-    let bootloader_state = unsafe { get_bootloader_state_slice() };
-    let fwu = BlockingFirmwareUpdater::new(config, bootloader_state);
+fn linear_lookup_take(id: u32) {
+    // assert!(unsafe{ lookup.len() > num_subs });
+    
+    for component in unsafe { &lookup[0..num_subs] } {
+        for subscribed in component.iter() {
+            if (*subscribed == 0) { break; }
+            if (*subscribed == id) {
+                unsafe {i += 1;}
+                break;
+            }
+        }
+    }
 }
 
-type Device = Ethernet<'static, ETH, GenericSMI>;
+fn function_lookup(id: u32) {
+    for component_pred in unsafe{ &lookup_func[0..num_subs] } {
+        if component_pred(id) {
+            unsafe {i += 1;}
+        }
+    }
+}
 
-#[embassy_executor::task]
-async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
-    runner.run().await
+fn pred_1(id: u32) -> bool {
+    match id {
+        1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 => true,
+        _ => false
+    }   
+}
+
+fn pred_2(id: u32) -> bool {
+    id > 0 && id < 22
+}
+
+static lookup_set: phf::Set<u32> = phf::phf_set!{ 
+    1u32, 
+    2u32, 
+    3u32, 
+    4u32, 
+    5u32, 
+    6u32, 
+    7u32, 
+    8u32, 
+    9u32, 
+    10u32, 
+    11u32, 
+    12u32, 
+    13u32, 
+    14u32, 
+    15u32, 
+    16u32, 
+    17u32, 
+    18u32, 
+    19u32, 
+    20u32, 
+    21u32 
+};
+
+fn set_lookup(id: u32) {
+    for j in 0..num_subs {
+        if lookup_set.contains(&id) {
+            unsafe { i += 1;}
+        }
+    }
+    
 }
 
 #[embassy_executor::main]
-async fn main(spawner: Spawner) -> ! {
-    hprintln!("Hello, world!");
+async fn main(spawner: Spawner) {
 
-    let mut config = embassy_stm32::Config::default();
-    {
-        use embassy_stm32::rcc::*;
-        config.rcc.hsi = Some(HSIPrescaler::DIV1);
-        config.rcc.csi = true;
-        config.rcc.hsi48 = Some(Default::default()); // needed for RNG
-        config.rcc.pll1 = Some(Pll {
-            source: PllSource::HSI,
-            prediv: PllPreDiv::DIV4,
-            mul: PllMul::MUL50,
-            divp: Some(PllDiv::DIV2),
-            divq: None,
-            divr: None,
-        });
-        config.rcc.sys = Sysclk::PLL1_P; // 400 Mhz
-        config.rcc.ahb_pre = AHBPrescaler::DIV2; // 200 Mhz
-        config.rcc.apb1_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb2_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb3_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb4_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.voltage_scale = VoltageScale::Scale1;
-    }
-    let p = embassy_stm32::init(config);
-    let layout = Flash::new_blocking(p.FLASH).into_blocking_regions();
-    let flash = Mutex::new(RefCell::new(layout.bank1_region));
+    unsafe {
+        lookup[0][0] = 21;
+        lookup[0][1] = 1;
+        lookup[0][2] = 2;
+        lookup[0][3] = 3;
+        lookup[0][4] = 4;
+        lookup[0][5] = 5;
+        lookup[0][6] = 6;
+        lookup[0][7] = 7;
+        lookup[0][8] = 8;
+        lookup[0][9] = 9;
+        lookup[0][10] = 10;
+        lookup[0][11] = 11;
+        lookup[0][12] = 12;
+        lookup[0][13] = 13;
+        lookup[0][14] = 14;
+        lookup[0][15] = 15;
+        lookup[0][16] = 16;
+        lookup[0][17] = 17;
+        lookup[0][18] = 18;
+        lookup[0][19] = 19;
+        lookup[0][20] = 20;
 
-    // Generate random seed.
-    let mut rng = Rng::new(p.RNG, Irqs);
-    let mut seed = [0; 8];
-    rng.fill_bytes(&mut seed);
-    let seed = u64::from_le_bytes(seed);
+        lookup[1][0] = 21;
+        lookup[1][1] = 1;
+        lookup[1][2] = 2;
+        lookup[1][3] = 3;
+        lookup[1][4] = 4;
+        lookup[1][5] = 5;
+        lookup[1][6] = 6;
+        lookup[1][7] = 7;
+        lookup[1][8] = 8;
+        lookup[1][9] = 9;
+        lookup[1][10] = 10;
+        lookup[1][11] = 11;
+        lookup[1][12] = 12;
+        lookup[1][13] = 13;
+        lookup[1][14] = 14;
+        lookup[1][15] = 15;
+        lookup[1][16] = 16;
+        lookup[1][17] = 17;
+        lookup[1][18] = 18;
+        lookup[1][19] = 19;
+        lookup[1][20] = 20;
 
-    let mac_addr = [0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF];
-    hprintln!("Connecting to ETH");
-
-    static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
-    // warning: Not all STM32H7 devices have the exact same pins here
-    // for STM32H747XIH, replace p.PB13 for PG12
-    let device = Ethernet::new(
-        PACKETS.init(PacketQueue::<4, 4>::new()),
-        p.ETH,
-        Irqs,
-        p.PA1,  // ref_clk
-        p.PA2,  // mdio
-        p.PC1,  // eth_mdc
-        p.PA7,  // CRS_DV: Carrier Sense
-        p.PC4,  // RX_D0: Received Bit 0
-        p.PC5,  // RX_D1: Received Bit 1
-        p.PG13, // TX_D0: Transmit Bit 0
-        p.PB13, // TX_D1: Transmit Bit 1
-        p.PG11, // TX_EN: Transmit Enable
-        GenericSMI::new(0),
-        mac_addr,
-    );
-
-    let config = embassy_net::Config::dhcpv4(Default::default());
-    // let config = embassy_net::Config::ipv4_static(embassy_net::StaticConfigV4 {
-    //    address: Ipv4Cidr::new(Ipv4Address::new(10, 42, 0, 61), 24),
-    //    dns_servers: Vec::new(),
-    //    gateway: Some(Ipv4Address::new(10, 42, 0, 1)),
-    // });
-
-    // Init network stack
-    static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
-    let (stack, runner) = embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
-
-    // Launch network task
-    spawner.spawn(net_task(runner)).unwrap();
-
-    hprintln!("Waiting for DHCP");
-
-    // Ensure DHCP configuration is up before trying connect
-    stack.wait_config_up().await;
-
-    // Then we can use it!
-    let mut rx_buffer = [0; 1024];
-    let mut tx_buffer = [0; 1024];
-
-    loop {
-        let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
-
-        socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
-
-        // You need to start a server on the host machine, for example: `nc -l 8000`
-        let remote_endpoint = (Ipv4Address::new(10, 42, 0, 1), 8000);
-        hprintln!("connecting...");
-        let r = socket.connect(remote_endpoint).await;
-        if let Err(e) = r {
-            hprintln!("connect error: {:?}", e);
-            Timer::after_secs(1).await;
-            continue;
-        }
-        hprintln!("connected!");
-        loop {
-            let r = socket.write_all(b"Hello\n").await;
-            if let Err(e) = r {
-                hprintln!("write error: {:?}", e);
-                break;
-            }
-            Timer::after_secs(1).await;
-        }
+        lookup[2][0] = 21;
+        lookup[2][1] = 1;
+        lookup[2][2] = 2;
+        lookup[2][3] = 3;
+        lookup[2][4] = 4;
+        lookup[2][5] = 5;
+        lookup[2][6] = 6;
+        lookup[2][7] = 7;
+        lookup[2][8] = 8;
+        lookup[2][9] = 9;
+        lookup[2][10] = 10;
+        lookup[2][11] = 11;
+        lookup[2][12] = 12;
+        lookup[2][13] = 13;
+        lookup[2][14] = 14;
+        lookup[2][15] = 15;
+        lookup[2][16] = 16;
+        lookup[2][17] = 17;
+        lookup[2][18] = 18;
+        lookup[2][19] = 19;
+        lookup[2][20] = 20;
     }
 
-    boot_firmware(&flash)
+
+    let p = embassy_stm32::init(Default::default());
+
+    let init_start = Instant::now();
+
+    for id in 0..27000 {
+        linear_lookup_enumerate(id);
+    }
+
+    let init_finish = Instant::now();
+
+    hprintln!("Linear lookup enumerate: {}us", (init_finish-init_start).as_micros());
+    hprintln!("i value: {}", unsafe{i});
+
+    unsafe {i = 0;}
+
+    let init_start = Instant::now();
+
+    for id in 0..27000 {
+        linear_lookup_take(id);
+    }
+
+    let init_finish = Instant::now();
+
+    hprintln!("Linear lookup take: {}us", (init_finish-init_start).as_micros());
+    hprintln!("i value: {}", unsafe{i});
+
+    unsafe {i = 0;}
+
+    unsafe {
+        lookup_func[0] = pred_1;
+        lookup_func[1] = pred_1;
+        lookup_func[2] = pred_1;
+    }
+
+
+    let init_start = Instant::now();
+
+    for id in 0..27000 {
+        function_lookup(id);
+    }
+
+    let init_finish = Instant::now();
+
+    hprintln!("Function 1 lookup: {}us", (init_finish-init_start).as_micros());
+    hprintln!("i value: {}", unsafe{i});
+
+    unsafe {i = 0;}
+
+    unsafe {
+        lookup_func[0] = pred_2;
+        lookup_func[1] = pred_2;
+        lookup_func[2] = pred_2;
+    }
+
+
+    let init_start = Instant::now();
+
+    for id in 0..27000 {
+        function_lookup(id);
+    }
+
+    let init_finish = Instant::now();
+
+    hprintln!("Function 2 lookup: {}us", (init_finish-init_start).as_micros());
+    hprintln!("i value: {}", unsafe{i});
+
+    unsafe {i = 0;}
+
+    let init_start = Instant::now();
+
+    for id in 0..27000 {
+        set_lookup(id);
+    }
+
+    let init_finish = Instant::now();
+
+    hprintln!("Set lookup: {}us", (init_finish-init_start).as_micros());
+    hprintln!("i value: {}", unsafe{i});
+
+
+
 }

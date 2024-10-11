@@ -6,7 +6,7 @@ compile_error!("The `rtt` and `qemu` features are mutually exclusive");
 
 use embassy_executor::Spawner;
 use embassy_stm32::peripherals;
-use embassy_stm32::rng;
+// use embassy_stm32::rng;
 // pick a panicking behavior
 // use panic_halt as _;
 use defmt::*;
@@ -14,19 +14,21 @@ use defmt::*;
 use defmt_rtt as _;
 #[cfg(feature = "qemu")]
 use defmt_semihosting as _;
+use main::can::CanInterface;
 // use panic_abort as _; // requires nightly
 // use panic_itm as _; // logs messages over ITM; requires ITM support
 // use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
 use panic_probe as _;
+use embassy_stm32::peripherals::*;
 
-use embassy_time::Timer;
 use embassy_stm32::bind_interrupts;
+use embassy_time::Timer;
 
 use embassy_stm32::can;
 
 bind_interrupts!(
     struct Irqs {
-        RNG => rng::InterruptHandler<peripherals::RNG>;
+        // RNG => rng::InterruptHandler<peripherals::RNG>;
 
         // CAN
         FDCAN1_IT0 => can::IT0InterruptHandler<peripherals::FDCAN1>;
@@ -34,92 +36,67 @@ bind_interrupts!(
     }
 );
 
+fn hlt() -> ! {
+    #[cfg(feature = "qemu")]
+    {
+        use core::arch::asm;
+
+        #[allow(non_upper_case_globals)]
+        const ADP_Stopped_ApplicationExit: u32 = 0x20026;
+
+        #[repr(C)]
+        struct QEMUParameterBlock {
+            arg0: u32,
+            arg1: u32,
+        }
+
+        let block = QEMUParameterBlock {
+            arg0: ADP_Stopped_ApplicationExit,
+            arg1: 0,
+        };
+
+        unsafe {
+            asm!(
+                "bkpt #0xab",
+                in("r0") 0x20,
+                in("r1") &block as *const _ as u32,
+                options(nostack)
+            );
+
+            loop {
+                cortex_m::asm::wfe();
+            }
+        }
+    }
+
+    #[cfg(feature = "rtt")]
+    {
+        loop {
+            cortex_m::asm::wfe();
+        }
+    }
+}
+
 #[embassy_executor::main]
 async fn main(spawner: Spawner) -> ! {
     trace!("Hello, world!");
 
-    let mut config = embassy_stm32::Config::default();
-    {
-        use embassy_stm32::rcc;
-        config.rcc.hse = Some(rcc::Hse {
-            freq: embassy_stm32::time::Hertz(25_000_000),
-            mode: rcc::HseMode::Oscillator,
-        });
-        config.rcc.mux.fdcansel = rcc::mux::Fdcansel::HSE;
-    }
+    let config = embassy_stm32::Config::default();
     let p = embassy_stm32::init(config);
 
     info!("Embassy initialized!");
 
-    let mut can = can::CanConfigurator::new(p.FDCAN1, p.PA11, p.PA12, Irqs);
+    // let mut can = can::CanConfigurator::new(p.FDCAN1, p.PA11, p.PA12, Irqs);
 
     // 250k bps
-    can.set_bitrate(250_000);
+    // can.set_bitrate(250_000);
 
-    let mut can = can.into_internal_loopback_mode();
+    // let mut can = can.into_internal_loopback_mode();
     // let mut can = can.into_normal_mode();
+
+    // let can = CanInterface::new(can, &spawner);
 
     info!("CAN Configured");
 
-    let mut i = 0;
-    let mut last_read_ts = embassy_time::Instant::now();
-
-    loop {
-        let frame = can::frame::Frame::new_extended(0x123456F, &[i; 8]).unwrap();
-        info!("Writing frame");
-        _ = can.write(&frame).await;
-
-        match can.read().await {
-            Ok(envelope) => {
-                let (rx_frame, ts) = envelope.parts();
-                let delta = (ts - last_read_ts).as_millis();
-                last_read_ts = ts;
-                info!(
-                    "Rx: {:x} {:x} {:x} {:x} --- NEW {}",
-                    rx_frame.data()[0],
-                    rx_frame.data()[1],
-                    rx_frame.data()[2],
-                    rx_frame.data()[3],
-                    delta,
-                )
-            }
-            Err(_err) => error!("Error in frame"),
-        }
-
-        Timer::after_millis(250).await;
-
-        i += 1;
-        if i > 3 {
-            break;
-        }
-    }
-
-    let (mut tx, mut rx, _props) = can.split();
-    // With split
-    loop {
-        let frame = can::frame::Frame::new_extended(0x123456F, &[i; 8]).unwrap();
-        info!("Writing frame");
-        _ = tx.write(&frame).await;
-
-        match rx.read().await {
-            Ok(envelope) => {
-                let (rx_frame, ts) = envelope.parts();
-                let delta = (ts - last_read_ts).as_millis();
-                last_read_ts = ts;
-                info!(
-                    "Rx: {:x} {:x} {:x} {:x} --- NEW {}",
-                    rx_frame.data()[0],
-                    rx_frame.data()[1],
-                    rx_frame.data()[2],
-                    rx_frame.data()[3],
-                    delta,
-                )
-            }
-            Err(_err) => error!("Error in frame"),
-        }
-
-        Timer::after_millis(250).await;
-
-        i = i.wrapping_add(1);
-    }
+    hlt()
 }

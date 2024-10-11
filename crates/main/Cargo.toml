@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["qemu"]
+default = ["rtt"]
 qemu = ["dep:defmt-semihosting"]
 rtt = ["dep:defmt-rtt"]
 

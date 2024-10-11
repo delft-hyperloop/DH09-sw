@@ -6,10 +6,10 @@ resolver = "2"
 [workspace.dependencies]
 embassy-stm32 = { version = "*", features = [
     "defmt",
-    "stm32h743zi",
+    "stm32h753zi",
     "time-driver-any",
     "exti",
-    "memory-x",
+    # "memory-x",
     "unstable-pac",
     "chrono",
 ] }

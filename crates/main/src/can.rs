@@ -1,4 +1,7 @@
-use core::borrow::Borrow;
+//! Module that deals with communication to the CAN bus.
+//!
+//! The main type is [`CanInterface`], which is used to
+//! expose an interface to the CAN implementation.
 
 use defmt::*;
 use embassy_executor::Spawner;
@@ -9,11 +12,7 @@ use embassy_sync::{
     pubsub::{PubSubChannel, Publisher, Subscriber},
 };
 use embassy_time::Timer;
-use static_cell::{make_static, StaticCell};
-
-const CAN_RX_CAPACITY: usize = 4;
-const CAN_RX_SUBSCRIBERS: usize = 4;
-const CAN_RX_PUBLISHERS: usize = 1;
+use static_cell::StaticCell;
 
 #[derive(Debug, Clone)]
 pub struct CanEnvelope {
@@ -43,6 +42,10 @@ impl core::cmp::Ord for CanEnvelope {
     }
 }
 
+const CAN_RX_CAPACITY: usize = 4;
+const CAN_RX_SUBSCRIBERS: usize = 4;
+const CAN_RX_PUBLISHERS: usize = 1;
+
 type CanRxChannel = PubSubChannel<
     NoopRawMutex,
     CanEnvelope,
@@ -67,6 +70,10 @@ type CanRxPublisher<'a> = Publisher<
     CAN_RX_PUBLISHERS,
 >;
 
+/// Task that listens for CAN messages sent over the CAN bus and forwards them to the RX channel.
+///
+/// Tasks interested in receiving CAN messages should subscribe to the RX channel, which they can do
+/// through [`CanInterface::new_subscriber`].
 #[embassy_executor::task]
 async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>) -> ! {
     let mut error_counter: usize = 0;
@@ -97,6 +104,7 @@ type CanTxSender<'a> =
 type CanTxReceiver<'a> =
     priority_channel::Receiver<'a, NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
 
+/// Task that sends CAN envelopes received from the TX channel over the CAN bus.
 #[embassy_executor::task]
 async fn can_tx_task(
     mut can: CanTx<'static>,
@@ -122,10 +130,17 @@ pub struct CanInterface {
     tx_channel: CanTxChannel,
 }
 
-static CAN_INTERFACE: StaticCell<CanInterface> = StaticCell::new();
-
 impl CanInterface {
+    /// Initializes the CAN interface.
+    ///
+    /// This function should be called once at the beginning of the program.
+    ///
+    /// It takes in the CAN peripheral, which should be initialized and configured
+    /// before calling this function, and a spawner, which is used to spawn the
+    /// RX and TX tasks.
     pub fn new(can: Can<'static>, spawner: &Spawner) -> &'static Self {
+        static CAN_INTERFACE: StaticCell<CanInterface> = StaticCell::new();
+
         let rx_channel = CanRxChannel::new();
         let tx_channel = CanTxChannel::new();
 
@@ -144,6 +159,10 @@ impl CanInterface {
         interface
     }
 
+    /// Adds a new subscriber to the RX channel.
+    ///
+    /// The subscriber will be notified about all the
+    /// CAN messages received from the CAN bus.
     pub fn new_subscriber(&self) -> CanRxSubscriber<'_> {
         unwrap!(self.rx_channel.subscriber())
     }

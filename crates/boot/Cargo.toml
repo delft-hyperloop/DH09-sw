@@ -14,6 +14,7 @@ embassy-executor.workspace = true
 embassy-net.workspace = true
 embassy-time.workspace = true
 panic-halt.workspace = true
+panic-semihosting.workspace = true
 cortex-m.workspace = true
 cortex-m-rt.workspace = true
 cortex-m-semihosting.workspace = true

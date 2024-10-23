@@ -45,6 +45,7 @@ embedded-io-async = { version = "0.6.1" }
 embedded-storage = { version = "0.3.1" }
 # panic-probe = { version = "0.3", features = ["print-defmt"] }
 panic-halt = "0.2.0"
+panic-semihosting = "0.6.0"
 futures = { version = "0.3.17", default-features = false, features = [
     "async-await",
 ] }

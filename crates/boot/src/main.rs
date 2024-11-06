@@ -6,6 +6,7 @@ use core::cell::RefCell;
 use core::mem::MaybeUninit;
 use core::num;
 use core::assert;
+use core::time;
 
 use embassy_boot::BootLoaderConfig;
 use embassy_stm32::{bind_interrupts, can, rcc, Config};
@@ -19,6 +20,8 @@ use embassy_stm32::timer::{Channel};
 use embassy_stm32::timer::simple_pwm::{PwmPin, SimplePwm};
 use embassy_stm32::gpio::{AnyPin, Input, Level, Output, Pin, Pull, Speed, OutputType};
 use embassy_time::{Duration, Timer, Instant};
+use core::arch::asm;
+use cortex_m::Peripherals;
 // pick a panicking behavior
 
 #[cfg(debug_assertions)]
@@ -26,7 +29,6 @@ use panic_semihosting as _;
 
 #[cfg(not(debug_assertions))]
 use panic_halt as _;
-
 
 use cortex_m_semihosting::{hprintln};
 
@@ -41,47 +43,46 @@ macro_rules! debug_hprintln {
     };
 }
 
-#[embassy_executor::task(pool_size=1)]
-async fn can_sender(pin: AnyPin, can_sender: BufferedFdCanSender) {
-        let mut led = Output::new(pin, Level::Low, Speed::Low);
+fn cpu_freq() -> f32 {
+    let mut dwt = cortex_m::Peripherals::take().unwrap().DWT;
 
-        loop {
-            led.set_high();
-            Timer::after_millis(100).await;
-            led.set_low();
-            Timer::after_millis(100).await;
-        }
+    dwt.enable_cycle_counter();
+
+    let start_count = dwt.cyccnt.read();
+    let start_time = Instant::now();
+
+    let mut count: u32 = 100000000;
+    unsafe {    
+        asm!(
+            "0:
+            subs {0}, {0}, #1
+            bne 0b
+            ",
+            inout(reg) count
+        );
+    }   
+
+    let end_time = Instant::now();
+    let end_count = dwt.cyccnt.read(); 
+    let time_passed = end_time - start_time;
+
+    dwt.disable_cycle_counter();
+
+    ((end_count - start_count) as f32)/(time_passed.as_micros() as f32)
 }
-
-bind_interrupts!(struct CanOneInterrupts {
-    FDCAN1_IT0 => can::IT0InterruptHandler<FDCAN1>;
-    FDCAN1_IT1 => can::IT1InterruptHandler<FDCAN1>;
-});
-
-static mut read_buffer: RxFdBuf<{1<<3} > = RxFdBuf::new();
-static mut write_buffer: TxFdBuf<{1<<3} > = TxFdBuf::new();
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {   
 
     let mut config = Config::default();
-    // config.rcc.hse = Some(rcc::Hse {
-    //     freq: embassy_stm32::time::Hertz(25_000_000),
-    //     mode: rcc::HseMode::Oscillator,
-    // });
-    // config.rcc.mux.fdcansel = rcc::mux::Fdcansel::HSE;
+    
+    // Config
+    config.rcc.hsi = Some(rcc::HSIPrescaler::DIV2);
+    //
+
 
     let p = embassy_stm32::init(config);
 
-    let mut can_config = CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, CanOneInterrupts);
+    hprintln!("CPU Freq: {}", cpu_freq());
 
-    hprintln!("Ca;c: {}", 1_000_000);
-
-    can_config.set_fd_data_bitrate(1u32 << 19, false);
-
-    let can = can_config.into_normal_mode();
-
-    let can = unsafe { can.buffered_fd(&mut write_buffer, &mut read_buffer) };
-
-    spawner.must_spawn(can_sender(p.PB0.degrade(), can.writer()));
-}
+}   

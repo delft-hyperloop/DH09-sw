@@ -25,6 +25,10 @@ use embassy_stm32::bind_interrupts;
 use embassy_time::Timer;
 
 use embassy_stm32::can;
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+use embassy_sync::pubsub::PubSubChannel;
+use fsm::MainFSM;
+use fsm::commons::{Event, EventChannel, Runner};
 
 bind_interrupts!(
     struct Irqs {
@@ -77,6 +81,12 @@ fn hlt() -> ! {
     }
 }
 
+#[embassy_executor::task]
+async fn run_fsm(spawner: Spawner, event_channel: EventChannel) {
+    let mut main_fsm = MainFSM::new(spawner, event_channel);
+    main_fsm.run();
+}
+
 #[embassy_executor::main]
 async fn main(spawner: Spawner) -> ! {
     trace!("Hello, world!");
@@ -97,6 +107,11 @@ async fn main(spawner: Spawner) -> ! {
     // let can = CanInterface::new(can, spawner);
 
     info!("CAN Configured");
+
+    // Initialize the publish and subscribe channels for the FSMs and keep a transceiver for broadcasting the events.
+    let event_channel: EventChannel = PubSubChannel::<NoopRawMutex, Event, 32, 6, 7>::new();
+    let tx = event_channel.publisher().unwrap();
+    spawner.spawn(run_fsm(spawner, event_channel)).unwrap();
 
     hlt()
 }

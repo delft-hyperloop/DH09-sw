@@ -1,5 +1,7 @@
-use crate::commons::{Event, EventChannel, PublisherChannel, Runner, SubscriberChannel, Transition};
+use crate::commons::{Event, PublisherChannel, Runner, SubscriberChannel, Transition};
+use crate::{impl_runner_get_sub_channel, impl_transition};
 
+#[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum EmergencyStates {
     NotAnEmergency = 0,
     Emergency,
@@ -44,25 +46,8 @@ impl EmergencyFSM {
     }
 }
 
-impl Runner for EmergencyFSM {
-    fn get_sub_channel(&self) -> EventChannel {
-        *self.event_queue
-    }
-}
-
-impl Transition<EmergencyStates> for EmergencyFSM {
-    fn entry_method(&self) -> fn() {
-        ENTRY_FUNCTION_MAP[&self.state]
-    }
-
-    fn exit_method(&self) -> fn() {
-        EXIT_FUNCTION_MAP[&self.state]
-    }
-
-    fn set_state(&mut self, new_state: EmergencyStates) {
-        self.state = new_state;
-    }
-}
+impl_runner_get_sub_channel!(EmergencyFSM);
+impl_transition!(EmergencyFSM, EmergencyStates);
 
 static ENTRY_FUNCTION_MAP: [fn(); 4] = [
     || (),

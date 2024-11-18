@@ -1,6 +1,7 @@
-use crate::commons::{Event, EventChannel, PublisherChannel, Runner, SubscriberChannel, Transition};
+use crate::commons::{Event, PublisherChannel, Runner, SubscriberChannel, Transition};
+use crate::{impl_runner_get_sub_channel, impl_transition};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub(super) enum HVStates {
     HighVoltageOff = 0,
     HighVoltageOn,
@@ -10,7 +11,7 @@ pub(super) struct HighVoltageFSM {
     state: HVStates,
     // peripherals: // TODO
     pub_channel: PublisherChannel,
-    sub_channel: SubscriberChannel,
+    pub sub_channel: SubscriberChannel,
 }
 
 impl HighVoltageFSM {
@@ -42,25 +43,8 @@ impl HighVoltageFSM {
     }
 }
 
-impl Runner for HighVoltageFSM {
-    fn get_sub_channel(&self) -> EventChannel {
-        *self.event_queue
-    }
-}
-
-impl Transition<HVStates> for HighVoltageFSM {
-    fn entry_method(&self) -> fn() {
-        ENTRY_FUNCTION_MAP[&self.state]
-    }
-
-    fn exit_method(&self) -> fn() {
-        EXIT_FUNCTION_MAP[&self.state]
-    }
-
-    fn set_state(&mut self, new_state: HVStates) {
-        self.state = new_state;
-    }
-}
+impl_runner_get_sub_channel!(HighVoltageFSM);
+impl_transition!(HighVoltageFSM, HVStates);
 
 static ENTRY_FUNCTION_MAP: [fn(); 2] = [
     enter_high_voltage_off,

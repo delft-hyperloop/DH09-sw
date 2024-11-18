@@ -1,5 +1,7 @@
-use crate::commons::{Event, EventChannel, PublisherChannel, Runner, SubscriberChannel, Transition};
+use crate::commons::{Event, PublisherChannel, Runner, SubscriberChannel, Transition};
+use crate::{impl_runner_get_sub_channel, impl_transition};
 
+#[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum OperatingStates {
     Demo = 0,
     Accelerating,
@@ -12,7 +14,7 @@ pub(super) struct OperatingFSM {
     state: OperatingStates,
     pub_channel: PublisherChannel,
     sub_channel: SubscriberChannel,
-    // peripherals:
+    // peripherals: // TODO
 }
 
 impl OperatingFSM {
@@ -33,7 +35,7 @@ impl OperatingFSM {
             (_, Event::Emergency) => {
                 // TODO: Decide if we change state and if anything happens here
             }
-            (OperatingStates::Demo, Event::Accelerate) => self.transition(OperatingStates::Accelerating),
+            (OperatingStates::Demo, Event::Accelerate {velocity_profile: _velocity_profile}) => self.transition(OperatingStates::Accelerating),
             (OperatingStates::Demo, Event::ShutDown) => self.transition(OperatingStates::ShutDown),
             (OperatingStates::Accelerating, Event::Cruise) => self.transition(OperatingStates::Cruising),
             (OperatingStates::Accelerating, Event::Brake) => self.transition(OperatingStates::Braking),
@@ -50,40 +52,23 @@ impl OperatingFSM {
     }
 }
 
-impl Runner for OperatingFSM {
-    fn get_sub_channel(&self) -> EventChannel {
-        *self.event_queue
-    }
-}
-
-impl Transition<OperatingStates> for OperatingFSM {
-    fn entry_method(&self) -> fn() {
-        ENTRY_FUNCTION_MAP[&self.state]
-    }
-
-    fn exit_method(&self) -> fn() {
-        EXIT_FUNCTION_MAP[&self.state]
-    }
-
-    fn set_state(&mut self, new_state: OperatingStates) {
-        self.state = new_state;
-    }
-}
+impl_runner_get_sub_channel!(OperatingFSM);
+impl_transition!(OperatingFSM, OperatingStates);
 
 static ENTRY_FUNCTION_MAP: [fn(); 5] = [
-    || (),
-    || (),
+    || (), // Demo
+    || (), // Accelerating
     enter_braking,
-    || (),
-    || (),
+    || (), // Cruising
+    || (), // Shut Down
 ];
 
 static EXIT_FUNCTION_MAP: [fn(); 5] = [
-    || (),
-    || (),
-    || (),
-    || (),
-    || (),
+    || (), // Demo
+    || (), // Accelerating
+    || (), // Braking
+    || (), // Cruising
+    || (), // Shut Down
 ];
 
 fn enter_braking() {

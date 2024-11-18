@@ -14,15 +14,14 @@ use commons::Event;
 use MainStates::*;
 use crate::commons::{EventChannel, PublisherChannel, Runner, SubscriberChannel, Transition};
 use crate::emergency_fsm::EmergencyFSM;
-use crate::high_voltage_fsm::{HVStates, HighVoltageFSM};
+use crate::high_voltage_fsm::{HighVoltageFSM};
 use crate::levitation_fsm::LevitationFSM;
 use crate::operating_fsm::OperatingFSM;
 use crate::propulsion_fsm::PropulsionFSM;
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone, Copy)]
 enum MainStates {
-    Boot = 0,
-    SystemCheck,
+    SystemCheck = 0,
     Idle,
     Charging,
     Active,
@@ -47,10 +46,11 @@ impl MainFSM {
     pub fn new(
         spawner: Spawner,
         // peripherals: // TODO: add peripherals
-        event_channel: EventChannel,
+        event_channel: &EventChannel,
     ) -> Self {
         let pub_channel = event_channel.publisher().unwrap();
         let sub_channel= event_channel.subscriber().unwrap();
+
         let high_voltage_fsm = HighVoltageFSM::new(event_channel.publisher().unwrap(), event_channel.subscriber().unwrap());
         let emergency_fsm = EmergencyFSM::new(event_channel.publisher().unwrap(), event_channel.subscriber().unwrap());
         let operating_fsm = OperatingFSM::new(event_channel.publisher().unwrap(), event_channel.subscriber().unwrap());
@@ -59,7 +59,7 @@ impl MainFSM {
 
         Self {
             spawner,
-            state: Boot,
+            state: SystemCheck,
             pub_channel,
             sub_channel,
             high_voltage_fsm,
@@ -73,18 +73,21 @@ impl MainFSM {
     fn handle(&mut self, event: Event) {
         match (&self.state, event) {
             (_, Event::Emergency) => {
-                // TODO: propagate emergency to sub-FSMs
                 // TODO: attempt shut down
                 // TODO: transition to quit
             }
-            (Boot, Event::BootSuccess) => self.transition(SystemCheck),
             (SystemCheck, Event::SystemCheckSuccess) => self.transition(Idle),
             (Idle, Event::Activate) => self.transition(Active),
             (Idle, Event::Charge) => self.transition(Charging),
             (Charging, Event::StopCharge) => self.transition(Idle),
             (Active, Event::Operate) => {
+                self.propulsion_fsm.run();
+                self.levitation_fsm.run();
+                self.high_voltage_fsm.run();
+                self.operating_fsm.run();
+                self.emergency_fsm.run();
+
                 self.transition(Operating);
-                // TODO: spawn FSMs as their own embassy tasks?
             },
             (Operating, Event::Quit) => {
                 // TODO: add checks for propulsion, levitation
@@ -93,44 +96,25 @@ impl MainFSM {
                 // }
             }
             _ => {
-                // TODO: Panic?
+                // TODO: Problem?
             }
         }
     }
 }
 
-impl Runner for MainFSM {
-    fn get_sub_channel(&self) -> SubscriberChannel {
-        *self.sub_channel
-    }
-}
+impl_runner_get_sub_channel!(MainFSM);
+impl_transition!(MainFSM, MainStates);
 
-impl Transition<MainStates> for MainFSM {
-    fn entry_method(&self) -> fn() {
-        ENTRY_FUNCTION_MAP[&self.state]
-    }
-
-    fn exit_method(&self) -> fn() {
-        EXIT_FUNCTION_MAP[&self.state]
-    }
-
-    fn set_state(&mut self, new_state: MainStates) {
-        self.state = new_state;
-    }
-}
-
-static ENTRY_FUNCTION_MAP: [fn(); 7] = [
-    || (),  // Boot
+static ENTRY_FUNCTION_MAP: [fn(); 6] = [
     || (),  // SystemCheck
     || (),  // Idle
     || (),  // Charging
     enter_active,
     || (),  // FlashingCode
-    enter_operating,
+    || (),  // Operating
 ];
 
-static EXIT_FUNCTION_MAP: [fn(); 7] = [
-    || (),  // Boot
+static EXIT_FUNCTION_MAP: [fn(); 6] = [
     || (),  // SystemCheck
     || (),  // Idle
     || (),  // Charging
@@ -142,10 +126,6 @@ static EXIT_FUNCTION_MAP: [fn(); 7] = [
 fn enter_active() {
     // TODO: Send CAN command to turn on high voltage
     // TODO: Close SDC while keeping brakes engaged
-}
-
-fn enter_operating() {
-    // TODO: Run the FSMs
 }
 
 // #[cfg(test)]

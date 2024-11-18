@@ -1,5 +1,7 @@
-use crate::commons::{Event, EventChannel, PublisherChannel, Runner, SubscriberChannel, Transition};
+use crate::commons::{Event, PublisherChannel, Runner, SubscriberChannel, Transition};
+use crate::{impl_runner_get_sub_channel, impl_transition};
 
+#[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum LevitationStates {
     LevitationOff = 0,
     LevitationOn,
@@ -36,25 +38,8 @@ impl LevitationFSM {
     }
 }
 
-impl Runner for LevitationFSM {
-    fn get_sub_channel(&self) -> EventChannel {
-        *self.event_queue
-    }
-}
-
-impl Transition<LevitationStates> for LevitationFSM {
-    fn entry_method(&self) -> fn() {
-        ENTRY_FUNCTION_MAP[&self.state]
-    }
-
-    fn exit_method(&self) -> fn() {
-        EXIT_FUNCTION_MAP[&self.state]
-    }
-
-    fn set_state(&mut self, new_state: LevitationStates) {
-        self.state = new_state;
-    }
-}
+impl_runner_get_sub_channel!(LevitationFSM);
+impl_transition!(LevitationFSM, LevitationStates);
 
 static ENTRY_FUNCTION_MAP: [fn(); 2] = [
     enter_levitation_off,

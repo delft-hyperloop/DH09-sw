@@ -1,9 +1,9 @@
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::pubsub::{PubSubChannel, Publisher, Subscriber};
+use embassy_sync::pubsub::{PubSubChannel, Publisher, Subscriber, WaitResult};
 
+#[derive(Clone)]
 pub enum Event {
     Emergency,
-    BootSuccess,
     SystemCheckSuccess,
     Activate,
     Charge,
@@ -27,18 +27,22 @@ pub enum Event {
 }
 
 pub trait Runner {
-    fn get_sub_channel(&self) -> EventChannel;
+    fn get_sub_channel(&self) -> &SubscriberChannel;
 
     fn run(&mut self) {
         loop {
+            // TODO: Check for emergency first
             if !self.get_sub_channel().is_empty() {
-                let event = self.get_sub_channel().try_receive();
+                let event = self.get_sub_channel().try_next_message();
                 match event {
-                    Ok(received_event) => {
+                    Some(WaitResult::Message(received_event)) => {
                         self.handle(received_event);
                     }
+                    Some(WaitResult::Lagged(amount)) => {
+                        // TODO: Problem? This means that the subscriber missed {amount} messages
+                    }
                     _ => {
-                        // TODO: Panic?
+                        // TODO: Problem?
                     }
                 }
             }
@@ -46,10 +50,21 @@ pub trait Runner {
     }
 }
 
-pub trait Transition<T> {
-    fn entry_method(&self) -> fn();
+#[macro_export]
+macro_rules! impl_runner_get_sub_channel {
+    ($fsm_struct:ident) => {
+        impl Runner for $fsm_struct {
+            fn get_sub_channel(&self) -> &SubscriberChannel {
+                &self.sub_channel
+            }
+        }
+    };
+}
 
-    fn exit_method(&self) -> fn();
+pub trait Transition<T> {
+    fn entry_method(&mut self) -> fn();
+
+    fn exit_method(&mut self) -> fn();
 
     fn set_state(&mut self, new_state: T);
 
@@ -67,8 +82,30 @@ pub trait Transition<T> {
     }
 }
 
+#[macro_export]
+macro_rules! impl_transition {
+    ($fsm_struct:ident, $fsm_states: ident) => {
+        impl Transition<$fsm_states> for $fsm_struct {
+            fn entry_method(&mut self) -> fn() {
+                ENTRY_FUNCTION_MAP[self.state as usize]
+            }
+
+            fn exit_method(&mut self) -> fn() {
+                EXIT_FUNCTION_MAP[self.state as usize]
+            }
+
+            fn set_state(&mut self, new_state: $fsm_states) {
+                self.state = new_state;
+            }
+        }
+    };
+}
+
 // Publishers and subscribers for the channel used to broadcast events to all the FSMs.
 // Max 32 events, 6 subscribers, 7 publishers(FSMs and main).
-pub type EventChannel = PubSubChannel<NoopRawMutex, Event, 32, 6, 7>;
-pub type PublisherChannel = Publisher<'static, NoopRawMutex, Event, 32, 6, 7>;
-pub type SubscriberChannel = Subscriber<'static, NoopRawMutex, Event, 32, 6, 7>;
+const MAX_EVENTS: usize = 32;
+const SUBSCRIBERS: usize = 6;
+const PUBLISHERS: usize = 7;
+pub type EventChannel = PubSubChannel<NoopRawMutex, Event, MAX_EVENTS, SUBSCRIBERS, PUBLISHERS>;
+pub type PublisherChannel = Publisher<'static, NoopRawMutex, Event, MAX_EVENTS, SUBSCRIBERS, PUBLISHERS>;
+pub type SubscriberChannel = Subscriber<'static, NoopRawMutex, Event, MAX_EVENTS, SUBSCRIBERS, PUBLISHERS>;

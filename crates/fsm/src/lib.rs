@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+extern crate alloc;
 
 pub mod commons;
 mod high_voltage_fsm;
@@ -8,11 +9,12 @@ mod operating_fsm;
 mod propulsion_fsm;
 mod levitation_fsm;
 
+use alloc::sync::Arc;
 use core::cmp::PartialEq;
 use embassy_executor::Spawner;
 use commons::Event;
 use MainStates::*;
-use crate::commons::{EventChannel, PublisherChannel, Runner, SubscriberChannel, Transition};
+use crate::commons::{EmergencyChannel, EventChannel, PriorityEventPubSub, Runner, Transition};
 use crate::emergency_fsm::EmergencyFSM;
 use crate::high_voltage_fsm::{HighVoltageFSM};
 use crate::levitation_fsm::LevitationFSM;
@@ -33,8 +35,7 @@ pub struct MainFSM {
     spawner: Spawner,
     state: MainStates,
     // peripherals: // TODO: add peripherals
-    pub_channel: PublisherChannel,
-    sub_channel: SubscriberChannel,
+    priority_event_pub_sub: Arc<PriorityEventPubSub>,
     high_voltage_fsm: HighVoltageFSM,
     emergency_fsm: EmergencyFSM,
     operating_fsm: OperatingFSM,
@@ -46,22 +47,24 @@ impl MainFSM {
     pub fn new(
         spawner: Spawner,
         // peripherals: // TODO: add peripherals
-        event_channel: &EventChannel,
+        event_channel: &'static EventChannel,
+        emergency_channel: &'static EmergencyChannel,
     ) -> Self {
-        let pub_channel = event_channel.publisher().unwrap();
-        let sub_channel= event_channel.subscriber().unwrap();
-
-        let high_voltage_fsm = HighVoltageFSM::new(event_channel.publisher().unwrap(), event_channel.subscriber().unwrap());
-        let emergency_fsm = EmergencyFSM::new(event_channel.publisher().unwrap(), event_channel.subscriber().unwrap());
-        let operating_fsm = OperatingFSM::new(event_channel.publisher().unwrap(), event_channel.subscriber().unwrap());
-        let propulsion_fsm = PropulsionFSM::new(event_channel.publisher().unwrap(), event_channel.subscriber().unwrap());
-        let levitation_fsm = LevitationFSM::new(event_channel.publisher().unwrap(), event_channel.subscriber().unwrap());
+        let high_voltage_fsm = define_fsm!(HighVoltageFSM);
+        let emergency_fsm = define_fsm!(EmergencyFSM);
+        let operating_fsm = define_fsm!(OperatingFSM);
+        let propulsion_fsm = define_fsm!(PropulsionFSM);
+        let levitation_fsm = define_fsm!(LevitationFSM);
 
         Self {
             spawner,
             state: SystemCheck,
-            pub_channel,
-            sub_channel,
+            priority_event_pub_sub: Arc::new(PriorityEventPubSub::new(
+                event_channel.publisher().unwrap(),
+                event_channel.subscriber().unwrap(),
+                emergency_channel.publisher().unwrap(),
+                emergency_channel.subscriber().unwrap(),
+            )),
             high_voltage_fsm,
             emergency_fsm,
             operating_fsm,

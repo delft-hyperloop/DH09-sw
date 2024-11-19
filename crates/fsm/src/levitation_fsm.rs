@@ -1,4 +1,5 @@
-use crate::commons::{Event, PublisherChannel, Runner, SubscriberChannel, Transition};
+use alloc::sync::Arc;
+use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
 use crate::{impl_runner_get_sub_channel, impl_transition};
 
 #[derive(Clone, PartialEq, Debug, Copy)]
@@ -10,25 +11,22 @@ pub(super) enum LevitationStates {
 pub(super) struct LevitationFSM {
     state: LevitationStates,
     // peripherals: // TODO
-    pub_channel: PublisherChannel,
-    sub_channel: SubscriberChannel,
+    priority_event_pub_sub: Arc<PriorityEventPubSub>,
 }
 
 impl LevitationFSM {
     pub fn new(
-        pub_channel: PublisherChannel,
-        sub_channel: SubscriberChannel,
+        priority_event_pub_sub: PriorityEventPubSub,
         // peripherals:
     ) -> Self {
         Self {
-            pub_channel,
-            sub_channel,
+            priority_event_pub_sub: Arc::new(priority_event_pub_sub),
             state: LevitationStates::LevitationOff,
             // peripherals
         }
     }
 
-    pub fn handle(&mut self, event: Event) {
+    fn handle(&mut self, event: Event) {
         match (&self.state, event) {
             (LevitationStates::LevitationOn, Event::Emergency) => self.transition(LevitationStates::LevitationOff),
             (LevitationStates::LevitationOn, Event::LevitationOff) => self.transition(LevitationStates::LevitationOff),

@@ -28,7 +28,7 @@ use embassy_stm32::can;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::pubsub::PubSubChannel;
 use fsm::MainFSM;
-use fsm::commons::{Event, EventChannel, Runner};
+use fsm::commons::{EmergencyChannel, Event, EventChannel, Runner};
 
 bind_interrupts!(
     struct Irqs {
@@ -81,9 +81,13 @@ fn hlt() -> ! {
     }
 }
 
+// Initialize the channel for publishing events to the FSMs.
+static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> = static_cell::StaticCell::new();
+
 #[embassy_executor::task]
-async fn run_fsm(spawner: Spawner, event_channel: EventChannel) {
-    let mut main_fsm = MainFSM::new(spawner, &event_channel);
+async fn run_fsm(spawner: Spawner, event_channel: &'static EventChannel, emergency_channel: &'static EmergencyChannel) {
+    let mut main_fsm = MainFSM::new(spawner, event_channel, emergency_channel);
     main_fsm.run();
 }
 
@@ -93,6 +97,9 @@ async fn main(spawner: Spawner) -> ! {
 
     let config = embassy_stm32::Config::default();
     let p = embassy_stm32::init(config);
+
+    let event_channel = EVENT_CHANNEL.init(EventChannel::new());
+    let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
 
     info!("Embassy initialized!");
 
@@ -108,10 +115,7 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("CAN Configured");
 
-    // Initialize the channel for publishing events to the FSMs and keep a transceiver for broadcasting the events.
-    let event_channel: EventChannel = EventChannel::new();
-    let tx = event_channel.publisher().unwrap();
-    spawner.spawn(run_fsm(spawner, event_channel)).unwrap();
+    spawner.spawn(run_fsm(spawner, event_channel, emergency_channel)).unwrap();
 
     info!("FSM started!");
 

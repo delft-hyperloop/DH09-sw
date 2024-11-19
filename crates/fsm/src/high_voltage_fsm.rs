@@ -1,4 +1,5 @@
-use crate::commons::{Event, PublisherChannel, Runner, SubscriberChannel, Transition};
+use alloc::sync::Arc;
+use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
 use crate::{impl_runner_get_sub_channel, impl_transition};
 
 #[derive(PartialEq, Debug, Clone, Copy)]
@@ -9,21 +10,18 @@ pub(super) enum HVStates {
 
 pub(super) struct HighVoltageFSM {
     state: HVStates,
+    priority_event_pub_sub: Arc<PriorityEventPubSub>,
     // peripherals: // TODO
-    pub_channel: PublisherChannel,
-    pub sub_channel: SubscriberChannel,
 }
 
 impl HighVoltageFSM {
     pub fn new(
+        priority_event_pub_sub: PriorityEventPubSub,
         //peripherals: // TODO
-        pub_channel: PublisherChannel,
-        sub_channel: SubscriberChannel,
     ) -> Self {
         Self {
             state: HVStates::HighVoltageOn,
-            pub_channel,
-            sub_channel,
+            priority_event_pub_sub: Arc::new(priority_event_pub_sub),
         }
     }
 

@@ -1,4 +1,5 @@
-use crate::commons::{Event, PublisherChannel, Runner, SubscriberChannel, Transition};
+use alloc::sync::Arc;
+use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
 use crate::{impl_runner_get_sub_channel, impl_transition};
 
 #[derive(PartialEq, Debug, Clone, Copy)]
@@ -10,21 +11,18 @@ pub(super) enum PropulsionStates {
 
 pub(super) struct PropulsionFSM {
     state: PropulsionStates,
-    pub_channel: PublisherChannel,
-    sub_channel: SubscriberChannel,
+    priority_event_pub_sub: Arc<PriorityEventPubSub>,
     velocity_profile: u8, // TODO: Change to actual velocity profile
     // peripherals: // TODO
 }
 
 impl PropulsionFSM {
     pub fn new(
-        pub_channel: PublisherChannel,
-        sub_channel: SubscriberChannel,
+        priority_event_pub_sub: PriorityEventPubSub,
         // peripherals // TODO
     ) -> Self {
         Self {
-            pub_channel,
-            sub_channel,
+            priority_event_pub_sub: Arc::new(priority_event_pub_sub),
             state: PropulsionStates::PropulsionOff,
             velocity_profile: 0, // TODO: Change to actual velocity profile
             // peripherals:
@@ -35,7 +33,7 @@ impl PropulsionFSM {
         &self.state
     }
 
-    pub fn handle(&mut self, event: Event) {
+    fn handle(&mut self, event: Event) {
         match (&self.state, event) {
             (_, Event::Emergency) => {
                 // TODO: Send command to stop propulsion if running and to turn off after
@@ -78,33 +76,45 @@ fn enter_propulsion_off() {
 
 #[cfg(test)]
 mod tests {
-    use crate::commons::{Event, EventChannel, Runner};
+    use static_cell::StaticCell;
+    use crate::commons::{EmergencyChannel, Event, EventChannel, PriorityEventPubSub, Runner};
     use crate::propulsion_fsm::{PropulsionFSM, PropulsionStates};
 
     #[test]
     fn test_basic_transitions() {
-        let channel = EventChannel::new();
-        let pub_channel = channel.publisher().unwrap();
+        static CHANNEL: StaticCell<EventChannel> = static_cell::StaticCell::new();
+        static EMERGENCY_CHANNEL: StaticCell<EmergencyChannel> = static_cell::StaticCell::new();
+
+        let event_channel = CHANNEL.init(EventChannel::new());
+        let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
+
+        let pub_channel = event_channel.publisher().unwrap();
+        let pub_emergency_channel = emergency_channel.publisher().unwrap();
 
         let mut fsm = PropulsionFSM::new(
-            channel.publisher().unwrap(),
-            channel.subscriber().unwrap(),
+            PriorityEventPubSub::new(
+                event_channel.publisher().unwrap(),
+                event_channel.subscriber().unwrap(),
+                emergency_channel.publisher().unwrap(),
+                emergency_channel.subscriber().unwrap(),
+            ),
         );
 
+        // Need a separate task?
         fsm.run();
 
         // TODO: Also check if the commands have been sent
 
-        let result = pub_channel.publish(Event::PropulsionOn);
+        let _result = pub_channel.publish(Event::PropulsionOn);
         assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionOn);
 
-        let result = pub_channel.publish(Event::PropulsionRunning);
+        let _result = pub_channel.publish(Event::PropulsionRunning);
         assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionRunning);
 
-        let result = pub_channel.publish(Event::PropulsionOn);
+        let _result = pub_channel.publish(Event::PropulsionOn);
         assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionOn);
 
-        let result = pub_channel.publish(Event::PropulsionOff);
+        let _result = pub_channel.publish(Event::PropulsionOff);
         assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionOff);
     }
 

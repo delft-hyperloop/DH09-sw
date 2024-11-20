@@ -4,9 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["rtt"]
-qemu = ["dep:defmt-semihosting"]
-rtt = ["dep:defmt-rtt"]
 
 [dependencies]
 embassy-stm32.workspace = true
@@ -26,6 +23,7 @@ rand_core.workspace = true
 static_cell.workspace = true
 heapless.workspace = true
 defmt.workspace = true
+defmt-rtt.workspace = true
 defmt-rtt = {workspace = true, optional = true}
 defmt-semihosting = {workspace = true, optional = true}
 fsm = { path = "../fsm" }

@@ -21,11 +21,7 @@ fn main() {
     let out = &PathBuf::from(env::var_os("OUT_DIR").unwrap());
     File::create(out.join("memory.x"))
         .unwrap()
-        .write_all(if cfg!(feature = "qemu") {
-            include_bytes!("memory.qemu.x")
-        } else {
-            include_bytes!("memory.x")
-        })
+        .write_all(include_bytes!("memory.x"))
         .unwrap();
     println!("cargo:rustc-link-search={}", out.display());
 
@@ -33,24 +29,19 @@ fn main() {
     // any file in the project changes. By specifying `memory.x`
     // here, we ensure the build script is only re-run when
     // `memory.x` is changed.
-    if cfg!(feature = "qemu") {
-        println!("cargo:rerun-if-changed=memory.qemu.x");
-    } else {
-        println!("cargo:rerun-if-changed=memory.x");
-    }
-
+    println!("cargo:rerun-if-changed=memory.x");
     println!("cargo:rerun-if-changed=build.rs");
 
     // Specify linker arguments.
-
-    // `--nmagic` is required if memory section addresses are not aligned to 0x10000,
-    // for example the FLASH and RAM sections in your `memory.x`.
-    // See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
-    println!("cargo:rustc-link-arg=--nmagic");
 
     // Set the linker script to the one provided by cortex-m-rt.
     println!("cargo:rustc-link-arg=-Tlink.x");
 
     // Defmt
-    println!("cargo:rustc-link-arg=-Tdefmt.x")
+    println!("cargo:rustc-link-arg=-Tdefmt.x");
+
+    // `--nmagic` is required if memory section addresses are not aligned to 0x10000,
+    // for example the FLASH and RAM sections in your `memory.x`.
+    // See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
+    println!("cargo:rustc-link-arg=--nmagic");
 }

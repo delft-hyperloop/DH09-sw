@@ -326,16 +326,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "defmt-semihosting"
-version = "0.1.0"
-source = "git+https://github.com/knurling-rs/defmt?rev=b7a89f56059fc66ac3c7cc3445d092829599e699#b7a89f56059fc66ac3c7cc3445d092829599e699"
-dependencies = [
- "cortex-m",
- "cortex-m-semihosting",
- "defmt",
-]
-
-[[package]]
 name = "deranged"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -814,7 +804,6 @@ dependencies = [
  "cortex-m-semihosting",
  "defmt",
  "defmt-rtt",
- "defmt-semihosting",
  "embassy-boot",
  "embassy-boot-stm32",
  "embassy-executor",

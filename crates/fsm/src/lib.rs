@@ -12,6 +12,8 @@ mod levitation_fsm;
 use alloc::sync::Arc;
 use core::cmp::PartialEq;
 use embassy_executor::Spawner;
+use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::signal::Signal;
 use commons::Event;
 use MainStates::*;
 use crate::commons::{EmergencyChannel, EventChannel, PriorityEventPubSub, Runner, Transition};
@@ -32,16 +34,12 @@ enum MainStates {
 }
 
 pub struct MainFSM {
-    spawner: Spawner,
     state: MainStates,
     // peripherals: // TODO: add peripherals
     priority_event_pub_sub: Arc<PriorityEventPubSub>,
-    high_voltage_fsm: HighVoltageFSM,
-    emergency_fsm: EmergencyFSM,
-    operating_fsm: OperatingFSM,
-    propulsion_fsm: PropulsionFSM,
-    levitation_fsm: LevitationFSM,
 }
+
+static RUN_SUB_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
 
 impl MainFSM {
     pub fn new(
@@ -50,14 +48,19 @@ impl MainFSM {
         event_channel: &'static EventChannel,
         emergency_channel: &'static EmergencyChannel,
     ) -> Self {
-        let high_voltage_fsm = define_fsm!(HighVoltageFSM);
-        let emergency_fsm = define_fsm!(EmergencyFSM);
-        let operating_fsm = define_fsm!(OperatingFSM);
-        let propulsion_fsm = define_fsm!(PropulsionFSM);
-        let levitation_fsm = define_fsm!(LevitationFSM);
+        let high_voltage_fsm = define_fsm!(HighVoltageFSM, event_channel, emergency_channel);
+        let emergency_fsm = define_fsm!(EmergencyFSM, event_channel, emergency_channel);
+        let operating_fsm = define_fsm!(OperatingFSM, event_channel, emergency_channel);
+        let propulsion_fsm = define_fsm!(PropulsionFSM, event_channel, emergency_channel);
+        let levitation_fsm = define_fsm!(LevitationFSM, event_channel, emergency_channel);
+
+        spawner.spawn(run_high_voltage_fsm(high_voltage_fsm)).unwrap();
+        spawner.spawn(run_emergency_fsm(emergency_fsm)).unwrap();
+        spawner.spawn(run_operating_fsm(operating_fsm)).unwrap();
+        spawner.spawn(run_propulsion_fsm(propulsion_fsm)).unwrap();
+        spawner.spawn(run_levitation_fsm(levitation_fsm)).unwrap();
 
         Self {
-            spawner,
             state: SystemCheck,
             priority_event_pub_sub: Arc::new(PriorityEventPubSub::new(
                 event_channel.publisher().unwrap(),
@@ -65,11 +68,6 @@ impl MainFSM {
                 emergency_channel.publisher().unwrap(),
                 emergency_channel.subscriber().unwrap(),
             )),
-            high_voltage_fsm,
-            emergency_fsm,
-            operating_fsm,
-            propulsion_fsm,
-            levitation_fsm,
         }
     }
 
@@ -84,12 +82,7 @@ impl MainFSM {
             (Idle, Event::Charge) => self.transition(Charging),
             (Charging, Event::StopCharge) => self.transition(Idle),
             (Active, Event::Operate) => {
-                self.propulsion_fsm.run();
-                self.levitation_fsm.run();
-                self.high_voltage_fsm.run();
-                self.operating_fsm.run();
-                self.emergency_fsm.run();
-
+                RUN_SUB_FSM.signal(true);
                 self.transition(Operating);
             },
             (Operating, Event::Quit) => {
@@ -98,11 +91,39 @@ impl MainFSM {
                     // TODO: Add event to fsm to stop high voltage and wait to stop
                 // }
             }
-            _ => {
-                // TODO: Problem?
-            }
+            _ => {}
         }
     }
+}
+
+#[embassy_executor::task]
+pub async fn run_propulsion_fsm(mut propulsion_fsm: PropulsionFSM) {
+    RUN_SUB_FSM.wait().await;
+    propulsion_fsm.run();
+}
+
+#[embassy_executor::task]
+pub async fn run_levitation_fsm(mut levitation_fsm: LevitationFSM) {
+    RUN_SUB_FSM.wait().await;
+    levitation_fsm.run();
+}
+
+#[embassy_executor::task]
+pub async fn run_high_voltage_fsm(mut high_voltage_fsm: HighVoltageFSM) {
+    RUN_SUB_FSM.wait().await;
+    high_voltage_fsm.run();
+}
+
+#[embassy_executor::task]
+pub async fn run_operating_fsm(mut operating_fsm: OperatingFSM) {
+    RUN_SUB_FSM.wait().await;
+    operating_fsm.run();
+}
+
+#[embassy_executor::task]
+pub async fn run_emergency_fsm(mut emergency_fsm: EmergencyFSM) {
+    RUN_SUB_FSM.wait().await;
+    emergency_fsm.run();
 }
 
 impl_runner_get_sub_channel!(MainFSM);

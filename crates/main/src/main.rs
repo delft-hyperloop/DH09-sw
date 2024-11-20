@@ -14,21 +14,17 @@ use defmt::*;
 use defmt_rtt as _;
 #[cfg(feature = "qemu")]
 use defmt_semihosting as _;
-use main::can::CanInterface;
+// use main::can::CanInterface;
 // use panic_abort as _; // requires nightly
 // use panic_itm as _; // logs messages over ITM; requires ITM support
 // use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
 use panic_probe as _;
-use embassy_stm32::peripherals::*;
 
 use embassy_stm32::bind_interrupts;
-use embassy_time::Timer;
 
 use embassy_stm32::can;
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::pubsub::PubSubChannel;
 use fsm::MainFSM;
-use fsm::commons::{EmergencyChannel, Event, EventChannel, Runner};
+use fsm::commons::{EmergencyChannel, EventChannel, Runner};
 
 bind_interrupts!(
     struct Irqs {

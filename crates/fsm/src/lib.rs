@@ -1,3 +1,10 @@
+//! #FSM Crate for DH09
+//!
+//! The 'fsm' crate is used by Dh09 to keep track of the state in which the pod is.
+//! It's built on the principle of state charts, as it has one superstate (the "Operating" state)
+//! that runs multiple sub-FSMs that keep track of the subsystems that run during normal operation of the pod.
+//! The transitions are triggered by pre-determined events sent from each subsystem.
+
 #![no_std]
 #![no_main]
 extern crate alloc;
@@ -11,17 +18,18 @@ mod levitation_fsm;
 
 use alloc::sync::Arc;
 use core::cmp::PartialEq;
+use core::sync::atomic::{AtomicBool, Ordering};
 use embassy_executor::Spawner;
-use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::blocking_mutex::raw::{CriticalSectionRawMutex};
 use embassy_sync::signal::Signal;
 use commons::Event;
 use MainStates::*;
 use crate::commons::{EmergencyChannel, EventChannel, PriorityEventPubSub, Runner, Transition};
-use crate::emergency_fsm::EmergencyFSM;
+use crate::emergency_fsm::{EmergencyFSM};
 use crate::high_voltage_fsm::{HighVoltageFSM};
-use crate::levitation_fsm::LevitationFSM;
-use crate::operating_fsm::OperatingFSM;
-use crate::propulsion_fsm::PropulsionFSM;
+use crate::levitation_fsm::{LevitationFSM};
+use crate::operating_fsm::{OperatingFSM};
+use crate::propulsion_fsm::{PropulsionFSM};
 
 #[derive(Eq, PartialEq, Debug, Clone, Copy)]
 enum MainStates {
@@ -40,6 +48,11 @@ pub struct MainFSM {
 }
 
 static RUN_SUB_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
+
+pub(crate) static HIGH_VOLTAGE_STATE: AtomicBool = AtomicBool::new(false);
+pub(crate) static LEVITATION_STATE: AtomicBool = AtomicBool::new(false);
+pub(crate) static PROPULSION_STATE: AtomicBool = AtomicBool::new(false);
+pub(crate) static EMERGENCY_STATE: AtomicBool = AtomicBool::new(false);
 
 impl MainFSM {
     pub fn new(
@@ -71,28 +84,28 @@ impl MainFSM {
         }
     }
 
-    fn handle(&mut self, event: Event) {
+
+    async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (_, Event::Emergency) => {
                 // TODO: attempt shut down
                 // TODO: transition to quit
             }
-            (SystemCheck, Event::SystemCheckSuccess) => self.transition(Idle),
-            (Idle, Event::Activate) => self.transition(Active),
-            (Idle, Event::Charge) => self.transition(Charging),
-            (Charging, Event::StopCharge) => self.transition(Idle),
+            (SystemCheck, Event::SystemCheckSuccess) => self.transition(Idle, None),
+            (Idle, Event::Activate) => self.transition(Active, None),
+            (Idle, Event::Charge) => self.transition(Charging, None),
+            (Charging, Event::StopCharge) => self.transition(Idle, None),
             (Active, Event::Operate) => {
                 RUN_SUB_FSM.signal(true);
-                self.transition(Operating);
+                self.transition(Operating, None);
             },
             (Operating, Event::Quit) => {
-                // TODO: add checks for propulsion, levitation
-                // if *self.high_voltage_fsm.unwrap().get_state() == HVStates::HighVoltageOn {
-                    // TODO: Add event to fsm to stop high voltage and wait to stop
-                // }
+                // TODO: add checks for propulsion, levitation, hv
+                return false;
             }
             _ => {}
         }
+        true
     }
 }
 
@@ -149,6 +162,7 @@ static EXIT_FUNCTION_MAP: [fn(); 6] = [
 
 fn enter_active() {
     // TODO: Send CAN command to turn on high voltage
+    HIGH_VOLTAGE_STATE.store(true, Ordering::Relaxed);
     // TODO: Close SDC while keeping brakes engaged
 }
 
@@ -163,8 +177,6 @@ fn enter_active() {
 //         let mut fsm = MainFSM::new(spawner, event_channel);
 //
 //         fsm.run();
-//
-//         // TODO: Add event to queue
 //
 //         assert_eq!(fsm.state, SystemCheck);
 //     }

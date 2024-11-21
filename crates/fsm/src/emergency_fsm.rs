@@ -1,6 +1,7 @@
 use alloc::sync::Arc;
+use core::sync::atomic::Ordering;
 use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
-use crate::{impl_runner_get_sub_channel, impl_transition};
+use crate::{impl_runner_get_sub_channel, impl_transition, EMERGENCY_STATE, HIGH_VOLTAGE_STATE, LEVITATION_STATE, PROPULSION_STATE};
 
 #[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum EmergencyStates {
@@ -26,21 +27,29 @@ impl EmergencyFSM {
         }
     }
 
-    fn handle(&mut self, event: Event) {
+    async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (EmergencyStates::NotAnEmergency, Event::Emergency) => {
-                self.transition(EmergencyStates::Emergency);
+                self.transition(EmergencyStates::Emergency, Some(&EMERGENCY_STATE));
                 loop {
                     // if speed == 0 { // TODO
-                        self.transition(EmergencyStates::EmergencyStop);
+                        self.transition(EmergencyStates::EmergencyStop, None);
                         break;
                     // }
                 }
                 // TODO: wait for prop, levi and hv to be off
-                self.transition(EmergencyStates::EmergencyShutDown);
+                loop {
+                    if !PROPULSION_STATE.load(Ordering::Relaxed) && !LEVITATION_STATE.load(Ordering::Relaxed)
+                        && !HIGH_VOLTAGE_STATE.load(Ordering::Relaxed) {
+                        break;
+                    }
+                }
+                self.transition(EmergencyStates::EmergencyShutDown, None);
             },
+            (EmergencyStates::NotAnEmergency, Event::StopSubFSMs) => return false,
             _ => {}
         }
+        true
     }
 }
 

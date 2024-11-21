@@ -1,12 +1,15 @@
 use alloc::sync::Arc;
 use core::cmp::PartialEq;
+use core::sync::atomic::{AtomicBool, Ordering};
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::pubsub::{PubSubChannel, Publisher, Subscriber, WaitResult};
-use crate::commons::Event::NoEvent;
 
+/// The events used for transitioning between states
 #[derive(Clone, PartialEq)]
 pub enum Event {
     NoEvent,
+    StopSubFSMs,
+    StopFSM,
     Emergency,
     SystemCheckSuccess,
     Activate,
@@ -30,15 +33,19 @@ pub enum Event {
     LevitationOff,
 }
 
+/// Trait implemented by each FSM to run a loop that checks whether events are being sent or not
+/// and handle each event.
 pub trait Runner {
     fn get_pub_sub_channel(&mut self) -> &mut Arc<PriorityEventPubSub>;
 
-    fn handle_events(&mut self, event: Event);
+    async fn handle_events(&mut self, event: Event) -> bool;
 
     async fn run(&mut self) {
         loop {
             let event = Arc::get_mut(self.get_pub_sub_channel()).unwrap().poll().await;
-            self.handle_events(event);
+            if !self.handle_events(event).await {
+                break;
+            }
         }
     }
 }
@@ -51,8 +58,8 @@ macro_rules! impl_runner_get_sub_channel {
                 &mut self.priority_event_pub_sub
             }
 
-            fn handle_events(&mut self, event: Event) {
-                Self::handle(self, event);
+            async fn handle_events(&mut self, event: Event) -> bool {
+                return Self::handle(self, event).await;
             }
         }
     };
@@ -65,13 +72,20 @@ pub trait Transition<T> {
 
     fn set_state(&mut self, new_state: T);
 
-    fn transition(&mut self, state: T) {
+    fn transition(&mut self, state: T, atomic_bool: Option<&AtomicBool>) {
         // Gets the exit method associated with the current state
         let exit_method = self.exit_method();
         exit_method();
 
         // Transitions to new state
         self.set_state(state);
+        match atomic_bool {
+            Some(atomic_bool) => {
+                let current = atomic_bool.load(Ordering::Relaxed);
+                atomic_bool.store(!current, Ordering::Relaxed);
+            },
+            None => {}
+        }
 
         // Calls the entry method for the new state
         let entry_method = self.entry_method();
@@ -143,13 +157,13 @@ impl PriorityEventPubSub {
         } else if !self.event_channel_subscriber.available() != 0 {
             event = self.event_channel_subscriber.next_message().await;
         } else {
-            return NoEvent;
+            return Event::NoEvent;
         }
         match event {
             WaitResult::Message(received_event) => received_event,
             WaitResult::Lagged(_amount) => {
                 // TODO: Problem? This means that the subscriber missed {amount} messages
-                NoEvent
+                Event::NoEvent
             },
         }
     }

@@ -1,6 +1,7 @@
 use alloc::sync::Arc;
+use core::sync::atomic::Ordering;
 use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
-use crate::{impl_runner_get_sub_channel, impl_transition};
+use crate::{impl_runner_get_sub_channel, impl_transition, LEVITATION_STATE, PROPULSION_STATE};
 
 #[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum LevitationStates {
@@ -26,13 +27,18 @@ impl LevitationFSM {
         }
     }
 
-    fn handle(&mut self, event: Event) {
+    async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
-            (LevitationStates::LevitationOn, Event::Emergency) => self.transition(LevitationStates::LevitationOff),
-            (LevitationStates::LevitationOn, Event::LevitationOff) => self.transition(LevitationStates::LevitationOff),
-            (LevitationStates::LevitationOff, Event::LevitationOn) => self.transition(LevitationStates::LevitationOn),
+            (LevitationStates::LevitationOn, Event::Emergency) => {
+                // TODO
+            },
+            (LevitationStates::LevitationOff, Event::StopSubFSMs) => return false,
+            (LevitationStates::LevitationOn, Event::LevitationOff) if !PROPULSION_STATE.load(Ordering::Relaxed)
+                => self.transition(LevitationStates::LevitationOff, Some(&LEVITATION_STATE)),
+            (LevitationStates::LevitationOff, Event::LevitationOn) => self.transition(LevitationStates::LevitationOn, Some(&LEVITATION_STATE)),
             _ => {}
         }
+        true
     }
 }
 

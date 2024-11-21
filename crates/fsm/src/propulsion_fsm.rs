@@ -1,6 +1,6 @@
 use alloc::sync::Arc;
 use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
-use crate::{impl_runner_get_sub_channel, impl_transition};
+use crate::{impl_runner_get_sub_channel, impl_transition, PROPULSION_STATE};
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub(super) enum PropulsionStates {
@@ -25,29 +25,36 @@ impl PropulsionFSM {
             priority_event_pub_sub: Arc::new(priority_event_pub_sub),
             state: PropulsionStates::PropulsionOff,
             velocity_profile: 0, // TODO: Change to actual velocity profile
-            // peripherals:
+            // peripherals: // TODO
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_state(&self) -> &PropulsionStates {
         &self.state
     }
 
-    fn handle(&mut self, event: Event) {
+    async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (_, Event::Emergency) => {
-                // TODO: Send command to stop propulsion if running and to turn off after
-                self.transition(PropulsionStates::PropulsionOff);
-            }
-            (PropulsionStates::PropulsionOff, Event::PropulsionOn) => self.transition(PropulsionStates::PropulsionOn),
-            (PropulsionStates::PropulsionOn, Event::PropulsionOff) => self.transition(PropulsionStates::PropulsionOff),
+                if self.state == PropulsionStates::PropulsionRunning {
+                    // TODO: Send command to stop running and turn off
+                } else if self.state == PropulsionStates::PropulsionOn {
+                    // TODO: Send command to turn off propulsion completely
+                }
+                self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE));
+            },
+            (PropulsionStates::PropulsionOff, Event::StopSubFSMs) => return false,
+            (PropulsionStates::PropulsionOff, Event::PropulsionOn) => self.transition(PropulsionStates::PropulsionOn, Some(&PROPULSION_STATE)),
+            (PropulsionStates::PropulsionOn, Event::PropulsionOff) => self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE)),
             (PropulsionStates::PropulsionOn, Event::PropulsionRunning) => {
                 // TODO: Send self.velocity_profile to propulsion
-                self.transition(PropulsionStates::PropulsionRunning)
+                self.transition(PropulsionStates::PropulsionRunning, None)
             },
-            (PropulsionStates::PropulsionRunning, Event::PropulsionOn) => self.transition(PropulsionStates::PropulsionOn),
+            (PropulsionStates::PropulsionRunning, Event::PropulsionOn) => self.transition(PropulsionStates::PropulsionOn, None),
             _ => {}
         }
+        true
     }
 }
 
@@ -105,16 +112,16 @@ mod tests {
 
         // TODO: Also check if the commands have been sent
 
-        let _result = pub_channel.publish(Event::PropulsionOn);
+        pub_channel.publish(Event::PropulsionOn);
         assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionOn);
 
-        let _result = pub_channel.publish(Event::PropulsionRunning);
+        pub_channel.publish(Event::PropulsionRunning);
         assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionRunning);
 
-        let _result = pub_channel.publish(Event::PropulsionOn);
+        pub_channel.publish(Event::PropulsionOn);
         assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionOn);
 
-        let _result = pub_channel.publish(Event::PropulsionOff);
+        pub_channel.publish(Event::PropulsionOff);
         assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionOff);
     }
 

@@ -17,7 +17,7 @@ use embassy_stm32::can::config;
 use embassy_stm32::can::config::DataBitTiming;
 use embassy_stm32::can::config::NominalBitTiming;
 use embassy_stm32::can::config::TimestampPrescaler;
-use embassy_stm32::can::frame::{FdFrame, Header, Id};
+use embassy_stm32::can::frame::FdFrame;
 use embassy_stm32::{bind_interrupts, can, rcc, Config};
 use embassy_executor::Spawner;
 use embassy_stm32::can::{TxFdBuf, RxFdBuf};
@@ -30,7 +30,7 @@ use embassy_stm32::timer::simple_pwm::{PwmPin, SimplePwm};
 use embassy_stm32::gpio::{AnyPin, Input, Level, Output, Pin, Pull, Speed, OutputType};
 use embassy_time::{Duration, Timer, Instant};
 use core::arch::asm;
-use cortex_m::{Peripherals, itm};
+use cortex_m;
 // pick a panicking behavior
 
 #[cfg(debug_assertions)]
@@ -126,83 +126,11 @@ static mut write_buffer: TxFdBuf<{1<<3} > = TxFdBuf::new();
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {   
     let p = embassy_stm32::init(generate_config());
-
-    let mut configurator = CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, CanOneInterrupts);
-    // configurator.set_bitrate(1_000_000);
-    // configurator.set_fd_data_bitrate(4_000_000, true);
     
-    let config = configurator.config()
-        // Configuration for 1Mb/s
-        .set_nominal_bit_timing(NominalBitTiming {
-            prescaler: NonZeroU16::new(5).unwrap(),
-            seg1: NonZeroU8::new(13 + 5).unwrap(),
-            seg2: NonZeroU8::new(5).unwrap(),
-            sync_jump_width: NonZeroU8::new(4).unwrap()
-        })
-        // Configuration for 2Mb/s
-        .set_data_bit_timing(DataBitTiming {
-            transceiver_delay_compensation: true,
-            prescaler: NonZeroU16::new(5).unwrap(),
-            seg1: NonZeroU8::new(5).unwrap(),
-            seg2: NonZeroU8::new(6).unwrap(),
-            sync_jump_width: NonZeroU8::new(4).unwrap(),
-        })
-        .set_tx_buffer_mode(config::TxBufferMode::Priority)
-        .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+    let mut itm = cortex_m::Peripherals::take().unwrap().ITM;
+    let stim = &mut itm.stim[0];
 
-    configurator.set_config(config);
-
-    // hprintln!("Generated config: {:?}", configurator.config());
-
-    let mut can = configurator.into_normal_mode();
-
-    // let frame = FdFrame::new_extended(0x0001, 
-    //     &[0xFF; 64]).expect("Frame build error");
-    let header = Header::new_fd(
-        Id::try_from(0x00000001 as u32).expect("Invalid ID"),
-        64,
-        false,
-        true
-    );
-    let frame = FdFrame::new(header, &[0; 64]).expect("Invalid frame");
-    
-    loop {
-        #[cfg(feature = "read")]
-        {
-            let start_time = Instant::now();
-            let mut data_received: usize = 0;
-            let mut received = 0;
-
-            
-            // can.write_fd(&frame).await;
-
-            for _ in 0..10000 {
-                let response = can.read_fd().await;
-
-                match response { 
-                    Ok(ref envelope) => {
-                        data_received += envelope.frame.header().len() as usize;
-                        received += 1;
-                    },
-                    Err(ref bus_error) => {
-                        hprintln!("Bus error: {:?}", bus_error);
-                        hprint!("");
-                    }
-                }
-            }
-            
-            let current_time = Instant::now() - start_time;
-            
-            hprintln!("Data rate: {}kb/s", (data_received as u64 * 8 * 1000) / (current_time.as_micros()));
-            hprintln!("Data recieved: {}b", (data_received as u64 * 8));
-            hprintln!("Received {} messages in {}ms", received, current_time.as_micros()/1000)
-        }
-
-        #[cfg(not(feature = "read"))]
-        {
-            can.write_fd(&frame).await;
-        }
-    }
+    cortex_m::itm::write_str(stim, "Testing, testing");
     
     // hprintln!("CPU Freq: {:.0}MHz", cpu_freq());
 }   

@@ -3,8 +3,12 @@ name = "boot"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+read=[]
+
 [dependencies]
 phf = { version = "0.11", default-features = false, features = ["macros"] }
+
 
 embassy-stm32.workspace = true
 embassy-sync.workspace = true
@@ -13,6 +17,7 @@ embassy-boot-stm32.workspace = true
 embassy-executor.workspace = true
 embassy-net.workspace = true
 embassy-time.workspace = true
+
 panic-halt.workspace = true
 panic-semihosting.workspace = true
 cortex-m.workspace = true
@@ -23,5 +28,7 @@ embedded-io-async.workspace = true
 rand_core.workspace = true
 static_cell.workspace = true
 heapless.workspace = true
+stm32h7xx-hal.workspace = true
+fdcan.workspace = true
 # defmt.workspace = true
 # defmt-rtt.workspace = true

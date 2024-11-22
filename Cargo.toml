@@ -3,6 +3,8 @@ members = ["crates/*"]
 resolver = "2"
 
 [workspace.dependencies]
+fdcan = {version = "0.2.1", features = ["fdcan_h7"]}
+stm32h7xx-hal = {version = "0.16.0", features = ["stm32h753v","can", "device-selected"]}
 embassy-stm32 = { version = "*", features = [
     # "defmt",
     "stm32h753zi",
@@ -56,10 +58,10 @@ static_cell = "2"
 # defmt-rtt = "0.4"
 
 [patch.crates-io]
-embassy-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-sync = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-boot = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-boot-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-stm32 = { path = "../embassy/embassy-stm32" }
+embassy-sync = { path = "../embassy/embassy-sync" }
+embassy-boot = { path = "../embassy/embassy-boot" }
+embassy-boot-stm32 = { path = "../embassy/embassy-boot-stm32" }
+embassy-executor = { path = "../embassy/embassy-executor" }
+embassy-net = { path = "../embassy/embassy-net" }
+embassy-time = { path = "../embassy/embassy-time" }

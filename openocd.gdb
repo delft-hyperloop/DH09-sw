@@ -32,7 +32,7 @@ monitor arm semihosting enable
 # monitor tpiu config external uart off 8000000 2000000
 
 # # enable ITM port 0
-# monitor itm port 0 on
+#monitor itm port 0 on
 
 load
 

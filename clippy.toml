@@ -1,0 +1,5 @@
+redundant_static_lifetimes = "allow"
+missing_docs_in_private_items = "warn"
+missing_safety_doc = "warn"
+undocumented_unsafe_blocks = "warn"
+

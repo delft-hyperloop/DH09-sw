@@ -11,9 +11,9 @@ use embassy_stm32::{
 // use embassy_stm32::rng;
 use defmt::*;
 use defmt_rtt as _;
+use embassy_stm32::peripherals::*;
 use embedded_io_async::Write;
 use main::can::CanInterface;
-use embassy_stm32::peripherals::*;
 use panic_probe as _;
 
 use embassy_stm32::bind_interrupts;
@@ -123,7 +123,7 @@ async fn main(spawner: Spawner) -> ! {
     rng.fill_bytes(&mut seed);
     let seed = u64::from_le_bytes(seed);
 
-    let mac_addr = [0x00,0x07,0xE9,0x42,0xAC,0x28];
+    let mac_addr = [0x00, 0x07, 0xE9, 0x42, 0xAC, 0x28];
 
     static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
     // warning: Not all STM32H7 devices have the exact same pins here
@@ -166,31 +166,41 @@ async fn main(spawner: Spawner) -> ! {
     info!("Hello!");
 
     // Then we can use it!
-    let mut rx_buffer = [0; 1024];
-    let mut tx_buffer = [0; 1024];
+    let mut rx_buffer = [0; 8192];
+    let mut tx_buffer = [0; 8192];
+
+    let mut to_write = [b'H'; 8192];
+    *to_write.last_mut().unwrap() = b'\n';
 
     loop {
-        let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
+        info!("Trying!");
 
+        let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
         socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
 
         // You need to start a server on the host machine, for example: `nc -l 8000`
-        let remote_endpoint = (Ipv4Address::new(192, 168, 1, 17), 8000);
+        let remote_endpoint = (Ipv4Address::new(192, 168, 1, 16), 8000);
         let r = socket.connect(remote_endpoint).await;
         if let Err(e) = r {
+            error!("{}", e);
             // hprintln!("connect error: {:?}", e);
             Timer::after_secs(1).await;
             continue;
         }
         // hprintln!("connected!");
-        loop {
-            let r = socket.write_all(b"Hello\n").await;
-            if let Err(e) = r {
-                // hprintln!("write error: {:?}", e);
-                break;
-            }
-            Timer::after_secs(1).await;
-        }
+
+        let start_instant = embassy_time::Instant::now();
+
+        unwrap!(socket.write_all(&to_write).await);
+        unwrap!(socket.flush().await);
+
+        let end_instant = embassy_time::Instant::now();
+
+        let diff = end_instant - start_instant;
+
+        info!("Wrote {} bytes in {}ms", to_write.len(), diff.as_millis());
+
+        socket.close();
     }
 
     hlt()

@@ -128,29 +128,34 @@ async fn main(spawner: Spawner) {
     let p = embassy_stm32::init(generate_config());
 
     let mut configurator = CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, CanOneInterrupts);
-    // configurator.set_bitrate(1_000_000);
-    // configurator.set_fd_data_bitrate(4_000_000, true);
-    
-    let config = configurator.config()
-        // Configuration for 1Mb/s
-        .set_nominal_bit_timing(NominalBitTiming {
-            prescaler: NonZeroU16::new(5).unwrap(),
-            seg1: NonZeroU8::new(13 + 5).unwrap(),
-            seg2: NonZeroU8::new(5).unwrap(),
-            sync_jump_width: NonZeroU8::new(4).unwrap()
-        })
-        // Configuration for 2Mb/s
-        .set_data_bit_timing(DataBitTiming {
-            transceiver_delay_compensation: true,
-            prescaler: NonZeroU16::new(5).unwrap(),
-            seg1: NonZeroU8::new(5).unwrap(),
-            seg2: NonZeroU8::new(6).unwrap(),
-            sync_jump_width: NonZeroU8::new(4).unwrap(),
-        })
-        .set_tx_buffer_mode(config::TxBufferMode::Priority)
-        .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+    configurator.set_bitrate(1_000_000);
+    configurator.set_fd_data_bitrate(8_000_000, true);
 
-    configurator.set_config(config);
+    // hprintln!("{:?}", configurator.config().nbtr);
+    // hprintln!("{:?}", configurator.config().dbtr);
+    //NominalBitTiming { prescaler: 12, seg1: 8, seg2: 1, sync_jump_width: 1 }
+    // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8, seg2: 1, sync_jump_width: 1 }
+
+    // let config = configurator.config()
+    //     // Configuration for 1Mb/s
+    //     .set_nominal_bit_timing(NominalBitTiming {
+    //         prescaler: NonZeroU16::new(10).unwrap(),
+    //         seg1: NonZeroU8::new(8).unwrap(),
+    //         seg2: NonZeroU8::new(3).unwrap(),
+    //         sync_jump_width: NonZeroU8::new(3).unwrap()
+    //     })
+    //     // Configuration for 2Mb/s
+    //     .set_data_bit_timing(DataBitTiming {
+    //         transceiver_delay_compensation: true,
+    //         prescaler: NonZeroU16::new(1).unwrap(),
+    //         seg1: NonZeroU8::new(11).unwrap(),
+    //         seg2: NonZeroU8::new(1).unwrap(),
+    //         sync_jump_width: NonZeroU8::new(1).unwrap(),
+    //     })
+    //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
+    //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+
+    // configurator.set_config(config);
 
     // hprintln!("Generated config: {:?}", configurator.config());
 
@@ -174,8 +179,7 @@ async fn main(spawner: Spawner) {
             let mut received = 0;
 
             
-            // can.write_fd(&frame).await;
-
+            hprint!(""); // Prime???
             for _ in 0..10000 {
                 let response = can.read_fd().await;
 
@@ -185,8 +189,8 @@ async fn main(spawner: Spawner) {
                         received += 1;
                     },
                     Err(ref bus_error) => {
+                        
                         hprintln!("Bus error: {:?}", bus_error);
-                        hprint!("");
                     }
                 }
             }

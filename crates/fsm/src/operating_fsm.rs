@@ -6,7 +6,7 @@ use crate::commons::traits::{Transition, Runner};
 /// Enum representing the different states that the `OperatingFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum OperatingStates {
-    Demo = 0,
+    Demo,
     Accelerating,
     Braking,
     Cruising,
@@ -72,7 +72,7 @@ impl_transition!(OperatingFSM, OperatingStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `OperatingStates`.
-static ENTRY_FUNCTION_MAP: [fn(); 5] = [
+const ENTRY_FUNCTION_MAP: [fn(); 5] = [
     || (), // Demo
     || (), // Accelerating
     enter_braking,
@@ -83,7 +83,7 @@ static ENTRY_FUNCTION_MAP: [fn(); 5] = [
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `OperatingStates`.
-static EXIT_FUNCTION_MAP: [fn(); 5] = [
+const EXIT_FUNCTION_MAP: [fn(); 5] = [
     || (), // Demo
     || (), // Accelerating
     || (), // Braking

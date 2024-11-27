@@ -26,17 +26,17 @@ use embassy_sync::signal::Signal;
 use MainStates::*;
 use crate::commons::data::{Event, PriorityEventPubSub};
 use crate::commons::{EmergencyChannel, EventChannel};
-use crate::commons::traits::Runner;
 use crate::emergency_fsm::EmergencyFSM;
 use crate::high_voltage_fsm::HighVoltageFSM;
 use crate::levitation_fsm::LevitationFSM;
 use crate::operating_fsm::OperatingFSM;
 use crate::propulsion_fsm::PropulsionFSM;
+use crate::commons::traits::{Runner, Transition};
 
 /// Enum representing the different states that the `MainFSM` will be in
 #[derive(Eq, PartialEq, Debug, Clone, Copy)]
 enum MainStates {
-    SystemCheck = 0,
+    SystemCheck,
     Idle,
     Charging,
     Active,
@@ -168,7 +168,7 @@ impl_transition!(MainFSM, MainStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `MainStates`.
-static ENTRY_FUNCTION_MAP: [fn(); 6] = [
+const ENTRY_FUNCTION_MAP: [fn(); 6] = [
     || (),  // SystemCheck
     || (),  // Idle
     || (),  // Charging
@@ -180,7 +180,7 @@ static ENTRY_FUNCTION_MAP: [fn(); 6] = [
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `MainStates`.
-static EXIT_FUNCTION_MAP: [fn(); 6] = [
+const EXIT_FUNCTION_MAP: [fn(); 6] = [
     || (),  // SystemCheck
     || (),  // Idle
     || (),  // Charging

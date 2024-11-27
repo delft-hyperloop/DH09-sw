@@ -12,12 +12,12 @@
 #[macro_export]
 macro_rules! define_fsm {
     ($fsm_name:ident, $event_channel:expr, $emergency_channel:expr) => {
-        $fsm_name::new(PriorityEventPubSub::new(
-            $event_channel.publisher().unwrap(),
-            $event_channel.subscriber().unwrap(),
-            $emergency_channel.publisher().unwrap(),
-            $emergency_channel.subscriber().unwrap(),
-        ))
+        $fsm_name::new(PriorityEventPubSub {
+            event_channel_publisher: $event_channel.publisher().unwrap(),
+            event_channel_subscriber: $event_channel.subscriber().unwrap(),
+            emergency_channel_publisher: $emergency_channel.publisher().unwrap(),
+            emergency_channel_subscriber: $emergency_channel.subscriber().unwrap(),
+        })
     };
 }
 

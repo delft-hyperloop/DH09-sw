@@ -7,7 +7,7 @@ use crate::commons::traits::{Transition, Runner};
 /// Enum representing the different states that the `LevitationFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum LevitationStates {
-    LevitationOff = 0,
+    LevitationOff,
     LevitationOn,
 }
 
@@ -63,7 +63,7 @@ impl_transition!(LevitationFSM, LevitationStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `LevitationStates`.
-static ENTRY_FUNCTION_MAP: [fn(); 2] = [
+const ENTRY_FUNCTION_MAP: [fn(); 2] = [
     enter_levitation_off,
     enter_levitation_on,
 ];
@@ -71,7 +71,7 @@ static ENTRY_FUNCTION_MAP: [fn(); 2] = [
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `LevitationStates`.
-static EXIT_FUNCTION_MAP: [fn(); 2] = [
+const EXIT_FUNCTION_MAP: [fn(); 2] = [
     || (),
     || (),
 ];

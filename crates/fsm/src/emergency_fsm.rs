@@ -7,7 +7,7 @@ use crate::commons::traits::{Transition, Runner};
 /// Enum representing the different states that the `EmergencyFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum EmergencyStates {
-    NotAnEmergency = 0,
+    NotAnEmergency,
     Emergency,
     EmergencyStop,
     EmergencyShutDown,
@@ -74,7 +74,7 @@ impl_transition!(EmergencyFSM, EmergencyStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `EmergencyStates`.
-static ENTRY_FUNCTION_MAP: [fn(); 4] = [
+const ENTRY_FUNCTION_MAP: [fn(); 4] = [
     || (),
     enter_emergency,
     || (),
@@ -84,7 +84,7 @@ static ENTRY_FUNCTION_MAP: [fn(); 4] = [
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `MainStates`.
-static EXIT_FUNCTION_MAP: [fn(); 4] = [
+const EXIT_FUNCTION_MAP: [fn(); 4] = [
     || (),
     || (),
     || (),

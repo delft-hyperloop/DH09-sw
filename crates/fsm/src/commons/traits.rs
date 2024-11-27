@@ -13,6 +13,9 @@ pub trait Runner {
 
     /// Asynchronous method that handles calls the `handle` method of each FSM.
     /// Only used for the `run` method of the `Runner` trait.
+    ///
+    /// # Returns:
+    /// - boolean value from the `handle` method of each FSM determining whether the fsm should keep running or not.
     async fn handle_events(&mut self, event: Event) -> bool;
 
     /// Asynchronous method that executes an infinite loop which checks for events

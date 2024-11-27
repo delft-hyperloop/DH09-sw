@@ -6,7 +6,7 @@ use crate::commons::traits::{Transition, Runner};
 /// Enum representing the different states that the `PropulsionFSM` will be in.
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub(super) enum PropulsionStates {
-    PropulsionOff = 0,
+    PropulsionOff,
     PropulsionOn,
     PropulsionRunning,
 }
@@ -32,7 +32,7 @@ impl PropulsionFSM {
     }
 
     #[allow(dead_code)]
-    pub fn get_state(&self) -> &PropulsionStates {
+    pub(crate) fn get_state(&self) -> &PropulsionStates {
         &self.state
     }
 
@@ -79,7 +79,7 @@ impl_transition!(PropulsionFSM, PropulsionStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `PropulsionStates`.
-static ENTRY_FUNCTION_MAP: [fn(); 3] = [
+const ENTRY_FUNCTION_MAP: [fn(); 3] = [
     enter_propulsion_off,
     enter_propulsion_on,
     || (),
@@ -88,7 +88,7 @@ static ENTRY_FUNCTION_MAP: [fn(); 3] = [
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `PropulsionStates`.
-static EXIT_FUNCTION_MAP: [fn(); 3] = [
+const EXIT_FUNCTION_MAP: [fn(); 3] = [
     || (),
     || (),
     || (),
@@ -101,3 +101,7 @@ fn enter_propulsion_on() {
 fn enter_propulsion_off() {
     // TODO: Send command to turn propulsion off
 }
+
+#[cfg(test)]
+#[path = "tests/propulsion_fsm.rs"]
+mod tests;

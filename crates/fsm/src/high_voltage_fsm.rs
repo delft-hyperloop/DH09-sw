@@ -7,7 +7,7 @@ use crate::commons::traits::{Transition, Runner};
 /// Enum representing the different states that the `HighVoltageFSM` will be in.
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub(super) enum HVStates {
-    HighVoltageOff = 0,
+    HighVoltageOff,
     HighVoltageOn,
 }
 
@@ -74,7 +74,7 @@ impl_transition!(HighVoltageFSM, HVStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `HVStates`.
-static ENTRY_FUNCTION_MAP: [fn(); 2] = [
+const ENTRY_FUNCTION_MAP: [fn(); 2] = [
     enter_high_voltage_off,
     enter_high_voltage_on
 ];
@@ -82,7 +82,7 @@ static ENTRY_FUNCTION_MAP: [fn(); 2] = [
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `HVStates`.
-static EXIT_FUNCTION_MAP: [fn(); 2] = [
+const EXIT_FUNCTION_MAP: [fn(); 2] = [
     || (),
     || (),
 ];

@@ -33,10 +33,10 @@ pub enum Event {
 
 /// Struct used for publishing and polling events from each channel.
 pub struct PriorityEventPubSub {
-    event_channel_publisher: PublisherChannel,
-    event_channel_subscriber: SubscriberChannel,
-    emergency_channel_publisher: PublisherEmergency,
-    emergency_channel_subscriber: SubscriberEmergency,
+    pub(crate) event_channel_publisher: PublisherChannel,
+    pub(crate) event_channel_subscriber: SubscriberChannel,
+    pub(crate) emergency_channel_publisher: PublisherEmergency,
+    pub(crate) emergency_channel_subscriber: SubscriberEmergency,
 }
 
 impl PriorityEventPubSub {
@@ -94,6 +94,6 @@ impl PriorityEventPubSub {
     }
 }
 
-// #[cfg(test)]
-// #[path = "tests/data.rs"]
-// mod ... // TODO
+#[cfg(test)]
+#[path = "../tests/data.rs"]
+mod tests;

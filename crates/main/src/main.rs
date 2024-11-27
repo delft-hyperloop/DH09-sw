@@ -24,7 +24,8 @@ use embassy_stm32::bind_interrupts;
 
 use embassy_stm32::can;
 use fsm::MainFSM;
-use fsm::commons::{EmergencyChannel, EventChannel, Runner};
+use fsm::commons::{EmergencyChannel, EventChannel};
+use fsm::commons::traits::Runner;
 
 bind_interrupts!(
     struct Irqs {
@@ -84,7 +85,7 @@ static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> = static_cel
 #[embassy_executor::task]
 async fn run_fsm(spawner: Spawner, event_channel: &'static EventChannel, emergency_channel: &'static EmergencyChannel) {
     let mut main_fsm = MainFSM::new(spawner, event_channel, emergency_channel);
-    main_fsm.run();
+    main_fsm.run().await;
 }
 
 #[embassy_executor::main]

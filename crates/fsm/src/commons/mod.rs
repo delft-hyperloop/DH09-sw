@@ -6,7 +6,7 @@ use crate::commons::data::Event;
 
 pub(crate) mod data;
 pub(crate) mod macros;
-pub(crate) mod traits;
+pub mod traits;
 
 // Publishers and subscribers for the channel used to broadcast events to all the FSMs.
 // Max 32 events, 6 subscribers, 7 publishers(FSMs and main).

@@ -15,22 +15,25 @@ mod emergency_fsm;
 mod operating_fsm;
 mod propulsion_fsm;
 mod levitation_fsm;
+mod tests;
 
 use alloc::sync::Arc;
 use core::cmp::PartialEq;
 use core::sync::atomic::{AtomicBool, Ordering};
 use embassy_executor::Spawner;
-use embassy_sync::blocking_mutex::raw::{CriticalSectionRawMutex};
+use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::signal::Signal;
-use commons::Event;
 use MainStates::*;
-use crate::commons::{EmergencyChannel, EventChannel, PriorityEventPubSub, Runner, Transition};
-use crate::emergency_fsm::{EmergencyFSM};
-use crate::high_voltage_fsm::{HighVoltageFSM};
-use crate::levitation_fsm::{LevitationFSM};
-use crate::operating_fsm::{OperatingFSM};
-use crate::propulsion_fsm::{PropulsionFSM};
+use crate::commons::data::{Event, PriorityEventPubSub};
+use crate::commons::{EmergencyChannel, EventChannel};
+use crate::commons::traits::Runner;
+use crate::emergency_fsm::EmergencyFSM;
+use crate::high_voltage_fsm::HighVoltageFSM;
+use crate::levitation_fsm::LevitationFSM;
+use crate::operating_fsm::OperatingFSM;
+use crate::propulsion_fsm::PropulsionFSM;
 
+/// Enum representing the different states that the `MainFSM` will be in
 #[derive(Eq, PartialEq, Debug, Clone, Copy)]
 enum MainStates {
     SystemCheck = 0,
@@ -47,8 +50,12 @@ pub struct MainFSM {
     priority_event_pub_sub: Arc<PriorityEventPubSub>,
 }
 
+/// Embassy signal used for running the sub-FSMs.
+///
+/// The `MainFSM` will send a signal to this upon entering the `Operating` state.
 static RUN_SUB_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
 
+/// Atomic bools used to expose the states of the sub-FSMs to each other.
 pub(crate) static HIGH_VOLTAGE_STATE: AtomicBool = AtomicBool::new(false);
 pub(crate) static LEVITATION_STATE: AtomicBool = AtomicBool::new(false);
 pub(crate) static PROPULSION_STATE: AtomicBool = AtomicBool::new(false);
@@ -84,7 +91,19 @@ impl MainFSM {
         }
     }
 
-
+    /// Handles the events published to the event channel or the emergency channel
+    ///
+    /// This method transitions the `MainFSM` from one state to another depending on
+    /// which state it currently is in and what event it received. If it receives an
+    /// event that it wasn't expecting in the current state or if it's meant for one of the
+    /// sub-FSMs, it ignores it.
+    ///
+    /// # Parameters:
+    /// - `event`: Event that can cause a transition in the FSM.
+    ///
+    /// # Returns:
+    /// - `false`: If the FSM receives a `Quit` event
+    /// - `true`: Otherwise
     async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (_, Event::Emergency) => {
@@ -96,7 +115,6 @@ impl MainFSM {
             (Idle, Event::Charge) => self.transition(Charging, None),
             (Charging, Event::StopCharge) => self.transition(Idle, None),
             (Active, Event::Operate) => {
-                RUN_SUB_FSM.signal(true);
                 self.transition(Operating, None);
             },
             (Operating, Event::Quit) => {
@@ -109,48 +127,59 @@ impl MainFSM {
     }
 }
 
+/// Runs the propulsion FSM in an embassy task after it receives a signal from the main FSM.
 #[embassy_executor::task]
 pub async fn run_propulsion_fsm(mut propulsion_fsm: PropulsionFSM) {
     RUN_SUB_FSM.wait().await;
-    propulsion_fsm.run();
+    propulsion_fsm.run().await;
 }
 
+/// Runs the levitation FSM in an embassy task after it receives a signal from the main FSM.
 #[embassy_executor::task]
 pub async fn run_levitation_fsm(mut levitation_fsm: LevitationFSM) {
     RUN_SUB_FSM.wait().await;
-    levitation_fsm.run();
+    levitation_fsm.run().await;
 }
 
+/// Runs the propulsion FSM in an embassy task after it receives a signal from the main FSM.
 #[embassy_executor::task]
 pub async fn run_high_voltage_fsm(mut high_voltage_fsm: HighVoltageFSM) {
     RUN_SUB_FSM.wait().await;
-    high_voltage_fsm.run();
+    high_voltage_fsm.run().await;
 }
 
+/// Runs the operating FSM in an embassy task after it receives a signal from the main FSM.
 #[embassy_executor::task]
 pub async fn run_operating_fsm(mut operating_fsm: OperatingFSM) {
     RUN_SUB_FSM.wait().await;
-    operating_fsm.run();
+    operating_fsm.run().await;
 }
 
+/// Runs the emergency FSM in an embassy task after it receives a signal from the main FSM.
 #[embassy_executor::task]
 pub async fn run_emergency_fsm(mut emergency_fsm: EmergencyFSM) {
     RUN_SUB_FSM.wait().await;
-    emergency_fsm.run();
+    emergency_fsm.run().await;
 }
 
 impl_runner_get_sub_channel!(MainFSM);
 impl_transition!(MainFSM, MainStates);
 
+/// Maps an index to a function that should be called upon entering a new state.
+///
+/// The indexes correspond to the index of each state in `MainStates`.
 static ENTRY_FUNCTION_MAP: [fn(); 6] = [
     || (),  // SystemCheck
     || (),  // Idle
     || (),  // Charging
     enter_active,
     || (),  // FlashingCode
-    || (),  // Operating
+    enter_operating,
 ];
 
+/// Maps an index to a function that should be called upon exiting a state.
+///
+/// The indexes correspond to the index of each state in `MainStates`.
 static EXIT_FUNCTION_MAP: [fn(); 6] = [
     || (),  // SystemCheck
     || (),  // Idle
@@ -160,34 +189,13 @@ static EXIT_FUNCTION_MAP: [fn(); 6] = [
     || (),  // Operating
 ];
 
+/// Signals the tasks tied to each sub-FSM that they should start running.
+fn enter_operating() {
+    RUN_SUB_FSM.signal(true);
+}
+
 fn enter_active() {
     // TODO: Send CAN command to turn on high voltage
     HIGH_VOLTAGE_STATE.store(true, Ordering::Relaxed);
     // TODO: Close SDC while keeping brakes engaged
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     #[test]
-//     fn test_basic_transition() {
-//         let mut spawner =
-//         let mut event_channel = EventChannel::new();
-//         let mut fsm = MainFSM::new(spawner, event_channel);
-//
-//         fsm.run();
-//
-//         assert_eq!(fsm.state, SystemCheck);
-//     }
-//
-//     #[test]
-//     fn test_multiple_events() {
-//         // TODO
-//     }
-//
-//     #[test]
-//     fn test_invalid_event_order() {
-//         // TODO
-//     }
-// }

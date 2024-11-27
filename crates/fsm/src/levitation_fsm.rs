@@ -1,8 +1,10 @@
 use alloc::sync::Arc;
 use core::sync::atomic::Ordering;
-use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
 use crate::{impl_runner_get_sub_channel, impl_transition, LEVITATION_STATE, PROPULSION_STATE};
+use crate::commons::data::{Event, PriorityEventPubSub};
+use crate::commons::traits::{Transition, Runner};
 
+/// Enum representing the different states that the `LevitationFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum LevitationStates {
     LevitationOff = 0,
@@ -27,6 +29,19 @@ impl LevitationFSM {
         }
     }
 
+    /// Handles the events published to the event channel or the emergency channel
+    ///
+    /// This method transitions the `LevitationFSM` from one state to another depending on
+    /// which state it currently is in and what event it received. If it receives an
+    /// event that it wasn't expecting in the current state or if it's meant for one of the
+    /// other sub-FSMs, it ignores it.
+    ///
+    /// # Parameters:
+    /// - `event`: Event that can cause a transition in the FSM.
+    ///
+    /// # Returns:
+    /// - `false`: If the FSM receives a `StopSubFSMs` event
+    /// - `true`: Otherwise
     async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (LevitationStates::LevitationOn, Event::Emergency) => {
@@ -45,11 +60,17 @@ impl LevitationFSM {
 impl_runner_get_sub_channel!(LevitationFSM);
 impl_transition!(LevitationFSM, LevitationStates);
 
+/// Maps an index to a function that should be called upon entering a new state.
+///
+/// The indexes correspond to the index of each state in `LevitationStates`.
 static ENTRY_FUNCTION_MAP: [fn(); 2] = [
     enter_levitation_off,
     enter_levitation_on,
 ];
 
+/// Maps an index to a function that should be called upon exiting a state.
+///
+/// The indexes correspond to the index of each state in `LevitationStates`.
 static EXIT_FUNCTION_MAP: [fn(); 2] = [
     || (),
     || (),

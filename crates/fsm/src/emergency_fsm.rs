@@ -1,8 +1,10 @@
 use alloc::sync::Arc;
 use core::sync::atomic::Ordering;
-use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
 use crate::{impl_runner_get_sub_channel, impl_transition, EMERGENCY_STATE, HIGH_VOLTAGE_STATE, LEVITATION_STATE, PROPULSION_STATE};
+use crate::commons::data::{Event, PriorityEventPubSub};
+use crate::commons::traits::{Transition, Runner};
 
+/// Enum representing the different states that the `EmergencyFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
 pub(super) enum EmergencyStates {
     NotAnEmergency = 0,
@@ -27,6 +29,19 @@ impl EmergencyFSM {
         }
     }
 
+    /// Handles the events published to the event channel or the emergency channel
+    ///
+    /// This method transitions the `EmergencyFSM` from one state to another depending on
+    /// which state it currently is in and what event it received. If it receives an
+    /// event that it wasn't expecting in the current state or if it's meant for one of the
+    /// other sub-FSMs, it ignores it.
+    ///
+    /// # Parameters:
+    /// - `event`: Event that can cause a transition in the FSM.
+    ///
+    /// # Returns:
+    /// - `false`: If the FSM receives a `StopSubFSMs` event
+    /// - `true`: Otherwise
     async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (EmergencyStates::NotAnEmergency, Event::Emergency) => {
@@ -56,6 +71,9 @@ impl EmergencyFSM {
 impl_runner_get_sub_channel!(EmergencyFSM);
 impl_transition!(EmergencyFSM, EmergencyStates);
 
+/// Maps an index to a function that should be called upon entering a new state.
+///
+/// The indexes correspond to the index of each state in `EmergencyStates`.
 static ENTRY_FUNCTION_MAP: [fn(); 4] = [
     || (),
     enter_emergency,
@@ -63,6 +81,9 @@ static ENTRY_FUNCTION_MAP: [fn(); 4] = [
     || (),
 ];
 
+/// Maps an index to a function that should be called upon exiting a state.
+///
+/// The indexes correspond to the index of each state in `MainStates`.
 static EXIT_FUNCTION_MAP: [fn(); 4] = [
     || (),
     || (),

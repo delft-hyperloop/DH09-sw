@@ -1,7 +1,9 @@
 use alloc::sync::Arc;
-use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
 use crate::{impl_runner_get_sub_channel, impl_transition, PROPULSION_STATE};
+use crate::commons::data::{Event, PriorityEventPubSub};
+use crate::commons::traits::{Transition, Runner};
 
+/// Enum representing the different states that the `PropulsionFSM` will be in.
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub(super) enum PropulsionStates {
     PropulsionOff = 0,
@@ -34,6 +36,19 @@ impl PropulsionFSM {
         &self.state
     }
 
+    /// Handles the events published to the event channel or the emergency channel
+    ///
+    /// This method transitions the `PropulsionFSM` from one state to another depending on
+    /// which state it currently is in and what event it received. If it receives an
+    /// event that it wasn't expecting in the current state or if it's meant for one of the
+    /// other sub-FSMs, it ignores it.
+    ///
+    /// # Parameters:
+    /// - `event`: Event that can cause a transition in the FSM.
+    ///
+    /// # Returns:
+    /// - `false`: If the FSM receives a `StopSubFSMs` event
+    /// - `true`: Otherwise
     async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (_, Event::Emergency) => {
@@ -61,12 +76,18 @@ impl PropulsionFSM {
 impl_runner_get_sub_channel!(PropulsionFSM);
 impl_transition!(PropulsionFSM, PropulsionStates);
 
+/// Maps an index to a function that should be called upon entering a new state.
+///
+/// The indexes correspond to the index of each state in `PropulsionStates`.
 static ENTRY_FUNCTION_MAP: [fn(); 3] = [
     enter_propulsion_off,
     enter_propulsion_on,
     || (),
 ];
 
+/// Maps an index to a function that should be called upon exiting a state.
+///
+/// The indexes correspond to the index of each state in `PropulsionStates`.
 static EXIT_FUNCTION_MAP: [fn(); 3] = [
     || (),
     || (),
@@ -79,69 +100,4 @@ fn enter_propulsion_on() {
 
 fn enter_propulsion_off() {
     // TODO: Send command to turn propulsion off
-}
-
-#[cfg(test)]
-mod tests {
-    use static_cell::StaticCell;
-    use crate::commons::{EmergencyChannel, Event, EventChannel, PriorityEventPubSub, Runner};
-    use crate::propulsion_fsm::{PropulsionFSM, PropulsionStates};
-
-    #[test]
-    fn test_basic_transitions() {
-        static CHANNEL: StaticCell<EventChannel> = static_cell::StaticCell::new();
-        static EMERGENCY_CHANNEL: StaticCell<EmergencyChannel> = static_cell::StaticCell::new();
-
-        let event_channel = CHANNEL.init(EventChannel::new());
-        let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
-
-        let pub_channel = event_channel.publisher().unwrap();
-        let pub_emergency_channel = emergency_channel.publisher().unwrap();
-
-        let mut fsm = PropulsionFSM::new(
-            PriorityEventPubSub::new(
-                event_channel.publisher().unwrap(),
-                event_channel.subscriber().unwrap(),
-                emergency_channel.publisher().unwrap(),
-                emergency_channel.subscriber().unwrap(),
-            ),
-        );
-
-        // Need a separate task?
-        fsm.run();
-
-        // TODO: Also check if the commands have been sent
-
-        pub_channel.publish(Event::PropulsionOn);
-        assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionOn);
-
-        pub_channel.publish(Event::PropulsionRunning);
-        assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionRunning);
-
-        pub_channel.publish(Event::PropulsionOn);
-        assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionOn);
-
-        pub_channel.publish(Event::PropulsionOff);
-        assert_eq!(*fsm.get_state(), PropulsionStates::PropulsionOff);
-    }
-
-    // #[test]
-    // fn test_ignores_other_events() {
-    //     // TODO
-    // }
-
-    // #[test]
-    // fn test_emergency() {
-    //     // TODO
-    // }
-
-    // #[test]
-    // fn test_calls_entry_functions() {
-    //     // TODO
-    // }
-
-    // #[test]
-    // fn test_lags_events() {
-    //     // TODO
-    // }
 }

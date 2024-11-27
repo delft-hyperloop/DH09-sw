@@ -1,8 +1,10 @@
 use alloc::sync::Arc;
 use core::sync::atomic::Ordering;
-use crate::commons::{Event, PriorityEventPubSub, Runner, Transition};
 use crate::{impl_runner_get_sub_channel, impl_transition, HIGH_VOLTAGE_STATE, LEVITATION_STATE, PROPULSION_STATE};
+use crate::commons::data::{Event, PriorityEventPubSub};
+use crate::commons::traits::{Transition, Runner};
 
+/// Enum representing the different states that the `HighVoltageFSM` will be in.
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub(super) enum HVStates {
     HighVoltageOff = 0,
@@ -26,6 +28,19 @@ impl HighVoltageFSM {
         }
     }
 
+    /// Handles the events published to the event channel or the emergency channel
+    ///
+    /// This method transitions the `HighVoltageFSM` from one state to another depending on
+    /// which state it currently is in and what event it received. If it receives an
+    /// event that it wasn't expecting in the current state or if it's meant for one of the
+    /// other sub-FSMs, it ignores it.
+    ///
+    /// # Parameters:
+    /// - `event`: Event that can cause a transition in the FSM.
+    ///
+    /// # Returns:
+    /// - `false`: If the FSM receives a `StopSubFSMs` event
+    /// - `true`: Otherwise
     async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (_, Event::Emergency) => {
@@ -56,11 +71,17 @@ impl HighVoltageFSM {
 impl_runner_get_sub_channel!(HighVoltageFSM);
 impl_transition!(HighVoltageFSM, HVStates);
 
+/// Maps an index to a function that should be called upon entering a new state.
+///
+/// The indexes correspond to the index of each state in `HVStates`.
 static ENTRY_FUNCTION_MAP: [fn(); 2] = [
     enter_high_voltage_off,
     enter_high_voltage_on
 ];
 
+/// Maps an index to a function that should be called upon exiting a state.
+///
+/// The indexes correspond to the index of each state in `HVStates`.
 static EXIT_FUNCTION_MAP: [fn(); 2] = [
     || (),
     || (),
@@ -73,34 +94,3 @@ fn enter_high_voltage_on() {
 fn enter_high_voltage_off() {
     // TODO: Send CAN command to turn off high voltage
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     fn setup() -> (Spawner, EventChannel) {
-//         let mut spawner = ;
-//         let mut event_channel = EventChannel::new();
-//         {spawner, event_channel}
-//     }
-//
-//     #[test]
-//     fn test_basic_transitions() {
-//         let mut { spawner, event_channel } = setup();
-//         let mut fsm = HighVoltageFSM::new(spawner, event_channel);
-//
-//         fsm.run();
-//
-//
-//     }
-//
-//     #[test]
-//     fn test_multiple_events() {
-//         // TODO
-//     }
-//
-//     #[test]
-//     fn test_invalid_event_order() {
-//         // TODO
-//     }
-// }

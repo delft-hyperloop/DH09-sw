@@ -11,6 +11,7 @@ use core::num::NonZeroU16;
 use core::num::NonZeroU8;
 use core::time;
 
+use cortex_m::prelude::_embedded_hal_blocking_delay_DelayUs;
 use cortex_m_semihosting::hprint;
 use embassy_boot::BootLoaderConfig;
 use embassy_stm32::can::config;
@@ -28,9 +29,13 @@ use embassy_stm32::time::{Hertz};
 use embassy_stm32::timer::{Channel};
 use embassy_stm32::timer::simple_pwm::{PwmPin, SimplePwm};
 use embassy_stm32::gpio::{AnyPin, Input, Level, Output, Pin, Pull, Speed, OutputType};
+use embassy_time::Delay;
+use embassy_time::Ticker;
 use embassy_time::{Duration, Timer, Instant};
+use core::future::Future;
 use core::arch::asm;
 use cortex_m::{Peripherals, itm};
+use embassy_futures::yield_now;
 // pick a panicking behavior
 
 #[cfg(debug_assertions)]
@@ -122,40 +127,55 @@ bind_interrupts!(struct CanOneInterrupts {
 static mut read_buffer: RxFdBuf<{1<<3} > = RxFdBuf::new();
 static mut write_buffer: TxFdBuf<{1<<3} > = TxFdBuf::new();
 
+const DELAY: u32 = 100000/2;
+
+#[embassy_executor::task]
+async fn blocking_blink(led: AnyPin) {
+    let mut led = Output::new(led, Level::Low, Speed::Medium);
+    let mut delay: Delay = Delay;
+    let mut ticker = Ticker::every(Duration::from_secs(1));
+    loop {
+        led.set_high();
+        Timer::after_micros(DELAY as u64).await;
+        led.set_low();
+
+        ticker.next().await;
+    }
+}
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {   
     let p = embassy_stm32::init(generate_config());
 
+    spawner.must_spawn(blocking_blink(p.PB0.degrade()));
+
     let mut configurator = CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, CanOneInterrupts);
-    configurator.set_bitrate(1_000_000);
-    configurator.set_fd_data_bitrate(8_000_000, true);
 
     // hprintln!("{:?}", configurator.config().nbtr);
     // hprintln!("{:?}", configurator.config().dbtr);
     //NominalBitTiming { prescaler: 12, seg1: 8, seg2: 1, sync_jump_width: 1 }
     // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8, seg2: 1, sync_jump_width: 1 }
 
-    // let config = configurator.config()
-    //     // Configuration for 1Mb/s
-    //     .set_nominal_bit_timing(NominalBitTiming {
-    //         prescaler: NonZeroU16::new(10).unwrap(),
-    //         seg1: NonZeroU8::new(8).unwrap(),
-    //         seg2: NonZeroU8::new(3).unwrap(),
-    //         sync_jump_width: NonZeroU8::new(3).unwrap()
-    //     })
-    //     // Configuration for 2Mb/s
-    //     .set_data_bit_timing(DataBitTiming {
-    //         transceiver_delay_compensation: true,
-    //         prescaler: NonZeroU16::new(1).unwrap(),
-    //         seg1: NonZeroU8::new(11).unwrap(),
-    //         seg2: NonZeroU8::new(1).unwrap(),
-    //         sync_jump_width: NonZeroU8::new(1).unwrap(),
-    //     })
-    //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
-    //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+    let config = configurator.config()
+        // Configuration for 1Mb/s
+        .set_nominal_bit_timing(NominalBitTiming {
+            prescaler: NonZeroU16::new(10).unwrap(),
+            seg1: NonZeroU8::new(8).unwrap(),
+            seg2: NonZeroU8::new(3).unwrap(),
+            sync_jump_width: NonZeroU8::new(3).unwrap()
+        })
+        // Configuration for 2Mb/s
+        .set_data_bit_timing(DataBitTiming {
+            transceiver_delay_compensation: true,
+            prescaler: NonZeroU16::new(5).unwrap(),
+            seg1: NonZeroU8::new(7).unwrap(),
+            seg2: NonZeroU8::new(4).unwrap(),
+            sync_jump_width: NonZeroU8::new(4).unwrap(),
+        })
+        .set_tx_buffer_mode(config::TxBufferMode::Priority)
+        .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
 
-    // configurator.set_config(config);
+    configurator.set_config(config);
 
     // hprintln!("Generated config: {:?}", configurator.config());
 

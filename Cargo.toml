@@ -32,6 +32,7 @@ embassy-net = {version = "*", features = [
     "dhcpv4",
 ]}
 embassy-time = {version = "*"}
+embassy-futures = {version = "*"}
 
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",
@@ -65,3 +66,4 @@ embassy-boot-stm32 = { path = "../embassy/embassy-boot-stm32" }
 embassy-executor = { path = "../embassy/embassy-executor" }
 embassy-net = { path = "../embassy/embassy-net" }
 embassy-time = { path = "../embassy/embassy-time" }
+embassy-futures = { path = "../embassy/embassy-futures" }

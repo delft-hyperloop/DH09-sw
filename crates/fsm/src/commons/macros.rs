@@ -1,10 +1,13 @@
-//! This module contains macro rules used by the FSMs to either implement traits or declare the FSMs.
+//! This module contains macro rules used by the FSMs to either implement traits
+//! or declare the FSMs.
 
-/// Returns an instance of the FSM with the specified name, emergency channel, and publisher channel.
+/// Returns an instance of the FSM with the specified name, emergency channel,
+/// and publisher channel.
 ///
 /// # Parameters
 /// - `fsm_name`: The name of the FSM struct being defined.
-/// - `emergency_channel`: The channel used for emergency events that need immediate attention.
+/// - `emergency_channel`: The channel used for emergency events that need
+///   immediate attention.
 /// - `publisher_channel`: The channel used for normal events.
 ///
 /// # Returns
@@ -20,7 +23,6 @@ macro_rules! define_fsm {
         })
     };
 }
-
 
 /// Macro used to implement the `Runner` trait for all FSMs.
 ///
@@ -40,7 +42,6 @@ macro_rules! impl_runner_get_sub_channel {
         }
     };
 }
-
 
 /// Macro used to implement the `Transition` trait for all FSMs
 ///

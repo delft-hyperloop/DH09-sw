@@ -1,10 +1,9 @@
 use defmt::unwrap;
 use embassy_executor::Spawner;
 use embassy_net::StackResources;
-use embassy_stm32::{
-    eth::{generic_smi::GenericSMI, Ethernet},
-    peripherals::ETH,
-};
+use embassy_stm32::eth::generic_smi::GenericSMI;
+use embassy_stm32::eth::Ethernet;
+use embassy_stm32::peripherals::ETH;
 use static_cell::StaticCell;
 
 type GsCommsLayerImpl = EthernetGsCommsLayer;

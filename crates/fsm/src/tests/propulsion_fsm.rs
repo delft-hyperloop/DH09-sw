@@ -1,8 +1,12 @@
 use static_cell::StaticCell;
-use crate::commons::{EmergencyChannel, EventChannel};
-use crate::commons::data::{Event, PriorityEventPubSub};
+
+use crate::commons::data::Event;
+use crate::commons::data::PriorityEventPubSub;
 use crate::commons::traits::Runner;
-use crate::propulsion_fsm::{PropulsionFSM, PropulsionStates};
+use crate::commons::EmergencyChannel;
+use crate::commons::EventChannel;
+use crate::propulsion_fsm::PropulsionFSM;
+use crate::propulsion_fsm::PropulsionStates;
 
 #[test]
 fn test_basic_transitions() {
@@ -15,14 +19,12 @@ fn test_basic_transitions() {
     let pub_channel = event_channel.publisher().unwrap();
     let pub_emergency_channel = emergency_channel.publisher().unwrap();
 
-    let mut fsm = PropulsionFSM::new(
-        PriorityEventPubSub::new(
-            event_channel.publisher().unwrap(),
-            event_channel.subscriber().unwrap(),
-            emergency_channel.publisher().unwrap(),
-            emergency_channel.subscriber().unwrap(),
-        ),
-    );
+    let mut fsm = PropulsionFSM::new(PriorityEventPubSub::new(
+        event_channel.publisher().unwrap(),
+        event_channel.subscriber().unwrap(),
+        emergency_channel.publisher().unwrap(),
+        emergency_channel.subscriber().unwrap(),
+    ));
 
     // Need a separate task?
     fsm.run();

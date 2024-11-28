@@ -4,8 +4,6 @@
 #[cfg(all(feature = "rtt", feature = "qemu"))]
 compile_error!("The `rtt` and `qemu` features are mutually exclusive");
 
-use embassy_executor::Spawner;
-use embassy_stm32::peripherals;
 // use embassy_stm32::rng;
 // pick a panicking behavior
 // use panic_halt as _;
@@ -14,18 +12,19 @@ use defmt::*;
 use defmt_rtt as _;
 #[cfg(feature = "qemu")]
 use defmt_semihosting as _;
+use embassy_executor::Spawner;
+use embassy_stm32::bind_interrupts;
+use embassy_stm32::can;
+use embassy_stm32::peripherals;
+use fsm::commons::traits::Runner;
+use fsm::commons::EmergencyChannel;
+use fsm::commons::EventChannel;
+use fsm::MainFSM;
 // use main::can::CanInterface;
 // use panic_abort as _; // requires nightly
 // use panic_itm as _; // logs messages over ITM; requires ITM support
 // use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
 use panic_probe as _;
-
-use embassy_stm32::bind_interrupts;
-
-use embassy_stm32::can;
-use fsm::MainFSM;
-use fsm::commons::{EmergencyChannel, EventChannel};
-use fsm::commons::traits::Runner;
 
 bind_interrupts!(
     struct Irqs {
@@ -80,10 +79,15 @@ fn hlt() -> ! {
 
 // Initialize the channel for publishing events to the FSMs.
 static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> = static_cell::StaticCell::new();
+static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
+    static_cell::StaticCell::new();
 
 #[embassy_executor::task]
-async fn run_fsm(spawner: Spawner, event_channel: &'static EventChannel, emergency_channel: &'static EmergencyChannel) {
+async fn run_fsm(
+    spawner: Spawner,
+    event_channel: &'static EventChannel,
+    emergency_channel: &'static EmergencyChannel,
+) {
     let mut main_fsm = MainFSM::new(spawner, event_channel, emergency_channel);
     main_fsm.run().await;
 }
@@ -112,7 +116,9 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("CAN Configured");
 
-    spawner.spawn(run_fsm(spawner, event_channel, emergency_channel)).unwrap();
+    spawner
+        .spawn(run_fsm(spawner, event_channel, emergency_channel))
+        .unwrap();
 
     info!("FSM started!");
 

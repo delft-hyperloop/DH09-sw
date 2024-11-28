@@ -1,37 +1,44 @@
 //! #FSM Crate for DH09
 //!
-//! The 'fsm' crate is used by Dh09 to keep track of the state in which the pod is.
-//! It's built on the principle of state charts, as it has one superstate (the "Operating" state)
-//! that runs multiple sub-FSMs that keep track of the subsystems that run during normal operation of the pod.
-//! The transitions are triggered by pre-determined events sent from each subsystem.
+//! The 'fsm' crate is used by Dh09 to keep track of the state in which the pod
+//! is. It's built on the principle of state charts, as it has one superstate
+//! (the "Operating" state) that runs multiple sub-FSMs that keep track of the
+//! subsystems that run during normal operation of the pod. The transitions are
+//! triggered by pre-determined events sent from each subsystem.
 
 #![no_std]
 #![no_main]
 extern crate alloc;
 
 pub mod commons;
-mod high_voltage_fsm;
 mod emergency_fsm;
+mod high_voltage_fsm;
+mod levitation_fsm;
 mod operating_fsm;
 mod propulsion_fsm;
-mod levitation_fsm;
 mod tests;
 
 use alloc::sync::Arc;
 use core::cmp::PartialEq;
-use core::sync::atomic::{AtomicBool, Ordering};
+use core::sync::atomic::AtomicBool;
+use core::sync::atomic::Ordering;
+
 use embassy_executor::Spawner;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::signal::Signal;
 use MainStates::*;
-use crate::commons::data::{Event, PriorityEventPubSub};
-use crate::commons::{EmergencyChannel, EventChannel};
+
+use crate::commons::data::Event;
+use crate::commons::data::PriorityEventPubSub;
+use crate::commons::traits::Runner;
+use crate::commons::traits::Transition;
+use crate::commons::EmergencyChannel;
+use crate::commons::EventChannel;
 use crate::emergency_fsm::EmergencyFSM;
 use crate::high_voltage_fsm::HighVoltageFSM;
 use crate::levitation_fsm::LevitationFSM;
 use crate::operating_fsm::OperatingFSM;
 use crate::propulsion_fsm::PropulsionFSM;
-use crate::commons::traits::{Runner, Transition};
 
 /// Enum representing the different states that the `MainFSM` will be in
 #[derive(Eq, PartialEq, Debug, Clone, Copy)]
@@ -52,7 +59,8 @@ pub struct MainFSM {
 
 /// Embassy signal used for running the sub-FSMs.
 ///
-/// The `MainFSM` will send a signal to this upon entering the `Operating` state.
+/// The `MainFSM` will send a signal to this upon entering the `Operating`
+/// state.
 static RUN_SUB_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
 
 /// Atomic bools used to expose the states of the sub-FSMs to each other.
@@ -74,7 +82,9 @@ impl MainFSM {
         let propulsion_fsm = define_fsm!(PropulsionFSM, event_channel, emergency_channel);
         let levitation_fsm = define_fsm!(LevitationFSM, event_channel, emergency_channel);
 
-        spawner.spawn(run_high_voltage_fsm(high_voltage_fsm)).unwrap();
+        spawner
+            .spawn(run_high_voltage_fsm(high_voltage_fsm))
+            .unwrap();
         spawner.spawn(run_emergency_fsm(emergency_fsm)).unwrap();
         spawner.spawn(run_operating_fsm(operating_fsm)).unwrap();
         spawner.spawn(run_propulsion_fsm(propulsion_fsm)).unwrap();
@@ -91,12 +101,14 @@ impl MainFSM {
         }
     }
 
-    /// Handles the events published to the event channel or the emergency channel
+    /// Handles the events published to the event channel or the emergency
+    /// channel
     ///
-    /// This method transitions the `MainFSM` from one state to another depending on
-    /// which state it currently is in and what event it received. If it receives an
-    /// event that it wasn't expecting in the current state or if it's meant for one of the
-    /// sub-FSMs, it ignores it.
+    /// This method transitions the `MainFSM` from one state to another
+    /// depending on which state it currently is in and what event it
+    /// received. If it receives an event that it wasn't expecting in the
+    /// current state or if it's meant for one of the sub-FSMs, it ignores
+    /// it.
     ///
     /// # Parameters:
     /// - `event`: Event that can cause a transition in the FSM.
@@ -116,7 +128,7 @@ impl MainFSM {
             (Charging, Event::StopCharge) => self.transition(Idle, None),
             (Active, Event::Operate) => {
                 self.transition(Operating, None);
-            },
+            }
             (Operating, Event::Quit) => {
                 // TODO: add checks for propulsion, levitation, hv
                 return false;
@@ -127,35 +139,40 @@ impl MainFSM {
     }
 }
 
-/// Runs the propulsion FSM in an embassy task after it receives a signal from the main FSM.
+/// Runs the propulsion FSM in an embassy task after it receives a signal from
+/// the main FSM.
 #[embassy_executor::task]
 pub async fn run_propulsion_fsm(mut propulsion_fsm: PropulsionFSM) {
     RUN_SUB_FSM.wait().await;
     propulsion_fsm.run().await;
 }
 
-/// Runs the levitation FSM in an embassy task after it receives a signal from the main FSM.
+/// Runs the levitation FSM in an embassy task after it receives a signal from
+/// the main FSM.
 #[embassy_executor::task]
 pub async fn run_levitation_fsm(mut levitation_fsm: LevitationFSM) {
     RUN_SUB_FSM.wait().await;
     levitation_fsm.run().await;
 }
 
-/// Runs the propulsion FSM in an embassy task after it receives a signal from the main FSM.
+/// Runs the propulsion FSM in an embassy task after it receives a signal from
+/// the main FSM.
 #[embassy_executor::task]
 pub async fn run_high_voltage_fsm(mut high_voltage_fsm: HighVoltageFSM) {
     RUN_SUB_FSM.wait().await;
     high_voltage_fsm.run().await;
 }
 
-/// Runs the operating FSM in an embassy task after it receives a signal from the main FSM.
+/// Runs the operating FSM in an embassy task after it receives a signal from
+/// the main FSM.
 #[embassy_executor::task]
 pub async fn run_operating_fsm(mut operating_fsm: OperatingFSM) {
     RUN_SUB_FSM.wait().await;
     operating_fsm.run().await;
 }
 
-/// Runs the emergency FSM in an embassy task after it receives a signal from the main FSM.
+/// Runs the emergency FSM in an embassy task after it receives a signal from
+/// the main FSM.
 #[embassy_executor::task]
 pub async fn run_emergency_fsm(mut emergency_fsm: EmergencyFSM) {
     RUN_SUB_FSM.wait().await;
@@ -169,11 +186,11 @@ impl_transition!(MainFSM, MainStates);
 ///
 /// The indexes correspond to the index of each state in `MainStates`.
 const ENTRY_FUNCTION_MAP: [fn(); 6] = [
-    || (),  // SystemCheck
-    || (),  // Idle
-    || (),  // Charging
+    || (), // SystemCheck
+    || (), // Idle
+    || (), // Charging
     enter_active,
-    || (),  // FlashingCode
+    || (), // FlashingCode
     enter_operating,
 ];
 
@@ -181,12 +198,12 @@ const ENTRY_FUNCTION_MAP: [fn(); 6] = [
 ///
 /// The indexes correspond to the index of each state in `MainStates`.
 const EXIT_FUNCTION_MAP: [fn(); 6] = [
-    || (),  // SystemCheck
-    || (),  // Idle
-    || (),  // Charging
-    || (),  // Active
-    || (),  // FlashingCode
-    || (),  // Operating
+    || (), // SystemCheck
+    || (), // Idle
+    || (), // Charging
+    || (), // Active
+    || (), // FlashingCode
+    || (), // Operating
 ];
 
 /// Signals the tasks tied to each sub-FSM that they should start running.

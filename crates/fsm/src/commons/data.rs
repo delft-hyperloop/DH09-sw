@@ -9,10 +9,11 @@ use crate::commons::SubscriberChannel;
 use crate::commons::SubscriberEmergency;
 
 /// Enum representing different types of events that the FSMs should handle.
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Copy)]
 pub enum Event {
     NoEvent,
     StopSubFSMs,
+    StopFSM,
     Emergency,
     SystemCheckSuccess,
     Activate,
@@ -23,15 +24,13 @@ pub enum Event {
     Cruise,
     Brake,
     ShutDown,
-    Quit,
     HighVoltageOn,
     HighVoltageOff,
+    PropulsionOn,
+    PropulsionOff,
     Accelerate {
         velocity_profile: u8, // TODO: Change to actual velocity profile
     },
-    PropulsionOn,
-    PropulsionOff,
-    PropulsionRunning,
     LevitationOn,
     LevitationOff,
 }
@@ -42,6 +41,12 @@ pub struct PriorityEventPubSub {
     pub(crate) event_channel_subscriber: SubscriberChannel,
     pub(crate) emergency_channel_publisher: PublisherEmergency,
     pub(crate) emergency_channel_subscriber: SubscriberEmergency,
+}
+
+impl core::fmt::Debug for PriorityEventPubSub {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "hello:)")
+    }
 }
 
 impl PriorityEventPubSub {
@@ -59,7 +64,8 @@ impl PriorityEventPubSub {
         }
     }
 
-    /// Polls two channels for events, prioritizing the emergency channel.
+    /// Fetches an event from the two channels, prioritizing the emergency
+    /// channel.
     ///
     /// This method first checks for an event on the emergency channel. If an
     /// event is present, it will be returned immediately. If no event is
@@ -70,7 +76,7 @@ impl PriorityEventPubSub {
     /// - `Event`: If an event is found on either channel, the event is
     ///   returned.
     /// - `Event::NoEvent`: If the subscriber missed any messages
-    pub async fn poll(&mut self) -> Event {
+    pub async fn get_event(&mut self) -> Event {
         let event;
         if self.emergency_channel_subscriber.available() != 0 {
             event = self.emergency_channel_subscriber.next_message().await;

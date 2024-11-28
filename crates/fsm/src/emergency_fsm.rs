@@ -1,5 +1,4 @@
 use alloc::sync::Arc;
-use core::sync::atomic::Ordering;
 
 use crate::commons::data::Event;
 use crate::commons::data::PriorityEventPubSub;
@@ -8,9 +7,6 @@ use crate::commons::traits::Transition;
 use crate::impl_runner_get_sub_channel;
 use crate::impl_transition;
 use crate::EMERGENCY_STATE;
-use crate::HIGH_VOLTAGE_STATE;
-use crate::LEVITATION_STATE;
-use crate::PROPULSION_STATE;
 
 /// Enum representing the different states that the `EmergencyFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
@@ -54,21 +50,18 @@ impl EmergencyFSM {
         match (&self.state, event) {
             (EmergencyStates::NotAnEmergency, Event::Emergency) => {
                 self.transition(EmergencyStates::Emergency, Some(&EMERGENCY_STATE));
+                // TODO: Activate EBS?
                 loop {
                     // if speed == 0 { // TODO
                     self.transition(EmergencyStates::EmergencyStop, None);
+                    // TODO: Send CAN command to stop levitation
                     break;
                     // }
                 }
-                // TODO: wait for prop, levi and hv to be off
-                loop {
-                    if !PROPULSION_STATE.load(Ordering::Relaxed)
-                        && !LEVITATION_STATE.load(Ordering::Relaxed)
-                        && !HIGH_VOLTAGE_STATE.load(Ordering::Relaxed)
-                    {
-                        break;
-                    }
-                }
+
+                // TODO: waiting on some answers from tech integration for this
+                // shut_down().await;
+
                 self.transition(EmergencyStates::EmergencyShutDown, None);
             }
             (EmergencyStates::NotAnEmergency, Event::StopSubFSMs) => return false,
@@ -84,13 +77,9 @@ impl_transition!(EmergencyFSM, EmergencyStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `EmergencyStates`.
-const ENTRY_FUNCTION_MAP: [fn(); 4] = [|| (), enter_emergency, || (), || ()];
+const ENTRY_FUNCTION_MAP: [fn(); 4] = [|| (), || (), || (), || ()];
 
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `MainStates`.
 const EXIT_FUNCTION_MAP: [fn(); 4] = [|| (), || (), || (), || ()];
-
-fn enter_emergency() {
-    // TODO
-}

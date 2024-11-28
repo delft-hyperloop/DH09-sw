@@ -42,6 +42,7 @@ use crate::propulsion_fsm::PropulsionFSM;
 
 /// Enum representing the different states that the `MainFSM` will be in
 #[derive(Eq, PartialEq, Debug, Clone, Copy)]
+#[allow(dead_code)]
 enum MainStates {
     SystemCheck,
     Idle,
@@ -51,6 +52,13 @@ enum MainStates {
     Operating,
 }
 
+/// The struct for the `MainFSM`
+///
+/// # Fields:
+/// - `state`: The state in which the pod is in
+/// - `priority_event_pub_sub`: struct used for publishing and listening to
+///   events
+#[derive(Debug)]
 pub struct MainFSM {
     state: MainStates,
     // peripherals: // TODO: add peripherals
@@ -63,15 +71,28 @@ pub struct MainFSM {
 /// state.
 static RUN_SUB_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
 
-/// Atomic bools used to expose the states of the sub-FSMs to each other.
+/// Atomic bools used to expose the states of the sub-FSMs to each other. They
+/// indicate whether the system is active or not.
 pub(crate) static HIGH_VOLTAGE_STATE: AtomicBool = AtomicBool::new(false);
 pub(crate) static LEVITATION_STATE: AtomicBool = AtomicBool::new(false);
 pub(crate) static PROPULSION_STATE: AtomicBool = AtomicBool::new(false);
 pub(crate) static EMERGENCY_STATE: AtomicBool = AtomicBool::new(false);
 
 impl MainFSM {
+    /// Constructor for the `MainFSM` struct. Defines the sub-FSMs and spawns
+    /// embassy tasks for each one of them.
+    ///
+    /// # Parameters:
+    /// - `spawner`: The embassy spawner used to spawn the sub-FSM tasks
+    /// - `event_channel`: Static reference to the channel used for broadcasting
+    ///   normal events
+    /// - `emergency_channel`: Static reference to the channel used for
+    ///   broadcasting emergency events
+    ///
+    /// # Returns:
+    /// - An instance of the `MainFSM` struct
     pub fn new(
-        spawner: Spawner,
+        spawner: &Spawner,
         // peripherals: // TODO: add peripherals
         event_channel: &'static EventChannel,
         emergency_channel: &'static EmergencyChannel,
@@ -118,10 +139,25 @@ impl MainFSM {
     /// - `true`: Otherwise
     async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
+            (Operating, Event::Emergency) => {
+                // TODO: Sub-FSMs aren't owned by MainFSM anymore, right? Right???
+                return false;
+            } // Nothing else needs to be done here, it will be handled by the sub-FSMs
             (_, Event::Emergency) => {
-                // TODO: attempt shut down
-                // TODO: transition to quit
+                if !HIGH_VOLTAGE_STATE.load(Ordering::Relaxed) {
+                    // TODO: Send CAN command to turn off high voltage
+                }
+                return false;
             }
+            (Operating, Event::StopFSM) => {
+                shut_down(&self.priority_event_pub_sub).await;
+                self.priority_event_pub_sub
+                    .event_channel_publisher
+                    .publish(Event::StopSubFSMs)
+                    .await;
+                return false;
+            }
+            (_, Event::StopFSM) => return false,
             (SystemCheck, Event::SystemCheckSuccess) => self.transition(Idle, None),
             (Idle, Event::Activate) => self.transition(Active, None),
             (Idle, Event::Charge) => self.transition(Charging, None),
@@ -129,13 +165,43 @@ impl MainFSM {
             (Active, Event::Operate) => {
                 self.transition(Operating, None);
             }
-            (Operating, Event::Quit) => {
-                // TODO: add checks for propulsion, levitation, hv
-                return false;
-            }
             _ => {}
         }
         true
+    }
+}
+
+/// Shuts down all systems in the following order: Propulsion, Levitation, High
+/// Voltage.
+///
+/// Sends CAN commands to shut down the systems inside the pod one by one.
+pub async fn shut_down(pub_sub_channels: &PriorityEventPubSub) {
+    pub_sub_channels
+        .event_channel_publisher
+        .publish(Event::PropulsionOff)
+        .await;
+    loop {
+        if !PROPULSION_STATE.load(Ordering::Relaxed) {
+            pub_sub_channels
+                .event_channel_publisher
+                .publish(Event::LevitationOff)
+                .await;
+            break;
+        }
+    }
+    loop {
+        if !LEVITATION_STATE.load(Ordering::Relaxed) {
+            pub_sub_channels
+                .event_channel_publisher
+                .publish(Event::HighVoltageOff)
+                .await;
+            break;
+        }
+    }
+    loop {
+        if !HIGH_VOLTAGE_STATE.load(Ordering::Relaxed) {
+            break;
+        }
     }
 }
 

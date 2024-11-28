@@ -1,4 +1,5 @@
 use alloc::sync::Arc;
+use core::sync::atomic::Ordering;
 
 use crate::commons::data::Event;
 use crate::commons::data::PriorityEventPubSub;
@@ -6,6 +7,9 @@ use crate::commons::traits::Runner;
 use crate::commons::traits::Transition;
 use crate::impl_runner_get_sub_channel;
 use crate::impl_transition;
+use crate::HIGH_VOLTAGE_STATE;
+use crate::LEVITATION_STATE;
+use crate::PROPULSION_STATE;
 
 /// Enum representing the different states that the `OperatingFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
@@ -14,7 +18,6 @@ pub(super) enum OperatingStates {
     Accelerating,
     Braking,
     Cruising,
-    ShutDown,
 }
 
 pub(super) struct OperatingFSM {
@@ -47,18 +50,23 @@ impl OperatingFSM {
     /// - `false`: If the FSM receives a `StopSubFSMs` event
     /// - `true`: Otherwise
     async fn handle(&mut self, event: Event) -> bool {
-        // TODO: Don't forget to check if hv is on, levi is on etc before going to
-        // accelerate
+        // Didn't include emergency event here. It shouldn't be handled here and it will
+        // be useful to see the state in which this was when the emergency
+        // happened.
         match (&self.state, event) {
-            (_, Event::Emergency) => {
-                // TODO: Decide if we change state and if anything happens here
-            }
             (
                 OperatingStates::Demo,
                 Event::Accelerate {
                     velocity_profile: _velocity_profile,
                 },
-            ) => self.transition(OperatingStates::Accelerating, None),
+            ) => {
+                if HIGH_VOLTAGE_STATE.load(Ordering::Relaxed)
+                    && LEVITATION_STATE.load(Ordering::Relaxed)
+                    && PROPULSION_STATE.load(Ordering::Relaxed)
+                {
+                    self.transition(OperatingStates::Accelerating, None);
+                }
+            }
             (OperatingStates::Demo, Event::ShutDown) => return false,
             (OperatingStates::Accelerating, Event::Cruise) => {
                 self.transition(OperatingStates::Cruising, None)
@@ -73,6 +81,7 @@ impl OperatingFSM {
                 loop {
                     // if speed == 0 { // TODO
                     self.transition(OperatingStates::Demo, None);
+                    break;
                     // }
                 }
             }
@@ -108,5 +117,5 @@ const EXIT_FUNCTION_MAP: [fn(); 5] = [
 ];
 
 fn enter_braking() {
-    // TODO: Send braking command to braking PCB, check if prop is running
+    // TODO: Send braking command to braking PCB
 }

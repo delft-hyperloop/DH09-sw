@@ -57,7 +57,6 @@ impl HighVoltageFSM {
                     if !LEVITATION_STATE.load(Ordering::Relaxed)
                         && !PROPULSION_STATE.load(Ordering::Relaxed)
                     {
-                        // TODO: Check orderings
                         break;
                     }
                 }

@@ -84,7 +84,7 @@ static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
 
 #[embassy_executor::task]
 async fn run_fsm(
-    spawner: Spawner,
+    spawner: &Spawner,
     event_channel: &'static EventChannel,
     emergency_channel: &'static EmergencyChannel,
 ) {
@@ -117,7 +117,7 @@ async fn main(spawner: Spawner) -> ! {
     info!("CAN Configured");
 
     spawner
-        .spawn(run_fsm(spawner, event_channel, emergency_channel))
+        .spawn(run_fsm(&spawner, event_channel, emergency_channel))
         .unwrap();
 
     info!("FSM started!");

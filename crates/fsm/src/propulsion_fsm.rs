@@ -19,8 +19,8 @@ pub(super) enum PropulsionStates {
 pub(super) struct PropulsionFSM {
     state: PropulsionStates,
     priority_event_pub_sub: Arc<PriorityEventPubSub>,
-    velocity_profile: u8, /* TODO: Change to actual velocity profile
-                           * peripherals: // TODO */
+    _velocity_profile: u8, /* TODO: Change to actual velocity profile
+                            * peripherals: // TODO */
 }
 
 impl PropulsionFSM {
@@ -31,8 +31,8 @@ impl PropulsionFSM {
         Self {
             priority_event_pub_sub: Arc::new(priority_event_pub_sub),
             state: PropulsionStates::PropulsionOff,
-            velocity_profile: 0, /* TODO: Change to actual velocity profile
-                                  * peripherals: // TODO */
+            _velocity_profile: 0, /* TODO: Change to actual velocity profile
+                                   * peripherals: // TODO */
         }
     }
 
@@ -73,11 +73,16 @@ impl PropulsionFSM {
             (PropulsionStates::PropulsionOn, Event::PropulsionOff) => {
                 self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE))
             }
-            (PropulsionStates::PropulsionOn, Event::PropulsionRunning) => {
+            (
+                PropulsionStates::PropulsionOn,
+                Event::Accelerate {
+                    velocity_profile: _velocity_profile,
+                },
+            ) => {
                 // TODO: Send self.velocity_profile to propulsion
                 self.transition(PropulsionStates::PropulsionRunning, None)
             }
-            (PropulsionStates::PropulsionRunning, Event::PropulsionOn) => {
+            (PropulsionStates::PropulsionRunning, Event::Brake) => {
                 self.transition(PropulsionStates::PropulsionOn, None)
             }
             _ => {}

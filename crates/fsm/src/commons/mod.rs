@@ -18,18 +18,23 @@ const MAX_EMERGENCY_EVENTS: usize = 4;
 const SUBSCRIBERS: usize = 6;
 const PUBLISHERS: usize = 7;
 
-// Types for the two channels used for broadcasting events to each FSM and for
-// publishers and subscribers of the channels.
+/// Type alias for the `PubSubChannel` used for the normal event channel.
 pub type EventChannel = PubSubChannel<NoopRawMutex, Event, MAX_EVENTS, SUBSCRIBERS, PUBLISHERS>;
+
+/// Type alias for the `PubSubChannel` used for the emergency event channel.
 pub type EmergencyChannel =
     PubSubChannel<NoopRawMutex, Event, MAX_EMERGENCY_EVENTS, SUBSCRIBERS, PUBLISHERS>;
 
+/// Type alias for the normal event channel `Publisher`.
 pub type PublisherChannel =
     Publisher<'static, NoopRawMutex, Event, MAX_EVENTS, SUBSCRIBERS, PUBLISHERS>;
+/// Type alias for the normal event channel `Subscriber`.
 pub type SubscriberChannel =
     Subscriber<'static, NoopRawMutex, Event, MAX_EVENTS, SUBSCRIBERS, PUBLISHERS>;
 
+/// Type alias for the emergency channel `Publisher`.
 pub type PublisherEmergency =
     Publisher<'static, NoopRawMutex, Event, MAX_EMERGENCY_EVENTS, SUBSCRIBERS, PUBLISHERS>;
+/// Type alias for the emergency channel `Subscriber`.
 pub type SubscriberEmergency =
     Subscriber<'static, NoopRawMutex, Event, MAX_EMERGENCY_EVENTS, SUBSCRIBERS, PUBLISHERS>;

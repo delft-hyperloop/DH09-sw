@@ -2,6 +2,7 @@
 //! their implementations.
 
 use alloc::sync::Arc;
+use core::future::Future;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
 
@@ -19,23 +20,25 @@ pub trait Runner {
     /// Only used for the `run` method of the `Runner` trait.
     ///
     /// # Returns:
-    /// - boolean value from the `handle` method of each FSM determining whether
-    ///   the fsm should keep running or not.
-    async fn handle_events(&mut self, event: Event) -> bool;
+    /// - future that resolves to the boolean value from the `handle` method of
+    ///   each FSM. This determines whether the fsm should keep running or not.
+    fn handle_events(&mut self, event: Event) -> impl Future<Output = bool>;
 
     /// Asynchronous method that executes an infinite loop which checks for
     /// events in the `PriorityEventPubSub` and handles them using the
     /// `handle_events` method. It stops the loop if `handle_events` returns
     /// 0. This case should only happen if the FSM receives
     /// the `StopSubFSMs` event.
-    async fn run(&mut self) {
-        loop {
-            let event = Arc::get_mut(self.get_pub_sub_channel())
-                .unwrap()
-                .poll()
-                .await;
-            if !self.handle_events(event).await {
-                break;
+    fn run(&mut self) -> impl Future<Output = ()> {
+        async {
+            loop {
+                let event = Arc::get_mut(self.get_pub_sub_channel())
+                    .unwrap()
+                    .get_event()
+                    .await;
+                if !self.handle_events(event).await {
+                    break;
+                }
             }
         }
     }
@@ -49,6 +52,7 @@ pub trait Transition<T> {
     /// Callback method executed when exiting a state
     fn exit_method(&mut self) -> fn();
 
+    /// Sets the new state of the FSM
     fn set_state(&mut self, new_state: T);
 
     /// Transitions from one state to the other. Calls the exit method of the

@@ -3,34 +3,42 @@
 
 use core::cell::RefCell;
 
-use embassy_boot::BootLoaderConfig;
-use embassy_executor::Spawner;
-use embassy_net::tcp::TcpSocket;
-use embassy_net::{Ipv4Address, Ipv4Cidr, StackResources};
-use embassy_stm32::eth::generic_smi::GenericSMI;
-use embassy_stm32::eth::{self, Ethernet, PacketQueue};
-use embassy_stm32::flash::{Bank1Region, Blocking, BANK1_REGION};
-use embassy_stm32::peripherals;
-use embassy_stm32::rng::{self, Rng};
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::blocking_mutex::Mutex;
-use embassy_time::Timer;
-use heapless::Vec;
-use rand_core::RngCore;
-use embedded_io_async::Write;
-use embassy_stm32::peripherals::ETH;
-// pick a panicking behavior
-use panic_halt as _;
 // use defmt::*;
 // use defmt_rtt as _;
 // use panic_abort as _; // requires nightly
 // use panic_itm as _; // logs messages over ITM; requires ITM support
 // use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
-
 use cortex_m_semihosting::hprintln;
+use embassy_boot::BootLoaderConfig;
+use embassy_boot_stm32::BlockingFirmwareUpdater;
 use embassy_boot_stm32::BootLoader;
-use embassy_boot_stm32::{BlockingFirmwareUpdater, FirmwareUpdaterConfig};
-use embassy_stm32::{bind_interrupts, flash::Flash};
+use embassy_boot_stm32::FirmwareUpdaterConfig;
+use embassy_executor::Spawner;
+use embassy_net::tcp::TcpSocket;
+use embassy_net::Ipv4Address;
+use embassy_net::Ipv4Cidr;
+use embassy_net::StackResources;
+use embassy_stm32::bind_interrupts;
+use embassy_stm32::eth::generic_smi::GenericSMI;
+use embassy_stm32::eth::Ethernet;
+use embassy_stm32::eth::PacketQueue;
+use embassy_stm32::eth::{self};
+use embassy_stm32::flash::Bank1Region;
+use embassy_stm32::flash::Blocking;
+use embassy_stm32::flash::Flash;
+use embassy_stm32::flash::BANK1_REGION;
+use embassy_stm32::peripherals;
+use embassy_stm32::peripherals::ETH;
+use embassy_stm32::rng::Rng;
+use embassy_stm32::rng::{self};
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+use embassy_sync::blocking_mutex::Mutex;
+use embassy_time::Timer;
+use embedded_io_async::Write;
+use heapless::Vec;
+// pick a panicking behavior
+use panic_halt as _;
+use rand_core::RngCore;
 use static_cell::StaticCell;
 
 bind_interrupts!(
@@ -57,8 +65,8 @@ unsafe fn get_bootloader_state_slice() -> &'static mut [u8] {
 //     }
 //     let len = &__bootloader_active_end as *const u8 as usize
 //         - &__bootloader_active_start as *const u8 as usize;
-//     unsafe { core::slice::from_raw_parts_mut(__bootloader_active_start as *mut u8, len) }
-// }
+//     unsafe { core::slice::from_raw_parts_mut(__bootloader_active_start as
+// *mut u8, len) } }
 
 type FlashRef<'a> = Mutex<NoopRawMutex, RefCell<Bank1Region<'a, Blocking>>>;
 
@@ -153,7 +161,8 @@ async fn main(spawner: Spawner) -> ! {
 
     // Init network stack
     static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
-    let (stack, runner) = embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
+    let (stack, runner) =
+        embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
 
     // Launch network task
     spawner.spawn(net_task(runner)).unwrap();

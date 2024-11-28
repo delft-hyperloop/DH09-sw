@@ -5,12 +5,15 @@
 
 use defmt::*;
 use embassy_executor::Spawner;
-use embassy_stm32::can::{Can, CanRx, CanTx};
-use embassy_sync::{
-    blocking_mutex::raw::NoopRawMutex,
-    priority_channel::{self, PriorityChannel},
-    pubsub::{PubSubChannel, Publisher, Subscriber},
-};
+use embassy_stm32::can::Can;
+use embassy_stm32::can::CanRx;
+use embassy_stm32::can::CanTx;
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+use embassy_sync::priority_channel::PriorityChannel;
+use embassy_sync::priority_channel::{self};
+use embassy_sync::pubsub::PubSubChannel;
+use embassy_sync::pubsub::Publisher;
+use embassy_sync::pubsub::Subscriber;
 use embassy_time::Timer;
 use static_cell::StaticCell;
 
@@ -70,10 +73,11 @@ type CanRxPublisher<'a> = Publisher<
     CAN_RX_PUBLISHERS,
 >;
 
-/// Task that listens for CAN messages sent over the CAN bus and forwards them to the RX channel.
+/// Task that listens for CAN messages sent over the CAN bus and forwards them
+/// to the RX channel.
 ///
-/// Tasks interested in receiving CAN messages should subscribe to the RX channel, which they can do
-/// through [`CanInterface::new_subscriber`].
+/// Tasks interested in receiving CAN messages should subscribe to the RX
+/// channel, which they can do through [`CanInterface::new_subscriber`].
 #[embassy_executor::task]
 async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>) -> ! {
     let mut error_counter: usize = 0;
@@ -135,9 +139,9 @@ impl CanInterface {
     ///
     /// This function should be called once at the beginning of the program.
     ///
-    /// It takes in the CAN peripheral, which should be initialized and configured
-    /// before calling this function, and a spawner, which is used to spawn the
-    /// RX and TX tasks.
+    /// It takes in the CAN peripheral, which should be initialized and
+    /// configured before calling this function, and a spawner, which is
+    /// used to spawn the RX and TX tasks.
     pub fn new(can: Can<'static>, spawner: Spawner) -> &'static Self {
         static CAN_INTERFACE: StaticCell<CanInterface> = StaticCell::new();
 

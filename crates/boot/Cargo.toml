@@ -22,3 +22,14 @@ static_cell.workspace = true
 heapless.workspace = true
 # defmt.workspace = true
 # defmt-rtt.workspace = true
+
+[lints.rust]
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+missing_copy_implementations = "warn"
+
+[lints.clippy]
+redundant_static_lifetimes = "allow"
+missing_docs_in_private_items = "warn"
+missing_safety_doc = "warn"
+undocumented_unsafe_blocks = "warn"

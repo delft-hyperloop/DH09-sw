@@ -1,9 +1,13 @@
 extern crate alloc;
 
 use alloc::vec;
+
 use static_cell::StaticCell;
-use crate::commons::data::{Event, PriorityEventPubSub};
-use crate::commons::{EmergencyChannel, EventChannel};
+
+use crate::commons::data::Event;
+use crate::commons::data::PriorityEventPubSub;
+use crate::commons::EmergencyChannel;
+use crate::commons::EventChannel;
 
 fn setup() -> PriorityEventPubSub {
     static EVENT_CHANNEL: StaticCell<EventChannel> = StaticCell::new();
@@ -23,7 +27,12 @@ fn setup() -> PriorityEventPubSub {
 async fn test_priority_event_pub_sub() {
     let mut priority_event_pub_sub = setup();
 
-    let expected_events = vec![Event::HighVoltageOn, Event::LevitationOn, Event::LevitationOff, Event::HighVoltageOff];
+    let expected_events = vec![
+        Event::HighVoltageOn,
+        Event::LevitationOn,
+        Event::LevitationOff,
+        Event::HighVoltageOff,
+    ];
 
     for event in expected_events.clone() {
         priority_event_pub_sub.add_event(&event).await;

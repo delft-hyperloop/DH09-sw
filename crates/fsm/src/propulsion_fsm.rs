@@ -1,7 +1,12 @@
 use alloc::sync::Arc;
-use crate::{impl_runner_get_sub_channel, impl_transition, PROPULSION_STATE};
-use crate::commons::data::{Event, PriorityEventPubSub};
-use crate::commons::traits::{Transition, Runner};
+
+use crate::commons::data::Event;
+use crate::commons::data::PriorityEventPubSub;
+use crate::commons::traits::Runner;
+use crate::commons::traits::Transition;
+use crate::impl_runner_get_sub_channel;
+use crate::impl_transition;
+use crate::PROPULSION_STATE;
 
 /// Enum representing the different states that the `PropulsionFSM` will be in.
 #[derive(PartialEq, Debug, Clone, Copy)]
@@ -14,8 +19,8 @@ pub(super) enum PropulsionStates {
 pub(super) struct PropulsionFSM {
     state: PropulsionStates,
     priority_event_pub_sub: Arc<PriorityEventPubSub>,
-    velocity_profile: u8, // TODO: Change to actual velocity profile
-    // peripherals: // TODO
+    velocity_profile: u8, /* TODO: Change to actual velocity profile
+                           * peripherals: // TODO */
 }
 
 impl PropulsionFSM {
@@ -26,8 +31,8 @@ impl PropulsionFSM {
         Self {
             priority_event_pub_sub: Arc::new(priority_event_pub_sub),
             state: PropulsionStates::PropulsionOff,
-            velocity_profile: 0, // TODO: Change to actual velocity profile
-            // peripherals: // TODO
+            velocity_profile: 0, /* TODO: Change to actual velocity profile
+                                  * peripherals: // TODO */
         }
     }
 
@@ -36,12 +41,14 @@ impl PropulsionFSM {
         &self.state
     }
 
-    /// Handles the events published to the event channel or the emergency channel
+    /// Handles the events published to the event channel or the emergency
+    /// channel
     ///
-    /// This method transitions the `PropulsionFSM` from one state to another depending on
-    /// which state it currently is in and what event it received. If it receives an
-    /// event that it wasn't expecting in the current state or if it's meant for one of the
-    /// other sub-FSMs, it ignores it.
+    /// This method transitions the `PropulsionFSM` from one state to another
+    /// depending on which state it currently is in and what event it
+    /// received. If it receives an event that it wasn't expecting in the
+    /// current state or if it's meant for one of the other sub-FSMs, it
+    /// ignores it.
     ///
     /// # Parameters:
     /// - `event`: Event that can cause a transition in the FSM.
@@ -58,15 +65,21 @@ impl PropulsionFSM {
                     // TODO: Send command to turn off propulsion completely
                 }
                 self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE));
-            },
+            }
             (PropulsionStates::PropulsionOff, Event::StopSubFSMs) => return false,
-            (PropulsionStates::PropulsionOff, Event::PropulsionOn) => self.transition(PropulsionStates::PropulsionOn, Some(&PROPULSION_STATE)),
-            (PropulsionStates::PropulsionOn, Event::PropulsionOff) => self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE)),
+            (PropulsionStates::PropulsionOff, Event::PropulsionOn) => {
+                self.transition(PropulsionStates::PropulsionOn, Some(&PROPULSION_STATE))
+            }
+            (PropulsionStates::PropulsionOn, Event::PropulsionOff) => {
+                self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE))
+            }
             (PropulsionStates::PropulsionOn, Event::PropulsionRunning) => {
                 // TODO: Send self.velocity_profile to propulsion
                 self.transition(PropulsionStates::PropulsionRunning, None)
-            },
-            (PropulsionStates::PropulsionRunning, Event::PropulsionOn) => self.transition(PropulsionStates::PropulsionOn, None),
+            }
+            (PropulsionStates::PropulsionRunning, Event::PropulsionOn) => {
+                self.transition(PropulsionStates::PropulsionOn, None)
+            }
             _ => {}
         }
         true
@@ -79,20 +92,12 @@ impl_transition!(PropulsionFSM, PropulsionStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `PropulsionStates`.
-const ENTRY_FUNCTION_MAP: [fn(); 3] = [
-    enter_propulsion_off,
-    enter_propulsion_on,
-    || (),
-];
+const ENTRY_FUNCTION_MAP: [fn(); 3] = [enter_propulsion_off, enter_propulsion_on, || ()];
 
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `PropulsionStates`.
-const EXIT_FUNCTION_MAP: [fn(); 3] = [
-    || (),
-    || (),
-    || (),
-];
+const EXIT_FUNCTION_MAP: [fn(); 3] = [|| (), || (), || ()];
 
 fn enter_propulsion_on() {
     // TODO: Send command to turn on propulsion

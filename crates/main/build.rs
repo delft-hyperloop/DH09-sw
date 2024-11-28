@@ -8,7 +8,8 @@
 //! updating `memory.x` ensures a rebuild of the application with the
 //! new memory settings.
 //!
-//! The build script also sets the linker flags to tell it which link script to use.
+//! The build script also sets the linker flags to tell it which link script to
+//! use.
 
 use std::env;
 use std::fs::File;
@@ -43,8 +44,8 @@ fn main() {
 
     // Specify linker arguments.
 
-    // `--nmagic` is required if memory section addresses are not aligned to 0x10000,
-    // for example the FLASH and RAM sections in your `memory.x`.
+    // `--nmagic` is required if memory section addresses are not aligned to
+    // 0x10000, for example the FLASH and RAM sections in your `memory.x`.
     // See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
     println!("cargo:rustc-link-arg=--nmagic");
 

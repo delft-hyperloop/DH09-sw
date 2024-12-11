@@ -58,6 +58,12 @@ pub trait Transition<T> {
     /// Transitions from one state to the other. Calls the exit method of the
     /// old state before transitioning to the new state and calling the
     /// entry method for it.
+    ///
+    /// # Parameters:
+    /// - `state`: The new state the FSM should transition to
+    /// - `atomic_bool`: Option containing the atomic bool used to universally
+    ///   keep track of the sub-FSMs state. If `None` is provided, the subsystem
+    ///   doesn't change whether it's running or not.
     fn transition(&mut self, state: T, atomic_bool: Option<&AtomicBool>) {
         // Gets the exit method associated with the current state
         let exit_method = self.exit_method();

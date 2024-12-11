@@ -21,6 +21,7 @@ embedded-io-async.workspace = true
 rand_core.workspace = true
 static_cell.workspace = true
 heapless.workspace = true
+#once_cell = { version = "1.20.2" , features = ["critical-section"], default-features = false, optional = true}
 
 [lints.rust]
 missing_docs = "warn"
@@ -32,3 +33,23 @@ redundant_static_lifetimes = "allow"
 missing_docs_in_private_items = "warn"
 missing_safety_doc = "warn"
 undocumented_unsafe_blocks = "warn"
+
+[dev-dependencies]
+embedded-test.workspace = true
+defmt.workspace = true
+defmt-rtt.workspace = true
+rtt-target.workspace = true
+#panic-rtt-target.workspace = true
+
+[[test]]
+name = "data"
+harness = false
+path = "src/tests/data.rs"
+
+[lib]
+name = "fsm"
+path = "src/lib.rs"
+doctest = false
+test = false
+harness = false
+crate-type = ["lib"]

@@ -1,7 +1,7 @@
+#![no_std]
 //! This module contains all the traits that the FSMs implement, along with
 //! their implementations.
 
-use alloc::sync::Arc;
 use core::future::Future;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
@@ -14,7 +14,7 @@ use crate::commons::data::PriorityEventPubSub;
 pub trait Runner {
     /// Returns a mutable reference to the `PriorityEventPubSub` struct stored
     /// by the FSM. Only used for the `run` method of the `Runner` trait.
-    fn get_pub_sub_channel(&mut self) -> &mut Arc<PriorityEventPubSub>;
+    fn get_pub_sub_channel(&mut self) -> &mut PriorityEventPubSub;
 
     /// Asynchronous method that handles calls the `handle` method of each FSM.
     /// Only used for the `run` method of the `Runner` trait.
@@ -32,8 +32,7 @@ pub trait Runner {
     fn run(&mut self) -> impl Future<Output = ()> {
         async {
             loop {
-                let event = Arc::get_mut(self.get_pub_sub_channel())
-                    .unwrap()
+                let event = self.get_pub_sub_channel()
                     .get_event()
                     .await;
                 if !self.handle_events(event).await {

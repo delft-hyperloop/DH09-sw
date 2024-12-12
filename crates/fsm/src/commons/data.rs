@@ -1,3 +1,4 @@
+#![no_std]
 //! This module contains enums and structs shared among the FSMs, as well as
 //! their implementations.
 
@@ -109,7 +110,3 @@ impl PriorityEventPubSub {
         }
     }
 }
-
-#[cfg(test)]
-#[path = "../tests/data.rs"]
-mod tests;

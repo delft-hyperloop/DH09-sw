@@ -8,7 +8,6 @@
 
 #![no_std]
 #![no_main]
-extern crate alloc;
 
 pub mod commons;
 mod emergency_fsm;
@@ -16,10 +15,7 @@ mod high_voltage_fsm;
 mod levitation_fsm;
 mod operating_fsm;
 mod propulsion_fsm;
-#[cfg(test)]
-mod tests;
 
-use alloc::sync::Arc;
 use core::cmp::PartialEq;
 use core::sync::atomic::AtomicBool;
 use core::sync::atomic::Ordering;
@@ -63,7 +59,7 @@ enum MainStates {
 pub struct MainFSM {
     state: MainStates,
     // peripherals: // TODO: add peripherals
-    priority_event_pub_sub: Arc<PriorityEventPubSub>,
+    priority_event_pub_sub: PriorityEventPubSub,
 }
 
 /// Embassy signal used for running the sub-FSMs.
@@ -115,12 +111,12 @@ impl MainFSM {
 
         Self {
             state: SystemCheck,
-            priority_event_pub_sub: Arc::new(PriorityEventPubSub::new(
+            priority_event_pub_sub: PriorityEventPubSub::new(
                 event_channel.publisher().unwrap(),
                 event_channel.subscriber().unwrap(),
                 emergency_channel.publisher().unwrap(),
                 emergency_channel.subscriber().unwrap(),
-            )),
+            ),
         }
     }
 

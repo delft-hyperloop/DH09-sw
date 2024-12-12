@@ -1,14 +1,15 @@
 #![no_std]
 #![no_main]
 
-use defmt_rtt as _;
-
-use panic_halt as _;
-
+fn setup_log() {
+    rtt_target::rtt_init_defmt!();
+}
 
 #[cfg(test)]
-#[embedded_test::tests]
+#[embedded_test::tests(setup=crate::setup_log())]
 pub mod tests {
+    // This is here so we get the entry point for embassy properly
+    extern crate embassy_stm32;
 
     #[test]
     fn test() {
@@ -73,7 +74,7 @@ pub mod tests {
     //     priority_event_pub_sub.add_event(&Event::Emergency).await;
     //
     //     let event = priority_event_pub_sub.get_event();
-    //     assert_eq!(Event::Emergency, event);
+    //     assert_eq Error attempting to attach to RTT: RTT control b!(Event::Emergency, event);
     //
     //     for event in expected_events {
     //         let polled_event = priority_event_pub_sub.get_event();

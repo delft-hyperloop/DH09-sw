@@ -18,6 +18,7 @@ use embassy_stm32::can::config;
 use embassy_stm32::can::config::DataBitTiming;
 use embassy_stm32::can::config::NominalBitTiming;
 use embassy_stm32::can::config::TimestampPrescaler;
+use embassy_stm32::can::frame::FdEnvelope;
 use embassy_stm32::can::frame::{FdFrame, Header, Id};
 use embassy_stm32::{bind_interrupts, can, rcc, Config};
 use embassy_executor::Spawner;
@@ -124,10 +125,11 @@ bind_interrupts!(struct CanOneInterrupts {
     FDCAN1_IT1 => can::IT1InterruptHandler<FDCAN1>;
 });
 
-static mut read_buffer: RxFdBuf<{1<<3} > = RxFdBuf::new();
-static mut write_buffer: TxFdBuf<{1<<3} > = TxFdBuf::new();
 
-const DELAY: u32 = 100000/2;
+static mut read_buffer: RxFdBuf<5 > = RxFdBuf::new();
+static mut write_buffer: TxFdBuf<1 > = TxFdBuf::new();
+
+const DELAY: u32 = 300_000;
 
 #[embassy_executor::task]
 async fn blocking_blink(led: AnyPin) {
@@ -136,7 +138,7 @@ async fn blocking_blink(led: AnyPin) {
     let mut ticker = Ticker::every(Duration::from_secs(1));
     loop {
         led.set_high();
-        Timer::after_micros(DELAY as u64).await;
+        delay.delay_us(DELAY as u32);
         led.set_low();
 
         ticker.next().await;
@@ -147,6 +149,7 @@ async fn blocking_blink(led: AnyPin) {
 async fn main(spawner: Spawner) {   
     let p = embassy_stm32::init(generate_config());
 
+    #[cfg(feature = "read")]
     spawner.must_spawn(blocking_blink(p.PB0.degrade()));
 
     let mut configurator = CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, CanOneInterrupts);
@@ -155,7 +158,7 @@ async fn main(spawner: Spawner) {
     // hprintln!("{:?}", configurator.config().dbtr);
     //NominalBitTiming { prescaler: 12, seg1: 8, seg2: 1, sync_jump_width: 1 }
     // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8, seg2: 1, sync_jump_width: 1 }
-
+    
     let config = configurator.config()
         // Configuration for 1Mb/s
         .set_nominal_bit_timing(NominalBitTiming {
@@ -181,6 +184,9 @@ async fn main(spawner: Spawner) {
 
     let mut can = configurator.into_normal_mode();
 
+    #[cfg(feature = "read")]
+    let mut can = can.buffered_fd(unsafe{&mut write_buffer}, unsafe{&mut read_buffer});
+
     // let frame = FdFrame::new_extended(0x0001, 
     //     &[0xFF; 64]).expect("Frame build error");
     let header = Header::new_fd(
@@ -198,10 +204,15 @@ async fn main(spawner: Spawner) {
             let mut data_received: usize = 0;
             let mut received = 0;
 
-            
-            hprint!(""); // Prime???
             for _ in 0..10000 {
-                let response = can.read_fd().await;
+               // hprintln!("Yoo");
+               // hprintln!("Yoo");
+            //    for _ in 0..2 {
+            //         unsafe { read_buffer.try_send(Ok(FdEnvelope{ts: Instant::now(), frame})); }
+            //    }
+               
+               let response = can.read().await;
+               // hprintln!("Yoo");
 
                 match response { 
                     Ok(ref envelope) => {
@@ -216,7 +227,6 @@ async fn main(spawner: Spawner) {
             }
             
             let current_time = Instant::now() - start_time;
-            
             hprintln!("Data rate: {}kb/s", (data_received as u64 * 8 * 1000) / (current_time.as_micros()));
             hprintln!("Data recieved: {}b", (data_received as u64 * 8));
             hprintln!("Received {} messages in {}ms", received, current_time.as_micros()/1000)

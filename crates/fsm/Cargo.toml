@@ -21,6 +21,7 @@ embedded-io-async.workspace = true
 rand_core.workspace = true
 static_cell.workspace = true
 heapless.workspace = true
+defmt-test = "0.3.2"
 #once_cell = { version = "1.20.2" , features = ["critical-section"], default-features = false, optional = true}
 
 [lints.rust]
@@ -44,12 +45,16 @@ rtt-target.workspace = true
 [[test]]
 name = "data"
 harness = false
-path = "src/tests/data.rs"
+
+[[test]]
+name = "other"
+harness = false
+
 
 [lib]
 name = "fsm"
 path = "src/lib.rs"
 doctest = false
-test = false
 harness = false
+test=false
 crate-type = ["lib"]

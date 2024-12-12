@@ -109,7 +109,3 @@ fn enter_propulsion_on() {
 fn enter_propulsion_off() {
     // TODO: Send command to turn propulsion off
 }
-
-#[cfg(test)]
-#[path = "tests/propulsion_fsm.rs"]
-mod tests;

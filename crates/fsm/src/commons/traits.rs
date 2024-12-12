@@ -1,3 +1,4 @@
+#![no_std]
 //! This module contains all the traits that the FSMs implement, along with
 //! their implementations.
 

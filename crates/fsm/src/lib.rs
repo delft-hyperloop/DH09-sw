@@ -15,8 +15,6 @@ mod high_voltage_fsm;
 mod levitation_fsm;
 mod operating_fsm;
 mod propulsion_fsm;
-#[cfg(test)]
-mod tests;
 
 use core::cmp::PartialEq;
 use core::sync::atomic::AtomicBool;

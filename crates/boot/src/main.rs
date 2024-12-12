@@ -11,8 +11,12 @@ use core::num::NonZeroU16;
 use core::num::NonZeroU8;
 use core::time;
 
+use defmt::*;
+use defmt_rtt as _;
+use defmt_rtt;
+use panic_probe as _;
 use cortex_m::prelude::_embedded_hal_blocking_delay_DelayUs;
-use cortex_m_semihosting::hprint;
+// use cortex_m_semihosting::hprint;
 use embassy_boot::BootLoaderConfig;
 use embassy_stm32::can::config;
 use embassy_stm32::can::config::DataBitTiming;
@@ -39,24 +43,7 @@ use cortex_m::{Peripherals, itm};
 use embassy_futures::yield_now;
 // pick a panicking behavior
 
-#[cfg(debug_assertions)]
-use panic_semihosting as _;
 
-#[cfg(not(debug_assertions))]
-use panic_halt as _;
-
-use cortex_m_semihosting::{hprintln};
-
-macro_rules! debug_hprintln {
-    ($($e:expr),+) => {
-        {
-            #[cfg(debug_assertions)]
-            {
-                hprintln!($($e),+)
-            }
-        }
-    };
-}
 
 fn cpu_freq() -> f32 {
     let mut dwt = cortex_m::Peripherals::take().unwrap().DWT;
@@ -145,8 +132,10 @@ async fn blocking_blink(led: AnyPin) {
     }
 }
 
+
+
 #[embassy_executor::main]
-async fn main(spawner: Spawner) {   
+async fn main(spawner: Spawner) {
     let p = embassy_stm32::init(generate_config());
 
     #[cfg(feature = "read")]
@@ -221,15 +210,15 @@ async fn main(spawner: Spawner) {
                     },
                     Err(ref bus_error) => {
                         
-                        hprintln!("Bus error: {:?}", bus_error);
+                        // info!("Bus error: {:?}", bus_error.);
                     }
                 }
             }
             
             let current_time = Instant::now() - start_time;
-            hprintln!("Data rate: {}kb/s", (data_received as u64 * 8 * 1000) / (current_time.as_micros()));
-            hprintln!("Data recieved: {}b", (data_received as u64 * 8));
-            hprintln!("Received {} messages in {}ms", received, current_time.as_micros()/1000)
+            info!("Data rate: {}kb/s", (data_received as u64 * 8 * 1000) / (current_time.as_micros()));
+            info!("Data recieved: {}b", (data_received as u64 * 8));
+            info!("Received {} messages in {}ms", received, current_time.as_micros()/1000)
         }
 
         #[cfg(not(feature = "read"))]

@@ -1,18 +1,23 @@
 //! An alternative to the [`probe-run`](https://github.com/knurling-rs/probe-run) printer,
 //! used by [`defmt`](https://github.com/knurling-rs/defmt).
 //! Parses data sent by QEMU over semihosting (ARM Cortex-M only).
-//! *Printers* are *host* programs that receive log data, format it and display it.
-//! 
+//! *Printers* are *host* programs that receive log data, format it and display
+//! it.
+//!
 //! Addapted from DEFMT's `qemu-run` crate.
 
-use std::{
-    env, fs,
-    io::Read as _,
-    process::{self, Command, Stdio},
-};
+use std::env;
+use std::fs;
+use std::io::Read as _;
+use std::process::Command;
+use std::process::Stdio;
+use std::process::{self};
 
-use anyhow::{anyhow, bail};
-use defmt_decoder::{DecodeError, StreamDecoder, Table};
+use anyhow::anyhow;
+use anyhow::bail;
+use defmt_decoder::DecodeError;
+use defmt_decoder::StreamDecoder;
+use defmt_decoder::Table;
 use process::Child;
 
 fn main() -> Result<(), anyhow::Error> {

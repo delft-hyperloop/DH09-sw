@@ -1,0 +1,12 @@
+[toolchain]
+channel = "nightly"
+components = ["clippy"]
+
+[profile]
+rustflags = [
+    "-Dmissing-docs", # no missing docs
+    "-Wmissing-debug-implementations", # easy to forget, useful for debug prints 
+    "-Wmissing-copy-implementations", # dont forget
+    "-Wunexpected-cfgs",
+]
+

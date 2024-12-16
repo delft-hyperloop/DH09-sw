@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+<<<<<<< HEAD
 use embassy_executor::Spawner;
 use embassy_net::{tcp::TcpSocket, Ipv4Address, StackResources};
 use embassy_stm32::{
@@ -8,9 +9,15 @@ use embassy_stm32::{
     peripherals,
     rng::{self, Rng},
 };
+=======
+#[cfg(all(feature = "rtt", feature = "qemu"))]
+compile_error!("The `rtt` and `qemu` features are mutually exclusive");
+
+>>>>>>> origin/fsm
 // use embassy_stm32::rng;
 use defmt::*;
 use defmt_rtt as _;
+<<<<<<< HEAD
 use embassy_stm32::peripherals::*;
 use embedded_io_async::Write;
 use main::can::CanInterface;
@@ -27,6 +34,23 @@ use static_cell::StaticCell;
 fn panic() -> ! {
     cortex_m::asm::udf()
 }
+=======
+#[cfg(feature = "qemu")]
+use defmt_semihosting as _;
+use embassy_executor::Spawner;
+use embassy_stm32::bind_interrupts;
+use embassy_stm32::can;
+use embassy_stm32::peripherals;
+use fsm::commons::traits::Runner;
+use fsm::commons::EmergencyChannel;
+use fsm::commons::EventChannel;
+use fsm::MainFSM;
+// use main::can::CanInterface;
+// use panic_abort as _; // requires nightly
+// use panic_itm as _; // logs messages over ITM; requires ITM support
+// use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
+use panic_probe as _;
+>>>>>>> origin/fsm
 
 bind_interrupts!(
     struct Irqs {
@@ -50,6 +74,21 @@ type Device = Ethernet<'static, ETH, GenericSMI>;
 #[embassy_executor::task]
 async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
     runner.run().await
+}
+
+// Initialize the channel for publishing events to the FSMs.
+static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
+    static_cell::StaticCell::new();
+
+#[embassy_executor::task]
+async fn run_fsm(
+    spawner: &Spawner,
+    event_channel: &'static EventChannel,
+    emergency_channel: &'static EmergencyChannel,
+) {
+    let mut main_fsm = MainFSM::new(spawner, event_channel, emergency_channel);
+    main_fsm.run().await;
 }
 
 #[embassy_executor::main]
@@ -80,6 +119,9 @@ async fn main(spawner: Spawner) -> ! {
     }
     let p = embassy_stm32::init(config);
 
+    let event_channel = EVENT_CHANNEL.init(EventChannel::new());
+    let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
+
     info!("Embassy initialized!");
 
     // let mut can = can::CanConfigurator::new(p.FDCAN1, p.PA11, p.PA12, Irqs);
@@ -93,6 +135,12 @@ async fn main(spawner: Spawner) -> ! {
     // let can = CanInterface::new(can, spawner);
 
     info!("CAN Configured");
+
+    spawner
+        .spawn(run_fsm(&spawner, event_channel, emergency_channel))
+        .unwrap();
+
+    info!("FSM started!");
 
     // Generate random seed.
     let mut rng = Rng::new(p.RNG, Irqs);

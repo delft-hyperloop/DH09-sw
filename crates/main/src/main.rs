@@ -156,7 +156,7 @@ async fn main(spawner: Spawner) -> ! {
         socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
 
         // You need to start a server on the host machine, for example: `nc -l 8000`
-        let remote_endpoint = (Ipv4Address::new(192, 168, 1, 16), 8000);
+        let remote_endpoint = (Ipv4Address::new(192, 168, 1, 17), 8000);
         let r = socket.connect(remote_endpoint).await;
         if let Err(e) = r {
             error!("{}", e);
@@ -175,7 +175,7 @@ async fn main(spawner: Spawner) -> ! {
 
         let diff = end_instant - start_instant;
 
-        info!("Wrote {} bytes in {}ms", to_write.len(), diff.as_millis());
+        info!("Wrote {} bytes in {}us", to_write.len(), diff.as_micros());
 
         socket.close();
     }

@@ -697,6 +697,7 @@ dependencies = [
  "cortex-m",
  "cortex-m-rt",
  "cortex-m-semihosting",
+ "defmt",
  "embassy-boot",
  "embassy-boot-stm32",
  "embassy-executor",
@@ -1334,3 +1335,8 @@ name = "windows_x86_64_msvc"
 version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
+
+[[patch.unused]]
+name = "defmt-semihosting"
+version = "0.1.0"
+source = "git+https://github.com/knurling-rs/defmt?rev=b7a89f56059fc66ac3c7cc3445d092829599e699#b7a89f56059fc66ac3c7cc3445d092829599e699"

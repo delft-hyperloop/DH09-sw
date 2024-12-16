@@ -1,4 +1,3 @@
-use alloc::sync::Arc;
 use core::sync::atomic::Ordering;
 
 use crate::commons::data::Event;
@@ -20,7 +19,7 @@ pub(super) enum HVStates {
 
 pub(super) struct HighVoltageFSM {
     state: HVStates,
-    priority_event_pub_sub: Arc<PriorityEventPubSub>,
+    priority_event_pub_sub: PriorityEventPubSub,
     // peripherals: // TODO
 }
 
@@ -31,7 +30,7 @@ impl HighVoltageFSM {
     ) -> Self {
         Self {
             state: HVStates::HighVoltageOn,
-            priority_event_pub_sub: Arc::new(priority_event_pub_sub),
+            priority_event_pub_sub,
         }
     }
 

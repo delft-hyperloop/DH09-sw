@@ -1,5 +1,3 @@
-use alloc::sync::Arc;
-
 use crate::commons::data::Event;
 use crate::commons::data::PriorityEventPubSub;
 use crate::commons::traits::Runner;
@@ -20,14 +18,14 @@ pub(super) enum EmergencyStates {
 pub(super) struct EmergencyFSM {
     state: EmergencyStates,
     // peripherals: // TODO
-    priority_event_pub_sub: Arc<PriorityEventPubSub>,
+    priority_event_pub_sub: PriorityEventPubSub,
 }
 
 impl EmergencyFSM {
     pub fn new(priority_event_pub_sub: PriorityEventPubSub) -> Self {
         Self {
             state: EmergencyStates::NotAnEmergency,
-            priority_event_pub_sub: Arc::new(priority_event_pub_sub),
+            priority_event_pub_sub,
         }
     }
 

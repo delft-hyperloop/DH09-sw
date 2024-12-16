@@ -87,8 +87,9 @@ impl PriorityEventPubSub {
         }
         match event {
             WaitResult::Message(received_event) => received_event,
-            WaitResult::Lagged(_amount) => {
+            WaitResult::Lagged(amount) => {
                 // TODO: Problem? This means that the subscriber missed {amount} messages
+                defmt::warn!("Missed {} messages on fsm channel", amount);
                 Event::NoEvent
             }
         }

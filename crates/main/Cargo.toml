@@ -23,9 +23,10 @@ rand_core.workspace = true
 static_cell.workspace = true
 heapless.workspace = true
 defmt.workspace = true
-defmt-rtt = {workspace = true, optional = true}
-defmt-semihosting = {workspace = true, optional = true}
-fsm = { path = "../fsm" }
+defmt-rtt.workspace = true
+# defmt-rtt = {workspace = true, optional = true}
+# defmt-semihosting = {workspace = true, optional = true}
+fsm.workspace = true
 
 [lints.rust]
 missing_docs = "warn"

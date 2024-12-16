@@ -1,4 +1,3 @@
-use alloc::sync::Arc;
 use core::sync::atomic::Ordering;
 
 use crate::commons::data::Event;
@@ -20,7 +19,7 @@ pub(super) enum LevitationStates {
 pub(super) struct LevitationFSM {
     state: LevitationStates,
     // peripherals: // TODO
-    priority_event_pub_sub: Arc<PriorityEventPubSub>,
+    priority_event_pub_sub: PriorityEventPubSub,
 }
 
 impl LevitationFSM {
@@ -29,7 +28,7 @@ impl LevitationFSM {
         // peripherals:
     ) -> Self {
         Self {
-            priority_event_pub_sub: Arc::new(priority_event_pub_sub),
+            priority_event_pub_sub,
             state: LevitationStates::LevitationOff,
             // peripherals
         }

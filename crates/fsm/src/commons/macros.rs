@@ -32,7 +32,7 @@ macro_rules! define_fsm {
 macro_rules! impl_runner_get_sub_channel {
     ($fsm_struct:ident) => {
         impl Runner for $fsm_struct {
-            fn get_pub_sub_channel(&mut self) -> &mut Arc<PriorityEventPubSub> {
+            fn get_pub_sub_channel(&mut self) -> &mut PriorityEventPubSub {
                 &mut self.priority_event_pub_sub
             }
 

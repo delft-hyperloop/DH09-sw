@@ -1,7 +1,6 @@
 #![no_std]
 #![no_main]
 
-<<<<<<< HEAD
 use embassy_executor::Spawner;
 use embassy_net::{tcp::TcpSocket, Ipv4Address, StackResources};
 use embassy_stm32::{
@@ -9,15 +8,9 @@ use embassy_stm32::{
     peripherals,
     rng::{self, Rng},
 };
-=======
-#[cfg(all(feature = "rtt", feature = "qemu"))]
-compile_error!("The `rtt` and `qemu` features are mutually exclusive");
-
->>>>>>> origin/fsm
 // use embassy_stm32::rng;
 use defmt::*;
 use defmt_rtt as _;
-<<<<<<< HEAD
 use embassy_stm32::peripherals::*;
 use embedded_io_async::Write;
 use main::can::CanInterface;
@@ -30,17 +23,6 @@ use embassy_stm32::can;
 use rand_core::RngCore as _;
 use static_cell::StaticCell;
 
-#[defmt::panic_handler]
-fn panic() -> ! {
-    cortex_m::asm::udf()
-}
-=======
-#[cfg(feature = "qemu")]
-use defmt_semihosting as _;
-use embassy_executor::Spawner;
-use embassy_stm32::bind_interrupts;
-use embassy_stm32::can;
-use embassy_stm32::peripherals;
 use fsm::commons::traits::Runner;
 use fsm::commons::EmergencyChannel;
 use fsm::commons::EventChannel;
@@ -50,7 +32,7 @@ use fsm::MainFSM;
 // use panic_itm as _; // logs messages over ITM; requires ITM support
 // use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
 use panic_probe as _;
->>>>>>> origin/fsm
+
 
 bind_interrupts!(
     struct Irqs {
@@ -83,7 +65,7 @@ static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
 
 #[embassy_executor::task]
 async fn run_fsm(
-    spawner: &Spawner,
+    spawner: Spawner,
     event_channel: &'static EventChannel,
     emergency_channel: &'static EmergencyChannel,
 ) {
@@ -137,7 +119,7 @@ async fn main(spawner: Spawner) -> ! {
     info!("CAN Configured");
 
     spawner
-        .spawn(run_fsm(&spawner, event_channel, emergency_channel))
+        .spawn(run_fsm(spawner, event_channel, emergency_channel))
         .unwrap();
 
     info!("FSM started!");

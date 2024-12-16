@@ -53,10 +53,13 @@ futures = { version = "0.3.17", default-features = false, features = [
 heapless = { version = "0.8", default-features = false }
 rand_core = "0.6.3"
 static_cell = { version = "2", features = ["nightly"] }
-defmt = "0.3"
-defmt-rtt = "0.4"
+defmt = "*"
+defmt-rtt = "*"
 defmt-decoder = { version = "*", features = ["unstable"] }
+defmt-semihosting = {version = "*", features = []}
 anyhow = "1"
+
+fsm = {path = "crates/fsm"}
 
 [patch.crates-io]
 embassy-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
@@ -69,5 +72,5 @@ embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee
 
 defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-rtt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
-# defmt-semihosting = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
+defmt-semihosting = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-decoder = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }

@@ -1,4 +1,3 @@
-use alloc::sync::Arc;
 use core::sync::atomic::Ordering;
 
 use crate::commons::data::Event;
@@ -22,7 +21,7 @@ pub(super) enum OperatingStates {
 
 pub(super) struct OperatingFSM {
     state: OperatingStates,
-    priority_event_pub_sub: Arc<PriorityEventPubSub>,
+    priority_event_pub_sub: PriorityEventPubSub,
     // peripherals: // TODO
 }
 
@@ -30,7 +29,7 @@ impl OperatingFSM {
     pub fn new(priority_event_pub_sub: PriorityEventPubSub) -> Self {
         Self {
             state: OperatingStates::Demo,
-            priority_event_pub_sub: Arc::new(priority_event_pub_sub),
+            priority_event_pub_sub,
         }
     }
 

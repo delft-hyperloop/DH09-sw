@@ -27,7 +27,7 @@ impl PropulsionFSM {
         // peripherals // TODO
     ) -> Self {
         Self {
-            priority_event_pub_sub: priority_event_pub_sub,
+            priority_event_pub_sub,
             state: PropulsionStates::PropulsionOff,
             _velocity_profile: 0, /* TODO: Change to actual velocity profile
                                    * peripherals: // TODO */
@@ -109,3 +109,7 @@ fn enter_propulsion_on() {
 fn enter_propulsion_off() {
     // TODO: Send command to turn propulsion off
 }
+
+#[cfg(test)]
+#[path = "tests/propulsion_fsm.rs"]
+mod tests;

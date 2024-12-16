@@ -53,32 +53,24 @@ futures = { version = "0.3.17", default-features = false, features = [
 heapless = { version = "0.8", default-features = false }
 rand_core = "0.6.3"
 static_cell = { version = "2", features = ["nightly"] }
-defmt = "0.3"
-defmt-rtt = "0.4"
+defmt = "*"
+defmt-rtt = "*"
 defmt-decoder = { version = "*", features = ["unstable"] }
+defmt-semihosting = {version = "*", features = []}
 anyhow = "1"
 
-rtt-target = { version = "*", features=["defmt"]}
-#features = ["defmt"]
-panic-rtt-target = "*"
-embedded-test  = { version = "0.6.0", features = ["embassy", "defmt"], path = "../embedded-test" }
+fsm = {path = "crates/fsm"}
 
 [patch.crates-io]
-embassy-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
-embassy-sync = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
-embassy-boot = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
-embassy-boot-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
-embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
-embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
-embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
+embassy-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-sync = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-boot = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-boot-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
 
 defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-rtt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
-# defmt-semihosting = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
+defmt-semihosting = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-decoder = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
-
-#embedded-tests = {git = "https://github.com/probe-rs/embedded-test", rev = "ecec5b545afd05087bb3f2eab421324ae7641e17"}
-#embedded-tests-macros = {git="https://github.com/probe-rs/embedded-test", rev="ecec5b545afd05087bb3f2eab421324ae7641e17"}
-
-rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }
-#panic-rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }

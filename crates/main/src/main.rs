@@ -1,4 +1,4 @@
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 #![no_main]
 
 use embassy_executor::Spawner;
@@ -23,10 +23,16 @@ use embassy_stm32::can;
 use rand_core::RngCore as _;
 use static_cell::StaticCell;
 
-#[defmt::panic_handler]
-fn panic() -> ! {
-    cortex_m::asm::udf()
-}
+use fsm::commons::traits::Runner;
+use fsm::commons::EmergencyChannel;
+use fsm::commons::EventChannel;
+use fsm::MainFSM;
+// use main::can::CanInterface;
+// use panic_abort as _; // requires nightly
+// use panic_itm as _; // logs messages over ITM; requires ITM support
+// use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
+use panic_probe as _;
+
 
 bind_interrupts!(
     struct Irqs {
@@ -94,6 +100,10 @@ async fn main(spawner: Spawner) -> ! {
         config.rcc.voltage_scale = VoltageScale::Scale1;
     }
     let p = embassy_stm32::init(config);
+
+    let event_channel = EVENT_CHANNEL.init(EventChannel::new());
+    let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
+
     info!("Embassy initialized!");
 
     // let mut can = can::CanConfigurator::new(p.FDCAN1, p.PA11, p.PA12, Irqs);
@@ -107,9 +117,6 @@ async fn main(spawner: Spawner) -> ! {
     // let can = CanInterface::new(can, spawner);
 
     info!("CAN Configured");
-
-    let event_channel = EVENT_CHANNEL.init(EventChannel::new());
-    let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
 
     spawner
         .spawn(run_fsm(spawner, event_channel, emergency_channel))

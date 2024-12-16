@@ -30,7 +30,7 @@ impl HighVoltageFSM {
     ) -> Self {
         Self {
             state: HVStates::HighVoltageOn,
-            priority_event_pub_sub: priority_event_pub_sub,
+            priority_event_pub_sub,
         }
     }
 

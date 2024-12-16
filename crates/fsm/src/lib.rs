@@ -15,6 +15,7 @@ mod high_voltage_fsm;
 mod levitation_fsm;
 mod operating_fsm;
 mod propulsion_fsm;
+mod tests;
 
 use core::cmp::PartialEq;
 use core::sync::atomic::AtomicBool;
@@ -89,7 +90,6 @@ impl MainFSM {
     /// # Returns:
     /// - An instance of the `MainFSM` struct
     pub fn new(
-
         spawner: Spawner,
         // peripherals: // TODO: add peripherals
         event_channel: &'static EventChannel,
@@ -138,6 +138,7 @@ impl MainFSM {
     async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (Operating, Event::Emergency) => {
+                // TODO: Sub-FSMs aren't owned by MainFSM anymore, right? Right???
                 return false;
             } // Nothing else needs to be done here, it will be handled by the sub-FSMs
             (_, Event::Emergency) => {

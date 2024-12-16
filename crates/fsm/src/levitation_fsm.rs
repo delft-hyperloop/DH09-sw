@@ -28,7 +28,7 @@ impl LevitationFSM {
         // peripherals:
     ) -> Self {
         Self {
-            priority_event_pub_sub: priority_event_pub_sub,
+            priority_event_pub_sub,
             state: LevitationStates::LevitationOff,
             // peripherals
         }

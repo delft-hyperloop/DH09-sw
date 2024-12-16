@@ -29,7 +29,7 @@ impl OperatingFSM {
     pub fn new(priority_event_pub_sub: PriorityEventPubSub) -> Self {
         Self {
             state: OperatingStates::Demo,
-            priority_event_pub_sub: priority_event_pub_sub,
+            priority_event_pub_sub,
         }
     }
 

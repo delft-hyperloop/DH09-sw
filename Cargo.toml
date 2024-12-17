@@ -53,8 +53,8 @@ futures = { version = "0.3.17", default-features = false, features = [
 heapless = { version = "0.8", default-features = false }
 rand_core = "0.6.3"
 static_cell = { version = "2", features = ["nightly"] }
-defmt = "*"
-defmt-rtt = "*"
+defmt = "0.3"
+defmt-rtt = "0.4"
 defmt-semihosting = "*"
 defmt-decoder = { version = "*", features = ["unstable"] }
 anyhow = "1"
@@ -63,8 +63,6 @@ rtt-target = { version = "*", features=["defmt"]}
 #features = ["defmt"]
 panic-rtt-target = "*"
 embedded-test  = { version = "0.6.0", features = ["embassy", "defmt"], path = "../embedded-test" }
-
-fsm = {path = "crates/fsm"}
 
 [patch.crates-io]
 embassy-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }

@@ -1,4 +1,3 @@
-#![no_std]
 use core::sync::atomic::Ordering;
 
 use crate::commons::data::Event;

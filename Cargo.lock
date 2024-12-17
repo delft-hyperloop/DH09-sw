@@ -699,15 +699,12 @@ dependencies = [
 
 [[package]]
 name = "embedded-test"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3219cca16cfb5c7e4d3676d884b4533b51e6f5987f181b07d2b0bcffde973790"
+version = "0.6.0"
 dependencies = [
  "defmt",
  "embassy-executor",
  "embedded-test-macros",
  "heapless 0.8.0",
- "rtt-log",
  "semihosting",
  "serde",
  "serde-json-core",
@@ -715,9 +712,7 @@ dependencies = [
 
 [[package]]
 name = "embedded-test-macros"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b49686c76a247e8a814281412e0f7a1d146653b529dbbc61a54dbe99aca7d793"
+version = "0.6.0"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -759,7 +754,7 @@ dependencies = [
  "heapless 0.8.0",
  "panic-halt",
  "rand_core",
- "rtt-target 0.6.1",
+ "rtt-target",
  "static_cell",
 ]
 
@@ -1121,26 +1116,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
-name = "rtt-log"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "934c5a2ab52e91070e60e400ed9c9f2f28d9469b06b974e5d463e98bc7c0e185"
-dependencies = [
- "log",
- "rtt-target 0.5.0",
-]
-
-[[package]]
-name = "rtt-target"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10b34c9e6832388e45f3c01f1bb60a016384a0a4ad80cdd7d34913bed25037f0"
-dependencies = [
- "critical-section",
- "ufmt-write",
-]
-
-[[package]]
 name = "rtt-target"
 version = "0.6.1"
 source = "git+https://github.com/probe-rs/rtt-target?rev=ab0fb987fae742a33b843ca92a5c8da75ede38cc#ab0fb987fae742a33b843ca92a5c8da75ede38cc"
@@ -1216,9 +1191,9 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
 name = "serde"
-version = "1.0.215"
+version = "1.0.216"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6513c1ad0b11a9376da888e3e0baa0077f1aed55c17f50e7b2397136129fb88f"
+checksum = "0b9781016e935a97e8beecf0c933758c97a5520d32930e460142b4cd80c6338e"
 dependencies = [
  "serde_derive",
 ]
@@ -1236,9 +1211,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.215"
+version = "1.0.216"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad1e866f866923f252f05c889987993144fb74e722403468a4ebd70c3cd756c0"
+checksum = "46f859dbbf73865c6627ed570e78961cd3ac92407a2d117204c49232485da55e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1503,13 +1478,3 @@ name = "windows_x86_64_msvc"
 version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
-
-[[patch.unused]]
-name = "embedded-test"
-version = "0.6.0"
-source = "git+https://github.com/probe-rs/embedded-test?rev=ecec5b545afd05087bb3f2eab421324ae7641e17#ecec5b545afd05087bb3f2eab421324ae7641e17"
-
-[[patch.unused]]
-name = "embedded-test-macros"
-version = "0.6.0"
-source = "git+https://github.com/probe-rs/embedded-test?rev=ecec5b545afd05087bb3f2eab421324ae7641e17#ecec5b545afd05087bb3f2eab421324ae7641e17"

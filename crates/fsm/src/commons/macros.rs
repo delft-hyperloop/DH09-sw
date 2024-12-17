@@ -1,4 +1,3 @@
-#![no_std]
 //! This module contains macro rules used by the FSMs to either implement traits
 //! or declare the FSMs.
 

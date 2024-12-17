@@ -62,7 +62,7 @@ anyhow = "1"
 rtt-target = { version = "*", features=["defmt"]}
 #features = ["defmt"]
 panic-rtt-target = "*"
-embedded-test  = { version = "*", features = ["init-log", "embassy", "defmt"], default-features = false }
+embedded-test  = { version = "0.6.0", features = ["embassy", "defmt"], path = "../embedded-test" }
 
 [patch.crates-io]
 embassy-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
@@ -78,8 +78,8 @@ defmt-rtt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc
 defmt-semihosting = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-decoder = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 
-embedded-test = {git = "https://github.com/probe-rs/embedded-test", rev = "ecec5b545afd05087bb3f2eab421324ae7641e17"}
-embedded-test-macros = {git="https://github.com/probe-rs/embedded-test", rev="ecec5b545afd05087bb3f2eab421324ae7641e17"}
+#embedded-tests = {git = "https://github.com/probe-rs/embedded-test", rev = "ecec5b545afd05087bb3f2eab421324ae7641e17"}
+#embedded-tests-macros = {git="https://github.com/probe-rs/embedded-test", rev="ecec5b545afd05087bb3f2eab421324ae7641e17"}
 
 rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }
 #panic-rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }

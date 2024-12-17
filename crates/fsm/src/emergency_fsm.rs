@@ -1,5 +1,3 @@
-#![no_std]
-
 use crate::commons::data::Event;
 use crate::commons::data::PriorityEventPubSub;
 use crate::commons::traits::Runner;
@@ -27,7 +25,7 @@ impl EmergencyFSM {
     pub fn new(priority_event_pub_sub: PriorityEventPubSub) -> Self {
         Self {
             state: EmergencyStates::NotAnEmergency,
-            priority_event_pub_sub: priority_event_pub_sub,
+            priority_event_pub_sub,
         }
     }
 

@@ -1,4 +1,3 @@
-#![no_std]
 //! This module contains constants and types that are shared between the FSMs.
 
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
@@ -8,7 +7,7 @@ use embassy_sync::pubsub::Subscriber;
 
 use crate::commons::data::Event;
 
-pub(crate) mod data;
+pub mod data;
 pub(crate) mod macros;
 pub mod traits;
 

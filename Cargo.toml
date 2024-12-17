@@ -4,6 +4,8 @@ default-members = ["crates/main"]
 resolver = "2"
 
 [workspace.dependencies]
+fdcan = {version = "0.2.1", features = ["fdcan_h7"]}
+stm32h7xx-hal = {version = "0.16.0", features = ["stm32h753v","can", "device-selected"]}
 embassy-stm32 = { version = "*", features = [
     "defmt",
     "stm32h753zi",
@@ -32,6 +34,7 @@ embassy-net = { version = "*", features = [
     "defmt",
 ] }
 embassy-time = { version = "*" }
+embassy-futures = {version = "*"}
 
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",
@@ -47,6 +50,7 @@ embedded-io-async = { version = "0.6.1" }
 embedded-storage = { version = "0.3.1" }
 panic-probe = { version = "0.3", features = ["print-defmt"] }
 panic-halt = "0.2.0"
+panic-semihosting = "0.6.0"
 futures = { version = "0.3.17", default-features = false, features = [
     "async-await",
 ] }
@@ -69,6 +73,7 @@ embassy-boot-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6
 embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
 embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
 embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+embassy-futures = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
 
 defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-rtt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }

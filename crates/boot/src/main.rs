@@ -1,205 +1,233 @@
 #![no_std]
 #![no_main]
 
+use core::borrow::BorrowMut;
 use core::cell::RefCell;
+use core::mem::MaybeUninit;
+use core::num;
+use core::assert;
+use core::num::NonZero;
+use core::num::NonZeroU16;
+use core::num::NonZeroU8;
+use core::time;
 
-// use defmt::*;
-// use defmt_rtt as _;
-// use panic_abort as _; // requires nightly
-// use panic_itm as _; // logs messages over ITM; requires ITM support
-// use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
-use cortex_m_semihosting::hprintln;
+use defmt::*;
+use defmt_rtt as _;
+use defmt_rtt;
+use panic_probe as _;
+use cortex_m::prelude::_embedded_hal_blocking_delay_DelayUs;
+// use cortex_m_semihosting::hprint;
 use embassy_boot::BootLoaderConfig;
-use embassy_boot_stm32::BlockingFirmwareUpdater;
-use embassy_boot_stm32::BootLoader;
-use embassy_boot_stm32::FirmwareUpdaterConfig;
+use embassy_stm32::can::config;
+use embassy_stm32::can::config::DataBitTiming;
+use embassy_stm32::can::config::NominalBitTiming;
+use embassy_stm32::can::config::TimestampPrescaler;
+use embassy_stm32::can::frame::FdEnvelope;
+use embassy_stm32::can::frame::{FdFrame, Header, Id};
+use embassy_stm32::{bind_interrupts, can, rcc, Config};
 use embassy_executor::Spawner;
-use embassy_net::tcp::TcpSocket;
-use embassy_net::Ipv4Address;
-use embassy_net::Ipv4Cidr;
-use embassy_net::StackResources;
-use embassy_stm32::bind_interrupts;
-use embassy_stm32::eth::generic_smi::GenericSMI;
-use embassy_stm32::eth::Ethernet;
-use embassy_stm32::eth::PacketQueue;
-use embassy_stm32::eth::{self};
-use embassy_stm32::flash::Bank1Region;
-use embassy_stm32::flash::Blocking;
-use embassy_stm32::flash::Flash;
-use embassy_stm32::flash::BANK1_REGION;
-use embassy_stm32::peripherals;
-use embassy_stm32::peripherals::ETH;
-use embassy_stm32::rng::Rng;
-use embassy_stm32::rng::{self};
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::blocking_mutex::Mutex;
-use embassy_time::Timer;
-use embedded_io_async::Write;
-use heapless::Vec;
+use embassy_stm32::can::{TxFdBuf, RxFdBuf};
+use embassy_stm32::can::{BufferedFdCanSender, CanConfigurator};
+use embassy_stm32::lptim::pwm::Ch1;
+use embassy_stm32::peripherals::{self, TIM1, TIM3, FDCAN1};
+use embassy_stm32::time::{Hertz};
+use embassy_stm32::timer::{Channel};
+use embassy_stm32::timer::simple_pwm::{PwmPin, SimplePwm};
+use embassy_stm32::gpio::{AnyPin, Input, Level, Output, Pin, Pull, Speed, OutputType};
+use embassy_time::Delay;
+use embassy_time::Ticker;
+use embassy_time::{Duration, Timer, Instant};
+use core::future::Future;
+use core::arch::asm;
+use cortex_m::{Peripherals, itm};
+use embassy_futures::yield_now;
 // pick a panicking behavior
-use panic_halt as _;
-use rand_core::RngCore;
-use static_cell::StaticCell;
 
-bind_interrupts!(
-    struct Irqs {
-        ETH => eth::InterruptHandler;
-        RNG => rng::InterruptHandler<peripherals::RNG>;
-    }
-);
 
-unsafe fn get_bootloader_state_slice() -> &'static mut [u8] {
-    extern "C" {
-        static __bootloader_state_start: u8;
-        static __bootloader_state_end: u8;
-    }
-    let len = &__bootloader_state_end as *const u8 as usize
-        - &__bootloader_state_start as *const u8 as usize;
-    unsafe { core::slice::from_raw_parts_mut(__bootloader_state_end as *mut u8, len) }
+
+fn cpu_freq() -> f32 {
+    let mut dwt = cortex_m::Peripherals::take().unwrap().DWT;
+
+    dwt.enable_cycle_counter();
+
+    let start_count = dwt.cyccnt.read();
+    let start_time = Instant::now();
+
+    let mut count: u32 = 100000000;
+    unsafe {    
+        asm!(
+            "0:
+            subs {0}, {0}, #1
+            bne 0b
+            ",
+            inout(reg) count
+        );
+    }   
+
+    let end_time = Instant::now();
+    let end_count = dwt.cyccnt.read(); 
+    let time_passed = end_time - start_time;
+
+    dwt.disable_cycle_counter();
+
+    ((end_count - start_count) as f32)/(time_passed.as_micros() as f32)
 }
 
-// unsafe fn get_bootloader_flash_slice() -> &'static mut [u8] {
-//     extern "C" {
-//         static __bootloader_active_start: u8;
-//         static __bootloader_active_end: u8;
-//     }
-//     let len = &__bootloader_active_end as *const u8 as usize
-//         - &__bootloader_active_start as *const u8 as usize;
-//     unsafe { core::slice::from_raw_parts_mut(__bootloader_active_start as
-// *mut u8, len) } }
+fn generate_config() -> Config {
+    let mut config = Config::default();
+    
+    // Config
+    config.rcc.hsi = Some(rcc::HSIPrescaler::DIV1);
+    config.rcc.pll1 = Some(
+        rcc::Pll {
+            source: rcc::PllSource::HSI,
+            prediv: rcc::PllPreDiv::DIV4, // 64Mhz -> 16MHz
+            mul: rcc::PllMul::MUL60, // 16Mhz -> 960MHz,
+            divp: Some(rcc::PllDiv::DIV2), // 960MHz -> 480MHz
+            divq: Some(rcc::PllDiv::DIV8), // 960MHz -> 120MHz
+            divr: None
+        }
+    );
+    config.rcc.sys = rcc::Sysclk::PLL1_P; // 480MHz
+    config.rcc.ahb_pre = rcc::AHBPrescaler::DIV2; // 240MHz to peripherals
 
-type FlashRef<'a> = Mutex<NoopRawMutex, RefCell<Bank1Region<'a, Blocking>>>;
+    // Bump down peripheral clocks to 120MHz, which seems like the typical max interface frequency and is mandated by Embassy
+    config.rcc.apb1_pre = rcc::APBPrescaler::DIV2;
+    config.rcc.apb2_pre = rcc::APBPrescaler::DIV2;
+    config.rcc.apb3_pre = rcc::APBPrescaler::DIV2;
+    config.rcc.apb4_pre = rcc::APBPrescaler::DIV2;
 
-fn boot_firmware(flash: &FlashRef) -> ! {
-    let bootloader_config = BootLoaderConfig::from_linkerfile_blocking(&flash, &flash, &flash);
-    let offset = bootloader_config.active.offset();
+    // Voltage scaling 0 to support this
+    config.rcc.voltage_scale = rcc::VoltageScale::Scale0;
 
-    let bl = BootLoader::prepare::<_, _, _, 8192>(bootloader_config);
-    let start = BANK1_REGION.base + offset;
+    // 120MHz, must be equal to or less than APB1 bus
+    config.rcc.mux.fdcansel = rcc::mux::Fdcansel::PLL1_Q;
+    //
 
-    unsafe { bl.load(start) }
+    config
 }
 
-unsafe fn update_firmware(flash: &FlashRef) {
-    let config = FirmwareUpdaterConfig::from_linkerfile_blocking(&flash, &flash);
-    let bootloader_state = unsafe { get_bootloader_state_slice() };
-    let fwu = BlockingFirmwareUpdater::new(config, bootloader_state);
-}
+bind_interrupts!(struct CanOneInterrupts {
+    FDCAN1_IT0 => can::IT0InterruptHandler<FDCAN1>;
+    FDCAN1_IT1 => can::IT1InterruptHandler<FDCAN1>;
+});
 
-type Device = Ethernet<'static, ETH, GenericSMI>;
+
+static mut read_buffer: RxFdBuf<5 > = RxFdBuf::new();
+static mut write_buffer: TxFdBuf<1 > = TxFdBuf::new();
+
+const DELAY: u32 = 300_000;
 
 #[embassy_executor::task]
-async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
-    runner.run().await
+async fn blocking_blink(led: AnyPin) {
+    let mut led = Output::new(led, Level::Low, Speed::Medium);
+    let mut delay: Delay = Delay;
+    let mut ticker = Ticker::every(Duration::from_secs(1));
+    loop {
+        led.set_high();
+        delay.delay_us(DELAY as u32);
+        led.set_low();
+
+        ticker.next().await;
+    }
 }
+
+
 
 #[embassy_executor::main]
-async fn main(spawner: Spawner) -> ! {
-    hprintln!("Hello, world!");
+async fn main(spawner: Spawner) {
+    let p = embassy_stm32::init(generate_config());
 
-    let mut config = embassy_stm32::Config::default();
-    {
-        use embassy_stm32::rcc::*;
-        config.rcc.hsi = Some(HSIPrescaler::DIV1);
-        config.rcc.csi = true;
-        config.rcc.hsi48 = Some(Default::default()); // needed for RNG
-        config.rcc.pll1 = Some(Pll {
-            source: PllSource::HSI,
-            prediv: PllPreDiv::DIV4,
-            mul: PllMul::MUL50,
-            divp: Some(PllDiv::DIV2),
-            divq: None,
-            divr: None,
-        });
-        config.rcc.sys = Sysclk::PLL1_P; // 400 Mhz
-        config.rcc.ahb_pre = AHBPrescaler::DIV2; // 200 Mhz
-        config.rcc.apb1_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb2_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb3_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb4_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.voltage_scale = VoltageScale::Scale1;
-    }
-    let p = embassy_stm32::init(config);
-    let layout = Flash::new_blocking(p.FLASH).into_blocking_regions();
-    let flash = Mutex::new(RefCell::new(layout.bank1_region));
+    #[cfg(feature = "read")]
+    spawner.must_spawn(blocking_blink(p.PB0.degrade()));
 
-    // Generate random seed.
-    let mut rng = Rng::new(p.RNG, Irqs);
-    let mut seed = [0; 8];
-    rng.fill_bytes(&mut seed);
-    let seed = u64::from_le_bytes(seed);
+    let mut configurator = CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, CanOneInterrupts);
 
-    let mac_addr = [0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF];
-    hprintln!("Connecting to ETH");
+    // hprintln!("{:?}", configurator.config().nbtr);
+    // hprintln!("{:?}", configurator.config().dbtr);
+    //NominalBitTiming { prescaler: 12, seg1: 8, seg2: 1, sync_jump_width: 1 }
+    // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8, seg2: 1, sync_jump_width: 1 }
+    
+    let config = configurator.config()
+        // Configuration for 1Mb/s
+        .set_nominal_bit_timing(NominalBitTiming {
+            prescaler: NonZeroU16::new(10).unwrap(),
+            seg1: NonZeroU8::new(8).unwrap(),
+            seg2: NonZeroU8::new(3).unwrap(),
+            sync_jump_width: NonZeroU8::new(3).unwrap()
+        })
+        // Configuration for 2Mb/s
+        .set_data_bit_timing(DataBitTiming {
+            transceiver_delay_compensation: true,
+            prescaler: NonZeroU16::new(5).unwrap(),
+            seg1: NonZeroU8::new(7).unwrap(),
+            seg2: NonZeroU8::new(4).unwrap(),
+            sync_jump_width: NonZeroU8::new(4).unwrap(),
+        })
+        .set_tx_buffer_mode(config::TxBufferMode::Priority)
+        .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
 
-    static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
-    // warning: Not all STM32H7 devices have the exact same pins here
-    // for STM32H747XIH, replace p.PB13 for PG12
-    let device = Ethernet::new(
-        PACKETS.init(PacketQueue::<4, 4>::new()),
-        p.ETH,
-        Irqs,
-        p.PA1,  // ref_clk
-        p.PA2,  // mdio
-        p.PC1,  // eth_mdc
-        p.PA7,  // CRS_DV: Carrier Sense
-        p.PC4,  // RX_D0: Received Bit 0
-        p.PC5,  // RX_D1: Received Bit 1
-        p.PG13, // TX_D0: Transmit Bit 0
-        p.PB13, // TX_D1: Transmit Bit 1
-        p.PG11, // TX_EN: Transmit Enable
-        GenericSMI::new(0),
-        mac_addr,
+    configurator.set_config(config);
+
+    // hprintln!("Generated config: {:?}", configurator.config());
+
+    let mut can = configurator.into_normal_mode();
+
+    #[cfg(feature = "read")]
+    let mut can = can.buffered_fd(unsafe{&mut write_buffer}, unsafe{&mut read_buffer});
+
+    // let frame = FdFrame::new_extended(0x0001, 
+    //     &[0xFF; 64]).expect("Frame build error");
+    let header = Header::new_fd(
+        Id::try_from(0x00000001 as u32).expect("Invalid ID"),
+        64,
+        false,
+        true
     );
 
-    let config = embassy_net::Config::dhcpv4(Default::default());
-    // let config = embassy_net::Config::ipv4_static(embassy_net::StaticConfigV4 {
-    //    address: Ipv4Cidr::new(Ipv4Address::new(10, 42, 0, 61), 24),
-    //    dns_servers: Vec::new(),
-    //    gateway: Some(Ipv4Address::new(10, 42, 0, 1)),
-    // });
-
-    // Init network stack
-    static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
-    let (stack, runner) =
-        embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
-
-    // Launch network task
-    spawner.spawn(net_task(runner)).unwrap();
-
-    hprintln!("Waiting for DHCP");
-
-    // Ensure DHCP configuration is up before trying connect
-    stack.wait_config_up().await;
-
-    // Then we can use it!
-    let mut rx_buffer = [0; 1024];
-    let mut tx_buffer = [0; 1024];
+    let frame = FdFrame::new(header, &[0; 64]).expect("Invalid frame");
 
     loop {
-        let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
+        #[cfg(feature = "read")]
+        {
+            let start_time = Instant::now();
+            let mut data_received: usize = 0;
+            let mut received = 0;
 
-        socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
+            for _ in 0..10000 {
+               // hprintln!("Yoo");
+               // hprintln!("Yoo");
+            //    for _ in 0..2 {
+            //         unsafe { read_buffer.try_send(Ok(FdEnvelope{ts: Instant::now(), frame})); }
+            //    }
+               
+               let response = can.read().await;
+               // hprintln!("Yoo");
 
-        // You need to start a server on the host machine, for example: `nc -l 8000`
-        let remote_endpoint = (Ipv4Address::new(10, 42, 0, 1), 8000);
-        hprintln!("connecting...");
-        let r = socket.connect(remote_endpoint).await;
-        if let Err(e) = r {
-            hprintln!("connect error: {:?}", e);
-            Timer::after_secs(1).await;
-            continue;
-        }
-        hprintln!("connected!");
-        loop {
-            let r = socket.write_all(b"Hello\n").await;
-            if let Err(e) = r {
-                hprintln!("write error: {:?}", e);
-                break;
+                match response { 
+                    Ok(ref envelope) => {
+                        data_received += envelope.frame.header().len() as usize;
+                        received += 1;
+                    },
+                    Err(ref bus_error) => {
+                        
+                        // info!("Bus error: {:?}", bus_error.);
+                    }
+                }
             }
-            Timer::after_secs(1).await;
+            
+            let current_time = Instant::now() - start_time;
+            info!("Data rate: {}kb/s", (data_received as u64 * 8 * 1000) / (current_time.as_micros()));
+            info!("Data recieved: {}b", (data_received as u64 * 8));
+            info!("Received {} messages in {}ms", received, current_time.as_micros()/1000)
+        }
+
+        #[cfg(not(feature = "read"))]
+        {
+            can.write_fd(&frame).await;
         }
     }
+    
+    // hprintln!("CPU Freq: {:.0}MHz", cpu_freq());
+}   
 
-    boot_firmware(&flash)
-}

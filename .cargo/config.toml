@@ -1,7 +1,8 @@
 [target.thumbv7em-none-eabihf]
 # add `-d cpu,guest_errors` to debug guest errors
-runner = "probe-rs run --chip STM32H753ZITx"
-# runner = "gdb -q -x openocd.gdb"
+# runner = "qemu-system-arm -cpu cortex-m7 -machine mps2-an500 -nographic -semihosting-config enable=on,target=native -kernel"
+#runner = "arch gdb-multiarch -q -x openocd.gdb"
+runner = "probe-rs run --chip STM32h753zitx --probe 0483:374e:004E003C3233511239363634"
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
 rustflags = [

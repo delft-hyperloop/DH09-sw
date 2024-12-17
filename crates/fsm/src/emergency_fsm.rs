@@ -1,5 +1,3 @@
-#![no_std]
-
 use crate::commons::data::Event;
 use crate::commons::data::PriorityEventPubSub;
 use crate::commons::traits::Runner;

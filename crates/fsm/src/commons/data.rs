@@ -1,4 +1,3 @@
-#![no_std]
 //! This module contains enums and structs shared among the FSMs, as well as
 //! their implementations.
 

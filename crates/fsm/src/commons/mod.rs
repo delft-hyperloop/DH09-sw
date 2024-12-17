@@ -1,4 +1,3 @@
-#![no_std]
 //! This module contains constants and types that are shared between the FSMs.
 
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;

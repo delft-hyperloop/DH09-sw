@@ -3,8 +3,6 @@ name = "main"
 version = "0.1.0"
 edition = "2021"
 
-[features]
-
 [dependencies]
 embassy-stm32.workspace = true
 embassy-sync.workspace = true

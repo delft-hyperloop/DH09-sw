@@ -749,6 +749,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fsm"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "096664d51862fb2f3e608521020ad6602f1ebd80dba97e3ac758e518c970f568"
+
+[[package]]
 name = "futures-core"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -909,6 +915,7 @@ dependencies = [
  "embassy-time",
  "embedded-io-async",
  "embedded-storage",
+ "fsm 0.2.2",
  "heapless 0.8.0",
  "panic-probe",
  "rand_core",

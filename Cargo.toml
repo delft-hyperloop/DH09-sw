@@ -62,6 +62,7 @@ anyhow = "1"
 rtt-target = { version = "*", features=["defmt"]}
 #features = ["defmt"]
 panic-rtt-target = "*"
+fsm = "0.2.2"
 embedded-test  = { version = "0.6.0", features = ["embassy", "defmt"], path = "../embedded-test" }
 
 [patch.crates-io]

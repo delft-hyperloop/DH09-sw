@@ -17,7 +17,8 @@ use main::can::CanInterface;
 use panic_probe as _;
 
 use embassy_stm32::bind_interrupts;
-use embassy_time::Timer;
+use embassy_stm32::gpio::{Level, Output, Speed, Input, Pull};
+use embassy_time::{Duration, Ticker, Timer};
 
 use embassy_stm32::can;
 use rand_core::RngCore as _;
@@ -73,6 +74,42 @@ async fn run_fsm(
     main_fsm.run().await;
 }
 
+/// Number of bits in SSI data package.
+const DATA_LENGTH: u32 = 40;
+
+#[embassy_executor::task]
+async fn ssi_ticker(mut clock: Output<'static>, mut clock_differential: Output<'static>, data: Input<'static>, data_differential: Input<'static>) {
+    // Half of the period, value should be changed
+    let mut ticker = Ticker::every(Duration::from_millis(1));
+
+    // Signal to start sending on next rising edge and wait for period / 2
+    clock.set_low();
+    clock_differential.set_high();
+    ticker.next().await;
+    loop {
+        let mut value = 0u32;
+        // Start receiving each packet?
+        for _ in 0..DATA_LENGTH {
+            clock.set_high();
+            clock_differential.set_low();
+            ticker.next().await;
+
+            if data.is_high() && data_differential.is_high() || data.is_low() && data_differential.is_low() {
+                // Bit flipped, skip message?
+                continue;
+            } else {
+                value |= if data.is_high() {1} else {0};
+            }
+
+            clock.set_low();
+            clock_differential.set_high();
+            ticker.next().await;
+        }
+
+        // What to store value in? Embassy pipe may not be good since SSI is supposed to be real fast and the pipe will wait for its buffer to be freed.
+    }
+}
+
 #[embassy_executor::main]
 async fn main(spawner: Spawner) -> ! {
     defmt::println!("Hello, world!");
@@ -100,6 +137,14 @@ async fn main(spawner: Spawner) -> ! {
         config.rcc.voltage_scale = VoltageScale::Scale1;
     }
     let p = embassy_stm32::init(config);
+
+    // I picked random pins for this, feel free to change them
+    let clock1 = Output::new(p.PA0, Level::High, Speed::Low);
+    let clock2 = Output::new(p.PA1, Level::Low, Speed::Low);
+    let data1 = Input::new(p.PA2, Pull::Down);
+    let data2 = Input::new(p.PA3, Pull::Down);
+
+    spawner.spawn(ssi_ticker(clock1, clock2, data1, data2)).unwrap();
 
     let event_channel = EVENT_CHANNEL.init(EventChannel::new());
     let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());

@@ -2,27 +2,22 @@
 #![no_main]
 
 use embassy_executor::Spawner;
-use embassy_net::{tcp::TcpSocket, Ipv4Address, StackResources};
 use embassy_stm32::{
-    eth::{self, generic_smi::GenericSMI, Ethernet, PacketQueue},
+    eth::{self, generic_smi::GenericSMI, Ethernet},
     peripherals,
-    rng::{self, Rng},
+    rng::{self},
 };
 // use embassy_stm32::rng;
 use defmt::*;
 use defmt_rtt as _;
 use embassy_stm32::peripherals::*;
-use embedded_io_async::Write;
-use main::can::CanInterface;
 use panic_probe as _;
 
 use embassy_stm32::bind_interrupts;
 use embassy_stm32::gpio::{Level, Output, Speed, Input, Pull};
-use embassy_time::{Duration, Ticker, Timer};
+use embassy_time::{Duration, Ticker};
 
 use embassy_stm32::can;
-use rand_core::RngCore as _;
-use static_cell::StaticCell;
 
 use fsm::commons::traits::Runner;
 use fsm::commons::EmergencyChannel;

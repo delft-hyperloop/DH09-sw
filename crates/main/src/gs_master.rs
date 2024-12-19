@@ -166,7 +166,7 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
 
         let remote_endpoint = (Ipv4Address::new(192, 168, 1, 17), 8000);
 
-        let mut sock = loop {
+        let sock = loop {
             let r = sock.connect(remote_endpoint).await;
             if let Err(e) = r {
                 error!("{}", e);

@@ -81,7 +81,12 @@ const DATA_LENGTH: u32 = 41; // 24 (position) + 16 (speed) + 1 (valid)
 async fn ssi_ticker(mut clock: Output<'static>, mut clock_differential: Output<'static>, data: Input<'static>, data_differential: Input<'static>) {
     // Half of the period, value should be changed
     let mut ticker = Ticker::every(Duration::from_millis(1));
+    
     loop {
+        // IDLE clock state
+        clock.set_high();
+        clock_differential.set_high(); 
+
         // Wait for data to be ready (both data high), this allows other processes to run as well
         poll_fn(|ctx| {
             if data.is_low() && data_differential.is_low() {
@@ -95,6 +100,10 @@ async fn ssi_ticker(mut clock: Output<'static>, mut clock_differential: Output<'
         // Holds enough bits for our usecase (=41bits)
         let mut received = 0u64;
         let mut error = false;
+
+        // Transmission hasn't started yet, that happens at first rising edge
+        clock.set_low();
+        clock_differential.set_high(); 
 
         // Start receiving each packet?
         for i in 0..DATA_LENGTH {
@@ -114,6 +123,22 @@ async fn ssi_ticker(mut clock: Output<'static>, mut clock_differential: Output<'
             clock.set_low();
             clock_differential.set_high();
             ticker.next().await;
+        }
+
+        // Send another clock to check that we did reach the end of transmission
+        clock.set_high();
+        clock_differential.set_low();
+
+        if !(data.is_low() && data_differential.is_low()) {
+            error = true;
+        }
+
+        if error {
+            log!("No bueno");
+        } else {
+            // We also need to split the result and decode:
+            // Decoding involves extending the 24bits of the position into a signed 32bit
+            log!("Received: {}", received);
         }
 
         // What to store value in? Embassy pipe may not be good since SSI is supposed to be real fast and the pipe will wait for its buffer to be freed.

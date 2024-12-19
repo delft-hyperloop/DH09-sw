@@ -28,6 +28,11 @@ use fsm::commons::traits::Runner;
 use fsm::commons::EmergencyChannel;
 use fsm::commons::EventChannel;
 use fsm::MainFSM;
+
+// For making polling into an async
+use core::future::poll_fn;
+use core::task::Poll;
+
 // use main::can::CanInterface;
 // use panic_abort as _; // requires nightly
 // use panic_itm as _; // logs messages over ITM; requires ITM support
@@ -75,30 +80,40 @@ async fn run_fsm(
 }
 
 /// Number of bits in SSI data package.
-const DATA_LENGTH: u32 = 40;
+const DATA_LENGTH: u32 = 41; // 24 (position) + 16 (speed) + 1 (valid)
 
 #[embassy_executor::task]
 async fn ssi_ticker(mut clock: Output<'static>, mut clock_differential: Output<'static>, data: Input<'static>, data_differential: Input<'static>) {
     // Half of the period, value should be changed
     let mut ticker = Ticker::every(Duration::from_millis(1));
-
-    // Signal to start sending on next rising edge and wait for period / 2
-    clock.set_low();
-    clock_differential.set_high();
-    ticker.next().await;
     loop {
-        let mut value = 0u32;
+        // Wait for data to be ready (both data high), this allows other processes to run as well
+        poll_fn(|ctx| {
+            if data.is_low() && data_differential.is_low() {
+                return Poll::Ready(());
+            }
+            // We want to be polled ASAP, later this can be based on an interrupt of the GPIO pins
+            ctx.waker().clone().wake(); 
+            return Poll::Pending;
+        }).await;
+
+        // Holds enough bits for our usecase (=41bits)
+        let mut received = 0u64;
+        let mut error = false;
+
         // Start receiving each packet?
-        for _ in 0..DATA_LENGTH {
+        for i in 0..DATA_LENGTH {
             clock.set_high();
             clock_differential.set_low();
+
             ticker.next().await;
 
             if data.is_high() && data_differential.is_high() || data.is_low() && data_differential.is_low() {
                 // Bit flipped, skip message?
-                continue;
+                error = true;
+                break;
             } else {
-                value |= if data.is_high() {1} else {0};
+                received |= (if data.is_high() {1} else {0}) << i;
             }
 
             clock.set_low();
@@ -146,8 +161,8 @@ async fn main(spawner: Spawner) -> ! {
 
     spawner.spawn(ssi_ticker(clock1, clock2, data1, data2)).unwrap();
 
-    let event_channel = EVENT_CHANNEL.init(EventChannel::new());
-    let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
+    // let event_channel = EVENT_CHANNEL.init(EventChannel::new());
+    // let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
 
     info!("Embassy initialized!");
 
@@ -163,97 +178,99 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("CAN Configured");
 
-    spawner
-        .spawn(run_fsm(spawner, event_channel, emergency_channel))
-        .unwrap();
+    loop {}
 
-    info!("FSM started!");
+    // spawner
+    //     .spawn(run_fsm(spawner, event_channel, emergency_channel))
+    //     .unwrap();
 
-    // Generate random seed.
-    let mut rng = Rng::new(p.RNG, Irqs);
-    let mut seed = [0; 8];
-    rng.fill_bytes(&mut seed);
-    let seed = u64::from_le_bytes(seed);
+    // info!("FSM started!");
 
-    let mac_addr = [0x00, 0x07, 0xE9, 0x42, 0xAC, 0x28];
+    // // Generate random seed.
+    // let mut rng = Rng::new(p.RNG, Irqs);
+    // let mut seed = [0; 8];
+    // rng.fill_bytes(&mut seed);
+    // let seed = u64::from_le_bytes(seed);
 
-    static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
-    // warning: Not all STM32H7 devices have the exact same pins here
-    // for STM32H747XIH, replace p.PB13 for PG12
-    let device = Ethernet::new(
-        PACKETS.init(PacketQueue::<4, 4>::new()),
-        p.ETH,
-        Irqs,
-        p.PA1,  // ref_clk
-        p.PA2,  // mdio
-        p.PC1,  // eth_mdc
-        p.PA7,  // CRS_DV: Carrier Sense
-        p.PC4,  // RX_D0: Received Bit 0
-        p.PC5,  // RX_D1: Received Bit 1
-        p.PG13, // TX_D0: Transmit Bit 0
-        p.PB13, // TX_D1: Transmit Bit 1
-        p.PG11, // TX_EN: Transmit Enable
-        GenericSMI::new(0),
-        mac_addr,
-    );
+    // let mac_addr = [0x00, 0x07, 0xE9, 0x42, 0xAC, 0x28];
 
-    let config = embassy_net::Config::dhcpv4(Default::default());
-    // let config = embassy_net::Config::ipv4_static(embassy_net::StaticConfigV4 {
-    //    address: Ipv4Cidr::new(Ipv4Address::new(10, 42, 0, 61), 24),
-    //    dns_servers: Vec::new(),
-    //    gateway: Some(Ipv4Address::new(10, 42, 0, 1)),
-    // });
+    // static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
+    // // warning: Not all STM32H7 devices have the exact same pins here
+    // // for STM32H747XIH, replace p.PB13 for PG12
+    // let device = Ethernet::new(
+    //     PACKETS.init(PacketQueue::<4, 4>::new()),
+    //     p.ETH,
+    //     Irqs,
+    //     p.PA1,  // ref_clk
+    //     p.PA2,  // mdio
+    //     p.PC1,  // eth_mdc
+    //     p.PA7,  // CRS_DV: Carrier Sense
+    //     p.PC4,  // RX_D0: Received Bit 0
+    //     p.PC5,  // RX_D1: Received Bit 1
+    //     p.PG13, // TX_D0: Transmit Bit 0
+    //     p.PB13, // TX_D1: Transmit Bit 1
+    //     p.PG11, // TX_EN: Transmit Enable
+    //     GenericSMI::new(0),
+    //     mac_addr,
+    // );
 
-    // Init network stack
-    static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
-    let (stack, runner) =
-        embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
+    // let config = embassy_net::Config::dhcpv4(Default::default());
+    // // let config = embassy_net::Config::ipv4_static(embassy_net::StaticConfigV4 {
+    // //    address: Ipv4Cidr::new(Ipv4Address::new(10, 42, 0, 61), 24),
+    // //    dns_servers: Vec::new(),
+    // //    gateway: Some(Ipv4Address::new(10, 42, 0, 1)),
+    // // });
 
-    // Launch network task
-    spawner.spawn(net_task(runner)).unwrap();
+    // // Init network stack
+    // static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
+    // let (stack, runner) =
+    //     embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
 
-    // Ensure DHCP configuration is up before trying connect
-    stack.wait_config_up().await;
+    // // Launch network task
+    // spawner.spawn(net_task(runner)).unwrap();
 
-    info!("Hello!");
+    // // Ensure DHCP configuration is up before trying connect
+    // stack.wait_config_up().await;
 
-    // Then we can use it!
-    let mut rx_buffer = [0; 8192];
-    let mut tx_buffer = [0; 8192];
+    // info!("Hello!");
 
-    let mut to_write = [b'H'; 8192];
-    *to_write.last_mut().unwrap() = b'\n';
+    // // Then we can use it!
+    // let mut rx_buffer = [0; 8192];
+    // let mut tx_buffer = [0; 8192];
 
-    loop {
-        info!("Trying!");
+    // let mut to_write = [b'H'; 8192];
+    // *to_write.last_mut().unwrap() = b'\n';
 
-        let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
-        socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
+    // loop {
+    //     info!("Trying!");
 
-        // You need to start a server on the host machine, for example: `nc -l 8000`
-        let remote_endpoint = (Ipv4Address::new(192, 168, 1, 17), 8000);
-        let r = socket.connect(remote_endpoint).await;
-        if let Err(e) = r {
-            error!("{}", e);
-            // hprintln!("connect error: {:?}", e);
-            Timer::after_secs(1).await;
-            continue;
-        }
-        // hprintln!("connected!");
+    //     let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
+    //     socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
 
-        let start_instant = embassy_time::Instant::now();
+    //     // You need to start a server on the host machine, for example: `nc -l 8000`
+    //     let remote_endpoint = (Ipv4Address::new(192, 168, 1, 17), 8000);
+    //     let r = socket.connect(remote_endpoint).await;
+    //     if let Err(e) = r {
+    //         error!("{}", e);
+    //         // hprintln!("connect error: {:?}", e);
+    //         Timer::after_secs(1).await;
+    //         continue;
+    //     }
+    //     // hprintln!("connected!");
 
-        unwrap!(socket.write_all(&to_write).await);
-        unwrap!(socket.flush().await);
+    //     let start_instant = embassy_time::Instant::now();
 
-        let end_instant = embassy_time::Instant::now();
+    //     unwrap!(socket.write_all(&to_write).await);
+    //     unwrap!(socket.flush().await);
 
-        let diff = end_instant - start_instant;
+    //     let end_instant = embassy_time::Instant::now();
 
-        info!("Wrote {} bytes in {}us", to_write.len(), diff.as_micros());
+    //     let diff = end_instant - start_instant;
 
-        socket.close();
-    }
+    //     info!("Wrote {} bytes in {}us", to_write.len(), diff.as_micros());
 
-    hlt()
+    //     socket.close();
+    // }
+
+    // hlt()
 }

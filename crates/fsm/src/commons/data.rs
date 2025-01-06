@@ -33,6 +33,40 @@ pub enum Event {
     },
     LevitationOn,
     LevitationOff,
+
+    #[doc(hidden)]
+    __GUARD,
+}
+
+impl Event {
+    pub fn read_from_buf(buf: [u8; 2]) -> Option<Self> {
+        let event = match buf[0] {
+            0 => Event::NoEvent,
+            1 => Event::StopSubFSMs,
+            2 => Event::StopFSM,
+            3 => Event::Emergency,
+            4 => Event::SystemCheckSuccess,
+            5 => Event::Activate,
+            6 => Event::Charge,
+            7 => Event::StopCharge,
+            8 => Event::Operate,
+            9 => Event::Demo,
+            10 => Event::Cruise,
+            11 => Event::Brake,
+            12 => Event::ShutDown,
+            13 => Event::HighVoltageOn,
+            14 => Event::HighVoltageOff,
+            15 => Event::PropulsionOn,
+            16 => Event::PropulsionOff,
+            17 => Event::Accelerate { velocity_profile: buf[1] },
+            18 => Event::LevitationOn,   
+            19 => Event::LevitationOff,
+
+            _ => return None,
+        };
+
+        Some(event)
+    }
 }
 
 /// Struct used for publishing and polling events from each channel.

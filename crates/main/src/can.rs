@@ -84,6 +84,7 @@ async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>
     loop {
         match can.read_fd().await {
             Ok(envelope) => {
+                defmt::info!("Envelope: {:?}", &envelope);
                 publisher.publish(CanEnvelope { envelope }).await;
             }
             Err(e) => {

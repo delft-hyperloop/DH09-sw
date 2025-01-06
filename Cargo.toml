@@ -5,36 +5,7 @@ resolver = "2"
 
 [workspace.dependencies]
 fdcan = {version = "0.2.1", features = ["fdcan_h7"]}
-stm32h7xx-hal = {version = "0.16.0", features = ["stm32h753v","can", "device-selected"]}
-embassy-stm32 = { version = "*", features = [
-    "defmt",
-    "stm32h753zi",
-    "time-driver-any",
-    "exti",
-    # "memory-x",
-    "unstable-pac",
-    "chrono",
-] }
-embassy-boot = "*"
-embassy-boot-stm32 = "*"
-embassy-sync = { version = "*", features = ["defmt"] }
-embassy-executor = { version = "*", features = [
-    "task-arena-size-32768",
-    "arch-cortex-m",
-    "executor-thread",
-    "defmt",
-    "integrated-timers",
-] }
-embassy-net = { version = "*", features = [
-    "medium-ethernet",
-    "proto-ipv4",
-    "tcp",
-    "dns",
-    "dhcpv4",
-    "defmt",
-] }
-embassy-time = { version = "*" }
-embassy-futures = {version = "*"}
+stm32h7xx-hal = {version = "0.16.0", features = ["stm32h753v", "can", "device-selected"]}
 
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",
@@ -65,16 +36,65 @@ anyhow = "1"
 
 fsm = {path = "crates/fsm"}
 
-[patch.crates-io]
-embassy-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-sync = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-boot = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-boot-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
-embassy-futures = { git = "https://github.com/embassy-rs/embassy", rev = "af6fbb0ee19c5200bb4bafb9a10c7557fbcd460c" }
+[workspace.dependencies.embassy-stm32]
+git = "https://github.com/delft-hyperloop/embassy"
+rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+features = [
+    "defmt",
+    "stm32h753zi",
+    "time-driver-any",
+    "exti",
+    # "memory-x",
+    "unstable-pac",
+    "chrono",
+]
 
+[workspace.dependencies.embassy-boot]
+git = "https://github.com/delft-hyperloop/embassy"
+rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+
+[workspace.dependencies.embassy-boot-stm32]
+git = "https://github.com/delft-hyperloop/embassy"
+rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+
+
+[workspace.dependencies.embassy-sync]
+git = "https://github.com/delft-hyperloop/embassy"
+rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+features = ["defmt"]
+
+[workspace.dependencies.embassy-executor]
+git = "https://github.com/delft-hyperloop/embassy"
+rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+features = [
+    "task-arena-size-32768",
+    "arch-cortex-m",
+    "executor-thread",
+    "defmt",
+    # "integrated-timers",
+]
+
+[workspace.dependencies.embassy-net]
+git = "https://github.com/delft-hyperloop/embassy"
+rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+features = [
+    "medium-ethernet",
+    "proto-ipv4",
+    "tcp",
+    "dns",
+    "dhcpv4",
+    "defmt",
+]
+
+[workspace.dependencies.embassy-time]
+git = "https://github.com/delft-hyperloop/embassy"
+rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+
+[workspace.dependencies.embassy-futures]
+git = "https://github.com/delft-hyperloop/embassy"
+rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+
+[patch.crates-io]
 defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-rtt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-semihosting = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }

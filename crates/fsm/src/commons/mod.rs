@@ -5,7 +5,7 @@ use embassy_sync::pubsub::PubSubChannel;
 use embassy_sync::pubsub::Publisher;
 use embassy_sync::pubsub::Subscriber;
 
-use crate::commons::data::Event;
+pub use crate::commons::data::Event;
 
 pub(crate) mod data;
 pub(crate) mod macros;

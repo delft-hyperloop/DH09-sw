@@ -19,12 +19,6 @@ use static_cell::StaticCell;
 
 type GsCommsLayerImpl = EthernetGsCommsLayer;
 
-/// Main task responsible for communicating with the ground station.
-#[embassy_executor::task]
-async fn gs_main(master: GsMaster<GsCommsLayerImpl>) -> ! {
-    loop {}
-}
-
 pub struct GsMaster<C: GsCommsLayer> {
     comms: C,
 }
@@ -41,23 +35,39 @@ impl GsMaster<GsCommsLayerImpl> {
     }
 }
 
+impl<C: GsCommsLayer> GsMaster<C> {
+    pub fn subscribe(&self) -> RxSubscriber<'_> {
+        self.comms.subscribe()
+    }
+
+    pub fn transmitter(&self) -> TxSender<'_> {
+        self.comms.transmitter()
+    }
+}
+
 #[derive(Clone, Debug)]
-struct GsToPodMessage {}
+pub struct GsToPodMessage {
+    pub fsm_event: fsm::commons::Event,
+}
 
 impl GsToPodMessage {
     const SIZE: usize = 8;
 
     pub fn read_from_buf(buf: &[u8; Self::SIZE]) -> Self {
-        Self {}
+        let fsm_event = unwrap!(fsm::commons::Event::read_from_buf([buf[0], buf[1]]));
+
+        Self {
+            fsm_event,
+        }
     }
 }
 
 #[derive(Clone, Debug)]
-struct PodToGsMessage {}
+pub struct PodToGsMessage {}
 
 pub trait GsCommsLayer {
     fn subscribe(&self) -> RxSubscriber<'_>;
-    async fn send(&self, message: PodToGsMessage);
+    fn transmitter(&self) -> TxSender<'_>;
 }
 
 pub trait GsCommsLayerInitializable {
@@ -88,8 +98,8 @@ impl GsCommsLayer for EthernetGsCommsLayer {
         unwrap!(self.cc.rx_channel.subscriber())
     }
 
-    async fn send(&self, message: PodToGsMessage) {
-        self.cc.tx_channel.send(message).await;
+    fn transmitter(&self) -> TxSender<'_> {
+        self.cc.tx_channel.sender()
     }
 }
 

@@ -44,7 +44,7 @@ impl Event {
             return None;
         }
 
-        let event = unsafe {core::mem::transmute_copy::<[u8; 2], Event>(&buf)}
+        let event = unsafe {core::mem::transmute_copy::<[u8; 2], Event>(&buf)};
 
         Some(event)
     }

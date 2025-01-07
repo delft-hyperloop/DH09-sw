@@ -10,6 +10,7 @@ use crate::commons::SubscriberEmergency;
 
 /// Enum representing different types of events that the FSMs should handle.
 #[derive(Clone, PartialEq, Debug, Copy, PartialOrd)]
+#[repr(u8)]
 pub enum Event {
     NoEvent,
     StopSubFSMs,
@@ -39,8 +40,12 @@ pub enum Event {
 }
 
 impl Event {
+    const fn guard_event_tag() -> u8 {
+        unsafe {core::mem::transmute::<Event, [u8; 2]>(Event::__GUARD)[0]}
+    }
+
     pub fn read_from_buf(buf: [u8; 2]) -> Option<Self> {
-        if buf[0] >= Event::__GUARD {
+        if buf[0] >= Self::guard_event_tag() {
             return None;
         }
 

@@ -9,7 +9,7 @@ use crate::commons::SubscriberChannel;
 use crate::commons::SubscriberEmergency;
 
 /// Enum representing different types of events that the FSMs should handle.
-#[derive(Clone, PartialEq, Debug, Copy)]
+#[derive(Clone, PartialEq, Debug, Copy, PartialOrd)]
 pub enum Event {
     NoEvent,
     StopSubFSMs,
@@ -40,30 +40,11 @@ pub enum Event {
 
 impl Event {
     pub fn read_from_buf(buf: [u8; 2]) -> Option<Self> {
-        let event = match buf[0] {
-            0 => Event::NoEvent,
-            1 => Event::StopSubFSMs,
-            2 => Event::StopFSM,
-            3 => Event::Emergency,
-            4 => Event::SystemCheckSuccess,
-            5 => Event::Activate,
-            6 => Event::Charge,
-            7 => Event::StopCharge,
-            8 => Event::Operate,
-            9 => Event::Demo,
-            10 => Event::Cruise,
-            11 => Event::Brake,
-            12 => Event::ShutDown,
-            13 => Event::HighVoltageOn,
-            14 => Event::HighVoltageOff,
-            15 => Event::PropulsionOn,
-            16 => Event::PropulsionOff,
-            17 => Event::Accelerate { velocity_profile: buf[1] },
-            18 => Event::LevitationOn,   
-            19 => Event::LevitationOff,
+        if buf[0] >= Event::__GUARD {
+            return None;
+        }
 
-            _ => return None,
-        };
+        let event = unsafe {core::mem::transmute_copy::<[u8; 2], Event>(&buf)};
 
         Some(event)
     }

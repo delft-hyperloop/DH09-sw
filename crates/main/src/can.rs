@@ -171,4 +171,8 @@ impl CanInterface {
     pub fn new_subscriber(&self) -> CanRxSubscriber<'_> {
         unwrap!(self.rx_channel.subscriber())
     }
+
+    pub fn new_sender(&self) -> CanTxSender<'_> {
+        self.tx_channel.sender()
+    }
 }

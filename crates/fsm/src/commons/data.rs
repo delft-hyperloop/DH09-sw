@@ -44,7 +44,7 @@ impl Event {
             return None;
         }
 
-        let event = unsafe {core::mem::transmute_copy::<[u8; 2], Event>(&buf)};
+        let event = unsafe {core::mem::transmute_copy::<[u8; 2], Event>(&buf)}
 
         Some(event)
     }
@@ -60,7 +60,7 @@ pub struct PriorityEventPubSub {
 
 impl core::fmt::Debug for PriorityEventPubSub {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "hello:)")
+        write!(f, "PriorityEventPubSub {{...}}")
     }
 }
 

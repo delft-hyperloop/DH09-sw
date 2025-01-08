@@ -1,7 +1,7 @@
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_net::{
-    tcp::{TcpReader, TcpSocket},
+    tcp::{TcpReader, TcpSocket, TcpWriter},
     Ipv4Address, StackResources,
 };
 use embassy_stm32::{
@@ -14,7 +14,7 @@ use embassy_sync::{
     pubsub::{PubSubChannel, Publisher, Subscriber},
 };
 use embassy_time::Timer;
-use embedded_io_async::Read;
+use embedded_io_async::{Read, Write};
 use static_cell::StaticCell;
 
 type GsCommsLayerImpl = EthernetGsCommsLayer;
@@ -124,7 +124,7 @@ impl EthernetGsCommsLayerInitializer {
 const TX_CAP: usize = 4;
 type TxChannel = Channel<NoopRawMutex, PodToGsMessage, TX_CAP>;
 type TxReceiver<'a> = embassy_sync::channel::Receiver<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
-type TxSender<'a> = embassy_sync::channel::Sender<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
+pub type TxSender<'a> = embassy_sync::channel::Sender<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
 
 const RX_CAP: usize = 8;
 const RX_SUBS: usize = 4;
@@ -140,6 +140,16 @@ async fn rx_task(mut rx: TcpReader<'static>, publisher: RxPublisher<'static>) ->
     loop {
         unwrap!(rx.read_exact(&mut buf).await);
         publisher.publish(GsToPodMessage::read_from_buf(&buf)).await;
+    }
+}
+
+#[embassy_executor::task]
+async fn tx_task(mut tx: TcpWriter<'static>, mut receiver: TxReceiver<'static>) -> ! {
+    loop {
+        let msg = receiver.receive().await;
+        // TODO: convert message to bytes
+        let bytes: [u8; 6] = [b'H', b'y', b't', b'e', b's', b'\n'];
+        unwrap!(tx.write_all(&bytes).await);
     }
 }
 
@@ -174,9 +184,9 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         let mut sock = TcpSocket::new(stack, rx, tx);
         sock.set_timeout(Some(embassy_time::Duration::from_secs(10)));
 
-        let remote_endpoint = (Ipv4Address::new(192, 168, 1, 17), 8000);
+        let remote_endpoint = (Ipv4Address::new(192, 168, 1, 16), 8000);
 
-        let mut sock = loop {
+        let sock = loop {
             let r = sock.connect(remote_endpoint).await;
             if let Err(e) = r {
                 error!("{}", e);
@@ -203,6 +213,10 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         let rx_publisher = unwrap!(core.rx_channel.publisher());
 
         unwrap!(spawner.spawn(rx_task(rx, rx_publisher)));
+
+        let tx_subscriber = core.tx_channel.receiver();
+
+        unwrap!(spawner.spawn(tx_task(tx, tx_subscriber)));
 
         EthernetGsCommsLayer { cc: core }
     }

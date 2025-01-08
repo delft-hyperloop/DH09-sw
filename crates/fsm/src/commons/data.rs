@@ -9,7 +9,7 @@ use crate::commons::SubscriberChannel;
 use crate::commons::SubscriberEmergency;
 
 /// Enum representing different types of events that the FSMs should handle.
-#[derive(Clone, PartialEq, Debug, Copy, PartialOrd)]
+#[derive(Clone, PartialEq, Debug, Copy, PartialOrd, defmt::Format)]
 #[repr(u8)]
 pub enum Event {
     NoEvent,

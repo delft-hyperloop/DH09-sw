@@ -1,3 +1,5 @@
+//! QASALKJVNAJKL
+
 #![no_std]
 #![no_main]
 
@@ -39,6 +41,7 @@ use main::gs_master;
 use main::gs_master::EthernetGsCommsLayerInitializer;
 use main::gs_master::GsCommsLayer;
 use main::gs_master::GsMaster;
+use main::gs_master::PodToGsMessage;
 use panic_probe as _;
 use rand_core::RngCore as _;
 use static_cell::StaticCell;
@@ -210,7 +213,7 @@ async fn main(spawner: Spawner) -> ! {
     // let mut can = can.into_internal_loopback_mode();
     // let mut can = can.into_normal_mode();
 
-    let can = CanInterface::new(can, spawner);
+    // let can = CanInterface::new(can, spawner);
 
     info!("CAN Configured");
 
@@ -262,6 +265,10 @@ async fn main(spawner: Spawner) -> ! {
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, event_channel, emergency_channel)));
 
+    loop {
+        gstx.send(PodToGsMessage {}).await;
+    }
+
     // loop {
     //     info!("Trying!");
 
@@ -293,41 +300,43 @@ async fn main(spawner: Spawner) -> ! {
     //     socket.close();
     // }
 
-    // loop {
-    //     {
-    //         // let start_time = Instant::now();
-    //         let mut data_received: usize = 0;
-    //         let mut received = 0;
+    // let canrx = can.new_subscriber();
 
-    //         for _ in 0..10000 {
-    //             // hprintln!("Yoo");
-    //             // hprintln!("Yoo");
-    //             //    for _ in 0..2 {
-    //             //         unsafe { read_buffer.try_send(Ok(FdEnvelope{ts: Instant::now(),
-    //             // frame})); }    }
+    loop {
+        {
+            // let start_time = Instant::now();
+            let mut data_received: usize = 0;
+            let mut received = 0;
 
-    //             let response = can.read_fd().await;
-    //             // hprintln!("Yoo");
+            for _ in 0..10000 {
+                // hprintln!("Yoo");
+                // hprintln!("Yoo");
+                //    for _ in 0..2 {
+                //         unsafe { read_buffer.try_send(Ok(FdEnvelope{ts: Instant::now(),
+                // frame})); }    }
 
-    //             match response {
-    //                 Ok(ref envelope) => {
-    //                     data_received += envelope.frame.header().len() as usize;
-    //                     received += 1;
-    //                 }
-    //                 Err(ref bus_error) => {
-    //                     info!("Bus error: {:?}", bus_error);
-    //                 }
-    //             }
-    //         }
+                let response = can.read_fd().await;
+                // hprintln!("Yoo");
 
-    //         // let current_time = Instant::now() - start_time;
-    //         // info!("Data rate: {}kb/s", (data_received as u64 * 8 * 1000) /
-    //         // (current_time.as_micros()));
-    //         info!("Data recieved: {}b", (data_received as u64 * 8));
-    //         // info!("Received {} messages in {}ms", received,
-    //         // current_time.as_micros()/1000)
-    //     }
-    // }
+                match response {
+                    Ok(ref envelope) => {
+                        data_received += envelope.frame.header().len() as usize;
+                        received += 1;
+                    }
+                    Err(ref bus_error) => {
+                        info!("Bus error: {:?}", bus_error);
+                    }
+                }
+            }
+
+            // let current_time = Instant::now() - start_time;
+            // info!("Data rate: {}kb/s", (data_received as u64 * 8 * 1000) /
+            // (current_time.as_micros()));
+            info!("Data recieved: {}b", (data_received as u64 * 8));
+            // info!("Received {} messages in {}ms", received,
+            // current_time.as_micros()/1000)
+        }
+    }
 
     hlt()
 }

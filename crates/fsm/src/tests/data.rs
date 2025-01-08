@@ -65,4 +65,9 @@ pub mod tests {
             assert_eq!(event, polled_event);
         }
     }
+
+    #[test]
+    fn event_is_2_bytes() {
+        assert_eq!(2, core::mem::size_of::<Event>());
+    }
 }

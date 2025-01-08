@@ -34,6 +34,9 @@ pub trait Runner {
                 let event = self.get_pub_sub_channel()
                     .get_event()
                     .await;
+
+                defmt::info!("Received event: {:?}", event);
+
                 if !self.handle_events(event).await {
                     break;
                 }

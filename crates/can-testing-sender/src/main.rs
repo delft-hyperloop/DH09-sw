@@ -164,29 +164,29 @@ async fn main(spawner: Spawner) {
     // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8,
     // seg2: 1, sync_jump_width: 1 }
 
-    configurator.set_bitrate(250_000);
+    // configurator.set_bitrate(250_000);
 
-    // let config = configurator
-    //     .config()
-    //     // Configuration for 1Mb/s
-    //     .set_nominal_bit_timing(NominalBitTiming {
-    //         prescaler: NonZeroU16::new(10).unwrap(),
-    //         seg1: NonZeroU8::new(8).unwrap(),
-    //         seg2: NonZeroU8::new(3).unwrap(),
-    //         sync_jump_width: NonZeroU8::new(3).unwrap(),
-    //     })
-    //     // Configuration for 2Mb/s
-    //     .set_data_bit_timing(DataBitTiming {
-    //         transceiver_delay_compensation: true,
-    //         prescaler: NonZeroU16::new(5).unwrap(),
-    //         seg1: NonZeroU8::new(7).unwrap(),
-    //         seg2: NonZeroU8::new(4).unwrap(),
-    //         sync_jump_width: NonZeroU8::new(4).unwrap(),
-    //     })
-    //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
-    //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+    let config = configurator
+        .config()
+        // Configuration for 1Mb/s
+        .set_nominal_bit_timing(NominalBitTiming {
+            prescaler: NonZeroU16::new(10).unwrap(),
+            seg1: NonZeroU8::new(8).unwrap(),
+            seg2: NonZeroU8::new(3).unwrap(),
+            sync_jump_width: NonZeroU8::new(3).unwrap(),
+        })
+        // Configuration for 2Mb/s
+        .set_data_bit_timing(DataBitTiming {
+            transceiver_delay_compensation: true,
+            prescaler: NonZeroU16::new(5).unwrap(),
+            seg1: NonZeroU8::new(7).unwrap(),
+            seg2: NonZeroU8::new(4).unwrap(),
+            sync_jump_width: NonZeroU8::new(4).unwrap(),
+        })
+        .set_tx_buffer_mode(config::TxBufferMode::Priority)
+        .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
 
-    // configurator.set_config(config);
+    configurator.set_config(config);
 
     // hprintln!("Generated config: {:?}", configurator.config());
 

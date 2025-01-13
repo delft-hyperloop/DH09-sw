@@ -144,7 +144,7 @@ async fn rx_task(mut rx: TcpReader<'static>, publisher: RxPublisher<'static>) ->
 }
 
 #[embassy_executor::task]
-async fn tx_task(mut tx: TcpWriter<'static>, mut receiver: TxReceiver<'static>) -> ! {
+async fn tx_task(mut tx: TcpWriter<'static>, receiver: TxReceiver<'static>) -> ! {
     loop {
         let msg = receiver.receive().await;
         // TODO: convert message to bytes

@@ -96,25 +96,25 @@ impl_transition!(OperatingFSM, OperatingStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `OperatingStates`.
-const ENTRY_FUNCTION_MAP: [fn(); 5] = [
-    || (), // Demo
-    || (), // Accelerating
+const ENTRY_FUNCTION_MAP: [fn(&mut OperatingFSM); 5] = [
+    |op_fsm| (), // Demo
+    |op_fsm| (), // Accelerating
     enter_braking,
-    || (), // Cruising
-    || (), // Shut Down
+    |op_fsm| (), // Cruising
+    |op_fsm| (), // Shut Down
 ];
 
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `OperatingStates`.
-const EXIT_FUNCTION_MAP: [fn(); 5] = [
-    || (), // Demo
-    || (), // Accelerating
-    || (), // Braking
-    || (), // Cruising
-    || (), // Shut Down
+const EXIT_FUNCTION_MAP: [fn(&mut OperatingFSM); 5] = [
+    |op_fsm| (), // Demo
+    |op_fsm| (), // Accelerating
+    |op_fsm| (), // Braking
+    |op_fsm| (), // Cruising
+    |op_fsm| (), // Shut Down
 ];
 
-fn enter_braking() {
+fn enter_braking(op_fsm: &mut OperatingFSM) {
     // TODO: Send braking command to braking PCB
 }

@@ -75,17 +75,17 @@ impl_transition!(LevitationFSM, LevitationStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `LevitationStates`.
-const ENTRY_FUNCTION_MAP: [fn(); 2] = [enter_levitation_off, enter_levitation_on];
+const ENTRY_FUNCTION_MAP: [fn(&mut LevitationFSM); 2] = [enter_levitation_off, enter_levitation_on];
 
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `LevitationStates`.
-const EXIT_FUNCTION_MAP: [fn(); 2] = [|| (), || ()];
+const EXIT_FUNCTION_MAP: [fn(&mut LevitationFSM); 2] = [|levi_fsm| (), |levi_fsm| ()];
 
-fn enter_levitation_off() {
+fn enter_levitation_off(levi_fsm: &mut LevitationFSM) {
     // TODO
 }
 
-fn enter_levitation_on() {
+fn enter_levitation_on(levi_fsm: &mut LevitationFSM) {
     // TODO
 }

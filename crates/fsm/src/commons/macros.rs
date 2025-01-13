@@ -52,14 +52,6 @@ macro_rules! impl_runner_get_sub_channel {
 macro_rules! impl_transition {
     ($fsm_struct:ident, $fsm_states: ident) => {
         impl Transition<$fsm_states> for $fsm_struct {
-            fn entry_method(&mut self) -> fn() {
-                ENTRY_FUNCTION_MAP[self.state as usize]
-            }
-
-            fn exit_method(&mut self) -> fn() {
-                EXIT_FUNCTION_MAP[self.state as usize]
-            }
-
             fn set_state(&mut self, new_state: $fsm_states) {
                 self.state = new_state;
             }

@@ -1,4 +1,7 @@
+use core::future::Future;
 use core::sync::atomic::Ordering;
+
+use heapless::pool::boxed::Box;
 
 use crate::commons::data::Event;
 use crate::commons::data::PriorityEventPubSub;
@@ -89,17 +92,19 @@ impl_transition!(HighVoltageFSM, HVStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `HVStates`.
-const ENTRY_FUNCTION_MAP: [fn(); 2] = [enter_high_voltage_off, enter_high_voltage_on];
+const ENTRY_FUNCTION_MAP: [fn(&mut HighVoltageFSM); 2] = [enter_high_voltage_off, enter_high_voltage_on];
 
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `HVStates`.
-const EXIT_FUNCTION_MAP: [fn(); 2] = [|| (), || ()];
+const EXIT_FUNCTION_MAP: [fn(&mut HighVoltageFSM); 2] = [|hvfsm| (), |hvfsm| ()];
 
-fn enter_high_voltage_on() {
+fn enter_high_voltage_on(hvfsm: &mut HighVoltageFSM) {
     // TODO: Send CAN command to turn on high voltage
+
+    hvfsm.priority_event_pub_sub.add_event(&Event::HighVoltageOnRelay);
 }
 
-fn enter_high_voltage_off() {
+fn enter_high_voltage_off(hvfsm: &mut HighVoltageFSM) {
     // TODO: Send CAN command to turn off high voltage
 }

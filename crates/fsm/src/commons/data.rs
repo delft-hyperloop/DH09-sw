@@ -26,7 +26,9 @@ pub enum Event {
     Brake,
     ShutDown,
     HighVoltageOn,
+    HighVoltageOnRelay,
     HighVoltageOff,
+    HighVoltageOffRelay,
     PropulsionOn,
     PropulsionOff,
     Accelerate {

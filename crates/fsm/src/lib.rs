@@ -249,33 +249,33 @@ impl_transition!(MainFSM, MainStates);
 /// Maps an index to a function that should be called upon entering a new state.
 ///
 /// The indexes correspond to the index of each state in `MainStates`.
-const ENTRY_FUNCTION_MAP: [fn(); 6] = [
-    || (), // SystemCheck
-    || (), // Idle
-    || (), // Charging
+const ENTRY_FUNCTION_MAP: [fn(&mut MainFSM); 6] = [
+    |main_fsm| (), // SystemCheck
+    |main_fsm| (), // Idle
+    |main_fsm| (), // Charging
     enter_active,
-    || (), // FlashingCode
+    |main_fsm| (), // FlashingCode
     enter_operating,
 ];
 
 /// Maps an index to a function that should be called upon exiting a state.
 ///
 /// The indexes correspond to the index of each state in `MainStates`.
-const EXIT_FUNCTION_MAP: [fn(); 6] = [
-    || (), // SystemCheck
-    || (), // Idle
-    || (), // Charging
-    || (), // Active
-    || (), // FlashingCode
-    || (), // Operating
+const EXIT_FUNCTION_MAP: [fn(&mut MainFSM); 6] = [
+    |main_fsm| (), // SystemCheck
+    |main_fsm| (), // Idle
+    |main_fsm| (), // Charging
+    |main_fsm| (), // Active
+    |main_fsm| (), // FlashingCode
+    |main_fsm| (), // Operating
 ];
 
 /// Signals the tasks tied to each sub-FSM that they should start running.
-fn enter_operating() {
+fn enter_operating(main_fsm: &mut MainFSM) {
     RUN_SUB_FSM.signal(true);
 }
 
-fn enter_active() {
+fn enter_active(main_fsm: &mut MainFSM) {
     // TODO: Send CAN command to turn on high voltage
     HIGH_VOLTAGE_STATE.store(true, Ordering::Relaxed);
     // TODO: Close SDC while keeping brakes engaged

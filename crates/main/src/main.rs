@@ -1,7 +1,7 @@
-//! QASALKJVNAJKL
+//! Main
 
-#![no_std]
 #![no_main]
+#![no_std]
 
 use core::num::NonZeroU16;
 use core::num::NonZeroU8;
@@ -14,6 +14,8 @@ use embassy_net::tcp::TcpSocket;
 use embassy_net::Ipv4Address;
 use embassy_net::StackResources;
 use embassy_stm32::bind_interrupts;
+use embassy_time::Timer;
+
 use embassy_stm32::can;
 use embassy_stm32::can::config::DataBitTiming;
 use embassy_stm32::can::config::NominalBitTiming;
@@ -46,6 +48,7 @@ use panic_probe as _;
 use rand_core::RngCore as _;
 use static_cell::StaticCell;
 
+
 bind_interrupts!(
     struct Irqs {
         ETH => eth::InterruptHandler;
@@ -77,14 +80,16 @@ async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
 static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
     static_cell::StaticCell::new();
+static FSM_STATE: static_cell::StaticCell<Mutex<NoopRawMutex, MainStates>> = static_cell::StaticCell::new();
 
 #[embassy_executor::task]
 async fn run_fsm(
     spawner: Spawner,
     event_channel: &'static EventChannel,
     emergency_channel: &'static EmergencyChannel,
+    state: &'static Mutex<NoopRawMutex, MainStates>,
 ) {
-    let mut main_fsm = MainFSM::new(spawner, event_channel, emergency_channel);
+    let mut main_fsm = MainFSM::new(spawner, state, event_channel, emergency_channel).await;
     main_fsm.run().await;
 }
 
@@ -169,6 +174,7 @@ async fn main(spawner: Spawner) -> ! {
 
     let event_channel = EVENT_CHANNEL.init(EventChannel::new());
     let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
+    let fsm_state = FSM_STATE.init(Mutex::new(MainStates::SystemCheck));
 
     info!("Embassy initialized!");
 
@@ -218,7 +224,7 @@ async fn main(spawner: Spawner) -> ! {
     info!("CAN Configured");
 
     spawner
-        .spawn(run_fsm(spawner, event_channel, emergency_channel))
+        .spawn(run_fsm(spawner, event_channel, emergency_channel, fsm_state))
         .unwrap();
 
     info!("FSM started!");

@@ -39,6 +39,10 @@ macro_rules! impl_runner_get_sub_channel {
             async fn handle_events(&mut self, event: Event) -> bool {
                 return Self::handle(self, event).await;
             }
+
+            // fn handle_events(&mut self, event: Event) -> impl Future<Output = bool> {
+            //     self::handle(self, event)
+            // }
         }
     };
 }
@@ -52,7 +56,15 @@ macro_rules! impl_runner_get_sub_channel {
 macro_rules! impl_transition {
     ($fsm_struct:ident, $fsm_states: ident) => {
         impl Transition<$fsm_states> for $fsm_struct {
-            fn set_state(&mut self, new_state: $fsm_states) {
+            async fn entry_method(&mut self) -> fn() {
+                ENTRY_FUNCTION_MAP[self.state as usize]
+            }
+
+            async fn exit_method(&mut self) -> fn() {
+                EXIT_FUNCTION_MAP[self.state as usize]
+            }
+
+            async fn set_state(&mut self, new_state: $fsm_states) {
                 self.state = new_state;
             }
         }

@@ -6,9 +6,7 @@ use crate::commons::traits::Runner;
 use crate::commons::traits::Transition;
 use crate::impl_runner_get_sub_channel;
 use crate::impl_transition;
-use crate::HIGH_VOLTAGE_STATE;
-use crate::LEVITATION_STATE;
-use crate::PROPULSION_STATE;
+use crate::main_fsm::{LEVITATION_STATE, PROPULSION_STATE, HIGH_VOLTAGE_STATE};
 
 /// Enum representing the different states that the `OperatingFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
@@ -22,7 +20,6 @@ pub(super) enum OperatingStates {
 pub(super) struct OperatingFSM {
     state: OperatingStates,
     priority_event_pub_sub: PriorityEventPubSub,
-    // peripherals: // TODO
 }
 
 impl OperatingFSM {
@@ -49,7 +46,7 @@ impl OperatingFSM {
     /// - `false`: If the FSM receives a `StopSubFSMs` event
     /// - `true`: Otherwise
     async fn handle(&mut self, event: Event) -> bool {
-        // Didn't include emergency event here. It shouldn't be handled here and it will
+        // Didn't include emergency event here. It shouldn't be handled here, and it will
         // be useful to see the state in which this was when the emergency
         // happened.
         match (&self.state, event) {
@@ -63,23 +60,23 @@ impl OperatingFSM {
                     && LEVITATION_STATE.load(Ordering::Relaxed)
                     && PROPULSION_STATE.load(Ordering::Relaxed)
                 {
-                    self.transition(OperatingStates::Accelerating, None);
+                    self.transition(OperatingStates::Accelerating, None).await;
                 }
             }
             (OperatingStates::Demo, Event::ShutDown) => return false,
             (OperatingStates::Accelerating, Event::Cruise) => {
-                self.transition(OperatingStates::Cruising, None)
+                self.transition(OperatingStates::Cruising, None).await
             }
             (OperatingStates::Accelerating, Event::Brake) => {
-                self.transition(OperatingStates::Braking, None)
+                self.transition(OperatingStates::Braking, None).await
             }
             (OperatingStates::Cruising, Event::Brake) => {
-                self.transition(OperatingStates::Braking, None)
+                self.transition(OperatingStates::Braking, None).await
             }
             (OperatingStates::Braking, Event::Demo) => {
                 loop {
                     // if speed == 0 { // TODO
-                    self.transition(OperatingStates::Demo, None);
+                    self.transition(OperatingStates::Demo, None).await;
                     break;
                     // }
                 }

@@ -1,10 +1,11 @@
-use crate::commons::data::Event;
-use crate::commons::data::PriorityEventPubSub;
+//! This module contains the struct used for the Emergency FSM.
+
+use crate::commons::data::{Event, PriorityEventPubSub};
 use crate::commons::traits::Runner;
 use crate::commons::traits::Transition;
 use crate::impl_runner_get_sub_channel;
 use crate::impl_transition;
-use crate::EMERGENCY_STATE;
+use crate::main_fsm::EMERGENCY_STATE;
 
 /// Enum representing the different states that the `EmergencyFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
@@ -15,9 +16,9 @@ pub(super) enum EmergencyStates {
     EmergencyShutDown,
 }
 
+#[derive(Debug)]
 pub(super) struct EmergencyFSM {
     state: EmergencyStates,
-    // peripherals: // TODO
     priority_event_pub_sub: PriorityEventPubSub,
 }
 
@@ -47,11 +48,11 @@ impl EmergencyFSM {
     async fn handle(&mut self, event: Event) -> bool {
         match (&self.state, event) {
             (EmergencyStates::NotAnEmergency, Event::Emergency) => {
-                self.transition(EmergencyStates::Emergency, Some(&EMERGENCY_STATE));
+                self.transition(EmergencyStates::Emergency, Some(&EMERGENCY_STATE)).await;
                 // TODO: Activate EBS?
                 loop {
                     // if speed == 0 { // TODO
-                    self.transition(EmergencyStates::EmergencyStop, None);
+                    self.transition(EmergencyStates::EmergencyStop, None).await;
                     // TODO: Send CAN command to stop levitation
                     break;
                     // }
@@ -60,12 +61,17 @@ impl EmergencyFSM {
                 // TODO: waiting on some answers from tech integration for this
                 // shut_down().await;
 
-                self.transition(EmergencyStates::EmergencyShutDown, None);
+                self.transition(EmergencyStates::EmergencyShutDown, None).await;
             }
             (EmergencyStates::NotAnEmergency, Event::StopSubFSMs) => return false,
             _ => {}
         }
         true
+    }
+
+    #[allow(dead_code)]
+    pub fn get_state(&self) -> &EmergencyStates {
+        &self.state
     }
 }
 

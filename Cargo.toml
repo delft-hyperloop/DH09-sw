@@ -35,6 +35,10 @@ defmt-semihosting = {version = "*", features = []}
 anyhow = "1"
 
 fsm = {path = "crates/fsm"}
+embedded-test  = { version = "0.6.0", features = ["embassy", "defmt"] }
+rtt-target = { version = "*", features=["defmt"]}
+#features = ["defmt"]
+panic-rtt-target = "*"
 
 [workspace.dependencies.embassy-stm32]
 git = "https://github.com/delft-hyperloop/embassy"
@@ -99,3 +103,9 @@ defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac
 defmt-rtt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-semihosting = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-decoder = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
+
+#embedded-tests = {git = "https://github.com/probe-rs/embedded-test", rev = "ecec5b545afd05087bb3f2eab421324ae7641e17"}
+#embedded-tests-macros = {git="https://github.com/probe-rs/embedded-test", rev="ecec5b545afd05087bb3f2eab421324ae7641e17"}
+
+rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }
+#panic-rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }

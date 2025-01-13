@@ -7,7 +7,7 @@ use embassy_sync::pubsub::Subscriber;
 
 pub use crate::commons::data::Event;
 
-pub(crate) mod data;
+pub mod data;
 pub(crate) mod macros;
 pub mod traits;
 

@@ -1,73 +1,43 @@
+//! Tests for the `PriorityEventPubSub` struct defined in commons/data.rs
+
+#![no_std]
+#![no_main]
+
 #[cfg(test)]
-pub mod tests {
-    extern crate alloc;
+#[embedded_test::tests(setup=crate::tests::commons::setup_log())]
+pub mod data_tests {
+    // This is here so we get the entry point for embassy properly
+    extern crate embassy_stm32;
 
-    use alloc::vec;
+    use crate::commons::{EmergencyChannel, EventChannel};
+    use crate::commons::data::{Event, PriorityEventPubSub};
 
-    use static_cell::StaticCell;
+    static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+    static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
+        static_cell::StaticCell::new();
 
-    use crate::commons::data::Event;
-    use crate::commons::data::PriorityEventPubSub;
-    use crate::commons::EmergencyChannel;
-    use crate::commons::EventChannel;
-
-    fn setup() -> PriorityEventPubSub {
-        static EVENT_CHANNEL: StaticCell<EventChannel> = StaticCell::new();
-        static EMERGENCY_CHANNEL: StaticCell<EmergencyChannel> = StaticCell::new();
+    #[test]
+    async fn test_emergency_first() {
         let event_channel = EVENT_CHANNEL.init(EventChannel::new());
         let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
 
-        PriorityEventPubSub::new(
+        let expected_events: [Event; 4] = [Event::NoEvent, Event::SystemCheckSuccess, Event::Activate, Event::Emergency];
+
+        let mut priority_event_pub_sub = PriorityEventPubSub::new(
             event_channel.publisher().unwrap(),
             event_channel.subscriber().unwrap(),
             emergency_channel.publisher().unwrap(),
-            emergency_channel.subscriber().unwrap(),
-        )
-    }
+            emergency_channel.subscriber().unwrap()
+        );
 
-    #[test]
-    async fn test_priority_event_pub_sub() {
-        let mut priority_event_pub_sub = setup();
-
-        let expected_events = vec![
-            Event::HighVoltageOn,
-            Event::LevitationOn,
-            Event::LevitationOff,
-            Event::HighVoltageOff,
-        ];
-
-        for event in expected_events.clone() {
+        for event in expected_events {
             priority_event_pub_sub.add_event(&event).await;
         }
 
-        for event in expected_events {
-            let polled_event = priority_event_pub_sub.get_event();
-            assert_eq!(event, polled_event);
+        assert_eq!(priority_event_pub_sub.get_event().await, Event::Emergency);
+
+        for i in 0..expected_events.len() - 1 {
+            assert_eq!(priority_event_pub_sub.get_event().await, expected_events[i]);
         }
-    }
-
-    #[test]
-    async fn test_emergency_priority_event_pub_sub() {
-        let mut priority_event_pub_sub = setup();
-
-        let expected_events = vec![Event::NoEvent, Event::SystemCheckSuccess, Event::Activate];
-
-        for event in expected_events.clone() {
-            priority_event_pub_sub.add_event(&event).await;
-        }
-        priority_event_pub_sub.add_event(&Event::Emergency).await;
-
-        let event = priority_event_pub_sub.get_event();
-        assert_eq!(Event::Emergency, event);
-
-        for event in expected_events {
-            let polled_event = priority_event_pub_sub.get_event();
-            assert_eq!(event, polled_event);
-        }
-    }
-
-    #[test]
-    fn event_is_2_bytes() {
-        assert_eq!(2, core::mem::size_of::<Event>());
     }
 }

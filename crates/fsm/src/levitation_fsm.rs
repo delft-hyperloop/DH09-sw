@@ -6,8 +6,7 @@ use crate::commons::traits::Runner;
 use crate::commons::traits::Transition;
 use crate::impl_runner_get_sub_channel;
 use crate::impl_transition;
-use crate::LEVITATION_STATE;
-use crate::PROPULSION_STATE;
+use crate::main_fsm::{LEVITATION_STATE, PROPULSION_STATE};
 
 /// Enum representing the different states that the `LevitationFSM` will be in.
 #[derive(Clone, PartialEq, Debug, Copy)]
@@ -18,14 +17,12 @@ pub(super) enum LevitationStates {
 
 pub(super) struct LevitationFSM {
     state: LevitationStates,
-    // peripherals: // TODO
     priority_event_pub_sub: PriorityEventPubSub,
 }
 
 impl LevitationFSM {
     pub fn new(
         priority_event_pub_sub: PriorityEventPubSub,
-        // peripherals:
     ) -> Self {
         Self {
             priority_event_pub_sub,
@@ -58,10 +55,10 @@ impl LevitationFSM {
             (LevitationStates::LevitationOn, Event::LevitationOff)
                 if !PROPULSION_STATE.load(Ordering::Relaxed) =>
             {
-                self.transition(LevitationStates::LevitationOff, Some(&LEVITATION_STATE))
+                self.transition(LevitationStates::LevitationOff, Some(&LEVITATION_STATE)).await
             }
             (LevitationStates::LevitationOff, Event::LevitationOn) => {
-                self.transition(LevitationStates::LevitationOn, Some(&LEVITATION_STATE))
+                self.transition(LevitationStates::LevitationOn, Some(&LEVITATION_STATE)).await
             }
             _ => {}
         }

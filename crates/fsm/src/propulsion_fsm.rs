@@ -4,7 +4,7 @@ use crate::commons::traits::Runner;
 use crate::commons::traits::Transition;
 use crate::impl_runner_get_sub_channel;
 use crate::impl_transition;
-use crate::PROPULSION_STATE;
+use crate::main_fsm::PROPULSION_STATE;
 
 /// Enum representing the different states that the `PropulsionFSM` will be in.
 #[derive(PartialEq, Debug, Clone, Copy)]
@@ -17,20 +17,17 @@ pub(super) enum PropulsionStates {
 pub(super) struct PropulsionFSM {
     state: PropulsionStates,
     priority_event_pub_sub: PriorityEventPubSub,
-    _velocity_profile: u8, /* TODO: Change to actual velocity profile
-                            * peripherals: // TODO */
+    _velocity_profile: u8, // TODO: Change to actual velocity profile
 }
 
 impl PropulsionFSM {
     pub fn new(
         priority_event_pub_sub: PriorityEventPubSub,
-        // peripherals // TODO
     ) -> Self {
         Self {
             priority_event_pub_sub,
             state: PropulsionStates::PropulsionOff,
-            _velocity_profile: 0, /* TODO: Change to actual velocity profile
-                                   * peripherals: // TODO */
+            _velocity_profile: 0, // TODO: Change to actual velocity profile
         }
     }
 
@@ -62,14 +59,14 @@ impl PropulsionFSM {
                 } else if self.state == PropulsionStates::PropulsionOn {
                     // TODO: Send command to turn off propulsion completely
                 }
-                self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE));
+                self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE)).await;
             }
             (PropulsionStates::PropulsionOff, Event::StopSubFSMs) => return false,
             (PropulsionStates::PropulsionOff, Event::PropulsionOn) => {
-                self.transition(PropulsionStates::PropulsionOn, Some(&PROPULSION_STATE))
+                self.transition(PropulsionStates::PropulsionOn, Some(&PROPULSION_STATE)).await
             }
             (PropulsionStates::PropulsionOn, Event::PropulsionOff) => {
-                self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE))
+                self.transition(PropulsionStates::PropulsionOff, Some(&PROPULSION_STATE)).await
             }
             (
                 PropulsionStates::PropulsionOn,
@@ -78,10 +75,10 @@ impl PropulsionFSM {
                 },
             ) => {
                 // TODO: Send self.velocity_profile to propulsion
-                self.transition(PropulsionStates::PropulsionRunning, None)
+                self.transition(PropulsionStates::PropulsionRunning, None).await
             }
             (PropulsionStates::PropulsionRunning, Event::Brake) => {
-                self.transition(PropulsionStates::PropulsionOn, None)
+                self.transition(PropulsionStates::PropulsionOn, None).await
             }
             _ => {}
         }
@@ -109,7 +106,3 @@ fn enter_propulsion_on() {
 fn enter_propulsion_off() {
     // TODO: Send command to turn propulsion off
 }
-
-#[cfg(test)]
-#[path = "tests/propulsion_fsm.rs"]
-mod tests;

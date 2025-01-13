@@ -1,6 +1,7 @@
 //! This module contains enums and structs shared among the FSMs, as well as
 //! their implementations.
 
+use defmt::Format;
 use embassy_sync::pubsub::WaitResult;
 
 use crate::commons::PublisherChannel;
@@ -12,29 +13,48 @@ use crate::commons::SubscriberEmergency;
 #[derive(Clone, PartialEq, Debug, Copy, PartialOrd, defmt::Format)]
 #[repr(u8)]
 pub enum Event {
+    /// No event happened
     NoEvent,
+    /// Stops the sub-FSMs
     StopSubFSMs,
+    /// Stops the FSM
     StopFSM,
+    /// Emergency happened
     Emergency,
+    /// System was checked successfully
     SystemCheckSuccess,
+    /// Activates the pod
     Activate,
+    /// Pod should start charging
     Charge,
+    /// Pod should stop charging
     StopCharge,
-    Operate, // Event to enter the big operating state
+    /// Pod should enter the `operating` state which starts the sub-FSMs
+    Operate,
+    /// Pod should enter the `Demo` state
     Demo,
+    /// Pod should now cruise
     Cruise,
+    /// Pod should brake
     Brake,
+    /// Pod should shut down
     ShutDown,
+    /// High Voltage should turn on
     HighVoltageOn,
-    HighVoltageOnRelay,
+    /// High Voltage should turn off
     HighVoltageOff,
-    HighVoltageOffRelay,
+    /// Propulsion should turn on
     PropulsionOn,
+    /// Propulsion should turn off
     PropulsionOff,
+    /// Pod should start accelerating
     Accelerate {
+        /// The velocity profile used to accelerate
         velocity_profile: u8, // TODO: Change to actual velocity profile
     },
+    /// Levitation should turn on
     LevitationOn,
+    /// Levitation should turn off
     LevitationOff,
 
     #[doc(hidden)]
@@ -72,6 +92,7 @@ impl core::fmt::Debug for PriorityEventPubSub {
 }
 
 impl PriorityEventPubSub {
+    /// Constructor method for the PriorityEventPubSub struct
     pub fn new(
         event_channel_publisher: PublisherChannel,
         event_channel_subscriber: SubscriberChannel,
@@ -132,7 +153,3 @@ impl PriorityEventPubSub {
         }
     }
 }
-
-#[cfg(test)]
-#[path = "../tests/data.rs"]
-mod tests;

@@ -122,7 +122,7 @@ async fn can_tx_task(
             None => {
                 // Success
             }
-            Some(e) => {
+            Some(_e) => {
                 // retransmit_sender.send(envelope).await;
             }
         }

@@ -13,6 +13,7 @@ embassy-stm32 = { version = "*", features = [
     "unstable-pac",
     "chrono",
 ] }
+embassy-futures = "*"
 embassy-boot = "*"
 embassy-boot-stm32 = "*"
 embassy-sync = { version = "*", features = ["defmt"] }
@@ -63,6 +64,7 @@ rtt-target = { version = "*", features=["defmt"]}
 #features = ["defmt"]
 panic-rtt-target = "*"
 embedded-test  = { version = "0.6.0", features = ["embassy", "defmt"], path = "../embedded-test" }
+fsm = { version = "*", path = "crates/fsm" }
 
 [patch.crates-io]
 embassy-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
@@ -72,6 +74,7 @@ embassy-boot-stm32 = { git = "https://github.com/embassy-rs/embassy", rev = "865
 embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
 embassy-net = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
 embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
+embassy-futures = { git = "https://github.com/embassy-rs/embassy", rev = "86578acaa4d4dbed06ed4fcecec25884f6883e82" }
 
 defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
 defmt-rtt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }

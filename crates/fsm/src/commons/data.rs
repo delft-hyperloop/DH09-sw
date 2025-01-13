@@ -1,6 +1,7 @@
 //! This module contains enums and structs shared among the FSMs, as well as
 //! their implementations.
 
+use defmt::Format;
 use embassy_sync::pubsub::WaitResult;
 
 use crate::commons::PublisherChannel;
@@ -9,7 +10,7 @@ use crate::commons::SubscriberChannel;
 use crate::commons::SubscriberEmergency;
 
 /// Enum representing different types of events that the FSMs should handle.
-#[derive(Clone, PartialEq, Eq, Debug, Copy)]
+#[derive(Clone, PartialEq, Eq, Debug, Copy, Format)]
 pub enum Event {
     /// No event happened
     NoEvent,

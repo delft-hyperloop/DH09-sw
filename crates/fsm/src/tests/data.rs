@@ -1,26 +1,23 @@
+//! Tests for the `PriorityEventPubSub` struct defined in commons/data.rs
+
 #![no_std]
 #![no_main]
 
 #[cfg(test)]
-fn setup_log() {
-    rtt_target::rtt_init_defmt!();
-}
-
-#[cfg(test)]
-#[embedded_test::tests(setup=crate::setup_log())]
+#[embedded_test::tests(setup=crate::tests::commons::setup_log())]
 pub mod data_tests {
     // This is here so we get the entry point for embassy properly
     extern crate embassy_stm32;
 
-    use fsm::commons::{EmergencyChannel, EventChannel};
-    use fsm::commons::data::{Event, PriorityEventPubSub};
+    use crate::commons::{EmergencyChannel, EventChannel};
+    use crate::commons::data::{Event, PriorityEventPubSub};
 
     static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
     static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
         static_cell::StaticCell::new();
 
     #[test]
-    async fn test() {
+    async fn test_emergency_first() {
         let event_channel = EVENT_CHANNEL.init(EventChannel::new());
         let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
 

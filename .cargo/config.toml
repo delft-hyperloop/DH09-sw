@@ -6,7 +6,6 @@ runner = "probe-rs run --chip STM32H753ZITx"
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
 rustflags = [
   "-C", "linker=flip-link",
-  "-C", "instrument-coverage",
 ]
 
 [build]

@@ -23,6 +23,8 @@ static_cell.workspace = true
 heapless.workspace = true
 #once_cell = { version = "1.20.2" , features = ["critical-section"], default-features = false, optional = true}
 defmt.workspace = true
+log = "0.4.22"
+embassy-futures.workspace = true
 
 [lints.rust]
 missing_docs = "warn"
@@ -45,6 +47,17 @@ rtt-target.workspace = true
 [[test]]
 name = "data"
 harness = false
+path = "src/tests/data.rs"
+
+[[test]]
+name = "main_fsm"
+harness = false
+path = "src/tests/main_fsm.rs"
+
+[[test]]
+name = "high_voltage_fsm"
+harness = false
+path = "src/tests/high_voltage_fsm.rs"
 
 [lib]
 name = "fsm"

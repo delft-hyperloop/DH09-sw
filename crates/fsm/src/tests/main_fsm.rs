@@ -50,7 +50,7 @@ mod main_fsm_tests {
 
         spawner.spawn(run_fsm(fsm)).unwrap();
 
-        let tools = Tools<MainState> {
+        let tools = Tools::<MainState> {
             event_publisher,
             emergency_publisher,
             state_tracker,

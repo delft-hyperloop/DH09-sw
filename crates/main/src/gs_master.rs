@@ -184,7 +184,7 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         let mut sock = TcpSocket::new(stack, rx, tx);
         sock.set_timeout(Some(embassy_time::Duration::from_secs(10)));
 
-        let remote_endpoint = (Ipv4Address::new(192, 168, 1, 16), 8000);
+        let remote_endpoint = (Ipv4Address::new(192, 168, 1, 17), 8000);
 
         let sock = loop {
             let r = sock.connect(remote_endpoint).await;

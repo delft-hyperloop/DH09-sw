@@ -1,3 +1,5 @@
+//! Lib code.
+
 #![no_std]
 
 pub mod can;

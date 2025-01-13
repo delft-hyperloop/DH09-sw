@@ -16,4 +16,7 @@ pub(crate) mod high_voltage_fsm;
 pub(crate) mod levitation_fsm;
 pub(crate) mod operating_fsm;
 pub(crate) mod propulsion_fsm;
+#[cfg(test)]
 mod tests;
+
+pub use main_fsm::{MainFSM, MainStates};

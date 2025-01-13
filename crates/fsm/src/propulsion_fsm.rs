@@ -87,22 +87,27 @@ impl PropulsionFSM {
 }
 
 impl_runner_get_sub_channel!(PropulsionFSM);
-impl_transition!(PropulsionFSM, PropulsionStates);
+impl_transition!(PropulsionFSM, PropulsionStates,
+    GetState: get_state,
+    SetState: set_state,
 
-/// Maps an index to a function that should be called upon entering a new state.
-///
-/// The indexes correspond to the index of each state in `PropulsionStates`.
-const ENTRY_FUNCTION_MAP: [fn(); 3] = [enter_propulsion_off, enter_propulsion_on, || ()];
+    OnEntry:
+    PropulsionOff => enter_propulsion_off,
+    PropulsionOn => enter_propulsion_on,
+);
 
-/// Maps an index to a function that should be called upon exiting a state.
-///
-/// The indexes correspond to the index of each state in `PropulsionStates`.
-const EXIT_FUNCTION_MAP: [fn(); 3] = [|| (), || (), || ()];
+async fn get_state(fsm: &PropulsionFSM) -> PropulsionStates {
+    *fsm.get_state()
+}
 
-fn enter_propulsion_on() {
+async fn set_state(fsm: &mut PropulsionFSM, state: PropulsionStates) {
+    fsm.state = state;
+}
+
+async fn enter_propulsion_on(fsm: &mut PropulsionFSM) {
     // TODO: Send command to turn on propulsion
 }
 
-fn enter_propulsion_off() {
+async fn enter_propulsion_off(fsm: &mut PropulsionFSM) {
     // TODO: Send command to turn propulsion off
 }

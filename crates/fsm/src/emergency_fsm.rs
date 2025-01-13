@@ -76,14 +76,16 @@ impl EmergencyFSM {
 }
 
 impl_runner_get_sub_channel!(EmergencyFSM);
-impl_transition!(EmergencyFSM, EmergencyStates);
+impl_transition!(EmergencyFSM, EmergencyStates,
+    GetState: get_state,
+    SetState: set_state,
+);
 
-/// Maps an index to a function that should be called upon entering a new state.
-///
-/// The indexes correspond to the index of each state in `EmergencyStates`.
-const ENTRY_FUNCTION_MAP: [fn(); 4] = [|| (), || (), || (), || ()];
+async fn get_state(fsm: &EmergencyFSM) -> EmergencyStates {
+    *fsm.get_state()
+}
 
-/// Maps an index to a function that should be called upon exiting a state.
-///
-/// The indexes correspond to the index of each state in `MainStates`.
-const EXIT_FUNCTION_MAP: [fn(); 4] = [|| (), || (), || (), || ()];
+async fn set_state(fsm: &mut EmergencyFSM, state: EmergencyStates) {
+    fsm.state = state;
+}
+

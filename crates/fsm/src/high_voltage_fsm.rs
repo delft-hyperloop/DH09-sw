@@ -26,7 +26,7 @@ impl HighVoltageFSM {
         priority_event_pub_sub: PriorityEventPubSub,
     ) -> Self {
         Self {
-            state: HVStates::HighVoltageOn,
+            state: HVStates::HighVoltageOff,
             priority_event_pub_sub,
         }
     }
@@ -83,25 +83,30 @@ impl HighVoltageFSM {
 }
 
 impl_runner_get_sub_channel!(HighVoltageFSM);
-impl_transition!(HighVoltageFSM, HVStates);
+impl_transition!(HighVoltageFSM, HVStates,
+    GetState: get_state,
+    SetState: set_state,
 
-/// Maps an index to a function that should be called upon entering a new state.
-///
-/// The indexes correspond to the index of each state in `HVStates`.
-const ENTRY_FUNCTION_MAP: [fn(&mut HighVoltageFSM); 2] = [enter_high_voltage_off, enter_high_voltage_on];
+    OnEntry:
+    HighVoltageOff => enter_high_voltage_off,
+    HighVoltageOn => enter_high_voltage_on,
+);
 
-/// Maps an index to a function that should be called upon exiting a state.
-///
-/// The indexes correspond to the index of each state in `HVStates`.
-const EXIT_FUNCTION_MAP: [fn(&mut HighVoltageFSM); 2] = [|hvfsm| (), |hvfsm| ()];
-
-fn enter_high_voltage_on(hvfsm: &mut HighVoltageFSM) {
-    // TODO: Send CAN command to turn on high voltage
-
-    hvfsm.priority_event_pub_sub.add_event(&Event::HighVoltageOnRelay);
+async fn get_state(fsm: &HighVoltageFSM) -> HVStates {
+    fsm.state
 }
 
-fn enter_high_voltage_off(hvfsm: &mut HighVoltageFSM) {
+async fn set_state(fsm: &mut HighVoltageFSM, state: HVStates) {
+    fsm.state = state;
+}
+
+async fn enter_high_voltage_on(hvfsm: &mut HighVoltageFSM) {
+    // TODO: Send CAN command to turn on high voltage
+
+    hvfsm.priority_event_pub_sub.add_event(&Event::HighVoltageOnCanRelay).await;
+}
+
+async fn enter_high_voltage_off(hvfsm: &mut HighVoltageFSM) {
     // TODO: Send CAN command to turn off high voltage
 }
 

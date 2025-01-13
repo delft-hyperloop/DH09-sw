@@ -21,6 +21,7 @@ use crate::commons::EventChannel;
 use crate::define_fsm;
 use crate::emergency_fsm::EmergencyFSM;
 use crate::high_voltage_fsm::HighVoltageFSM;
+use crate::impl_transition;
 use crate::levitation_fsm::LevitationFSM;
 use crate::operating_fsm::OperatingFSM;
 use crate::propulsion_fsm::PropulsionFSM;
@@ -256,51 +257,33 @@ impl Runner for MainFSM {
     }
 }
 
-impl Transition<MainStates> for MainFSM {
-    async fn entry_method(&mut self) -> fn() {
-        ENTRY_FUNCTION_MAP[self.get_state().await as usize]
-    }
+impl_transition!(MainFSM, MainStates,
+    GetState: get_state,
+    SetState: set_state,
 
-    async fn exit_method(&mut self) -> fn() {
-        EXIT_FUNCTION_MAP[self.get_state().await as usize]
-    }
+    OnEntry:
+    // SystemCheck => noop,
+    // Idle => noop,
+    // Charging => noop,
+    Active => enter_active,
+    // FlashingCode => noop,
+    Operating => enter_operating,
+);
 
-    async fn set_state(&mut self, new_state: MainStates) {
-        let mut state = self.state.lock().await;
-        *state = new_state;
-    }
+async fn get_state(main_fsm: &MainFSM) -> MainStates {
+    main_fsm.get_state().await
 }
 
-/// Maps an index to a function that should be called upon entering a new state.
-///
-/// The indexes correspond to the index of each state in `MainStates`.
-const ENTRY_FUNCTION_MAP: [fn(); 6] = [
-    || (), // SystemCheck
-    || (), // Idle
-    || (), // Charging
-    enter_active,
-    || (), // FlashingCode
-    enter_operating,
-];
-
-/// Maps an index to a function that should be called upon exiting a state.
-///
-/// The indexes correspond to the index of each state in `MainStates`.
-const EXIT_FUNCTION_MAP: [fn(); 6] = [
-    || (), // SystemCheck
-    || (), // Idle
-    || (), // Charging
-    || (), // Active
-    || (), // FlashingCode
-    || (), // Operating
-];
+async fn set_state(main_fsm: &mut MainFSM, state: MainStates) {
+    *main_fsm.state.lock().await = state;
+}
 
 /// Signals the tasks tied to each sub-FSM that they should start running.
-fn enter_operating() {
+async fn enter_operating(main_fsm: &mut MainFSM) {
     RUN_SUB_FSM.signal(true);
 }
 
-fn enter_active() {
+async fn enter_active(main_fsm: &mut MainFSM) {
     // TODO: Send CAN command to turn on high voltage
     HIGH_VOLTAGE_STATE.store(true, Ordering::Relaxed);
     // TODO: Close SDC while keeping brakes engaged

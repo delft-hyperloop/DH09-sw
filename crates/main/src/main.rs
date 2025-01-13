@@ -14,6 +14,9 @@ use embassy_net::tcp::TcpSocket;
 use embassy_net::Ipv4Address;
 use embassy_net::StackResources;
 use embassy_stm32::bind_interrupts;
+use embassy_stm32::can::frame::CanHeader;
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+use embassy_sync::mutex::Mutex;
 use embassy_time::Timer;
 
 use embassy_stm32::can;
@@ -32,13 +35,15 @@ use embassy_stm32::rcc;
 use embassy_stm32::rng::Rng;
 use embassy_stm32::rng::{self};
 use embassy_sync::pubsub::PubSubBehavior;
-use embassy_time::Timer;
 use embedded_io_async::Write;
+use fsm::commons::data::PriorityEventPubSub;
 use fsm::commons::traits::Runner;
 use fsm::commons::EmergencyChannel;
 use fsm::commons::EventChannel;
-use fsm::MainFSM;
+use fsm::{MainFSM, MainStates};
+use main::can::CanEnvelope;
 use main::can::CanInterface;
+use main::can::CanTxSender;
 use main::gs_master;
 use main::gs_master::EthernetGsCommsLayerInitializer;
 use main::gs_master::GsCommsLayer;
@@ -97,21 +102,35 @@ static mut read_buffer: RxFdBuf<5> = RxFdBuf::new();
 static mut write_buffer: TxFdBuf<1> = TxFdBuf::new();
 
 #[embassy_executor::task]
-async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_channel: &'static EventChannel, emergency_channel: &'static EmergencyChannel) {
-    let publisher_normal = unwrap!(event_channel.publisher());
-    let publisher_emergency = unwrap!(emergency_channel.publisher());
+async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_channel: PriorityEventPubSub) {
     loop {
         let msg = gsrx.next_message_pure().await;
         // info!("Received message from GS: {:?}", msg);
         let fsm_event = msg.fsm_event;
 
-        match fsm_event {
-            fsm::commons::Event::Emergency => {
-                publisher_emergency.publish(fsm_event).await;
+        event_channel.add_event(&fsm_event).await;
+    }
+}
+
+#[embassy_executor::task]
+async fn forward_fsm_relay_events_to_can(cantx: CanTxSender<'static>, mut event_channel: PriorityEventPubSub) {
+    loop {
+        let event = event_channel.get_event().await;
+        match event {
+            fsm::commons::data::Event::HighVoltageOnCanRelay => {
+                let header = can::frame::Header::new_fd(
+                    can::frame::Id::try_from(0x00000001 as u32).expect("Invalid ID"),
+                    64,
+                    false,
+                    true,
+                );
+            
+                let frame = can::frame::FdFrame::new(header, &[0; 64]).expect("Invalid frame");
+
+                cantx.send(CanEnvelope::new_from_frame(frame)).await;
             }
-            _ => {
-                publisher_normal.publish(fsm_event).await;
-            }
+
+            _ => {}
         }
     }
 }
@@ -219,7 +238,7 @@ async fn main(spawner: Spawner) -> ! {
     // let mut can = can.into_internal_loopback_mode();
     // let mut can = can.into_normal_mode();
 
-    // let can = CanInterface::new(can, spawner);
+    let can = CanInterface::new(can, spawner);
 
     info!("CAN Configured");
 
@@ -269,7 +288,23 @@ async fn main(spawner: Spawner) -> ! {
     let gsrx = gs_master.subscribe();
     let gstx = gs_master.transmitter();
 
-    unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, event_channel, emergency_channel)));
+
+    let prio = PriorityEventPubSub::new(
+        event_channel.publisher().unwrap(),
+        event_channel.subscriber().unwrap(),
+        emergency_channel.publisher().unwrap(),
+        emergency_channel.subscriber().unwrap(),
+    );
+
+    unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, prio)));
+
+    let prio = PriorityEventPubSub::new(
+        event_channel.publisher().unwrap(),
+        event_channel.subscriber().unwrap(),
+        emergency_channel.publisher().unwrap(),
+        emergency_channel.subscriber().unwrap(),
+    );
+    unwrap!(spawner.spawn(forward_fsm_relay_events_to_can(can.new_sender(), prio)));
 
     loop {
         gstx.send(PodToGsMessage {}).await;
@@ -307,42 +342,6 @@ async fn main(spawner: Spawner) -> ! {
     // }
 
     // let canrx = can.new_subscriber();
-
-    loop {
-        {
-            // let start_time = Instant::now();
-            let mut data_received: usize = 0;
-            let mut received = 0;
-
-            for _ in 0..10000 {
-                // hprintln!("Yoo");
-                // hprintln!("Yoo");
-                //    for _ in 0..2 {
-                //         unsafe { read_buffer.try_send(Ok(FdEnvelope{ts: Instant::now(),
-                // frame})); }    }
-
-                let response = can.read_fd().await;
-                // hprintln!("Yoo");
-
-                match response {
-                    Ok(ref envelope) => {
-                        data_received += envelope.frame.header().len() as usize;
-                        received += 1;
-                    }
-                    Err(ref bus_error) => {
-                        info!("Bus error: {:?}", bus_error);
-                    }
-                }
-            }
-
-            // let current_time = Instant::now() - start_time;
-            // info!("Data rate: {}kb/s", (data_received as u64 * 8 * 1000) /
-            // (current_time.as_micros()));
-            info!("Data recieved: {}b", (data_received as u64 * 8));
-            // info!("Received {} messages in {}ms", received,
-            // current_time.as_micros()/1000)
-        }
-    }
 
     hlt()
 }

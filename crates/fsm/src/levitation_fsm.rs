@@ -67,22 +67,27 @@ impl LevitationFSM {
 }
 
 impl_runner_get_sub_channel!(LevitationFSM);
-impl_transition!(LevitationFSM, LevitationStates);
+impl_transition!(LevitationFSM, LevitationStates,
+    GetState: get_state,
+    SetState: set_state,
 
-/// Maps an index to a function that should be called upon entering a new state.
-///
-/// The indexes correspond to the index of each state in `LevitationStates`.
-const ENTRY_FUNCTION_MAP: [fn(&mut LevitationFSM); 2] = [enter_levitation_off, enter_levitation_on];
+    OnEntry:
+    LevitationOff => enter_levitation_off,
+    LevitationOn => enter_levitation_on,
+);
 
-/// Maps an index to a function that should be called upon exiting a state.
-///
-/// The indexes correspond to the index of each state in `LevitationStates`.
-const EXIT_FUNCTION_MAP: [fn(&mut LevitationFSM); 2] = [|levi_fsm| (), |levi_fsm| ()];
+async fn get_state(fsm: &LevitationFSM) -> LevitationStates {
+    fsm.state
+}
 
-fn enter_levitation_off(levi_fsm: &mut LevitationFSM) {
+async fn set_state(fsm: &mut LevitationFSM, state: LevitationStates) {
+    fsm.state = state;
+}
+
+async fn enter_levitation_off(levi_fsm: &mut LevitationFSM) {
     // TODO
 }
 
-fn enter_levitation_on(levi_fsm: &mut LevitationFSM) {
+async fn enter_levitation_on(levi_fsm: &mut LevitationFSM) {
     // TODO
 }

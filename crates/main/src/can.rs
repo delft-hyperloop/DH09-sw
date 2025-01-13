@@ -5,6 +5,7 @@
 
 use defmt::*;
 use embassy_executor::Spawner;
+use embassy_stm32::can::frame::FdFrame;
 use embassy_stm32::can::Can;
 use embassy_stm32::can::CanRx;
 use embassy_stm32::can::CanTx;
@@ -14,12 +15,24 @@ use embassy_sync::priority_channel::{self};
 use embassy_sync::pubsub::PubSubChannel;
 use embassy_sync::pubsub::Publisher;
 use embassy_sync::pubsub::Subscriber;
+use embassy_time::Instant;
 use embassy_time::Timer;
 use static_cell::StaticCell;
 
 #[derive(Debug, Clone)]
 pub struct CanEnvelope {
     envelope: embassy_stm32::can::frame::FdEnvelope,
+}
+
+impl CanEnvelope {
+    pub fn new_from_frame(frame: FdFrame) -> Self {
+        Self { 
+            envelope: embassy_stm32::can::frame::FdEnvelope {
+                frame,
+                ts: Instant::now(),
+            }
+        }
+    }
 }
 
 impl core::cmp::PartialEq for CanEnvelope {
@@ -56,7 +69,7 @@ type CanRxChannel = PubSubChannel<
     CAN_RX_SUBSCRIBERS,
     CAN_RX_PUBLISHERS,
 >;
-type CanRxSubscriber<'a> = Subscriber<
+pub type CanRxSubscriber<'a> = Subscriber<
     'a,
     NoopRawMutex,
     CanEnvelope,
@@ -104,7 +117,7 @@ async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>
 const CAN_TX_CAPACITY: usize = 32;
 type CanTxChannelKind = heapless::binary_heap::Min;
 type CanTxChannel = PriorityChannel<NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
-type CanTxSender<'a> =
+pub type CanTxSender<'a> =
     priority_channel::Sender<'a, NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
 type CanTxReceiver<'a> =
     priority_channel::Receiver<'a, NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;

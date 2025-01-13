@@ -41,6 +41,8 @@ pub enum Event {
     ShutDown,
     /// High Voltage should turn on
     HighVoltageOn,
+    /// Event to send CAN message to turn HV on.
+    HighVoltageOnCanRelay,
     /// High Voltage should turn off
     HighVoltageOff,
     /// Propulsion should turn on

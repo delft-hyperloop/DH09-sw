@@ -54,18 +54,71 @@ macro_rules! impl_runner_get_sub_channel {
 /// - `fsm_states`: The enum for the states associated with the fsm
 #[macro_export]
 macro_rules! impl_transition {
-    ($fsm_struct:ident, $fsm_states: ident) => {
+    ($fsm_struct:ident, $fsm_states: ident,
+        GetState: $get_state_fn:ident,
+        SetState: $set_state_fn:ident,
+
+        $(
+            OnEntry:
+            $(
+                $fsm_state_entry:ident => $entry_method:ident,
+            )*
+        )?
+        $(
+            OnExit:
+            $(
+                $fsm_state_exit:ident => $exit_method:ident,
+            )*
+        )?
+        $(
+            OnTransition:
+            $(
+                $fsm_state_tr_1:ident => $fsm_state_tr_2:ident ($transition_method:ident),
+            )*
+        )?
+    ) => {
         impl Transition<$fsm_states> for $fsm_struct {
-            async fn entry_method(&mut self) -> fn() {
-                ENTRY_FUNCTION_MAP[self.state as usize]
-            }
+            async fn transition(&mut self, state: $fsm_states, atomic_bool: Option<&core::sync::atomic::AtomicBool>) {
+                let current_state = $get_state_fn(self);
+                $(
+                    match &current_state {
+                        $(
+                            $fsm_states::$fsm_state_exit => $exit_method(self).await,
+                        )*
+                        _ => {}
+                    }
+                )?
 
-            async fn exit_method(&mut self) -> fn() {
-                EXIT_FUNCTION_MAP[self.state as usize]
-            }
+                $(
+                    match (&current_state, &state) {
+                        $(
+                            ($fsm_states::$fsm_state_tr_1, $fsm_states::$fsm_state_tr_2) => {
+                                $transition_method(self).await;
+                            }
+                        )*
+                        _ => {}
+                    }
+                )?
+                core::mem::drop(current_state);
 
-            async fn set_state(&mut self, new_state: $fsm_states) {
-                self.state = new_state;
+                $set_state_fn(self, state).await;
+
+                match atomic_bool {
+                    Some(atomic_bool) => {
+                        let current = atomic_bool.load(core::sync::atomic::Ordering::Relaxed);
+                        atomic_bool.store(!current, core::sync::atomic::Ordering::Relaxed);
+                    }
+                    None => {}
+                }
+
+                $(
+                    match state {
+                        $(
+                            $fsm_states::$fsm_state_entry => $entry_method(self).await,
+                        )*
+                        _ => {}
+                    }
+                )?
             }
         }
     };

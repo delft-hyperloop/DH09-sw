@@ -15,8 +15,8 @@ pub mod traits;
 // the FSMs. Max 32 events, 6 subscribers, 7 publishers(FSMs and main).
 const MAX_EVENTS: usize = 32;
 const MAX_EMERGENCY_EVENTS: usize = 4;
-const SUBSCRIBERS: usize = 6;
-const PUBLISHERS: usize = 7;
+const SUBSCRIBERS: usize = 16;
+const PUBLISHERS: usize = 16;
 
 /// Type alias for the `PubSubChannel` used for the normal event channel.
 pub type EventChannel = PubSubChannel<NoopRawMutex, Event, MAX_EVENTS, SUBSCRIBERS, PUBLISHERS>;

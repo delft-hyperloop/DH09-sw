@@ -88,30 +88,22 @@ impl OperatingFSM {
 }
 
 impl_runner_get_sub_channel!(OperatingFSM);
-impl_transition!(OperatingFSM, OperatingStates);
+impl_transition!(OperatingFSM, OperatingStates,
+    GetState: get_state,
+    SetState: set_state,
 
-/// Maps an index to a function that should be called upon entering a new state.
-///
-/// The indexes correspond to the index of each state in `OperatingStates`.
-const ENTRY_FUNCTION_MAP: [fn(&mut OperatingFSM); 5] = [
-    |op_fsm| (), // Demo
-    |op_fsm| (), // Accelerating
-    enter_braking,
-    |op_fsm| (), // Cruising
-    |op_fsm| (), // Shut Down
-];
+    OnEntry:
+    Braking => enter_braking,
+);
 
-/// Maps an index to a function that should be called upon exiting a state.
-///
-/// The indexes correspond to the index of each state in `OperatingStates`.
-const EXIT_FUNCTION_MAP: [fn(&mut OperatingFSM); 5] = [
-    |op_fsm| (), // Demo
-    |op_fsm| (), // Accelerating
-    |op_fsm| (), // Braking
-    |op_fsm| (), // Cruising
-    |op_fsm| (), // Shut Down
-];
+async fn get_state(fsm: &OperatingFSM) -> OperatingStates {
+    fsm.state
+}
 
-fn enter_braking(op_fsm: &mut OperatingFSM) {
+async fn set_state(fsm: &mut OperatingFSM, state: OperatingStates) {
+    fsm.state = state;
+}
+
+async fn enter_braking(op_fsm: &mut OperatingFSM) {
     // TODO: Send braking command to braking PCB
 }

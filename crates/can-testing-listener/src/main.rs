@@ -1,3 +1,8 @@
+//! A small executable to listen for CAN messages and dump them over RTT.
+//! 
+//! This is to check that the other PCBs on the CAN bus send the
+//! correct messages (and in the correct order).
+
 #![no_std]
 #![no_main]
 

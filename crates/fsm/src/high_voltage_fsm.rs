@@ -103,6 +103,8 @@ async fn set_state(fsm: &mut HighVoltageFSM, state: HVStates) {
 async fn enter_high_voltage_on(hvfsm: &mut HighVoltageFSM) {
     // TODO: Send CAN command to turn on high voltage
 
+    defmt::info!("Entering HV on");
+
     hvfsm.priority_event_pub_sub.add_event(&Event::HighVoltageOnCanRelay).await;
 }
 

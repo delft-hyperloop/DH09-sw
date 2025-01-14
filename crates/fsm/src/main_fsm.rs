@@ -60,7 +60,11 @@ pub struct MainFSM {
 ///
 /// The `MainFSM` will send a signal to this upon entering the `Operating`
 /// state.
-static RUN_SUB_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
+static RUN_HV_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
+static RUN_EMERGENCY_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
+static RUN_OPERATING_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
+static RUN_PROPULSION_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
+static RUN_LEVITATION_FSM: Signal<CriticalSectionRawMutex, bool> = Signal::new();
 
 /// Atomic bools used to expose the states of the sub-FSMs to each other. They
 /// indicate whether the system is active or not.
@@ -208,7 +212,7 @@ pub async fn shut_down(pub_sub_channels: &PriorityEventPubSub) {
 /// the main FSM.
 #[embassy_executor::task]
 pub async fn run_propulsion_fsm(mut propulsion_fsm: PropulsionFSM) {
-    RUN_SUB_FSM.wait().await;
+    RUN_PROPULSION_FSM.wait().await;
     propulsion_fsm.run().await;
 }
 
@@ -216,7 +220,7 @@ pub async fn run_propulsion_fsm(mut propulsion_fsm: PropulsionFSM) {
 /// the main FSM.
 #[embassy_executor::task]
 pub async fn run_levitation_fsm(mut levitation_fsm: LevitationFSM) {
-    RUN_SUB_FSM.wait().await;
+    RUN_LEVITATION_FSM.wait().await;
     levitation_fsm.run().await;
 }
 
@@ -224,7 +228,7 @@ pub async fn run_levitation_fsm(mut levitation_fsm: LevitationFSM) {
 /// the main FSM.
 #[embassy_executor::task]
 pub async fn run_high_voltage_fsm(mut high_voltage_fsm: HighVoltageFSM) {
-    RUN_SUB_FSM.wait().await;
+    RUN_HV_FSM.wait().await;
     high_voltage_fsm.run().await;
 }
 
@@ -232,7 +236,7 @@ pub async fn run_high_voltage_fsm(mut high_voltage_fsm: HighVoltageFSM) {
 /// the main FSM.
 #[embassy_executor::task]
 pub async fn run_operating_fsm(mut operating_fsm: OperatingFSM) {
-    RUN_SUB_FSM.wait().await;
+    RUN_OPERATING_FSM.wait().await;
     operating_fsm.run().await;
 }
 
@@ -240,7 +244,7 @@ pub async fn run_operating_fsm(mut operating_fsm: OperatingFSM) {
 /// the main FSM.
 #[embassy_executor::task]
 pub async fn run_emergency_fsm(mut emergency_fsm: EmergencyFSM) {
-    RUN_SUB_FSM.wait().await;
+    RUN_EMERGENCY_FSM.wait().await;
     emergency_fsm.run().await;
 }
 
@@ -280,7 +284,11 @@ async fn set_state(main_fsm: &mut MainFSM, state: MainStates) {
 
 /// Signals the tasks tied to each sub-FSM that they should start running.
 async fn enter_operating(main_fsm: &mut MainFSM) {
-    RUN_SUB_FSM.signal(true);
+    RUN_EMERGENCY_FSM.signal(true);
+    RUN_OPERATING_FSM.signal(true);
+    RUN_PROPULSION_FSM.signal(true);
+    RUN_LEVITATION_FSM.signal(true);
+    RUN_HV_FSM.signal(true);
 }
 
 async fn enter_active(main_fsm: &mut MainFSM) {

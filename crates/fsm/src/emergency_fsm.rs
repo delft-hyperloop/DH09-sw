@@ -8,7 +8,7 @@ use crate::impl_transition;
 use crate::main_fsm::EMERGENCY_STATE;
 
 /// Enum representing the different states that the `EmergencyFSM` will be in.
-#[derive(Clone, PartialEq, Debug, Copy)]
+#[derive(Clone, PartialEq, Debug, Copy, defmt::Format)]
 pub(super) enum EmergencyStates {
     NotAnEmergency,
     Emergency,

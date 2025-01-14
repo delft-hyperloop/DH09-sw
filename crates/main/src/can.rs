@@ -2,6 +2,14 @@
 //!
 //! The main type is [`CanInterface`], which is used to
 //! expose an interface to the CAN implementation.
+//! 
+//! The two main methods it exposes are [`CanInterface::new_subscriber`]
+//! to get a subscriber which receives CAN messages, and
+//! [`CanInterface::new_sender`] which allows other parts of the code to
+//! send CAN messages over the bus.
+//! 
+//! The received messages are listened for in [`can_rx_task`].
+//! The sent messages are forwarded to the CAN bus in [`can_tx_task`].
 
 use defmt::*;
 use embassy_executor::Spawner;
@@ -185,6 +193,10 @@ impl CanInterface {
         unwrap!(self.rx_channel.subscriber())
     }
 
+    /// Adds a new sender to the TX channel.
+    /// 
+    /// The sender can be used to send messages on
+    /// the CAN bus.
     pub fn new_sender(&self) -> CanTxSender<'_> {
         self.tx_channel.sender()
     }

@@ -1,3 +1,8 @@
+//! A small executable to run on a STM32H753ZI Nucleo board to send
+//! messages over CAN to test the CAN bus / CAN processing code on the
+//! other PCBs on the bus.
+
+
 #![no_std]
 #![no_main]
 

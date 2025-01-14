@@ -9,7 +9,7 @@ use crate::impl_transition;
 use crate::main_fsm::{LEVITATION_STATE, PROPULSION_STATE};
 
 /// Enum representing the different states that the `LevitationFSM` will be in.
-#[derive(Clone, PartialEq, Debug, Copy)]
+#[derive(Clone, PartialEq, Debug, Copy, defmt::Format)]
 pub(super) enum LevitationStates {
     LevitationOff,
     LevitationOn,

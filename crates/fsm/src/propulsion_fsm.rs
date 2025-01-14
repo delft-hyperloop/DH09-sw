@@ -7,7 +7,7 @@ use crate::impl_transition;
 use crate::main_fsm::PROPULSION_STATE;
 
 /// Enum representing the different states that the `PropulsionFSM` will be in.
-#[derive(PartialEq, Debug, Clone, Copy)]
+#[derive(PartialEq, Debug, Clone, Copy, defmt::Format)]
 pub(super) enum PropulsionStates {
     PropulsionOff,
     PropulsionOn,

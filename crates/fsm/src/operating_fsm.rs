@@ -9,7 +9,7 @@ use crate::impl_transition;
 use crate::main_fsm::{LEVITATION_STATE, PROPULSION_STATE, HIGH_VOLTAGE_STATE};
 
 /// Enum representing the different states that the `OperatingFSM` will be in.
-#[derive(Clone, PartialEq, Debug, Copy)]
+#[derive(Clone, PartialEq, Debug, Copy, defmt::Format)]
 pub(super) enum OperatingStates {
     Demo,
     Accelerating,

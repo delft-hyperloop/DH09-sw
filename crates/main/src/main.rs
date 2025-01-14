@@ -108,7 +108,9 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_cha
         // info!("Received message from GS: {:?}", msg);
         let fsm_event = msg.fsm_event;
 
-        event_channel.add_event(&fsm_event).await;
+        if fsm_event != fsm::commons::Event::NoEvent {
+            event_channel.add_event(&fsm_event).await;
+        }
     }
 }
 
@@ -308,6 +310,8 @@ async fn main(spawner: Spawner) -> ! {
 
     loop {
         gstx.send(PodToGsMessage {}).await;
+
+        Timer::after_secs(3).await;
     }
 
     // loop {

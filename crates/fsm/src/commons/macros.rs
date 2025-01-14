@@ -79,7 +79,7 @@ macro_rules! impl_transition {
     ) => {
         impl Transition<$fsm_states> for $fsm_struct {
             async fn transition(&mut self, state: $fsm_states, atomic_bool: Option<&core::sync::atomic::AtomicBool>) {
-                let current_state = $get_state_fn(self);
+                let current_state = $get_state_fn(self).await;
                 $(
                     match &current_state {
                         $(
@@ -99,6 +99,9 @@ macro_rules! impl_transition {
                         _ => {}
                     }
                 )?
+
+                defmt::info!("{}: {} -> {}", stringify!($fsm_struct), &current_state, &state);
+
                 core::mem::drop(current_state);
 
                 $set_state_fn(self, state).await;

@@ -35,7 +35,7 @@ pub trait Runner {
                     .get_event()
                     .await;
 
-                defmt::info!("Received event: {:?}", event);
+                defmt::info!("{}: Received event: {:?}", core::any::type_name::<Self>(), event);
 
                 if !self.handle_events(event).await {
                     break;

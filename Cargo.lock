@@ -926,6 +926,7 @@ dependencies = [
  "embassy-stm32",
  "embassy-sync",
  "embassy-time",
+ "embedded-can",
  "embedded-io-async",
  "embedded-storage",
  "fsm",

@@ -27,6 +27,7 @@ defmt-rtt.workspace = true
 # defmt-rtt = {workspace = true, optional = true}
 # defmt-semihosting = {workspace = true, optional = true}
 fsm.workspace = true
+embedded-can.workspace = true
 
 [lints.rust]
 missing_docs = "warn"

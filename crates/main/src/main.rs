@@ -17,6 +17,8 @@ use embassy_stm32::bind_interrupts;
 use embassy_stm32::can::frame::CanHeader;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::mutex::Mutex;
+use embassy_sync::pubsub::WaitResult;
+use embassy_time::Instant;
 use embassy_time::Timer;
 
 use embassy_stm32::can;
@@ -35,6 +37,7 @@ use embassy_stm32::rcc;
 use embassy_stm32::rng::Rng;
 use embassy_stm32::rng::{self};
 use embassy_sync::pubsub::PubSubBehavior;
+use embedded_can::Id;
 use embedded_io_async::Write;
 use fsm::commons::data::PriorityEventPubSub;
 use fsm::commons::traits::Runner;
@@ -43,11 +46,13 @@ use fsm::commons::EventChannel;
 use fsm::{MainFSM, MainStates};
 use main::can::CanEnvelope;
 use main::can::CanInterface;
+use main::can::CanRxSubscriber;
 use main::can::CanTxSender;
 use main::gs_master;
 use main::gs_master::EthernetGsCommsLayerInitializer;
 use main::gs_master::GsCommsLayer;
 use main::gs_master::GsMaster;
+use main::gs_master::GsToPodMessage;
 use main::gs_master::PodToGsMessage;
 use panic_probe as _;
 use rand_core::RngCore as _;
@@ -133,6 +138,42 @@ async fn forward_fsm_relay_events_to_can(cantx: CanTxSender<'static>, mut event_
             }
 
             _ => {}
+        }
+    }
+}
+
+#[embassy_executor::task]
+async fn forward_can_messages_to_fsm(mut canrx: CanRxSubscriber<'static>, event_channel: PriorityEventPubSub) {
+    loop {
+        let msg = canrx.next_message().await;
+
+        let envelope = match msg {
+            WaitResult::Message(envelope) =>  {
+                envelope
+            }
+            WaitResult::Lagged(i) => {
+                warn!("Lagged {} messages", i);
+                continue;
+            }
+        };
+
+        let id = match envelope.id() {
+            Id::Extended(e) => {
+                e.as_raw()
+            }
+            Id::Standard(s) => {
+                warn!("Received standard (non-extended) CAN ID: {}", s.as_raw());
+                continue;
+            }
+        };
+
+        let fsm_event = match id {
+            0x00000001 => fsm::commons::Event::HighVoltageOnCanRelay,
+            _ => fsm::commons::Event::NoEvent,
+        };
+
+        if fsm_event != fsm::commons::Event::NoEvent {
+            event_channel.add_event(&fsm_event).await;
         }
     }
 }
@@ -308,10 +349,24 @@ async fn main(spawner: Spawner) -> ! {
     );
     unwrap!(spawner.spawn(forward_fsm_relay_events_to_can(can.new_sender(), prio)));
 
-    loop {
-        gstx.send(PodToGsMessage {}).await;
+    let prio = PriorityEventPubSub::new(
+        event_channel.publisher().unwrap(),
+        event_channel.subscriber().unwrap(),
+        emergency_channel.publisher().unwrap(),
+        emergency_channel.subscriber().unwrap(),
+    );
+    unwrap!(spawner.spawn(forward_can_messages_to_fsm(can.new_subscriber(), prio)));
 
-        Timer::after_secs(3).await;
+    loop {
+        let i1 = Instant::now();
+        for _ in 0..1024 {
+            gstx.send(PodToGsMessage {}).await;
+        }
+        gstx.send(PodToGsMessage {}).await;
+        let i2 = Instant::now();
+
+        let diff = i2 - i1;
+        info!("wrote 8192 bytes in {}us", diff.as_micros());
     }
 
     // loop {

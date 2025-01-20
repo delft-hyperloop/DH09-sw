@@ -25,6 +25,7 @@ use embassy_sync::pubsub::Publisher;
 use embassy_sync::pubsub::Subscriber;
 use embassy_time::Instant;
 use embassy_time::Timer;
+use embedded_can::Id;
 use static_cell::StaticCell;
 
 #[derive(Debug, Clone)]
@@ -40,6 +41,18 @@ impl CanEnvelope {
                 ts: Instant::now(),
             }
         }
+    }
+
+    pub fn id(&self) -> &Id {
+        self.envelope.frame.id()
+    }
+
+    pub fn payload(&self) -> &[u8] {
+        self.envelope.frame.data()
+    }
+
+    pub fn timestamp(&self) -> Instant {
+        self.envelope.ts
     }
 }
 

@@ -14,17 +14,11 @@ use embassy_net::tcp::TcpSocket;
 use embassy_net::Ipv4Address;
 use embassy_net::StackResources;
 use embassy_stm32::bind_interrupts;
-use embassy_stm32::can::frame::CanHeader;
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::mutex::Mutex;
-use embassy_sync::pubsub::WaitResult;
-use embassy_time::Instant;
-use embassy_time::Timer;
-
 use embassy_stm32::can;
 use embassy_stm32::can::config::DataBitTiming;
 use embassy_stm32::can::config::NominalBitTiming;
 use embassy_stm32::can::config::{self};
+use embassy_stm32::can::frame::CanHeader;
 use embassy_stm32::can::RxFdBuf;
 use embassy_stm32::can::TxFdBuf;
 use embassy_stm32::eth::generic_smi::GenericSMI;
@@ -36,14 +30,20 @@ use embassy_stm32::peripherals::*;
 use embassy_stm32::rcc;
 use embassy_stm32::rng::Rng;
 use embassy_stm32::rng::{self};
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+use embassy_sync::mutex::Mutex;
 use embassy_sync::pubsub::PubSubBehavior;
+use embassy_sync::pubsub::WaitResult;
+use embassy_time::Instant;
+use embassy_time::Timer;
 use embedded_can::Id;
 use embedded_io_async::Write;
 use fsm::commons::data::PriorityEventPubSub;
 use fsm::commons::traits::Runner;
 use fsm::commons::EmergencyChannel;
 use fsm::commons::EventChannel;
-use fsm::{MainFSM, MainStates};
+use fsm::MainFSM;
+use fsm::MainStates;
 use main::can::CanEnvelope;
 use main::can::CanInterface;
 use main::can::CanRxSubscriber;
@@ -57,7 +57,6 @@ use main::gs_master::PodToGsMessage;
 use panic_probe as _;
 use rand_core::RngCore as _;
 use static_cell::StaticCell;
-
 
 bind_interrupts!(
     struct Irqs {
@@ -90,7 +89,8 @@ async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
 static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
     static_cell::StaticCell::new();
-static FSM_STATE: static_cell::StaticCell<Mutex<NoopRawMutex, MainStates>> = static_cell::StaticCell::new();
+static FSM_STATE: static_cell::StaticCell<Mutex<NoopRawMutex, MainStates>> =
+    static_cell::StaticCell::new();
 
 #[embassy_executor::task]
 async fn run_fsm(
@@ -107,7 +107,10 @@ static mut read_buffer: RxFdBuf<5> = RxFdBuf::new();
 static mut write_buffer: TxFdBuf<1> = TxFdBuf::new();
 
 #[embassy_executor::task]
-async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_channel: PriorityEventPubSub) {
+async fn forward_gs_to_fsm(
+    mut gsrx: gs_master::RxSubscriber<'static>,
+    event_channel: PriorityEventPubSub,
+) {
     loop {
         let msg = gsrx.next_message_pure().await;
         // info!("Received message from GS: {:?}", msg);
@@ -120,7 +123,10 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_cha
 }
 
 #[embassy_executor::task]
-async fn forward_fsm_relay_events_to_can(cantx: CanTxSender<'static>, mut event_channel: PriorityEventPubSub) {
+async fn forward_fsm_relay_events_to_can(
+    cantx: CanTxSender<'static>,
+    mut event_channel: PriorityEventPubSub,
+) {
     loop {
         let event = event_channel.get_event().await;
         match event {
@@ -131,7 +137,7 @@ async fn forward_fsm_relay_events_to_can(cantx: CanTxSender<'static>, mut event_
                     false,
                     true,
                 );
-            
+
                 let frame = can::frame::FdFrame::new(header, &[0; 64]).expect("Invalid frame");
 
                 cantx.send(CanEnvelope::new_from_frame(frame)).await;
@@ -143,14 +149,15 @@ async fn forward_fsm_relay_events_to_can(cantx: CanTxSender<'static>, mut event_
 }
 
 #[embassy_executor::task]
-async fn forward_can_messages_to_fsm(mut canrx: CanRxSubscriber<'static>, event_channel: PriorityEventPubSub) {
+async fn forward_can_messages_to_fsm(
+    mut canrx: CanRxSubscriber<'static>,
+    event_channel: PriorityEventPubSub,
+) {
     loop {
         let msg = canrx.next_message().await;
 
         let envelope = match msg {
-            WaitResult::Message(envelope) =>  {
-                envelope
-            }
+            WaitResult::Message(envelope) => envelope,
             WaitResult::Lagged(i) => {
                 warn!("Lagged {} messages", i);
                 continue;
@@ -158,9 +165,7 @@ async fn forward_can_messages_to_fsm(mut canrx: CanRxSubscriber<'static>, event_
         };
 
         let id = match envelope.id() {
-            Id::Extended(e) => {
-                e.as_raw()
-            }
+            Id::Extended(e) => e.as_raw(),
             Id::Standard(s) => {
                 warn!("Received standard (non-extended) CAN ID: {}", s.as_raw());
                 continue;
@@ -286,8 +291,29 @@ async fn main(spawner: Spawner) -> ! {
     info!("CAN Configured");
 
     spawner
-        .spawn(run_fsm(spawner, event_channel, emergency_channel, fsm_state))
+        .spawn(run_fsm(
+            spawner,
+            event_channel,
+            emergency_channel,
+            fsm_state,
+        ))
         .unwrap();
+
+    let prio = PriorityEventPubSub::new(
+        event_channel.publisher().unwrap(),
+        event_channel.subscriber().unwrap(),
+        emergency_channel.publisher().unwrap(),
+        emergency_channel.subscriber().unwrap(),
+    );
+    unwrap!(spawner.spawn(forward_fsm_relay_events_to_can(can.new_sender(), prio)));
+
+    let prio = PriorityEventPubSub::new(
+        event_channel.publisher().unwrap(),
+        event_channel.subscriber().unwrap(),
+        emergency_channel.publisher().unwrap(),
+        emergency_channel.subscriber().unwrap(),
+    );
+    unwrap!(spawner.spawn(forward_can_messages_to_fsm(can.new_subscriber(), prio)));
 
     info!("FSM started!");
 
@@ -326,11 +352,14 @@ async fn main(spawner: Spawner) -> ! {
     //    gateway: Some(Ipv4Address::new(10, 42, 0, 1)),
     // });
 
-    let gs_master = GsMaster::new(EthernetGsCommsLayerInitializer::new(device, config), spawner).await;
+    let gs_master = GsMaster::new(
+        EthernetGsCommsLayerInitializer::new(device, config),
+        spawner,
+    )
+    .await;
 
     let gsrx = gs_master.subscribe();
     let gstx = gs_master.transmitter();
-
 
     let prio = PriorityEventPubSub::new(
         event_channel.publisher().unwrap(),
@@ -340,22 +369,6 @@ async fn main(spawner: Spawner) -> ! {
     );
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, prio)));
-
-    let prio = PriorityEventPubSub::new(
-        event_channel.publisher().unwrap(),
-        event_channel.subscriber().unwrap(),
-        emergency_channel.publisher().unwrap(),
-        emergency_channel.subscriber().unwrap(),
-    );
-    unwrap!(spawner.spawn(forward_fsm_relay_events_to_can(can.new_sender(), prio)));
-
-    let prio = PriorityEventPubSub::new(
-        event_channel.publisher().unwrap(),
-        event_channel.subscriber().unwrap(),
-        emergency_channel.publisher().unwrap(),
-        emergency_channel.subscriber().unwrap(),
-    );
-    unwrap!(spawner.spawn(forward_can_messages_to_fsm(can.new_subscriber(), prio)));
 
     loop {
         let i1 = Instant::now();

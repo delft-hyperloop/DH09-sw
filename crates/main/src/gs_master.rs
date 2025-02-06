@@ -146,7 +146,7 @@ impl EthernetGsCommsLayerInitializer {
     }
 }
 
-const TX_CAP: usize = 4;
+const TX_CAP: usize = 1024;
 type TxChannel = Channel<NoopRawMutex, PodToGsMessage, TX_CAP>;
 type TxReceiver<'a> = embassy_sync::channel::Receiver<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
 pub type TxSender<'a> = embassy_sync::channel::Sender<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
@@ -213,7 +213,7 @@ async fn tx_task(
     loop {
         let msg = receiver.receive().await;
         // TODO: convert message to bytes
-        let bytes: [u8; 6] = [b'H', b'y', b't', b'e', b's', b'\n'];
+        let bytes: [u8; 8] = [b'H', b'y', b't', b'e', b's', b'a', b'b', b'\n'];
 
         loop {
             if rs.signaled() {
@@ -258,6 +258,12 @@ async fn restore_connection(
 
     loop {
         let _ = rs.wait().await;
+        // signal for the rx and tx tasks that we are trying to reconnect,
+        // so that they don't try to read / write to the socket while we
+        // are reconnecting.
+        csrx.reset();
+        cstx.reset();
+        rs.signal(());
 
         info!("Attempting to reconnect");
 
@@ -293,6 +299,7 @@ async fn restore_connection(
         }
 
 
+        rs.reset();
         csrx.signal(());
         cstx.signal(());
     }

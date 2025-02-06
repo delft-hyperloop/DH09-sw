@@ -38,6 +38,8 @@ pub trait Runner {
                 defmt::info!("{}: Received event: {:?}", core::any::type_name::<Self>(), event);
 
                 if !self.handle_events(event).await {
+                    defmt::info!("{}: Stopping", core::any::type_name::<Self>());
+
                     break;
                 }
             }

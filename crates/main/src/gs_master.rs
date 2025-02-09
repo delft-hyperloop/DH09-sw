@@ -38,6 +38,7 @@ use embassy_sync::pubsub::PubSubChannel;
 use embassy_sync::pubsub::Publisher;
 use embassy_sync::pubsub::Subscriber;
 use embassy_sync::signal::Signal;
+use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
@@ -74,21 +75,116 @@ impl<C: GsCommsLayer> GsMaster<C> {
 
 #[derive(Clone, Debug)]
 pub struct GsToPodMessage {
-    pub fsm_event: fsm::commons::Event,
+    pub command: Command,
 }
 
 impl GsToPodMessage {
-    const SIZE: usize = 8;
+    const SIZE: usize = 20;
 
     pub fn read_from_buf(buf: &[u8; Self::SIZE]) -> Self {
-        let fsm_event = unwrap!(fsm::commons::Event::read_from_buf([buf[0], buf[1]]));
+        let command = Command::from_bytes(buf);
 
-        Self { fsm_event }
+        Self { command }
+    }
+}
+
+use core::cmp::Ordering;
+
+use defmt::Formatter;
+
+use crate::config;
+use crate::config::Command;
+use crate::config::Datatype;
+use crate::config::COMMAND_HASH;
+use crate::config::CONFIG_HASH;
+use crate::config::DATA_HASH;
+use crate::config::EVENTS_HASH;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Datapoint {
+    pub datatype: Datatype,
+    pub value: u64,
+    pub timestamp: u64,
+}
+
+impl Datapoint {
+    pub fn new(datatype: Datatype, value: u64, timestamp: u64) -> Self {
+        Self {
+            datatype,
+            value,
+            timestamp,
+        }
+    }
+
+    /// ### Encode a datapoint as bytes
+    /// | index | meaning |
+    /// | --- | --- |
+    /// | 0 | 0xFF : flag byte |
+    /// | 1, 2 | 11 bit datatype id |
+    /// | 3..=10 | 8 byte value |
+    /// | 11..=18 | 8 byte timestamp |
+    /// | 19 | 0xFF : flag byte |
+    pub fn as_bytes(&self) -> [u8; 20] {
+        let mut bytes = [0; 20];
+        bytes[0] = 0xFF;
+        bytes[1..3].copy_from_slice(&self.datatype.to_id().to_be_bytes());
+        bytes[3..11].copy_from_slice(&self.value.to_le_bytes());
+        bytes[11..19].copy_from_slice(&self.timestamp.to_le_bytes());
+        bytes[19] = 0xFF;
+        bytes
+    }
+}
+
+impl defmt::Format for Datapoint {
+    fn format(&self, fmt: Formatter) {
+        defmt::write!(
+            fmt,
+            "Datapoint {{ datatype: {:?}, value: {:?}, timestamp: {:?} }}",
+            self.datatype,
+            self.value,
+            self.timestamp
+        )
+    }
+}
+
+impl PartialOrd for Datapoint {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Datapoint {
+    fn cmp(&self, other: &Self) -> Ordering {
+        // First compare by priority
+        let priority_cmp = self.datatype.priority().cmp(&other.datatype.priority());
+        if priority_cmp != Ordering::Equal {
+            return priority_cmp;
+        }
+
+        // Because we can't have Eq if not all fields are the same,
+
+        // if priorities are equal, compare by timestamp
+        let timestamp_cmp = self.timestamp.cmp(&other.timestamp);
+        if timestamp_cmp != Ordering::Equal {
+            return timestamp_cmp;
+        }
+
+        // if timestamps are equal, compare by id
+        let type_cmp = self.datatype.to_id().cmp(&other.datatype.to_id());
+        if type_cmp != Ordering::Equal {
+            return type_cmp;
+        }
+
+        // if the datatype is the same,
+        // then getting an equality on value means total equality
+        self.value.cmp(&other.value)
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct PodToGsMessage {}
+pub struct PodToGsMessage {
+    pub dp: Datapoint,
+}
 
 pub trait GsCommsLayer {
     fn subscribe(&self) -> RxSubscriber<'_>;
@@ -212,8 +308,7 @@ async fn tx_task(
 ) -> ! {
     loop {
         let msg = receiver.receive().await;
-        // TODO: convert message to bytes
-        let bytes: [u8; 8] = [b'H', b'y', b't', b'e', b's', b'a', b'b', b'\n'];
+        let bytes = msg.dp.as_bytes();
 
         loop {
             if rs.signaled() {
@@ -238,7 +333,8 @@ async fn tx_task(
 }
 
 fn get_remote_endpoint() -> (Ipv4Address, u16) {
-    (Ipv4Address::new(192, 168, 1, 17), 8000)
+    let (oct, port) = unsafe { config::GS_IP_ADDRESS };
+    (Ipv4Address::new(oct[0], oct[1], oct[2], oct[3]), port)
 }
 
 #[embassy_executor::task]
@@ -297,7 +393,6 @@ async fn restore_connection(
                 }
             }
         }
-
 
         rs.reset();
         csrx.signal(());
@@ -364,18 +459,58 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         static CONNECTED_SIGNAL_RX: ConnectedSignal = ConnectedSignal::new();
         static CONNECTED_SIGNAL_TX: ConnectedSignal = ConnectedSignal::new();
 
-        unwrap!(spawner.spawn(restore_connection(&RECONNECT_SIGNAL, &CONNECTED_SIGNAL_RX, &CONNECTED_SIGNAL_TX, sock, stack)));
+        unwrap!(spawner.spawn(restore_connection(
+            &RECONNECT_SIGNAL,
+            &CONNECTED_SIGNAL_RX,
+            &CONNECTED_SIGNAL_TX,
+            sock,
+            stack
+        )));
 
         let rx_publisher = unwrap!(core.rx_channel.publisher());
 
-        unwrap!(spawner.spawn(rx_task(sock, rx_publisher, &RECONNECT_SIGNAL, &CONNECTED_SIGNAL_RX)));
+        unwrap!(spawner.spawn(rx_task(
+            sock,
+            rx_publisher,
+            &RECONNECT_SIGNAL,
+            &CONNECTED_SIGNAL_RX
+        )));
 
         let tx_subscriber = core.tx_channel.receiver();
 
-        unwrap!(spawner.spawn(tx_task(sock, tx_subscriber, &RECONNECT_SIGNAL, &CONNECTED_SIGNAL_TX)));
+        unwrap!(spawner.spawn(tx_task(
+            sock,
+            tx_subscriber,
+            &RECONNECT_SIGNAL,
+            &CONNECTED_SIGNAL_TX
+        )));
 
         CONNECTED_SIGNAL_TX.signal(());
         CONNECTED_SIGNAL_RX.signal(());
+
+        fn ticks() -> u64 {
+            Instant::now().as_ticks()
+        }
+
+        core.tx_channel.send(PodToGsMessage {
+            // 0xE981A1EA0B1A4199
+            dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
+        });
+        core.tx_channel.send(PodToGsMessage {
+            // 0xDEEDB95C8FC613FF
+            dp: Datapoint::new(Datatype::EventsHash, EVENTS_HASH, ticks()),
+        });
+        core.tx_channel.send(PodToGsMessage {
+            // 0xE1BC61029CE8A7B3
+            dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
+        });
+        core.tx_channel.send(PodToGsMessage {
+            // 0xB13F6E1D797FE777
+            dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
+        });
+        core.tx_channel.send(PodToGsMessage {
+            dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
+        });
 
         EthernetGsCommsLayer { cc: core }
     }

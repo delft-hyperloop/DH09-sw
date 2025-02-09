@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/delft-hyperloop/Helios_III.git"
 default-run = "station"
 edition = "2021"
-rust-version = "1.60"
+rust-version = "1.86"
 build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

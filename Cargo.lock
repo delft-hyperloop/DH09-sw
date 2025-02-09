@@ -2539,6 +2539,7 @@ checksum = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
 name = "main"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "cortex-m",
  "cortex-m-rt",
  "cortex-m-semihosting",
@@ -2555,10 +2556,13 @@ dependencies = [
  "embedded-io-async",
  "embedded-storage",
  "fsm",
+ "goose_utils",
  "heapless 0.8.0",
  "panic-probe",
  "rand_core 0.6.4",
+ "serde",
  "static_cell",
+ "toml 0.4.10",
 ]
 
 [[package]]
@@ -4446,6 +4450,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.96",
+]
+
+[[package]]
+name = "toml"
+version = "0.4.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "758664fc71a3a69038656bee8b6be6477d2a6c315a6b81f7081f591bffa4111f"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

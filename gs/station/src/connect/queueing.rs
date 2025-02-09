@@ -29,7 +29,7 @@ pub async fn parse(
             } else {
                 // we actually have 20 bytes in the buffer, we can create a command from them
                 let mut x = [0u8; 20];
-                parsing_buffer.drain(..20).enumerate().for_each(|(i, y)| x[i] = y);
+                parsing_buffer.drain(..20).enumerate().for_each(|(i, v)| x[i] = v);
                 // x.reverse();
                 // tx.send(Message::Info(format!("[TRACE] received: {:?}", x))).unwrap();
                 //msg_sender.send(Message::Data(Datapoint::from_bytes(&x)))?;

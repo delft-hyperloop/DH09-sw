@@ -58,6 +58,8 @@ use panic_probe as _;
 use rand_core::RngCore as _;
 use static_cell::StaticCell;
 
+use defmt::todo;
+
 bind_interrupts!(
     struct Irqs {
         ETH => eth::InterruptHandler;
@@ -114,10 +116,53 @@ async fn forward_gs_to_fsm(
     loop {
         let msg = gsrx.next_message_pure().await;
         // info!("Received message from GS: {:?}", msg);
-        let fsm_event = msg.fsm_event;
+        let command = msg.command;
 
-        if fsm_event != fsm::commons::Event::NoEvent {
-            event_channel.add_event(&fsm_event).await;
+        match command {
+            main::config::Command::DefaultCommand(_) => todo!(),
+            main::config::Command::Heartbeat(_) => todo!(),
+            main::config::Command::FrontendHeartbeat(_) => todo!(),
+            main::config::Command::ls0(_) => todo!(),
+            main::config::Command::ls1(_) => todo!(),
+            main::config::Command::ls2(_) => todo!(),
+            main::config::Command::enable_axis(_) => todo!(),
+            main::config::Command::disable_axis(_) => todo!(),
+            main::config::Command::init(_) => todo!(),
+            main::config::Command::reboot(_) => todo!(),
+            main::config::Command::launch(_) => todo!(),
+            main::config::Command::vert0(_) => todo!(),
+            main::config::Command::lat0(_) => todo!(),
+            main::config::Command::land(_) => todo!(),
+            main::config::Command::vert_mode_normal(_) => todo!(),
+            main::config::Command::lat_mode_normal(_) => todo!(),
+            main::config::Command::vert_mode_offsets(_) => todo!(),
+            main::config::Command::vert_mode_dance(_) => todo!(),
+            main::config::Command::vert_mode_sine(_) => todo!(),
+            main::config::Command::vert0_reset(_) => todo!(),
+            main::config::Command::lat0_reset(_) => todo!(),
+            main::config::Command::LeviPropulsionStart(_) => todo!(),
+            main::config::Command::LeviPropulsionStop(_) => todo!(),
+            main::config::Command::SetRoute(_) => todo!(),
+            main::config::Command::SetSpeeds(_) => todo!(),
+            main::config::Command::SetOverrides(_) => todo!(),
+            main::config::Command::EmergencyBrake(_) => todo!(),
+            main::config::Command::LeviEmergencyBrake(_) => todo!(),
+            main::config::Command::StartRun(_) => todo!(),
+            main::config::Command::ContinueRun(_) => todo!(),
+            main::config::Command::StartHV(_) => todo!(),
+            main::config::Command::StopHV(_) => todo!(),
+            main::config::Command::SystemReset(_) => todo!(),
+            main::config::Command::ArmBrakes(_) => todo!(),
+            main::config::Command::FinishRunConfig(_) => todo!(),
+            main::config::Command::EndRun(_) => todo!(),
+            main::config::Command::EnablePropulsion(_) => todo!(),
+            main::config::Command::DisablePropulsion(_) => todo!(),
+            main::config::Command::Shutdown(_) => todo!(),
+            main::config::Command::DcOff(_) => todo!(),
+            main::config::Command::DcOn(_) => todo!(),
+            main::config::Command::SetCurrentSpeed(_) => todo!(),
+            main::config::Command::CreateDatapoint(_) => todo!(),
+            main::config::Command::EmitEvent(_) => todo!(),
         }
     }
 }
@@ -323,7 +368,7 @@ async fn main(spawner: Spawner) -> ! {
     rng.fill_bytes(&mut seed);
     let seed = u64::from_le_bytes(seed);
 
-    let mac_addr = [0x00, 0x07, 0xE9, 0x42, 0xAC, 0x28];
+    let mac_addr = main::config::POD_MAC_ADDRESS;
 
     static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
     // warning: Not all STM32H7 devices have the exact same pins here
@@ -369,18 +414,6 @@ async fn main(spawner: Spawner) -> ! {
     );
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, prio)));
-
-    loop {
-        let i1 = Instant::now();
-        for _ in 0..1024 {
-            gstx.send(PodToGsMessage {}).await;
-        }
-        gstx.send(PodToGsMessage {}).await;
-        let i2 = Instant::now();
-
-        let diff = i2 - i1;
-        info!("wrote 8192 bytes in {}us", diff.as_micros());
-    }
 
     // loop {
     //     info!("Trying!");

@@ -70,19 +70,19 @@ pub fn generate_commands(path: &str, drv: bool) -> Result<String> {
 #[allow(non_snake_case)]
 {}
 pub enum Command {{
-{}
+{enum_definitions}
 }}
 impl Command {{
     pub fn to_id(&self)->u16 {{
         #[allow(unreachable_patterns)]
         match *self {{\n
-{}
+{match_to_id}
         }}
     }}
     pub fn from_id(id:u16, val: u64) -> Self {{
         #[allow(unreachable_patterns)]
         match id {{
-{}
+{match_from_id}
             _ => Command::DefaultCommand(0)
         }}
     }}
@@ -92,7 +92,7 @@ impl Command {{
         buf[1..3].copy_from_slice(&self.to_id().to_be_bytes());
         #[allow(unreachable_patterns)]
         match *self {{
-{}
+{to_bytes}
         }}
         buf[19] = 0xff;
         buf
@@ -103,13 +103,13 @@ impl Command {{
     pub fn from_string(s: &str, p: u64) -> Self {{
         #[allow(unreachable_patterns)]
         match s {{
-{}
+{names}
             _ => Command::DefaultCommand(p)
         }}
     }}
     pub fn to_idx(&self) -> usize {{
         match *self {{
-{}
+{to_idx}
         }}
     }}
     pub fn to_str(&self) -> &str {{
@@ -120,8 +120,6 @@ pub const COMMAND_IDS: [u16; {}] = [{}];
 pub const COMMANDS_LIST: [&str; {}] = [{}];
 ",
         if drv { "#[derive(Debug, Clone, Copy, defmt::Format, PartialEq)]" } else { "#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]" },
-        enum_definitions, match_to_id, match_from_id, to_bytes, names,
-        to_idx,
         ids.len(), ids.join(", "), name_list.len(), name_list.join(", ")
     )
     + &format!("\npub const COMMAND_HASH: u64 = {hash};"))

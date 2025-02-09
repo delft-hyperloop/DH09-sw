@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/*", "gs/station"]
+members = ["crates/*", "gs/station", "util"]
 default-members = ["crates/main"]
 resolver = "2"
 
@@ -39,6 +39,8 @@ embedded-test  = { version = "0.6.0", features = ["embassy", "defmt"] }
 rtt-target = { version = "*", features=["defmt"]}
 #features = ["defmt"]
 panic-rtt-target = "*"
+
+goose_utils = {path = "util"}
 
 [workspace.dependencies.embassy-stm32]
 git = "https://github.com/delft-hyperloop/embassy"

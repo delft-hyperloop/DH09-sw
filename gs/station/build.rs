@@ -84,10 +84,10 @@ fn main() -> Result<()> {
         panic!("Couldn't write to {}! Build failed.", dest_path.to_str().unwrap());
     });
 
-    println!("cargo:rerun-if-changed={}", CONFIG_PATH);
-    println!("cargo:rerun-if-changed={}", COMMANDS_PATH);
-    println!("cargo:rerun-if-changed={}", DATATYPES_PATH);
-    println!("cargo:rerun-if-changed={}", EVENTS_PATH);
+    println!("cargo::rerun-if-changed={}", CONFIG_PATH);
+    println!("cargo::rerun-if-changed={}", COMMANDS_PATH);
+    println!("cargo::rerun-if-changed={}", DATATYPES_PATH);
+    println!("cargo::rerun-if-changed={}", EVENTS_PATH);
 
     Ok(())
 }

@@ -1,4 +1,3 @@
-
 // use std::env;
 // fn main() {
 //     println!("cargo:rustc-link-search={}", out.display());
@@ -7,8 +6,8 @@
 //     // add linker script for embedded-test!!
 //     println!("cargo::rustc-link-arg-tests=-Tembedded-test.x");
 
-//     // Check if the `defmt` feature is enabled, and if so link its linker script
-//     if env::var("CARGO_FEATURE_DEFMT").is_ok() {
+//     // Check if the `defmt` feature is enabled, and if so link its linker
+// script     if env::var("CARGO_FEATURE_DEFMT").is_ok() {
 //         println!("cargo:rustc-link-arg=-Tdefmt.x");
 //     }
 // }
@@ -38,35 +37,29 @@ fn main() {
     println!("{:?}", out);
     File::create(out.join("memory.x"))
         .unwrap()
-        .write_all(
-            include_bytes!("memory.x")
-        )
+        .write_all(include_bytes!("memory.x"))
         .unwrap();
-    println!("cargo:rustc-link-search={}", out.display());
+    println!("cargo::rustc-link-search={}", out.display());
 
     // By default, Cargo will re-run a build script whenever
     // any file in the project changes. By specifying `memory.x`
     // here, we ensure the build script is only re-run when
     // `memory.x` is changed.
-    if cfg!(feature = "qemu") {
-        println!("cargo:rerun-if-changed=memory.qemu.x");
-    } else {
-        println!("cargo:rerun-if-changed=memory.x");
-    }
+    println!("cargo::rerun-if-changed=memory.x");
 
-    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo::rerun-if-changed=build.rs");
 
     // Specify linker arguments.
 
     // `--nmagic` is required if memory section addresses are not aligned to
     // 0x10000, for example the FLASH and RAM sections in your `memory.x`.
     // See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
-    println!("cargo:rustc-link-arg=--nmagic");
+    println!("cargo::rustc-link-arg=--nmagic");
 
     // Set the linker script to the one provided by cortex-m-rt.
-    println!("cargo:rustc-link-arg=-Tlink.x");
+    println!("cargo::rustc-link-arg=-Tlink.x");
     println!("cargo::rustc-link-arg-tests=-Tembedded-test.x");
 
     // Defmt
-    println!("cargo:rustc-link-arg=-Tdefmt.x")
+    println!("cargo::rustc-link-arg=-Tdefmt.x")
 }

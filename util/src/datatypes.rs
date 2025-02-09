@@ -134,19 +134,19 @@ pub enum ValueCheckResult {{
 #[allow(non_snake_case)]
 {}
 pub enum Datatype {{
-{}
+{enum_definitions}
 }}\n
 impl Datatype {{
     pub fn to_id(&self)->u16 {{
         #[allow(unreachable_patterns)]
         match *self {{
-{}
+{match_to_id}
         }}
     }}
     pub fn from_id(id:u16) -> Self {{
         #[allow(unreachable_patterns)]
         match id {{
-{}
+{match_from_id}
             _ => Datatype::DefaultDatatype,
         }}
     }}
@@ -154,7 +154,7 @@ impl Datatype {{
     #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Self {{
         match s {{
-{}
+{from_str}
             _ => Datatype::DefaultDatatype,
         }}
     }}
@@ -162,7 +162,7 @@ impl Datatype {{
 
     pub fn bounds(&self) -> (Limit, Limit) {{
         match *self {{
-{}
+{bounds}
         }}
     }}
 
@@ -213,7 +213,7 @@ impl Datatype {{
 
     pub fn priority(&self) -> usize {{
         match *self {{
-{}
+{priorities}
             _ => 0,
         }}
     }}
@@ -224,13 +224,7 @@ impl Datatype {{
         } else {
             "#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, defmt::Format)]"
         },
-        enum_definitions,
-        match_to_id,
-        match_from_id,
-        from_str,
-        bounds,
         if drv { units } else { "".into() },
-        priorities,
     ) + &format!(
         "pub static DATA_IDS : [u16;{}] = [{}];\n",
         data_ids.len(),

@@ -73,7 +73,7 @@ impl<C: GsCommsLayer> GsMaster<C> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, defmt::Format)]
 pub struct GsToPodMessage {
     pub command: Command,
 }
@@ -274,6 +274,9 @@ async fn rx_task(
         }
 
         let mut sock_lock = sock.lock().await;
+        if !sock_lock.can_recv() {
+            continue;
+        }
         let read_result = sock_lock.read_exact(&mut buf).await;
         core::mem::drop(sock_lock);
 
@@ -296,6 +299,7 @@ async fn rx_task(
             }
         };
         publisher.publish(GsToPodMessage::read_from_buf(&buf)).await;
+        // Timer::after_millis(10).await;
     }
 }
 
@@ -307,17 +311,24 @@ async fn tx_task(
     cs: &'static ConnectedSignal,
 ) -> ! {
     loop {
+        debug!("Waiting for message");
         let msg = receiver.receive().await;
         let bytes = msg.dp.as_bytes();
+
+        debug!("writing {:?}", bytes);
 
         loop {
             if rs.signaled() {
                 let _ = cs.wait().await;
             }
 
+            debug!("Actually writing");
             let mut sock_lock = sock.lock().await;
             let tx_result = sock_lock.write_all(&bytes).await;
+            let _ = sock_lock.flush().await;
             drop(sock_lock);
+
+            debug!("Written");
 
             match tx_result {
                 Ok(()) => {
@@ -492,25 +503,27 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
             Instant::now().as_ticks()
         }
 
-        core.tx_channel.send(PodToGsMessage {
+        debug!("Handshaking");
+        let tx = core.tx_channel.sender();
+        tx.send(PodToGsMessage {
             // 0xE981A1EA0B1A4199
             dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
-        });
-        core.tx_channel.send(PodToGsMessage {
+        }).await;
+        tx.send(PodToGsMessage {
             // 0xDEEDB95C8FC613FF
             dp: Datapoint::new(Datatype::EventsHash, EVENTS_HASH, ticks()),
-        });
-        core.tx_channel.send(PodToGsMessage {
+        }).await;
+        tx.send(PodToGsMessage {
             // 0xE1BC61029CE8A7B3
             dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
-        });
-        core.tx_channel.send(PodToGsMessage {
+        }).await;
+        tx.send(PodToGsMessage {
             // 0xB13F6E1D797FE777
             dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
-        });
-        core.tx_channel.send(PodToGsMessage {
+        }).await;
+        tx.send(PodToGsMessage {
             dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
-        });
+        }).await;
 
         EthernetGsCommsLayer { cc: core }
     }

@@ -2548,6 +2548,7 @@ dependencies = [
  "embassy-boot",
  "embassy-boot-stm32",
  "embassy-executor 0.6.3",
+ "embassy-futures",
  "embassy-net",
  "embassy-stm32",
  "embassy-sync",

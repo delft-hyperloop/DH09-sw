@@ -115,8 +115,10 @@ async fn forward_gs_to_fsm(
 ) {
     loop {
         let msg = gsrx.next_message_pure().await;
-        // info!("Received message from GS: {:?}", msg);
+        info!("Received message from GS: {:?}", msg);
         let command = msg.command;
+
+        continue;
 
         match command {
             main::config::Command::DefaultCommand(_) => todo!(),
@@ -414,6 +416,11 @@ async fn main(spawner: Spawner) -> ! {
     );
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, prio)));
+
+
+    loop {
+        Timer::after_millis(100).await;
+    }
 
     // loop {
     //     info!("Trying!");

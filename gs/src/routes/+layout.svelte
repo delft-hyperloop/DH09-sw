@@ -35,6 +35,17 @@
     emsTempChart.addSeries(StrokePresets.theoretical("EMS 2"))
     $chartStore.set("EMS Temperatures", emsTempChart);
 
+    let airGapChart = new PlotBuffer(500, 60000, [0, 30], true, "Vertical Air Gap");
+    airGapChart.addSeries(StrokePresets.theoretical("Lateral Air Gap"));
+    $chartStore.set("Air Gaps", airGapChart);
+    // max vertical: 27.5
+    // max lateral: 16
+
+    let rotationChart = new PlotBuffer(500, 60000, [0, 120], true, "Pitch");
+    rotationChart.addSeries(StrokePresets.theoretical("Roll"));
+    $chartStore.set("Rotations", rotationChart);
+    // TODO: max rotations?
+
     let hemsTempChart = new PlotBuffer(500, 60000, [0, 120], true, "HEMS 1");
 
     hemsTempChart.addSeries(StrokePresets.theoretical("HEMS 2"))

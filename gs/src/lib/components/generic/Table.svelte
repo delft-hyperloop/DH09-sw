@@ -12,8 +12,8 @@
     <table class="text-sm w-full">
         <thead>
         <tr style="grid-template-columns: repeat({titles.length}, 1fr);" class="{background} grid text-center border-b border-b-surface-700">
-            {#each titles as title}
-                <th class="font-medium">{title}</th>
+            {#each titles as title, i}
+                <th class="text-base text-left {i === 0 ? 'px-2' : 'px-4'}" style="font-weight: 550;">{title}</th>
             {/each}
         </tr>
         </thead>

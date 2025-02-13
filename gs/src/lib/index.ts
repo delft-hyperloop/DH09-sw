@@ -39,10 +39,10 @@ import {tempParse, voltParse, addEntryToChart,pressureParse,sensorParse} from "$
 
 // Types
 import type {NamedCommand, Log, LogType, IntervalFunction} from "$lib/types";
-import {EventChannel, RunMode, type RouteStep} from "$lib/types";
+import {EventChannel} from "$lib/types";
 
 // Stores
-import {detailTabSet, inputSpeed, details_pane, vitals_pane, inputTurn, serverStatus} from "$lib/stores/state";
+import {detailTabSet, inputSpeed, details_pane, vitals_pane, serverStatus} from "$lib/stores/state";
 import uPlot from "uplot";
 
 export const chartDataStore = new Map<string, uPlot.AlignedData>();
@@ -56,7 +56,6 @@ export {
     addEntryToChart,
     TauriCommand,
     ToggleCommand,
-    inputTurn,
     StrokePresets,
     GrandDataDistributor,
     PneumaticsTab,
@@ -92,7 +91,5 @@ export {
     EventChannel,
     SpeedsInput,
     Store,
-    RunMode,
-    type RouteStep
 }
 export type {NamedCommand, Log, LogType, IntervalFunction}

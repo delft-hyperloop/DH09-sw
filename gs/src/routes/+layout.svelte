@@ -16,7 +16,7 @@
     import {parseShortCut, setBitsToBooleans} from "$lib/util/parsers";
     import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
-    import {LOCALISATION_NAME} from "$lib/types";
+    import { GOING_FORWARD, LOCALISATION_NAME } from '$lib/types';
 
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -340,6 +340,8 @@
         $chartStore.get("Localisation")!.addEntry(1, curr);
         return curr;
     });
+
+    gdd.stores.registerStore<boolean>(GOING_FORWARD, true);
 
     gdd.stores.registerStore<number>("Acceleration", 0);
     gdd.stores.registerStore<number>("Direction", 0);

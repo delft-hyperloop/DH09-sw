@@ -41,5 +41,6 @@
         <TauriCommand cmd="save_logs"/>
     </div>
     <p><kbd class="kbd">Esc</kbd> to trigger Emergency Braking.</p>
+    <p>Pinned tabs will appear here.</p>
 
 </div>

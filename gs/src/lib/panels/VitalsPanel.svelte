@@ -1,17 +1,17 @@
 <script lang="ts">
-  import {Battery, Table, FSM, TileGrid, Tile, Command, GrandDataDistributor, Localiser, Store} from "$lib";
+  import {Battery, Table, FSM, TileGrid, Tile, Command, GrandDataDistributor, Store} from "$lib";
     import {AppBar, getToastStore} from "@skeletonlabs/skeleton";
     import Icon from "@iconify/svelte";
     import {invoke} from "@tauri-apps/api/tauri";
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
-  import {LOCALISATION_NAME, STATUS} from "$lib/types";
+  import { GOING_FORWARD, LOCALISATION_NAME } from '$lib/types';
+  import Localization from '$lib/components/Localization.svelte';
 
     let width: number;
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const lvBattery = storeManager.getWritable("ChargeStateLow");
     const hvBattery = storeManager.getWritable("ChargeStateHigh");
-    const statuses = storeManager.getWritable("ConnectionStatus");
 
     let tableTempsArr: any[][];
     let tableArr2: any[][];
@@ -43,6 +43,7 @@
     ]
 
     const location = storeManager.getWritable(LOCALISATION_NAME);
+    const going_forward = storeManager.getWritable(GOING_FORWARD);
 
     const toastStore = getToastStore();
 
@@ -84,7 +85,7 @@
         <div class="snap-x scroll-px-0.5 snap-mandatory overflow-x-auto h-[90vh]">
             <TileGrid className="p-4 w-full" columns="1fr 1fr" rows="">
                 <Tile bgToken={800} containerClass="col-span-2">
-                    <Localiser turning={$statuses.value[STATUS.TURNING]} loc={$location.value} showLabels={false} />
+                    <Localization location={$location.value} showLabels={true} going_forward={$going_forward.value} />
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
                     <div class="flex flex-wrap justify-between">
@@ -116,6 +117,10 @@
                             <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
                             <span>Total: <Store datatype="TotalBatteryVoltageHigh" /></span>
                         </div>
+<!--                        <div class="flex flex-row">-->
+<!--                            <div class="rounded-full bg-error-500 w-10 h-10 shadow-[0_0_10px_rgba(255,0,0,0.8),0_0_20px_rgba(255,0,0,0.6),0_0_30px_rgba(255,0,0,0.4),0_0_40px_rgba(255,0,0,0.2)]"/>-->
+<!--                            <div class="rounded-full w-10 h-10 shadow-[0_0_10px_rgba(0,255,0,0.8),0_0_20px_rgba(0,255,0,0.6),0_0_30px_rgba(0,255,0,0.4),0_0_40px_rgba(0,255,0,0.2)]"/>-->
+<!--                        </div>-->
                     </div>
                     <div class="flex flex-wrap justify-between mt-4">
                         <div class="flex gap-4">

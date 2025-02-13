@@ -1,6 +1,7 @@
 <script lang="ts">
-    import { Localiser, TileGrid, Tile, Chart, inputTurn, GrandDataDistributor } from "$lib"
-    import {LOCALISATION_NAME, RunMode} from "$lib/types";
+    import {TileGrid, Tile, Chart, GrandDataDistributor } from "$lib"
+    import { GOING_FORWARD, LOCALISATION_NAME } from '$lib/types';
+    import Localization from '$lib/components/Localization.svelte';
 
     let tableArr2:any[][];
     $: tableArr2 = [
@@ -17,6 +18,7 @@
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const location = storeManager.getWritable(LOCALISATION_NAME);
+    const going_forward = storeManager.getWritable(GOING_FORWARD);
 
     export const pop_up: boolean = true;
 </script>
@@ -26,7 +28,7 @@
 
     <TileGrid columns="1fr 1fr" rows="">
         <Tile containerClass="col-span-2">
-            <Localiser loc={$location.value} max={13000} turning={$inputTurn !== RunMode.ShortRun}/>
+            <Localization location={$location.value} showLabels={true} going_forward={$going_forward.value} />
         </Tile>
         <Tile>
             <Chart title="Velocity" background="bg-surface-900" />

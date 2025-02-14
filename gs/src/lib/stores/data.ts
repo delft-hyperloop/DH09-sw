@@ -4,6 +4,7 @@ import type {Procedure, RouteConfig} from "$lib/types";
 import {writable, type Writable} from 'svelte/store';
 import {invoke} from "@tauri-apps/api/tauri";
 import {parseProcedure} from "$lib/util/parsers";
+import uPlot from 'uplot';
 
 export const procedures: Writable<Procedure[]> = writable([{
   name: "NO PROCEDURES LOADED",
@@ -40,3 +41,5 @@ export const routeConfig:Writable<RouteConfig> = writable({
   positions: [],
   current_position: 0,
 })
+
+export const pinnedCharts: Writable<Array<string>> = writable([]);

@@ -5,9 +5,9 @@
     import {chartStore} from "$lib/stores/state";
     import { ViewWindow } from "$lib/util/WindowControl"
     import Icon from "@iconify/svelte"
+    import { pinnedCharts } from '$lib/stores/data';
 
     export let title: string;
-
     export let background: string = "bg-surface-800";
     export let height: number = 200;
     export let chart: PlotBuffer|undefined = $chartStore.get(title);
@@ -29,15 +29,32 @@
     onDestroy(() => {
         chart?.destroy(plotContainer);
     });
+
+    function pinToHomePage() {
+        if ($pinnedCharts.includes(title)) {
+            let index = $pinnedCharts.indexOf(title);
+            let temp = $pinnedCharts;
+            temp.splice(index, 1);
+            pinnedCharts.set(temp);
+        } else {
+            let temp = $pinnedCharts;
+            temp.push(title);
+            pinnedCharts.set(temp);
+        }
+    }
 </script>
 
 {#if chart}
     <div bind:clientWidth={width} class="flex flex-col {background} rounded-md pt-2 {width < 550 ? 'text-sm' : ''}">
-        <div class="flex gap-2 ml-6">
-            <h4 class="text-md text-primary-100">{title}</h4>
-            <span class="font-mono"></span>
+        <div class="flex ml-6 mr-10 justify-between">
+            <div class="flex flex-row gap-2">
+                <h4 class="text-md text-primary-100">{title}</h4>
+                <button on:click={pinToHomePage}>
+                    <Icon icon="carbon:pin" />
+                </button>
+            </div>
             {#if pop_up}
-                <button on:click={() => new ViewWindow(title, `/view/chart/${title}`)} >
+                <button on:click={() => new ViewWindow(title, `/view/chart/${title}`)}>
                     <Icon icon="carbon:popup" />
                 </button>
             {/if}

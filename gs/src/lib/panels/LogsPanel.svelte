@@ -4,7 +4,7 @@
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
-    import {bigErrorStatus, ErrorStatus} from "$lib/stores/state";
+    import { bigErrorStatus, ErrorStatus, logsVisible, resizing } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
 
     let unlistens: UnlistenFn[] = [];
@@ -38,6 +38,11 @@
         if (logs.length > 50) {
             logs = logs.slice(-50);
         }
+    }
+
+    function toggleLogsVisibility() {
+        logsVisible.set(!$logsVisible);
+        resizing.set(false);
     }
 
     onMount(async () => {
@@ -87,9 +92,13 @@
     });
 </script>
 
-<div class="h-full">
+<div>
     <AppBar padding="p-3" background="bg-surface-700 text-surface-50">
-        <svelte:fragment slot="lead"><Icon icon="codicon:terminal-bash" /></svelte:fragment>
+        <svelte:fragment slot="lead">
+            <button class="text-sm" on:click={toggleLogsVisibility}>
+                <Icon icon="codicon:{$logsVisible ? 'eye-closed' : 'eye'}" />
+            </button>
+        </svelte:fragment>
         Logs
         <svelte:fragment slot="trail">
             <button class="btn rounded-lg text-sm" on:click={clearLogs}>

@@ -1,7 +1,7 @@
 <script lang="ts">
-    import {serverStatus, TauriCommand} from "$lib";
+    import { Chart, serverStatus, TauriCommand, TileGrid } from '$lib';
     import {getToastStore} from "@skeletonlabs/skeleton";
-    import {procedures} from "$lib/stores/data";
+    import { pinnedCharts, procedures } from '$lib/stores/data';
     import {parseProcedure} from "$lib/util/parsers";
 
     const toastStore = getToastStore();
@@ -41,6 +41,12 @@
         <TauriCommand cmd="save_logs"/>
     </div>
     <p><kbd class="kbd">Esc</kbd> to trigger Emergency Braking.</p>
-    <p>Pinned tabs will appear here.</p>
-
+    {#if $pinnedCharts.length === 0}
+        <p>Pinned tabs will appear here.</p>
+    {/if}
+    <TileGrid columns="" rows="">
+        {#each $pinnedCharts as title}
+            <Chart title={title} background="bg-surface-900" height={250}/>
+        {/each}
+    </TileGrid>
 </div>

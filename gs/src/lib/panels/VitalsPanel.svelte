@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {Battery, Table, FSM, TileGrid, Tile, Command, GrandDataDistributor, Store} from "$lib";
+    import {Battery, Table, FSM, TileGrid, Tile, Command, GrandDataDistributor, Store} from "$lib";
     import {AppBar, getToastStore} from "@skeletonlabs/skeleton";
     import Icon from "@iconify/svelte";
     import {invoke} from "@tauri-apps/api/tauri";
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
-  import { GOING_FORWARD, LOCALISATION_NAME } from '$lib/types';
-  import Localization from '$lib/components/Localization.svelte';
+    import { GOING_FORWARD, LOCALISATION_NAME } from '$lib/types';
+    import Localization from '$lib/components/Localization.svelte';
 
     let width: number;
 
@@ -50,7 +50,7 @@
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
-    <AppBar padding="p-3" border="border-b border-b-surface-900" background="bg-surface-700">
+    <AppBar padding="pl-8 pr-8 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700">
         <svelte:fragment slot="lead">
             <Icon icon="codicon:graph-line"/>
         </svelte:fragment>

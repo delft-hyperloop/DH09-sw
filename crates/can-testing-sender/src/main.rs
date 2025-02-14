@@ -211,10 +211,54 @@ async fn main(spawner: Spawner) {
 
     let frame = FdFrame::new(header, &[0; 64]).expect("Invalid frame");
 
+    fn encode_temperature(temp: f32) -> u8 {
+        let precision_range_start: f32 = 20.0;
+        let precision_range_end: f32 = 30.0;
+    
+        if temp >= precision_range_start && temp <= precision_range_end {
+            0x80 | ((temp - precision_range_start) * 10.0) as u8  
+        } else {
+            temp as u8  
+        }
+    }    
+
+    
     loop {
-        defmt::info!("Wrote frame");
+        let mut temp_data = [0.0; 5]; // Store raw temperature values
+    
+        // Simulate receiving sensor data from another board (Replace with actual method)
+        // for i in 0..5 {
+        //     temp_data[i] = get_temperature_from_other_board(i); // Get temperature from external source
+        // }
+    
+        // Encode temperatures before sending
+        let mut encoded_temperatures = [0u8; 5];
+        for i in 0..5 {
+            encoded_temperatures[i] = encode_temperature(temp_data[i]);
+        }
+    
+        // Create CAN FD frame with encoded temperatures
+        let frame = FdFrame::new(
+            Header::new_fd(
+                Id::try_from(0x00000001 as u32).expect("Invalid ID"),
+                64,
+                false,
+                true,
+            ),
+            &encoded_temperatures,
+        )
+        .expect("Invalid frame");
+    
+        defmt::info!("Sending Encoded Temperatures: {:?}", encoded_temperatures);
         can.write_fd(&frame).await;
     }
+    
+    
+
+    // loop {
+    //     defmt::info!("Wrote frame");
+    //     can.write_fd(&frame).await;
+    // }
 
     // hprintln!("CPU Freq: {:.0}MHz", cpu_freq());
 }

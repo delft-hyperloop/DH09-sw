@@ -160,20 +160,42 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("CAN Configured");
 
+    fn decode_temperature(encoded: u8) -> f32 {
+        let precision_range_start: f32 = 20.0;
+
+        if encoded & 0x80 != 0 {
+            precision_range_start + ((encoded & 0x7F) as f32 / 10.0) // High precision mode
+        } else {
+            encoded as f32 // Integer mode
+        }
+    }
+    
+    
+
     loop {
         let response = can.read_fd().await;
-        // hprintln!("Yoo");
-
+    
         match response {
             Ok(ref envelope) => {
                 let header = envelope.frame.header();
-                info!("Received: {:?}", header);
+                let data = envelope.frame.data(); // Extract received data
+    
+                info!("Received CAN Frame: {:?}", header);
+    
+                if data.len() >= 1 { // Ensure at least 1 byte received
+                    let received_temp = decode_temperature(data[0]);
+                    info!("Decoded Temperature: {} °C", received_temp);
+                } else {
+                    info!("Received frame but no valid temperature data!");
+                }
             }
             Err(ref bus_error) => {
                 info!("Bus error: {:?}", bus_error);
             }
         }
     }
+    
 
     hlt()
 }
+

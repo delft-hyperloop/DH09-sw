@@ -223,21 +223,32 @@ async fn main(spawner: Spawner) {
     }    
 
     
+    let mut first_message = true; // Flag to send test values first
+
     loop {
-        let mut temp_data = [0.0; 5]; // Store raw temperature values
-    
-        // Simulate receiving sensor data from another board (Replace with actual method)
-        // for i in 0..5 {
-        //     temp_data[i] = get_temperature_from_other_board(i); // Get temperature from external source
-        // }
-    
-        // Encode temperatures before sending
         let mut encoded_temperatures = [0u8; 5];
-        for i in 0..5 {
-            encoded_temperatures[i] = encode_temperature(temp_data[i]);
+    
+        if first_message {
+            // Send precision range values on first message
+            encoded_temperatures[0] = encode_temperature(20.0);
+            encoded_temperatures[1] = encode_temperature(30.0);
+            for i in 2..5 {
+                encoded_temperatures[i] = 0; // Fill remaining bytes with 0
+            }
+            first_message = false; // Prevent sending test values again
+    
+            defmt::info!("Sent Initial Precision Values: 20°C & 30°C");
+        } else {
+            // Read actual sensor data and encode it
+            // for i in 0..5 {
+            //     let temp = get_temperature_from_other_board(i);
+            //     encoded_temperatures[i] = encode_temperature(temp);
+            // }
+    
+            defmt::info!("Sending Encoded Temperatures: {:?}", encoded_temperatures);
         }
     
-        // Create CAN FD frame with encoded temperatures
+        // Create and send CAN FD frame
         let frame = FdFrame::new(
             Header::new_fd(
                 Id::try_from(0x00000001 as u32).expect("Invalid ID"),
@@ -249,9 +260,9 @@ async fn main(spawner: Spawner) {
         )
         .expect("Invalid frame");
     
-        defmt::info!("Sending Encoded Temperatures: {:?}", encoded_temperatures);
         can.write_fd(&frame).await;
     }
+    
     
     
 

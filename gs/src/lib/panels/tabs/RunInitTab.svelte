@@ -1,17 +1,18 @@
 <script lang="ts">
     import {
-    Table,
-    Status,
-    Command,
-    Tile,
-    TileGrid,
-    SpeedsInput, GrandDataDistributor, Chart
+        Table,
+        Status,
+        Command,
+        Tile,
+        TileGrid,
+        GrandDataDistributor,
+        Chart
     } from "$lib";
-    import {getModalStore, type ModalComponent} from "@skeletonlabs/skeleton";
     import {DatatypeEnum} from "$lib/namedDatatypeEnum";
     import {invoke} from "@tauri-apps/api/tauri";
     import {STATUS} from "$lib/types";
-    import {routeConfig} from "$lib/stores/data";
+    import { podSpeed } from '$lib/stores/data';
+    import { goingForward } from '$lib/stores/state';
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const statuses = storeManager.getWritable("ConnectionStatus")
@@ -28,58 +29,79 @@
         ["Gyroscope Z", DatatypeEnum.GYROSCOPEZ],
     ]
 
-    const modalStore = getModalStore();
+    let currentDirectionForward: boolean = $goingForward;
+    let currentSpeed: number = $podSpeed;
 
-    const input:ModalComponent = {ref: SpeedsInput};
-    let inputModal = () => {
-        modalStore.trigger({
-            type: "component",
-            component: input,
-            title: "Run Configuration",
-        })
-    }
-    let finishRunConfig = () => {
-        invoke('send_command', {cmdName: "FinishRunConfig", val: 0}).then(() => {
-            console.log(`Command FinishRunConfig sent`);
-            modalStore.close();
-        });
+    // const modalStore = getModalStore();
+
+    // const input:ModalComponent = {ref: SpeedsInput};
+    // let inputModal = () => {
+    //     modalStore.trigger({
+    //         type: "component",
+    //         component: input,
+    //         title: "Run Configuration",
+    //     })
+    // }
+    // let finishRunConfig = () => {
+    //     invoke('send_command', {cmdName: "FinishRunConfig", val: 0}).then(() => {
+    //         console.log(`Command FinishRunConfig sent`);
+    //         modalStore.close();
+    //     });
+    // }
+
+    function submitRun() {
+        goingForward.set(currentDirectionForward);
+        podSpeed.set(currentSpeed);
+        invoke('send_command', {cmdName: "SubmitRun", val: 0}).then(() => {
+            console.log("Speed sent to pod");
+        }) // TODO: see how command is sent
     }
 
 </script>
 
 <div class="p-4 h-full">
-    <h2 class="text-xl font-semibold mb-4">Initialization</h2>
+    <h2 class="text-2xl font-semibold mb-4">Initialization</h2>
 
     <TileGrid columns="1fr 1fr 1.5fr" rows="auto 1fr">
         <Tile containerClass="row-span-2" insideClass="flex flex-col gap-2" heading="Run Initialisation">
             <div class="grid grid-cols-2 gap-2">
-                <Command cmd="EnablePropulsion" className="btn flex-grow rounded-md bg-surface-700 " />
-                <Command cmd="DisablePropulsion" className="btn flex-grow rounded-md bg-surface-700 " />
-                <Command cmd="SystemReset" className="btn flex-grow rounded-md bg-surface-700" />
-                <Command cmd="ArmBrakes" className="btn flex-grow rounded-md bg-surface-700" />
-                <button class="btn rounded-md bg-primary-500 col-span-2" on:click={inputModal} disabled={false}>
-                    Configure Run
+                <Command cmd="EnablePropulsion" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto"/>
+                <Command cmd="DisablePropulsion" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
+                <Command cmd="SystemReset" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
+                <Command cmd="ArmBrakes" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
+                <p class="col-span-2">Choose Direction:</p>
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                        on:click={() => {currentDirectionForward = true}}
+                        disabled={currentDirectionForward}>
+                    Forward
                 </button>
-                <button class="btn rounded-md bg-primary-500 col-span-2" on:click={finishRunConfig} disabled={false}>
-                    Submit Configuration
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                        on:click={() => {currentDirectionForward = false}}
+                        disabled={!currentDirectionForward}>
+                    Backward
                 </button>
-                <h3 class="col-span-2">Desired speeds</h3>
-                <p>Forward A</p>
-                <p>{$routeConfig.speeds.ForwardA} m/s</p>
-                <p>Forward B</p>
-                <p>{$routeConfig.speeds.ForwardB} m/s</p>
-                <p>Forward C</p>
-                <p>{$routeConfig.speeds.ForwardC} m/s</p>
-                <p>Backwards A</p>
-                <p>{$routeConfig.speeds.BackwardsA} m/s</p>
-                <p>Backwards B</p>
-                <p>{$routeConfig.speeds.BackwardsB} m/s</p>
-                <p>Backwards C</p>
-                <p>{$routeConfig.speeds.BackwardsC} m/s</p>
-                <p>Lane Switch Curved</p>
-                <p>{$routeConfig.speeds.LaneSwitchCurved} m/s</p>
-                <p>Lane Switch Straight</p>
-                <p>{$routeConfig.speeds.LaneSwitchStraight} m/s</p>
+                <p class="col-span-full">
+                    Change Speed:
+                </p>
+                <input class="input rounded-lg px-1 col-span-2 min-h-10"
+                       type="number"
+                       max="500"
+                       min="0"
+                       bind:value={currentSpeed}
+                />
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow overflow-auto font-medium" on:click={submitRun} disabled={false}>
+                    Submit Run
+                </button>
+                <hr class="col-span-full">
+                <p class="col-span-full font-normal text-xl justify-center text-center pb-3 ">Current Values:</p>
+                <p>Desired Speed:</p>
+                <p>{$podSpeed} m/s</p>
+                <p>Run Direction:</p>
+                {#if $goingForward}
+                    <p>Forward</p>
+                {:else}
+                    <p>Backward</p>
+                {/if}
             </div>
         </Tile>
         <Tile insideClass="grid grid-cols-2 gap-y-2 auto-rows-min" heading="Statuses" >

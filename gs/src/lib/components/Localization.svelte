@@ -1,8 +1,9 @@
 <script lang="ts">
 
+    import { goingForward } from '$lib/stores/state';
+
     export let max: number = 10000;
     export let location: number = 0;
-    export let going_forward: boolean = true;
     export let showLabels: boolean = true;
 
     // SVG elements
@@ -33,7 +34,7 @@
         point_half.style.fill = location > max / 2 ? color_active : color_off;
         progress.style.strokeDashoffset = (path_length - path_length * (location / max)).toString();
 
-        if (going_forward) {
+        if ($goingForward) {
             point_start.style.fill = location > 0 ? color_active : color_off;
             point_quarter.style.fill = location > max / 4 ? color_active : color_off;
             point_three_quarters.style.fill = location > max / 4 * 3 ? color_active : color_off;
@@ -54,7 +55,7 @@
                 <g id="progress_container" bind:this={progress_container}>
                     <g id="path" bind:this={path}>
                         <path d="M10 26H909" stroke="#525B5B" stroke-width="6" />
-                        {#if going_forward}
+                        {#if $goingForward}
                             <path bind:this={progress} d="M10 25.7224H909" stroke="#4D9C89" stroke-width="6" />
                         {:else}
                             <path bind:this={progress} d="M909 25.7224H10" stroke="#4D9C89" stroke-width="6" />

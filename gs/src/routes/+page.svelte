@@ -5,7 +5,7 @@
     import LogsPanel from "$lib/panels/LogsPanel.svelte";
 
     import {details_pane, vitals_pane} from "$lib";
-    import { logsVisible, resizing } from '$lib/stores/state';
+    import { logsVisible } from '$lib/stores/state';
 </script>
 
 <main class="w-full flex-grow border-t border-black overflow-auto">
@@ -16,17 +16,16 @@
         <Pane minSize={50} class="bg-surface-900">
             <Splitpanes horizontal={true} theme="modern-theme-logs" dblClickSplitter={false} on:resize={(event) => {
                 details_pane.set(event.detail[0].size);
-                if (event.detail[0].size === 90) {
+                if (event.detail[0].size === 95) {
                     logsVisible.set(false);
                 } else {
-                    resizing.set(true);
                     logsVisible.set(true);
                 }
             }}>
                 <Pane minSize={50} class="bg-surface-800">
                     <DetailsPanel />
                 </Pane>
-                <Pane size={($logsVisible && !$resizing) ? 30 : 5} minSize={5} class="bg-surface-800 ">
+                <Pane size={($logsVisible) ? 30 : 5} minSize={5} class="bg-surface-800 ">
                     <LogsPanel />
                 </Pane>
             </Splitpanes>

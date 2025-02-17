@@ -4,7 +4,7 @@
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
-    import { bigErrorStatus, ErrorStatus, logsVisible, resizing } from '$lib/stores/state';
+    import { bigErrorStatus, ErrorStatus, logsVisible } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
 
     let unlistens: UnlistenFn[] = [];
@@ -42,7 +42,6 @@
 
     function toggleLogsVisibility() {
         logsVisible.set(!$logsVisible);
-        resizing.set(false);
     }
 
     onMount(async () => {

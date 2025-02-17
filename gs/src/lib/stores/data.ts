@@ -4,7 +4,6 @@ import type {Procedure, RouteConfig} from "$lib/types";
 import {writable, type Writable} from 'svelte/store';
 import {invoke} from "@tauri-apps/api/tauri";
 import {parseProcedure} from "$lib/util/parsers";
-import uPlot from 'uplot';
 
 export const procedures: Writable<Procedure[]> = writable([{
   name: "NO PROCEDURES LOADED",
@@ -24,22 +23,10 @@ export const initProcedures = async () => {
   });
 }
 
-export type SpeedFormKey =
-  "BackwardC" | "ForwardB" | "ForwardA" | "LaneSwitchCurved" | "ForwardC" | "LaneSwitchStraight" | "BackwardA" | "BackwardB";
-
 export const routeConfig:Writable<RouteConfig> = writable({
-  speeds: {
-    BackwardsA: 0,
-    BackwardsB: 0,
-    BackwardsC: 0,
-    ForwardA: 0,
-    ForwardB: 0,
-    ForwardC: 0,
-    LaneSwitchCurved: 0,
-    LaneSwitchStraight: 0,
-  },
-  positions: [],
+  speed: 0,
   current_position: 0,
 })
 
 export const pinnedCharts: Writable<Array<string>> = writable([]);
+export const podSpeed: Writable<number> = writable(0);

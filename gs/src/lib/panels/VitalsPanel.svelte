@@ -130,8 +130,8 @@
                             <Command cmd="ContinueRun" className="py-1 bg-primary-500 text-surface-900" />
                         </div>
                         <div class="flex flex-col">
-                            <span>LV Total Safe: [21, 29.5] V</span>
-                            <span>HV Total Safe: [347, 470] V</span>
+                            <span>LV Total Safe: -Insert values- V</span>
+                            <span>HV Total Safe: -Insert values- V</span>
                         </div>
                     </div>
                 </Tile>

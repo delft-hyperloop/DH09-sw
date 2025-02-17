@@ -5,7 +5,7 @@
     import { getModalStore } from "@skeletonlabs/skeleton"
     import { invoke } from "@tauri-apps/api/tauri"
     import util from "$lib/util/util"
-    import { EventChannel, type RouteStep, TauriCommand } from "$lib"
+    import { EventChannel, TauriCommand } from "$lib"
     import Icon from "@iconify/svelte"
     import type { RouteConfig } from "$lib/types"
     import { routeConfig } from "$lib/stores/data"
@@ -13,35 +13,15 @@
 
     const CurrentRouteConfig: RouteConfig = get(routeConfig)
 
-    const RouteStepNames: RouteStep[] = ["ForwardA", "ForwardB", "ForwardC", "BackwardsA", "BackwardsB", "BackwardsC",
-        "LaneSwitchStraight", "LaneSwitchCurved", "StopAndWait", "BrakeHere"]
-
     let isValid: boolean = false
     $: focusedInput = ""
     let invalidInputs: SpeedFormKey[] = []
     export let parent: SvelteComponent
     const modalStore = getModalStore()
 
-    type SpeedFormType = {
-        ForwardA: number,
-        ForwardB: number,
-        ForwardC: number,
-        BackwardsA: number,
-        BackwardsB: number,
-        BackwardsC: number,
-        LaneSwitchCurved: number,
-        LaneSwitchStraight: number,
-    }
-
-    const speedForm: SpeedFormType = CurrentRouteConfig.speeds
+    const speedForm: SpeedFormType = CurrentRouteConfig.speed
     type SpeedFormKey = keyof typeof speedForm;
     const inputs: SpeedFormKey[] = Object.keys(CurrentRouteConfig.speeds) as SpeedFormKey[]
-
-    function onRouteStepClick(step: RouteStep): void {
-        if (CurrentRouteConfig.positions.length < 16) {
-            CurrentRouteConfig.positions = [...CurrentRouteConfig.positions, step]
-        }
-    }
 
     function removeRouteStep(index: number): void {
         CurrentRouteConfig.positions = CurrentRouteConfig.positions.filter((_, i) => i !== index)
@@ -89,7 +69,7 @@
     async function onFormSubmit() {
         let modifiedRouteConfig = { ...CurrentRouteConfig, positions: [...CurrentRouteConfig.positions] }
 
-        modifiedRouteConfig.speeds = speedsToU8(CurrentRouteConfig.speeds)
+        modifiedRouteConfig.speed = speedToU8(CurrentRouteConfig.speed)
 
         if (modifiedRouteConfig.positions.length < 16) {
             for (let i = modifiedRouteConfig.positions.length; i < 16; i++) {

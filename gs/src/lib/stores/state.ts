@@ -23,3 +23,6 @@ export const latestTimestamp: Writable<number> = writable(0);
 export const logsVisible: Writable<boolean> = writable(false);
 
 export const goingForward: Writable<boolean> = writable(true);
+
+export const blinking: Writable<boolean> = writable(false);
+export const HVALTurnedOn: Writable<boolean> = writable(false);

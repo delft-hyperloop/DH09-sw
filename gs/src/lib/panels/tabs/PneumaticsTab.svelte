@@ -28,8 +28,8 @@
         <Tile>
             <Table background="bg-surface-900" titles={["Section", "Bars"]} tableArr={pressureTable}/>
         </Tile>
-        <Tile>
-            <Chart title="Breaking Comms" />
+        <Tile containerClass="col-span-full">
+            <Chart title="Breaking Comms"/>
         </Tile>
     </TileGrid>
 </div>

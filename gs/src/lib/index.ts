@@ -28,7 +28,6 @@ import Tile from "$lib/components/generic/Tile.svelte";
 import TileGrid from "$lib/components/generic/TileGrid.svelte";
 import ToggleCommand from "$lib/components/abstract/ToggleCommand.svelte";
 import TauriCommand from "$lib/components/abstract/TauriCommand.svelte";
-import SpeedsInput from "$lib/components/SpeedsInput.svelte";
 import Store from "$lib/components/generic/Store.svelte";
 
 // Utils
@@ -89,7 +88,6 @@ export {
     Pneumatics,
     Localiser,
     EventChannel,
-    SpeedsInput,
     Store,
 }
 export type {NamedCommand, Log, LogType, IntervalFunction}

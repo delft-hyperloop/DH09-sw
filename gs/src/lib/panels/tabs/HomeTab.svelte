@@ -32,7 +32,7 @@
         <img src="/images/logo-green-new.png" alt="Delft Hyperloop logo" class="w-40" />
         <h1 class="text-4xl text-primary-500">Delft Hyperloop Ground Station</h1>
     </div>
-    <div>
+    <div class="flex gap-3 flex-wrap">
         <TauriCommand cmd="connect_to_pod" successCallback={handleSuccess} errorCallback={handleFailure} />
         <TauriCommand cmd="disconnect" successCallback={() => serverStatus.set(false)} />
         <TauriCommand cmd="start_levi" />

@@ -7,7 +7,7 @@
     import { LOCALISATION_NAME } from '$lib/types';
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
-    import { HVALTurnedOn, blinking } from '$lib/stores/state';
+    import { GreenHVALTurnedOn, RedHVALTurnedOn } from '$lib/stores/state';
 
     let width: number;
 
@@ -89,8 +89,8 @@
                     <Localization location={$location.value} showLabels={true}/>
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
-                    <div class="flex flex-wrap justify-between">
-                        <div class="flex gap-4 ">
+                    <div class="flex flex-wrap justify-between gap-4">
+                        <div class="flex gap-4">
                             <p>
                                 Velocity: <Store datatype="Velocity" /> m/s
                                 <br>
@@ -118,20 +118,21 @@
                             <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
                             <span>Total: <Store datatype="TotalBatteryVoltageHigh" /></span>
                         </div>
-                        <div class="grid gap-2" style="grid-template-columns: 1fr 2fr">
+                        <div class="grid gap-1" style="grid-template-columns: 1fr 1fr 1fr">
                             <span class="justify-center text-center">HVAL:</span>
-                            <Light/>
-<!--                            <span></span>-->
+                            <Light isGreen={true}/>
+                            <Light isGreen={false}/>
                             <span class="justify-center text-center ">IMD:</span>
                             <span>&ltstatus&gt</span>
+                            <span></span>
                         </div>
-                        <div class="grid gap-2" style="grid-template-columns: 1fr 2fr">
+                        <div class="grid gap-2" style="grid-template-columns: 1fr 1fr">
                             <span>High Voltage BMS:</span>
+                            <span>&ltstatus&gt</span>
+<!--                            <span>Emergency Breaking System:</span>-->
 <!--                            <span>&ltstatus&gt</span>-->
-                            <span>Emergency Breaking System:</span>
-<!--                            <span>&ltstatus&gt</span>-->
-                            <button on:click={() => {HVALTurnedOn.set(!$HVALTurnedOn)}}>Toggle color</button>
-                            <button on:click={() => {blinking.set(!$blinking)}}>Toggle blinking</button>
+                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>
+                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>
                         </div>
                     </div>
                     <div class="flex flex-wrap justify-between mt-4">

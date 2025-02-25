@@ -9,8 +9,6 @@
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
     import SubFSMs from '$lib/components/SubFSMs.svelte';
-    import { onMount } from 'svelte';
-    import { fsmState } from '$lib/stores/state';
 
     let width: number;
 
@@ -50,12 +48,6 @@
     const location = storeManager.getWritable(LOCALISATION_NAME);
 
     const toastStore = getToastStore();
-
-    onMount(() => {
-        setInterval(() => {
-            fsmState.set(($fsmState + 1) % 5);
-        }, 1000);
-    });
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">

@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onDestroy, onMount } from 'svelte';
     import { GrandDataDistributor } from '$lib';
-    import { fsmState } from '$lib/stores/state';
 
     let system_check: SVGGElement;
     let idle: SVGGElement;
@@ -43,8 +42,7 @@
 
         interval = setInterval(() => {
             turn_off_all(allStates);
-            // turn_on(allStates[$mainFsmState.value % allStates.length])
-            turn_on(allStates[$fsmState]);
+            turn_on(allStates[$mainFsmState.value % allStates.length]);
         }, 100)
     })
 

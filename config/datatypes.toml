@@ -64,6 +64,29 @@
 # ```
 #
 
+[[Datatype]]
+name = "GoingForward"
+id = 0x007
+
+[[Datatype]]
+name = "PropFSMState"
+id = 0x008
+
+[[Datatype]]
+name = "LeviFSMState"
+id = 0x009
+
+[[Datatype]]
+name = "HVFSMState"
+id = 0x00A
+
+[[Datatype]]
+name = "OperatingFSMState"
+id = 0x00d
+
+[[Datatype]]
+name = "EmergencyFSMState"
+id = 0x00C
 
 [[Datatype]]
 name = "DefaultDatatype"

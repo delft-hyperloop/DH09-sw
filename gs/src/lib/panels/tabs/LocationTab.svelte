@@ -24,7 +24,7 @@
 </script>
 
 <div class="p-4">
-    <h2 class="text-xl font-semibold mb-4">Location & IMU</h2>
+    <h2 class="text-2xl font-semibold mb-4">Location & IMU</h2>
 
     <TileGrid columns="1fr 1fr" rows="">
         <Tile containerClass="col-span-2">

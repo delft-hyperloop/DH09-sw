@@ -181,7 +181,7 @@
 </script>
 
 <div class="p-4">
-    <h2 class="text-xl font-semibold mb-4">Batteries</h2>
+    <h2 class="text-2xl font-semibold mb-4">Batteries</h2>
     <div class="flex gap-x-2 items-start">
     </div>
     <TileGrid columns="1fr 1fr 1fr 1fr" rows="auto 1fr auto">

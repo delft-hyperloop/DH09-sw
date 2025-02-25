@@ -486,6 +486,11 @@
     ///////////////////////////////////////////////////////////////
 
     gdd.stores.registerStore<number>("FSMState", 0);
+    gdd.stores.registerStore<number>("PropFSMState", 0);
+    gdd.stores.registerStore<number>("LeviFSMState", 0);
+    gdd.stores.registerStore<number>("HVFSMState", 0);
+    gdd.stores.registerStore<number>("OperatingFSMState", 0);
+    gdd.stores.registerStore<number>("EmergencyFSMState", 0);
 
     gdd.stores.registerStore<boolean[]>("ConnectionStatus", [false, false, false, false, false, false, false, false, false], setBitsToBooleans)
 

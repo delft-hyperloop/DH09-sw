@@ -42,13 +42,6 @@
             if (blinkInterval) {
                 clearTimeout(blinkInterval);
             }
-            // if (!isGreen) {
-            //     color = "#000";
-            //     shadow = "#000";
-            // } else {
-            //     shadow = $HVALTurnedOn ? greenShadow : "#000";
-            //     color = $HVALTurnedOn ? green : "#000";
-            // }
             blinkOn = true;
         } else if ($GreenHVALTurnedOn) {
             color = green;
@@ -70,7 +63,7 @@
 
 <div class="
     {innerClass}
-    rounded-full {blinkOn ? color : 'bg-surface-800'} size-5
+    rounded-full {blinkOn ? color : 'bg-surface-800'} size-7
     {shadow}
     "
 />

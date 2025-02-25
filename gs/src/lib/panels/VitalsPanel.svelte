@@ -7,7 +7,10 @@
     import { LOCALISATION_NAME } from '$lib/types';
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
-    import { GreenHVALTurnedOn, RedHVALTurnedOn } from '$lib/stores/state';
+    import MainFSM from '$lib/components/MainFSM.svelte';
+    import SubFSMs from '$lib/components/SubFSMs.svelte';
+    import { onMount } from 'svelte';
+    import { fsmState } from '$lib/stores/state';
 
     let width: number;
 
@@ -48,6 +51,11 @@
 
     const toastStore = getToastStore();
 
+    onMount(() => {
+        setInterval(() => {
+            fsmState.set(($fsmState + 1) % 5);
+        }, 1000);
+    });
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
@@ -118,21 +126,25 @@
                             <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
                             <span>Total: <Store datatype="TotalBatteryVoltageHigh" /></span>
                         </div>
-                        <div class="grid gap-1" style="grid-template-columns: 1fr 1fr 1fr">
-                            <span class="justify-center text-center">HVAL:</span>
-                            <Light isGreen={true}/>
-                            <Light isGreen={false}/>
-                            <span class="justify-center text-center ">IMD:</span>
-                            <span>&ltstatus&gt</span>
-                            <span></span>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex gap-4">
+                                <span>HVAL:</span>
+                                <Light isGreen={true}/>
+                                <Light isGreen={false}/>
+                            </div>
+                            <div class="flex">
+                                <span>IMD: &ltstatus&gt</span>
+                            </div>
                         </div>
-                        <div class="grid gap-2" style="grid-template-columns: 1fr 1fr">
-                            <span>High Voltage BMS:</span>
-                            <span>&ltstatus&gt</span>
-<!--                            <span>Emergency Breaking System:</span>-->
-<!--                            <span>&ltstatus&gt</span>-->
-                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>
-                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>
+                        <div class="flex flex-col gap-4">
+                            <span>High Voltage BMS: &ltstatus&gt</span>
+                            <span>Emergency Breaking System: &ltstatus&gt</span>
+<!--                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>-->
+<!--                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>-->
+                        </div>
+                        <div class="flex flex-col gap-4">
+                            <span>LV Total Safe: -Insert values- V</span>
+                            <span>HV Total Safe: -Insert values- V</span>
                         </div>
                     </div>
                     <div class="flex flex-wrap justify-between mt-4">
@@ -141,10 +153,6 @@
                             <Command cmd="ArmBrakes" className="py-1 bg-primary-500 text-surface-900 " />
                             <Command cmd="StartRun" className="py-1 bg-primary-500 text-surface-900" />
                             <Command cmd="ContinueRun" className="py-1 bg-primary-500 text-surface-900" />
-                        </div>
-                        <div class="flex flex-col">
-                            <span>LV Total Safe: -Insert values- V</span>
-                            <span>HV Total Safe: -Insert values- V</span>
                         </div>
                     </div>
                 </Tile>
@@ -157,8 +165,11 @@
                 <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>
                     <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>
                 </Tile>
+                <Tile bgToken={800} containerClass="col-span-2 px-16 ">
+                    <MainFSM/>
+                </Tile>
                 <Tile bgToken={800} containerClass="col-span-2 px-16">
-                    <FSM />
+                    <SubFSMs/>
                 </Tile>
             </TileGrid>
         </div>

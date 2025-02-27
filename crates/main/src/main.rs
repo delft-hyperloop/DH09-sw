@@ -6,6 +6,7 @@
 use core::num::NonZeroU16;
 use core::num::NonZeroU8;
 
+use defmt::todo;
 // use embassy_stm32::rng;
 use defmt::*;
 use defmt_rtt as _;
@@ -44,11 +45,10 @@ use fsm::commons::EmergencyChannel;
 use fsm::commons::EventChannel;
 use fsm::MainFSM;
 use fsm::MainStates;
-use main::can::CanEnvelope;
-use main::can::CanInterface;
-use main::can::CanRxSubscriber;
-use main::can::CanTxSender;
+use main::can::can1;
+use main::can::can2;
 use main::gs_master;
+use main::gs_master::Datapoint;
 use main::gs_master::EthernetGsCommsLayerInitializer;
 use main::gs_master::GsCommsLayer;
 use main::gs_master::GsMaster;
@@ -57,8 +57,6 @@ use main::gs_master::PodToGsMessage;
 use panic_probe as _;
 use rand_core::RngCore as _;
 use static_cell::StaticCell;
-
-use defmt::todo;
 
 bind_interrupts!(
     struct Irqs {
@@ -170,8 +168,8 @@ async fn forward_gs_to_fsm(
 }
 
 #[embassy_executor::task]
-async fn forward_fsm_relay_events_to_can(
-    cantx: CanTxSender<'static>,
+async fn forward_fsm_relay_events_to_can1(
+    cantx: can1::CanTxSender<'static>,
     mut event_channel: PriorityEventPubSub,
 ) {
     loop {
@@ -187,7 +185,7 @@ async fn forward_fsm_relay_events_to_can(
 
                 let frame = can::frame::FdFrame::new(header, &[0; 64]).expect("Invalid frame");
 
-                cantx.send(CanEnvelope::new_from_frame(frame)).await;
+                cantx.send(can1::CanEnvelope::new_from_frame(frame)).await;
             }
 
             _ => {}
@@ -196,8 +194,35 @@ async fn forward_fsm_relay_events_to_can(
 }
 
 #[embassy_executor::task]
-async fn forward_can_messages_to_fsm(
-    mut canrx: CanRxSubscriber<'static>,
+async fn forward_fsm_relay_events_to_can2(
+    cantx: can2::CanTxSender<'static>,
+    mut event_channel: PriorityEventPubSub,
+) {
+    loop {
+        let event = event_channel.get_event().await;
+        match event {
+            fsm::commons::data::Event::HighVoltageOnCanRelay => {
+                let header = can::frame::Header::new_fd(
+                    can::frame::Id::try_from(0x00000001 as u32).expect("Invalid ID"),
+                    64,
+                    false,
+                    true,
+                );
+
+                let frame = can::frame::Frame::new(header, &[0; 64]).expect("Invalid frame");
+
+                cantx.send(can2::CanEnvelope::new_from_frame(frame)).await;
+            }
+
+            _ => {}
+        }
+    }
+}
+
+
+#[embassy_executor::task]
+async fn forward_can1_messages_to_fsm(
+    mut canrx: can1::CanRxSubscriber<'static>,
     event_channel: PriorityEventPubSub,
 ) {
     loop {
@@ -227,6 +252,115 @@ async fn forward_can_messages_to_fsm(
         if fsm_event != fsm::commons::Event::NoEvent {
             event_channel.add_event(&fsm_event).await;
         }
+    }
+}
+
+#[embassy_executor::task]
+async fn forward_can1_messages_to_gs(
+    mut canrx: can1::CanRxSubscriber<'static>,
+    mut gstx: gs_master::TxSender<'static>,
+) {
+    loop {
+        let can_frame = canrx.next_message_pure().await;
+        let id = match can_frame.id() {
+            Id::Extended(extended_id) => extended_id.as_raw(),
+            Id::Standard(_) => todo!("Nuh-uh"),
+        };
+
+        info!("Received CAN frame with ID: {}", id);
+
+        match id {
+            0x123 => {
+                fn decode_temperature(encoded: u8) -> f32 {
+                    let precision_range_start: f32 = 20.0;
+
+                    if encoded & 0x80 != 0 {
+                        precision_range_start + ((encoded & 0x7F) as f32 / 10.0)
+                    // High precision mode
+                    } else {
+                        encoded as f32 // Integer mode
+                    }
+                }
+
+                let temperature = can_frame.payload()[1];
+                let msg = PodToGsMessage {
+                    dp: Datapoint::new(
+                        main::config::Datatype::Ambient_temp,
+                        u64::from_be_bytes(
+                            f64::to_be_bytes(decode_temperature(temperature) as f64),
+                        ),
+                        embassy_time::Instant::now().as_ticks(),
+                    ),
+                };
+
+                gstx.send(msg).await;
+            }
+            _ => {}
+        }
+
+        Timer::after_micros(10).await;
+    }
+}
+
+#[embassy_executor::task]
+async fn forward_can2_messages_to_gs(
+    mut canrx: can2::CanRxSubscriber<'static>,
+    mut gstx: gs_master::TxSender<'static>,
+) {
+    loop {
+        let can_frame = canrx.next_message_pure().await;
+        let id = match can_frame.id() {
+            Id::Extended(extended_id) => todo!("Nuh-uh"),
+            Id::Standard(id) => id.as_raw(),
+        };
+
+        info!("Received CAN frame with ID: {}", id);
+
+        match id {
+            0x123 => {
+                fn decode_temperature(encoded: u8) -> f32 {
+                    let precision_range_start: f32 = 20.0;
+
+                    if encoded & 0x80 != 0 {
+                        precision_range_start + ((encoded & 0x7F) as f32 / 10.0)
+                    // High precision mode
+                    } else {
+                        encoded as f32 // Integer mode
+                    }
+                }
+
+                let temperature = can_frame.payload()[1];
+                let msg = PodToGsMessage {
+                    dp: Datapoint::new(
+                        main::config::Datatype::Ambient_temp,
+                        u64::from_be_bytes(
+                            f64::to_be_bytes(decode_temperature(temperature) as f64),
+                        ),
+                        embassy_time::Instant::now().as_ticks(),
+                    ),
+                };
+
+                gstx.send(msg).await;
+            }
+            _ => {}
+        }
+
+        Timer::after_micros(10).await;
+    }
+}
+
+#[embassy_executor::task]
+async fn gs_heartbeat(mut gstx: gs_master::TxSender<'static>) {
+    loop {
+        gstx.send(PodToGsMessage {
+            dp: Datapoint::new(
+                main::config::Datatype::FrontendHeartbeating,
+                1,
+                embassy_time::Instant::now().as_ticks(),
+            ),
+        })
+        .await;
+        Timer::after_millis(100).await;
     }
 }
 
@@ -292,48 +426,66 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("Embassy initialized!");
 
-    let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs);
+    let can1 = {
+        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs);
 
-    // hprintln!("{:?}", configurator.config().nbtr);
-    // hprintln!("{:?}", configurator.config().dbtr);
-    //NominalBitTiming { prescaler: 12, seg1: 8, seg2: 1, sync_jump_width: 1 }
-    // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8,
-    // seg2: 1, sync_jump_width: 1 }
+        let config = configurator
+            .config()
+            // Configuration for 1Mb/s
+            .set_nominal_bit_timing(NominalBitTiming {
+                prescaler: NonZeroU16::new(10).unwrap(),
+                seg1: NonZeroU8::new(8).unwrap(),
+                seg2: NonZeroU8::new(3).unwrap(),
+                sync_jump_width: NonZeroU8::new(3).unwrap(),
+            })
+            // Configuration for 2Mb/s
+            .set_data_bit_timing(DataBitTiming {
+                transceiver_delay_compensation: true,
+                prescaler: NonZeroU16::new(5).unwrap(),
+                seg1: NonZeroU8::new(7).unwrap(),
+                seg2: NonZeroU8::new(4).unwrap(),
+                sync_jump_width: NonZeroU8::new(4).unwrap(),
+            })
+            .set_tx_buffer_mode(config::TxBufferMode::Priority)
+            .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
 
-    let config = configurator
-        .config()
-        // Configuration for 1Mb/s
-        .set_nominal_bit_timing(NominalBitTiming {
-            prescaler: NonZeroU16::new(10).unwrap(),
-            seg1: NonZeroU8::new(8).unwrap(),
-            seg2: NonZeroU8::new(3).unwrap(),
-            sync_jump_width: NonZeroU8::new(3).unwrap(),
-        })
-        // Configuration for 2Mb/s
-        .set_data_bit_timing(DataBitTiming {
-            transceiver_delay_compensation: true,
-            prescaler: NonZeroU16::new(5).unwrap(),
-            seg1: NonZeroU8::new(7).unwrap(),
-            seg2: NonZeroU8::new(4).unwrap(),
-            sync_jump_width: NonZeroU8::new(4).unwrap(),
-        })
-        .set_tx_buffer_mode(config::TxBufferMode::Priority)
-        .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+        configurator.set_config(config);
 
-    configurator.set_config(config);
+        let mut can = configurator.into_normal_mode();
 
-    // hprintln!("Generated config: {:?}", configurator.config());
+        can1::CanInterface::new(can, spawner)
+    };
 
-    let mut can = configurator.into_normal_mode();
+    let can2 = {
+        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
 
-    // TODO: figure out if we want buffered can
-    // let mut can = can.buffered_fd(unsafe{&mut write_buffer}, unsafe{&mut
-    // read_buffer});
+        let config = configurator
+            .config()
+            // Configuration for 1Mb/s
+            .set_nominal_bit_timing(NominalBitTiming {
+                prescaler: NonZeroU16::new(15).unwrap(),
+                seg1: NonZeroU8::new(5).unwrap(),
+                seg2: NonZeroU8::new(2).unwrap(),
+                sync_jump_width: NonZeroU8::new(1).unwrap(),
+            })
+            // Configuration for 2Mb/s
+            // .set_data_bit_timing(DataBitTiming {
+            //     transceiver_delay_compensation: true,
+            //     prescaler: NonZeroU16::new(12).unwrap(),
+            //     seg1: NonZeroU8::new(13).unwrap(),
+            //     seg2: NonZeroU8::new(2).unwrap(),
+            //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+            // })
+            .set_tx_buffer_mode(config::TxBufferMode::Priority)
+            .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+        // configurator.set_bitrate(500_000);
 
-    // let mut can = can.into_internal_loopback_mode();
-    // let mut can = can.into_normal_mode();
+        configurator.set_config(config);
 
-    let can = CanInterface::new(can, spawner);
+        let mut can = configurator.into_normal_mode();
+
+        can2::CanInterface::new(can, spawner)
+    };
 
     info!("CAN Configured");
 
@@ -352,7 +504,7 @@ async fn main(spawner: Spawner) -> ! {
         emergency_channel.publisher().unwrap(),
         emergency_channel.subscriber().unwrap(),
     );
-    unwrap!(spawner.spawn(forward_fsm_relay_events_to_can(can.new_sender(), prio)));
+    unwrap!(spawner.spawn(forward_fsm_relay_events_to_can1(can1.new_sender(), prio)));
 
     let prio = PriorityEventPubSub::new(
         event_channel.publisher().unwrap(),
@@ -360,7 +512,7 @@ async fn main(spawner: Spawner) -> ! {
         emergency_channel.publisher().unwrap(),
         emergency_channel.subscriber().unwrap(),
     );
-    unwrap!(spawner.spawn(forward_can_messages_to_fsm(can.new_subscriber(), prio)));
+    unwrap!(spawner.spawn(forward_can1_messages_to_fsm(can1.new_subscriber(), prio)));
 
     info!("FSM started!");
 
@@ -417,6 +569,17 @@ async fn main(spawner: Spawner) -> ! {
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, prio)));
 
+    unwrap!(spawner.spawn(forward_can1_messages_to_gs(
+        can1.new_subscriber(),
+        gs_master.transmitter()
+    )));
+
+    unwrap!(spawner.spawn(forward_can2_messages_to_gs(
+        can2.new_subscriber(),
+        gs_master.transmitter()
+    )));
+
+    unwrap!(spawner.spawn(gs_heartbeat(gs_master.transmitter())));
 
     loop {
         Timer::after_millis(100).await;

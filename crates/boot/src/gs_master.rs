@@ -267,7 +267,7 @@ async fn rx_task(
     let mut buf = [0; GsToPodMessage::SIZE];
 
     loop {
-        debug!("Attempting to read");
+        // debug!("Attempting to read");
 
         if rs.signaled() {
             let _ = cs.wait().await;
@@ -300,7 +300,6 @@ async fn rx_task(
             }
         };
         publisher.publish(GsToPodMessage::read_from_buf(&buf)).await;
-        Timer::after_millis(10).await;
     }
 }
 

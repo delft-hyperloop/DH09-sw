@@ -142,7 +142,7 @@ async fn forward_fsm_relay_events_to_can(
     loop {
         let event = event_channel.get_event().await;
         match event {
-            fsm::utils::data::Event::HighVoltageOnCanRelay => {
+            fsm::commons::data::Event::HighVoltageOnCanRelay => {
                 let header = can::frame::Header::new_fd(
                     can::frame::Id::try_from(0x00000001 as u32).expect("Invalid ID"),
                     64,

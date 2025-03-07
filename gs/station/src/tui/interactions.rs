@@ -57,8 +57,8 @@ impl App {
             KeyCode::Char('a') => {
                 self.backend.quit_server();
             },
-            KeyCode::Char('o') => self.backend.start_levi(),
-            KeyCode::Char('i') => self.backend.quit_levi(),
+            // KeyCode::Char('o') => self.backend.start_levi(),
+            // KeyCode::Char('i') => self.backend.quit_levi(),
             // KeyCode::Char('t') => self.logs.push((LogType::Warning, format!("{}:  this is a testing goose",Util::Now()).parse()?)),
             KeyCode::Tab => {
                 self.selected_row = (self.selected_row + 1) % self.cmds.len();
@@ -103,10 +103,10 @@ impl App {
             KeyCode::Backspace => {
                 self.cmds[self.selected_row].value /= 10;
             },
-            KeyCode::Char('p') => {
-                self.backend.send_command(Command::SetRoute(1822648539875311616));
-                self.backend.send_command(Command::SetSpeeds(14106055789030410752));
-            },
+            // KeyCode::Char('p') => {
+            //     self.backend.send_command(Command::SetRoute(1822648539875311616));
+            //     self.backend.send_command(Command::SetSpeeds(14106055789030410752));
+            // },
             // KeyCode::Char('o') => {
             //     self.backend.send_command(Command::SetRoute(8328165916070586159));
             //     self.backend.send_command(Command::SetSpeeds(46542390612732));

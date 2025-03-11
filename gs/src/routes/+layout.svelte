@@ -9,9 +9,9 @@
         addEntryToChart,
     } from "$lib";
     import {initializeStores, Modal, Toast} from '@skeletonlabs/skeleton';
-    import {chartStore, latestTimestamp} from "$lib/stores/state";
+    import { chartStore, latestTimestamp, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
     import {initProcedures} from "$lib/stores/data";
-    import {onDestroy} from "svelte";
+    import { onDestroy, onMount } from 'svelte';
     import {listen} from "@tauri-apps/api/event";
     import {parseShortCut, setBitsToBooleans} from "$lib/util/parsers";
     import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
@@ -486,11 +486,6 @@
     ///////////////////////////////////////////////////////////////
 
     gdd.stores.registerStore<number>("FSMState", 0);
-    gdd.stores.registerStore<number>("PropFSMState", 0);
-    gdd.stores.registerStore<number>("LeviFSMState", 0);
-    gdd.stores.registerStore<number>("HVFSMState", 0);
-    gdd.stores.registerStore<number>("OperatingFSMState", 0);
-    gdd.stores.registerStore<number>("EmergencyFSMState", 0);
 
     gdd.stores.registerStore<boolean[]>("ConnectionStatus", [false, false, false, false, false, false, false, false, false], setBitsToBooleans)
 
@@ -501,6 +496,14 @@
     setInterval(() => {
        latestTimestamp.set(Date.now());
     }, 1000)
+
+    onMount(() => {
+        setInterval(() => {
+            if ($showcasingStates) {
+                showcaseStateCounter.set(($showcaseStateCounter + 1) % 14);
+            }
+        }, 1000)
+    })
 
     onDestroy(async () => {
       GrandDataDistributor.getInstance().kill();

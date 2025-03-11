@@ -8,13 +8,14 @@
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
-    import SubFSMs from '$lib/components/SubFSMs.svelte';
+    import { showcaseStateCounter, showcasingStates } from '$lib/stores/state';
 
     let width: number;
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const lvBattery = storeManager.getWritable("ChargeStateLow");
     const hvBattery = storeManager.getWritable("ChargeStateHigh");
+    const fsmState = storeManager.getWritable("FSMState");
 
     let tableTempsArr: any[][];
     let tableArr2: any[][];
@@ -51,11 +52,23 @@
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
-    <AppBar padding="pl-8 pr-8 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700">
+    <AppBar padding="pl-8 pr-8 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDefault="place-self-center">
         <svelte:fragment slot="lead">
-            <Icon icon="codicon:graph-line"/>
+            <div class="gap-2 flex flex-row items-center">
+                <Icon icon="codicon:graph-line"/>
+                <span>Vitals</span>
+            </div>
         </svelte:fragment>
-        <span>Vitals</span>
+
+        <div class="flex gap-5 items-center ">
+            <span>IMD: &ltstatus&gt</span>
+            <div class="flex flex-row gap-2 items-center">
+                <span>HVAL:</span>
+                <Light isGreen={true}/>
+                <Light isGreen={false}/>
+            </div>
+        </div>
+
         <svelte:fragment slot="trail">
             <Command callback={() => {
                 toastStore.trigger({
@@ -118,16 +131,6 @@
                             <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
                             <span>Total: <Store datatype="TotalBatteryVoltageHigh" /></span>
                         </div>
-                        <div class="flex flex-col gap-2">
-                            <div class="flex gap-4">
-                                <span>HVAL:</span>
-                                <Light isGreen={true}/>
-                                <Light isGreen={false}/>
-                            </div>
-                            <div class="flex">
-                                <span>IMD: &ltstatus&gt</span>
-                            </div>
-                        </div>
                         <div class="flex flex-col gap-4">
                             <span>High Voltage BMS: &ltstatus&gt</span>
                             <span>Emergency Breaking System: &ltstatus&gt</span>
@@ -157,11 +160,10 @@
                 <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>
                     <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>
                 </Tile>
-                <Tile bgToken={800} containerClass="col-span-2 px-16 ">
+                <Tile
+                    bgToken={800}
+                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
                     <MainFSM/>
-                </Tile>
-                <Tile bgToken={800} containerClass="col-span-2 px-16">
-                    <SubFSMs/>
                 </Tile>
             </TileGrid>
         </div>

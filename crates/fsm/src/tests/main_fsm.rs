@@ -2,7 +2,7 @@
 extern crate embassy_stm32;
 
 use crate::commons::traits::Runner;
-use crate::main_fsm::MainFSM;
+use crate::fsm::MainFSM;
 
 #[cfg(test)]
 #[embassy_executor::task]
@@ -17,7 +17,7 @@ mod main_fsm_tests {
     use embassy_sync::blocking_mutex::raw::NoopRawMutex;
     use static_cell::StaticCell;
     use crate::commons::{EmergencyChannel, EventChannel};
-    use crate::main_fsm::{MainFSM, MainStates};
+    use crate::fsm::{MainFSM, MainStates};
     use embassy_sync::mutex::Mutex;
     use crate::commons::data::Event;
     use crate::tests::commons::Tools;

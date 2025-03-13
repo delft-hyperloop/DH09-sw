@@ -5,8 +5,8 @@ use core::fmt::Formatter;
 
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::priority_channel::PriorityChannel;
-use embassy_sync::priority_channel::Receiver;
 use embassy_sync::priority_channel::Sender;
+use embassy_sync::priority_channel::Receiver;
 
 use crate::utils::Event;
 

@@ -38,12 +38,6 @@ use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_can::Id;
 use embedded_io_async::Write;
-use fsm::commons::data::PriorityEventPubSub;
-use fsm::commons::traits::Runner;
-use fsm::commons::EmergencyChannel;
-use fsm::commons::EventChannel;
-use fsm::MainFSM;
-use fsm::MainStates;
 use main::can::CanEnvelope;
 use main::can::CanInterface;
 use main::can::CanRxSubscriber;
@@ -59,6 +53,8 @@ use rand_core::RngCore as _;
 use static_cell::StaticCell;
 
 use defmt::todo;
+use fsm::utils::types::{EventChannel, EventReceiver, EventSender};
+use fsm::FSM;
 
 bind_interrupts!(
     struct Irqs {
@@ -89,20 +85,16 @@ async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
 
 // Initialize the channel for publishing events to the FSMs.
 static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
-    static_cell::StaticCell::new();
-static FSM_STATE: static_cell::StaticCell<Mutex<NoopRawMutex, MainStates>> =
-    static_cell::StaticCell::new();
+static EVENT_RECEIVER: static_cell::StaticCell<EventReceiver> = static_cell::StaticCell::new();
+static EVENT_SENDER: static_cell::StaticCell<EventSender> = static_cell::StaticCell::new();
 
 #[embassy_executor::task]
 async fn run_fsm(
-    spawner: Spawner,
-    event_channel: &'static EventChannel,
-    emergency_channel: &'static EmergencyChannel,
-    state: &'static Mutex<NoopRawMutex, MainStates>,
+    event_receiver: &'static EventReceiver,
+    event_sender: &'static EventSender,
 ) {
-    let mut main_fsm = MainFSM::new(spawner, state, event_channel, emergency_channel).await;
-    main_fsm.run().await;
+    let mut fsm = FSM::new(event_sender, event_receiver).await;
+    fsm.run().await;
 }
 
 static mut read_buffer: RxFdBuf<5> = RxFdBuf::new();
@@ -177,7 +169,7 @@ async fn forward_fsm_relay_events_to_can(
     loop {
         let event = event_channel.get_event().await;
         match event {
-            fsm::commons::data::Event::HighVoltageOnCanRelay => {
+            fsm::utils::data::Event::HighVoltageOnCanRelay => {
                 let header = can::frame::Header::new_fd(
                     can::frame::Id::try_from(0x00000001 as u32).expect("Invalid ID"),
                     64,
@@ -198,7 +190,7 @@ async fn forward_fsm_relay_events_to_can(
 #[embassy_executor::task]
 async fn forward_can_messages_to_fsm(
     mut canrx: CanRxSubscriber<'static>,
-    event_channel: PriorityEventPubSub,
+    event_channel: EventChannel,
 ) {
     loop {
         let msg = canrx.next_message().await;
@@ -220,11 +212,11 @@ async fn forward_can_messages_to_fsm(
         };
 
         let fsm_event = match id {
-            0x00000001 => fsm::commons::Event::HighVoltageOnCanRelay,
-            _ => fsm::commons::Event::NoEvent,
+            0x00000001 => fsm::utils::Event::HighVoltageOnCanRelay,
+            _ => fsm::utils::Event::NoEvent,
         };
 
-        if fsm_event != fsm::commons::Event::NoEvent {
+        if fsm_event != fsm::utils::Event::NoEvent {
             event_channel.add_event(&fsm_event).await;
         }
     }

@@ -2,7 +2,7 @@
 //! their implementations.
 
 /// Enum representing different types of events that the FSMs should handle.
-#[derive(Clone, PartialEq, Debug, Copy, PartialOrd, defmt::Format)]
+#[derive(Clone, PartialEq, Eq, Debug, Copy, defmt::Format, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum Event {
     /// No event happened
@@ -26,9 +26,7 @@ pub enum Event {
     /// Stops levitating
     StopLevitating,
     /// Starts accelerating until it reaches the target speed
-    Accelerate {
-        target_speed: u32,
-    },
+    Accelerate,
     /// Stops accelerating
     Cruise,
     /// Deploys brakes
@@ -45,19 +43,33 @@ pub enum Event {
     StopCharge,
     /// Stops the FSM
     StopFSM,
-    /// General emergency happened
-    Emergency,
     /// Fault happened
     Fault,
+    /// Emergency event that must trigger the emergency braking system
+    Emergency {
+        /// The type of emergency
+        emergency_type: EmergencyType
+    },
+    ///
+    HighVoltageOnCanRelay,
+
+    /// Used as upper bound when transmuting
+    #[doc(hidden)]
+    __GUARD,
+}
+
+/// Enum for different types of emergencies
+#[derive(Clone, PartialEq, Eq, Debug, Copy, defmt::Format, PartialOrd, Ord)]
+#[repr(u8)]
+pub enum EmergencyType {
     /// Emergency triggered by propulsion
     EmergencyPropulsion,
     /// Emergency triggered by levitation
     EmergencyLevitation,
     /// Emergency triggered by the powertrain controller
     EmergencyPTC,
-
-    #[doc(hidden)]
-    __GUARD,
+    /// General emergency happened
+    GeneralEmergency
 }
 
 impl Event {
@@ -65,6 +77,14 @@ impl Event {
         unsafe {core::mem::transmute::<Event, [u8; 2]>(Event::__GUARD)[0]}
     }
 
+    /// Reads from the provided buffer and returns an `Option` containing the event or `None`
+    /// if the element transmutes to a value higher than the `Event` enum limit.
+    ///
+    /// # Parameters:
+    /// - `buf`: the buffer to read from
+    ///
+    /// # Returns:
+    /// - `Option` containing a variant of the `Event` enum
     pub fn read_from_buf(buf: [u8; 2]) -> Option<Self> {
         if buf[0] >= Self::guard_event_tag() {
             return None;

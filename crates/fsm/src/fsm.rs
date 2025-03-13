@@ -4,9 +4,9 @@ use core::cmp::PartialEq;
 use defmt::Format;
 use States::*;
 
-use crate::commons::data::Event;
-use crate::commons::traits::Transition;
-use crate::commons::types::{EventReceiver, EventSender};
+use crate::utils::data::Event;
+use crate::utils::types::EventReceiver;
+use crate::entry_methods::enter_fault;
 
 /// Enum representing the different states that the `MainFSM` will be in
 #[derive(Eq, PartialEq, Debug, Clone, Copy, Format)]
@@ -47,36 +47,45 @@ pub enum States {
 /// # Fields:
 /// - `state`: The state in which the pod is in
 /// - `event_receiver`: Object used for receive access to the event channel
-/// - `event_sender`: Object used for send access to the event channel
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct FSM {
     state: States,
-    event_receiver: EventReceiver,
-    event_sender: EventSender,
+    event_receiver: &'static EventReceiver,
 }
-
 
 impl FSM {
     /// Constructor for the `FSM` struct. Initializes the FSM in the `Boot` state.
     ///
     /// # Parameters:
-    /// - `state`: Static reference to a mutex containing the state of the `FSM`
-    /// - `event_channel`: Static reference to the channel used for broadcasting
-    ///   normal events
-    /// - `emergency_channel`: Static reference to the channel used for
-    ///   broadcasting emergency events
+    /// - `event_receiver`: Static reference to a receiver object from the `PriorityChannel` used to transmit events
     ///
     /// # Returns:
-    /// - A future for an instance of the `MainFSM` struct
+    /// - A future for an instance of the `FSM` struct
     pub async fn new(
         // peripherals: // TODO: add peripherals
-        event_sender: EventSender,
-        event_receiver: EventReceiver,
+        event_receiver: &'static EventReceiver,
     ) -> Self {
         Self {
             state: Boot,
-            event_sender,
             event_receiver,
+        }
+    }
+
+    /// Executes an infinite loop which checks for
+    /// events on the `PriorityChannel` and handles them using the
+    /// `handle_events` method. It stops the loop if `handle_events` returns
+    /// false. This case should only happen if the FSM receives
+    /// the `ShutDown` event.
+    pub async fn run(&mut self) {
+        loop {
+            let event = (*self.event_receiver).receive().await;
+
+            defmt::info!("{}: Received event: {:?}", core::any::type_name::<Self>(), event);
+
+            if !self.handle_events(event).await {
+                defmt::info!("{}: Stopping", core::any::type_name::<Self>());
+                break;
+            }
         }
     }
 
@@ -93,12 +102,9 @@ impl FSM {
     /// # Returns:
     /// - `false`: If the FSM receives a `Quit` event
     /// - `true`: Otherwise
-    async fn handle(&mut self, event: Event) -> bool {
+    async fn handle_events(&mut self, event: Event) -> bool {
         match (self.state, event) {
-            (_, Event::Emergency) => self.transition(States::Fault).await,
-            (_, Event::EmergencyLevitation) => self.transition(States::Fault).await,
-            (_, Event::EmergencyPropulsion) => self.transition(States::Fault).await,
-            (_, Event::EmergencyPTC) => self.transition(States::Fault).await,
+            (_, Event::Emergency {emergency_type: _}) => self.transition(States::Fault).await,
             (_, Event::Fault) => self.transition(States::Fault).await,
 
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,
@@ -112,7 +118,7 @@ impl FSM {
             (States::Demo, Event::Discharge) => self.transition(States::Discharge).await,
             (States::Demo, Event::Levitate) => self.transition(States::Levitating).await,
             (States::Levitating, Event::StopLevitating) => self.transition(States::Demo).await,
-            (States::Levitating, Event::Accelerate {target_speed}) => self.transition(States::Accelerating).await,
+            (States::Levitating, Event::Accelerate) => self.transition(States::Accelerating).await,
             (States::Accelerating, Event::Cruise) => self.transition(States::Cruising).await,
             (States::Accelerating, Event::Brake) => self.transition(States::Braking).await,
             (States::Cruising, Event::Brake) => self.transition(States::Braking).await,
@@ -131,9 +137,26 @@ impl FSM {
 
     /// Transitions the FSM to a new state while executing the
     /// former state's exit method and the new state's entry method.
-    pub async fn transition(&mut self, new_state: States) {
-        // TODO: Exit method
+    async fn transition(&mut self, new_state: States) {
+        self.get_entry_method(self.state).await;
         self.state = new_state;
-        // TODO: Entry method
+        self.get_exit_method(self.state).await;
+    }
+
+    /// Matches a state with its entry method and executes it. Should be called
+    /// whenever a transition happens.
+    async fn get_entry_method(&self, state: States) {
+        match state {
+            States::Fault => enter_fault().await,
+            _ => {}
+        }
+    }
+
+    ///Matches a state with its exit method and executes it. Should be called
+    /// whenever a transition happens
+    async fn get_exit_method(&self, state: States) {
+        match state {
+            _ => {},
+        }
     }
 }

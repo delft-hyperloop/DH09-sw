@@ -6,9 +6,11 @@
 #![no_std]
 #![no_main]
 
-pub mod commons;
+pub mod utils;
 pub(crate) mod fsm;
-#[cfg(test)]
-mod tests;
+// #[cfg(test)]
+// mod tests;
+mod entry_methods;
+mod exit_methods;
 
 pub use fsm::{FSM, States};

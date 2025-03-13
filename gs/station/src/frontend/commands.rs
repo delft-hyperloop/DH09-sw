@@ -255,7 +255,6 @@ pub fn set_route(route: Route) -> bool {
         && send_command("SetSpeeds".into(), route.speeds.into())
 }
 
-
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]

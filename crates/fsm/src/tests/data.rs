@@ -1,4 +1,4 @@
-//! Tests for the `PriorityEventPubSub` struct defined in commons/data.rs
+//! Tests for the `PriorityEventPubSub` struct defined in utils/data.rs
 
 #![no_std]
 #![no_main]
@@ -9,17 +9,13 @@ pub mod data_tests {
     // This is here so we get the entry point for embassy properly
     extern crate embassy_stm32;
 
-    use crate::commons::{EmergencyChannel, EventChannel};
-    use crate::commons::data::{Event, PriorityEventPubSub};
+    use fsm::utils::types::EventChannel;
 
     static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-    static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
-        static_cell::StaticCell::new();
 
     #[test]
     async fn test_emergency_first() {
         let event_channel = EVENT_CHANNEL.init(EventChannel::new());
-        let emergency_channel = EMERGENCY_CHANNEL.init(EmergencyChannel::new());
 
         let expected_events: [Event; 4] = [Event::NoEvent, Event::SystemCheckSuccess, Event::Activate, Event::Emergency];
 

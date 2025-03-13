@@ -2,13 +2,11 @@
 
 use core::fmt::Debug;
 
-use embassy_executor::Spawner;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::mutex::Mutex;
-use crate::commons::data::Event;
-use crate::commons::traits::Runner;
-use crate::commons::PublisherChannel;
-use crate::commons::PublisherEmergency;
+use crate::States;
+use crate::utils::types::EventSender;
+use crate::utils::Event;
 
 #[cfg(test)]
 pub fn setup_log() {
@@ -19,11 +17,22 @@ pub fn setup_log() {
 /// Struct used setting up every test in the #[init] method
 ///
 /// `T`: The type of the state to be tracked
-pub struct Tools<T> {
-    event_publisher: PublisherChannel,
-    emergency_publisher: PublisherEmergency,
-    state_tracker: &'static Mutex<NoopRawMutex, T>,
-    spawner: Spawner,
+pub struct Tools {
+    pub(crate) event_sender: EventSender,
+    pub(crate) state_tracker: &'static Mutex<NoopRawMutex, States>
+}
+
+impl Tools {
+    /// Constructor method for the Tools object
+    ///
+    /// # Returns:
+    /// - Instance of Tools structs
+    pub fn new(event_sender: EventSender, state_tracker: &'static Mutex<NoopRawMutex, States>) -> Self {
+        Self {
+            event_sender,
+            state_tracker,
+        }
+    }
 }
 
 /// Publishes the events passed in the `event_list` and checks if the FSM
@@ -38,11 +47,11 @@ pub struct Tools<T> {
 ///   should be the same one as the one passed to the FSM
 pub async fn publish_and_check_events<const N: usize, T: Debug + PartialEq>(
     event_list: &[(Event, T); N],
-    event_publisher: PublisherChannel,
+    event_sender: EventSender,
     state_tracker: &'static Mutex<NoopRawMutex, T>,
 ) {
     for (event, state) in event_list {
-        event_publisher.publish(*event).await;
+        event_sender.send(*event).await;
         let last_state = *(state_tracker.lock().await);
         loop {
             // Let other tasks execute. Without this, the FSM will never run.
@@ -55,7 +64,5 @@ pub async fn publish_and_check_events<const N: usize, T: Debug + PartialEq>(
         }
     }
 
-    // Stop both sub-FSMs and the main FSM
-    event_publisher.publish(Event::StopSubFSMs).await;
-    event_publisher.publish(Event::StopFSM).await;
+    event_sender.send(Event::StopFSM).await;
 }

@@ -31,7 +31,8 @@ pub enum Event {
     Cruise,
     /// Deploys brakes
     Brake,
-    /// Used for transitioning from braking to levitating when the speed of the pod is 0
+    /// Used for transitioning from braking to levitating when the speed of the
+    /// pod is 0
     Stopped,
     /// Starts discharging the high voltage batteries
     Discharge,
@@ -48,10 +49,17 @@ pub enum Event {
     /// Emergency event that must trigger the emergency braking system
     Emergency {
         /// The type of emergency
-        emergency_type: EmergencyType
+        emergency_type: EmergencyType,
     },
+    /// Used to transition from `Fault` to `SystemCheck` when the fault is fixed
+    /// and no reboot is required
+    FaultFixed,
     ///
     HighVoltageOnCanRelay,
+
+    /// Event used when testing to stop the FSM
+    #[cfg(test)]
+    StopFSM,
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]
@@ -69,16 +77,17 @@ pub enum EmergencyType {
     /// Emergency triggered by the powertrain controller
     EmergencyPTC,
     /// General emergency happened
-    GeneralEmergency
+    GeneralEmergency,
 }
 
 impl Event {
     const fn guard_event_tag() -> u8 {
-        unsafe {core::mem::transmute::<Event, [u8; 2]>(Event::__GUARD)[0]}
+        unsafe { core::mem::transmute::<Event, [u8; 2]>(Event::__GUARD)[0] }
     }
 
-    /// Reads from the provided buffer and returns an `Option` containing the event or `None`
-    /// if the element transmutes to a value higher than the `Event` enum limit.
+    /// Reads from the provided buffer and returns an `Option` containing the
+    /// event or `None` if the element transmutes to a value higher than the
+    /// `Event` enum limit.
     ///
     /// # Parameters:
     /// - `buf`: the buffer to read from
@@ -90,7 +99,7 @@ impl Event {
             return None;
         }
 
-        let event = unsafe {core::mem::transmute_copy::<[u8; 2], Event>(&buf)};
+        let event = unsafe { core::mem::transmute_copy::<[u8; 2], Event>(&buf) };
 
         Some(event)
     }

@@ -1,24 +1,32 @@
 //! This module contains types used in the crate
 
-use core::fmt::{Debug, Formatter};
+use core::fmt::Debug;
+use core::fmt::Formatter;
+
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::priority_channel::PriorityChannel;
-use embassy_sync::priority_channel::Sender;
 use embassy_sync::priority_channel::Receiver;
+use embassy_sync::priority_channel::Sender;
+
 use crate::utils::Event;
 
 /// Maximum number of events on the channel
 const MAX_EVENTS: usize = 32;
 
 /// Type alias for the `PriorityChannel` used for the normal event channel.
-pub type EventChannel = PriorityChannel<NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>;
+pub type EventChannel =
+    PriorityChannel<NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>;
 
 /// Type alias for the event channel sender.
 #[derive(Copy, Clone)]
-pub struct EventSender(Sender<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>);
+pub struct EventSender(
+    Sender<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>,
+);
 /// Type alias for the event channel receiver.
 #[derive(Copy, Clone)]
-pub struct EventReceiver(Receiver<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>);
+pub struct EventReceiver(
+    Receiver<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>,
+);
 
 impl EventReceiver {
     /// Wrapper method for the `receive` method of the `EventReceiver`

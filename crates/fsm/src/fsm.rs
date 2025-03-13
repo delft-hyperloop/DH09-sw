@@ -1,12 +1,18 @@
 //! This module contains the struct used for the Main FSM.
 
 use core::cmp::PartialEq;
+
 use defmt::Format;
 use States::*;
 
+#[cfg(test)]
+use embassy_sync::mutex::Mutex;
+#[cfg(test)]
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+
+use crate::entry_methods::enter_fault;
 use crate::utils::data::Event;
 use crate::utils::types::EventReceiver;
-use crate::entry_methods::enter_fault;
 
 /// Enum representing the different states that the `MainFSM` will be in
 #[derive(Eq, PartialEq, Debug, Clone, Copy, Format)]
@@ -38,7 +44,8 @@ pub enum States {
     Discharge,
     /// State for charging the pod
     Charging,
-    /// Fault/Emergency state - can be reached from any state and must cause emergency brake
+    /// Fault/Emergency state - can be reached from any state and must cause
+    /// emergency brake
     Fault,
 }
 
@@ -49,25 +56,33 @@ pub enum States {
 /// - `event_receiver`: Object used for receive access to the event channel
 #[derive(Debug, Copy, Clone)]
 pub struct FSM {
+    #[cfg(test)]
+    state_mutex: &'static Mutex<NoopRawMutex, States>,
     state: States,
     event_receiver: &'static EventReceiver,
 }
 
 impl FSM {
-    /// Constructor for the `FSM` struct. Initializes the FSM in the `Boot` state.
+    /// Constructor for the `FSM` struct. Initializes the FSM in the `Boot`
+    /// state.
     ///
     /// # Parameters:
-    /// - `event_receiver`: Static reference to a receiver object from the `PriorityChannel` used to transmit events
+    /// - `event_receiver`: Static reference to a receiver object from the
+    ///   `PriorityChannel` used to transmit events
     ///
     /// # Returns:
     /// - A future for an instance of the `FSM` struct
     pub async fn new(
         // peripherals: // TODO: add peripherals
         event_receiver: &'static EventReceiver,
+        #[cfg(test)]
+        state_mutex: &'static Mutex<NoopRawMutex, States>,
     ) -> Self {
         Self {
             state: Boot,
             event_receiver,
+            #[cfg(test)]
+            state_mutex,
         }
     }
 
@@ -80,7 +95,11 @@ impl FSM {
         loop {
             let event = (*self.event_receiver).receive().await;
 
-            defmt::info!("{}: Received event: {:?}", core::any::type_name::<Self>(), event);
+            defmt::info!(
+                "{}: Received event: {:?}",
+                core::any::type_name::<Self>(),
+                event
+            );
 
             if !self.handle_events(event).await {
                 defmt::info!("{}: Stopping", core::any::type_name::<Self>());
@@ -104,11 +123,14 @@ impl FSM {
     /// - `true`: Otherwise
     async fn handle_events(&mut self, event: Event) -> bool {
         match (self.state, event) {
-            (_, Event::Emergency {emergency_type: _}) => self.transition(States::Fault).await,
+            (_, Event::Emergency { emergency_type: _ }) => self.transition(States::Fault).await,
             (_, Event::Fault) => self.transition(States::Fault).await,
 
+            (States::Fault, Event::FaultFixed) => self.transition(SystemCheck).await,
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,
-            (States::ConnectedToGS, Event::StartSystemCheck) => self.transition(States::SystemCheck).await,
+            (States::ConnectedToGS, Event::StartSystemCheck) => {
+                self.transition(States::SystemCheck).await
+            }
             (States::SystemCheck, Event::SystemCheckSuccess) => self.transition(States::Idle).await,
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
             (States::PreCharge, Event::Activate) => self.transition(States::Active).await,
@@ -125,6 +147,10 @@ impl FSM {
             (States::Braking, Event::Stopped) => self.transition(States::Levitating).await,
             (States::Discharge, Event::EnterIdle) => self.transition(States::Idle).await,
             (States::Discharge, Event::ShutDown) => return false,
+
+            #[cfg(test)]
+            (_, Event::StopFSM) => return false,
+
             _ => {}
         }
         true
@@ -139,7 +165,13 @@ impl FSM {
     /// former state's exit method and the new state's entry method.
     async fn transition(&mut self, new_state: States) {
         self.get_entry_method(self.state).await;
+
         self.state = new_state;
+        #[cfg(test)]
+        {
+            **self.state_mutex.lock().await = new_state;
+        }
+
         self.get_exit_method(self.state).await;
     }
 
@@ -156,7 +188,7 @@ impl FSM {
     /// whenever a transition happens
     async fn get_exit_method(&self, state: States) {
         match state {
-            _ => {},
+            _ => {}
         }
     }
 }

@@ -49,6 +49,11 @@ name = "data"
 harness = false
 path = "src/tests/data.rs"
 
+[[test]]
+name = "fsm"
+harness = false
+path = "src/tests/fsm.rs"
+
 [lib]
 name = "fsm"
 path = "src/lib.rs"

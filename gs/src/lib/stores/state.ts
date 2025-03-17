@@ -29,3 +29,5 @@ export const GreenHVALTurnedOn: Writable<boolean> = writable(false);
 
 export const showcaseStateCounter: Writable<number> = writable(0);
 export const showcasingStates: Writable<boolean> = writable(false);
+
+export const debugModeActive: Writable<boolean> = writable(false);

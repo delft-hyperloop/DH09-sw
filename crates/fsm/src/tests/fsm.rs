@@ -18,7 +18,8 @@ mod main_fsm_tests {
     use static_cell::StaticCell;
 
     use super::run_fsm;
-    use crate::tests::commons::{publish_and_check_events, Tools};
+    use crate::tests::commons::publish_and_check_events;
+    use crate::tests::commons::Tools;
     use crate::utils::data::EmergencyType::GeneralEmergency;
     use crate::utils::types::EventChannel;
     use crate::utils::types::EventReceiver;
@@ -118,6 +119,6 @@ mod main_fsm_tests {
     //         ),
     //     ];
     //
-    //     publish_and_check(&event_list, state.event_publisher, state.state_tracker).await;
-    // }
+    //     publish_and_check(&event_list, state.event_publisher,
+    // state.state_tracker).await; }
 }

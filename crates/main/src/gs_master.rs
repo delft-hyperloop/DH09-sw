@@ -508,22 +508,27 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         tx.send(PodToGsMessage {
             // 0xE981A1EA0B1A4199
             dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
-        }).await;
+        })
+        .await;
         tx.send(PodToGsMessage {
             // 0xDEEDB95C8FC613FF
             dp: Datapoint::new(Datatype::EventsHash, EVENTS_HASH, ticks()),
-        }).await;
+        })
+        .await;
         tx.send(PodToGsMessage {
             // 0xE1BC61029CE8A7B3
             dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
-        }).await;
+        })
+        .await;
         tx.send(PodToGsMessage {
             // 0xB13F6E1D797FE777
             dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
-        }).await;
+        })
+        .await;
         tx.send(PodToGsMessage {
             dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
-        }).await;
+        })
+        .await;
 
         EthernetGsCommsLayer { cc: core }
     }

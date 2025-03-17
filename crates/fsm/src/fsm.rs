@@ -3,16 +3,16 @@
 use core::cmp::PartialEq;
 
 use defmt::Format;
-use States::*;
-
-#[cfg(test)]
-use embassy_sync::mutex::Mutex;
 #[cfg(test)]
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+#[cfg(test)]
+use embassy_sync::mutex::Mutex;
+use States::*;
 
 use crate::entry_methods::enter_fault;
 use crate::utils::data::Event;
-use crate::utils::types::{EventReceiver, EventSender};
+use crate::utils::types::EventReceiver;
+use crate::utils::types::EventSender;
 
 /// Enum representing the different states that the `MainFSM` will be in
 #[derive(Eq, PartialEq, Debug, Clone, Copy, Format)]
@@ -77,8 +77,7 @@ impl FSM {
         // peripherals: // TODO: add peripherals
         event_receiver: &'static EventReceiver,
         event_sender: &'static EventSender,
-        #[cfg(test)]
-        state_mutex: &'static Mutex<NoopRawMutex, States>,
+        #[cfg(test)] state_mutex: &'static Mutex<NoopRawMutex, States>,
     ) -> Self {
         Self {
             state: Boot,

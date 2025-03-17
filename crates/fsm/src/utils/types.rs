@@ -5,9 +5,10 @@ use core::fmt::Formatter;
 
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::priority_channel::PriorityChannel;
-use embassy_sync::priority_channel::Sender;
 use embassy_sync::priority_channel::Receiver;
+use embassy_sync::priority_channel::Sender;
 use heapless::binary_heap::Min;
+
 use crate::utils::Event;
 
 /// Maximum number of events on the channel
@@ -54,13 +55,17 @@ impl Debug for EventReceiver {
     }
 }
 
-impl From<Receiver<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>> for EventReceiver {
+impl From<Receiver<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>>
+    for EventReceiver
+{
     fn from(receiver: Receiver<'static, NoopRawMutex, Event, Min, MAX_EVENTS>) -> Self {
         EventReceiver(receiver)
     }
 }
 
-impl From<Sender<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>> for EventSender {
+impl From<Sender<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>>
+    for EventSender
+{
     fn from(sender: Sender<'static, NoopRawMutex, Event, Min, MAX_EVENTS>) -> Self {
         EventSender(sender)
     }

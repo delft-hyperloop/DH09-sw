@@ -88,7 +88,6 @@ pub fn connect_to_pod() -> bool {
     }
 }
 
-
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]

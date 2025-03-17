@@ -121,7 +121,6 @@ impl Backend {
         self.message_transmitter.send(Message::Status(status)).unwrap();
     }
 
-
     pub fn quit_server(&mut self) {
         if let Some(sh) = self.server_handle.take() {
             self.info("Quitting server_handle".into());

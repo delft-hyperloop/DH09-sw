@@ -1,5 +1,5 @@
 //! A small executable to listen for CAN messages and dump them over RTT.
-//! 
+//!
 //! This is to check that the other PCBs on the CAN bus send the
 //! correct messages (and in the correct order).
 
@@ -169,20 +169,19 @@ async fn main(spawner: Spawner) -> ! {
             encoded as f32 // Integer mode
         }
     }
-    
-    
 
     loop {
         let response = can.read_fd().await;
-    
+
         match response {
             Ok(ref envelope) => {
                 let header = envelope.frame.header();
                 let data = envelope.frame.data(); // Extract received data
-    
+
                 info!("Received CAN Frame: {:?}", header);
-    
-                if data.len() >= 1 { // Ensure at least 1 byte received
+
+                if data.len() >= 1 {
+                    // Ensure at least 1 byte received
                     let received_temp = decode_temperature(data[0]);
                     info!("Decoded Temperature: {} °C", received_temp);
                 } else {
@@ -194,8 +193,6 @@ async fn main(spawner: Spawner) -> ! {
             }
         }
     }
-    
 
     hlt()
 }
-

@@ -7,10 +7,10 @@
 #![no_std]
 #![no_main]
 
-pub(crate) mod fsm;
-pub mod utils;
 mod entry_methods;
 mod exit_methods;
+pub(crate) mod fsm;
+pub mod utils;
 
 #[cfg(test)]
 mod tests;

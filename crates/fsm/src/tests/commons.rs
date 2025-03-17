@@ -4,9 +4,10 @@ use core::fmt::Debug;
 
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::mutex::Mutex;
-use crate::States;
+
 use crate::utils::types::EventSender;
 use crate::utils::Event;
+use crate::States;
 
 #[cfg(test)]
 pub fn setup_log() {
@@ -19,7 +20,7 @@ pub fn setup_log() {
 /// `T`: The type of the state to be tracked
 pub struct Tools {
     pub(crate) event_sender: EventSender,
-    pub(crate) state_tracker: &'static Mutex<NoopRawMutex, States>
+    pub(crate) state_tracker: &'static Mutex<NoopRawMutex, States>,
 }
 
 impl Tools {
@@ -27,7 +28,10 @@ impl Tools {
     ///
     /// # Returns:
     /// - Instance of Tools structs
-    pub fn new(event_sender: EventSender, state_tracker: &'static Mutex<NoopRawMutex, States>) -> Self {
+    pub fn new(
+        event_sender: EventSender,
+        state_tracker: &'static Mutex<NoopRawMutex, States>,
+    ) -> Self {
         Self {
             event_sender,
             state_tracker,

@@ -6,6 +6,7 @@
 use core::num::NonZeroU16;
 use core::num::NonZeroU8;
 
+use defmt::todo;
 // use embassy_stm32::rng;
 use defmt::*;
 use defmt_rtt as _;
@@ -38,6 +39,11 @@ use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_can::Id;
 use embedded_io_async::Write;
+use fsm::utils::types::EventChannel;
+use fsm::utils::types::EventReceiver;
+use fsm::utils::types::EventSender;
+use fsm::utils::Event;
+use fsm::FSM;
 use main::can::CanEnvelope;
 use main::can::CanInterface;
 use main::can::CanRxSubscriber;
@@ -51,11 +57,6 @@ use main::gs_master::PodToGsMessage;
 use panic_probe as _;
 use rand_core::RngCore as _;
 use static_cell::StaticCell;
-
-use defmt::todo;
-use fsm::utils::types::{EventChannel, EventReceiver, EventSender};
-use fsm::FSM;
-use fsm::utils::Event;
 
 bind_interrupts!(
     struct Irqs {
@@ -85,15 +86,12 @@ async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
 }
 
 // Initialize the channel for publishing events to the FSMs.
-static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-static EVENT_RECEIVER: static_cell::StaticCell<EventReceiver> = static_cell::StaticCell::new();
-static EVENT_SENDER: static_cell::StaticCell<EventSender> = static_cell::StaticCell::new();
+static EVENT_CHANNEL_FSM: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+static EVENT_RECEIVER_FSM: static_cell::StaticCell<EventReceiver> = static_cell::StaticCell::new();
+static EVENT_SENDER_CAN: static_cell::StaticCell<EventSender> = static_cell::StaticCell::new();
 
 #[embassy_executor::task]
-async fn run_fsm(
-    event_receiver: &'static EventReceiver,
-    event_sender: &'static EventSender,
-) {
+async fn run_fsm(event_receiver: &'static EventReceiver, event_sender: &'static EventSender) {
     let mut fsm = FSM::new(event_receiver, event_sender).await;
     fsm.run().await;
 }
@@ -102,33 +100,65 @@ static mut read_buffer: RxFdBuf<5> = RxFdBuf::new();
 static mut write_buffer: TxFdBuf<1> = TxFdBuf::new();
 
 #[embassy_executor::task]
-async fn forward_gs_to_fsm(
-    mut gsrx: gs_master::RxSubscriber<'static>,
-    event_sender: EventSender,
-) {
+async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sender: EventSender) {
     loop {
         let msg = gsrx.next_message_pure().await;
         info!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
         match command {
-            main::config::Command::DefaultCommand(_) => event_sender.send(fsm::utils::Event::NoEvent).await,
+            // General Commands
+            main::config::Command::EmergencyBrake(_) => {
+                event_sender
+                    .send(fsm::utils::Event::Emergency {
+                        emergency_type: fsm::utils::EmergencyType::GeneralEmergency,
+                    })
+                    .await
+            }
+            main::config::Command::DefaultCommand(_) => {
+                event_sender.send(fsm::utils::Event::NoEvent).await
+            }
             main::config::Command::Heartbeat(_) => todo!(),
             main::config::Command::FrontendHeartbeat(_) => todo!(),
-            main::config::Command::LevitationOn(_) => event_channel.add_event(&Event::LevitationOn).await,
-            main::config::Command::LevitationOff(_) => event_channel.add_event(&Event::LevitationOff).await,
-            main::config::Command::EmergencyBrake(_) => event_channel.add_event(&Event::Emergency).await,
-            main::config::Command::StartHV(_) => event_channel.add_event(&Event::HighVoltageOn).await,
-            main::config::Command::StopHV(_) => event_channel.add_event(&Event::HighVoltageOff).await,
-            main::config::Command::SystemReset(_) => todo!(),
-            main::config::Command::ArmBrakes(_) => todo!(),
-            main::config::Command::Shutdown(_) => event_channel.add_event(&Event::ShutDown).await,
+            main::config::Command::EmitEvent(_) => todo!(),
+            // HV commands
+            main::config::Command::StartHV(_) => {
+                event_sender.send(fsm::utils::Event::StartPreCharge).await
+            }
+            main::config::Command::StopHV(_) => {
+                event_sender.send(fsm::utils::Event::Discharge).await
+            }
+            // Levi commands
+            main::config::Command::LevitationOn(_) => {
+                event_sender.send(fsm::utils::Event::Levitate).await
+            }
+            main::config::Command::LevitationOff(_) => {
+                event_sender.send(fsm::utils::Event::StopLevitating).await
+            }
             main::config::Command::vertical_0_current(_) => todo!(),
             main::config::Command::vert_0_current_reset(_) => todo!(),
-            main::config::Command::PropulsionOn(_) => event_channel.add_event(&Event::PropulsionOn).await,
-            main::config::Command::PropulsionOff(_) => event_channel.add_event(&Event::PropulsionOff).await,
-            main::config::Command::PropulsionStart(_) => event_channel.add_event(&Event::Accelerate {velocity_profile: 0}).await, // TODO
-            main::config::Command::SubmitRunConfig(_) => todo!()
+            // Propulsion commands
+            main::config::Command::PropulsionOn(_) => {
+                event_sender.send(fsm::utils::Event::Accelerate).await
+            }
+            main::config::Command::PropulsionOff(_) => {
+                event_sender.send(fsm::utils::Event::Cruise).await
+            }
+            // Control commands
+            main::config::Command::ArmBrakes(_) => {
+                event_sender.send(fsm::utils::Event::EnterDemo).await
+            }
+            main::config::Command::Shutdown(_) => {
+                event_sender.send(fsm::utils::Event::ShutDown).await
+            }
+            main::config::Command::SystemReset(_) => todo!(),
+
+            _ => {
+                info!(
+                    "Received unknown or not interpreted command from GS: {:?}",
+                    command
+                );
+            }
         }
     }
 }
@@ -143,7 +173,10 @@ async fn forward_fsm_relay_events_to_can(
         match event {
             fsm::utils::data::Event::HighVoltageOnCanRelay => {
                 let header = can::frame::Header::new_fd(
-                    can::frame::Id::try_from(main::config::Command::HighVoltageOnCanRelay(0).to_id() as u32).expect("Invalid ID"),
+                    can::frame::Id::try_from(
+                        main::config::Command::HighVoltageOnCanRelay(0).to_id() as u32,
+                    )
+                    .expect("Invalid ID"),
                     64,
                     false,
                     true,
@@ -251,15 +284,18 @@ async fn main(spawner: Spawner) -> ! {
     let p = embassy_stm32::init(config);
 
     // The event channel that will be used to transmit events to the FSM.
-    let event_channel_fsm: &mut EventChannel = EVENT_CHANNEL.init(EventChannel::new());
-    let event_receiver_fsm: &mut EventReceiver = EVENT_RECEIVER.init(event_channel_fsm.receiver().into());
+    let event_channel_fsm: &mut EventChannel = EVENT_CHANNEL_FSM.init(EventChannel::new());
+    let event_receiver_fsm: &mut EventReceiver =
+        EVENT_RECEIVER_FSM.init(event_channel_fsm.receiver().into());
     let event_sender_can_to_fsm: EventSender = event_channel_fsm.sender().into();
     let event_sender_gs_to_fsm: EventSender = event_channel_fsm.sender().into();
 
-    // The event channel that will be used to transmit events from the FSM over the CAN bus
+    // The event channel that will be used to transmit events from the FSM over the
+    // CAN bus
     let event_channel_can: EventChannel = EventChannel::new().into();
     let event_receiver_can: EventReceiver = event_channel_can.receiver().into();
-    let event_sender_can: &mut EventSender = EVENT_SENDER.init(event_channel_can.sender().into());
+    let event_sender_can: &mut EventSender =
+        EVENT_SENDER_CAN.init(event_channel_can.sender().into());
 
     info!("Embassy initialized!");
 
@@ -309,15 +345,18 @@ async fn main(spawner: Spawner) -> ! {
     info!("CAN Configured");
 
     spawner
-        .spawn(run_fsm(
-            event_receiver_fsm,
-            event_sender_can,
-        ))
+        .spawn(run_fsm(event_receiver_fsm, event_sender_can))
         .unwrap();
 
-    unwrap!(spawner.spawn(forward_fsm_relay_events_to_can(can.new_sender(), event_receiver_can)));
+    unwrap!(spawner.spawn(forward_fsm_relay_events_to_can(
+        can.new_sender(),
+        event_receiver_can
+    )));
 
-    unwrap!(spawner.spawn(forward_can_messages_to_fsm(can.new_subscriber(), event_sender_can_to_fsm)));
+    unwrap!(spawner.spawn(forward_can_messages_to_fsm(
+        can.new_subscriber(),
+        event_sender_can_to_fsm
+    )));
 
     info!("FSM started!");
 
@@ -366,7 +405,6 @@ async fn main(spawner: Spawner) -> ! {
     let gstx = gs_master.transmitter();
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, event_sender_gs_to_fsm)));
-
 
     loop {
         Timer::after_millis(100).await;

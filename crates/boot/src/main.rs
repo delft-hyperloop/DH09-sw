@@ -1,49 +1,68 @@
 #![no_std]
 #![no_main]
 
+use core::arch::asm;
+use core::assert;
 use core::borrow::BorrowMut;
 use core::cell::RefCell;
+use core::future::Future;
 use core::mem::MaybeUninit;
 use core::num;
-use core::assert;
 use core::num::NonZero;
 use core::num::NonZeroU16;
 use core::num::NonZeroU8;
 use core::time;
 
+use cortex_m::itm;
+use cortex_m::prelude::_embedded_hal_blocking_delay_DelayUs;
+use cortex_m::Peripherals;
 use defmt::*;
 use defmt_rtt as _;
 use defmt_rtt;
-use panic_probe as _;
-use cortex_m::prelude::_embedded_hal_blocking_delay_DelayUs;
 // use cortex_m_semihosting::hprint;
 use embassy_boot::BootLoaderConfig;
+use embassy_executor::Spawner;
+use embassy_futures::yield_now;
+use embassy_stm32::bind_interrupts;
+use embassy_stm32::can;
 use embassy_stm32::can::config;
 use embassy_stm32::can::config::DataBitTiming;
 use embassy_stm32::can::config::NominalBitTiming;
 use embassy_stm32::can::config::TimestampPrescaler;
 use embassy_stm32::can::frame::FdEnvelope;
-use embassy_stm32::can::frame::{FdFrame, Header, Id};
-use embassy_stm32::{bind_interrupts, can, rcc, Config};
-use embassy_executor::Spawner;
-use embassy_stm32::can::{TxFdBuf, RxFdBuf};
-use embassy_stm32::can::{BufferedFdCanSender, CanConfigurator};
+use embassy_stm32::can::frame::FdFrame;
+use embassy_stm32::can::frame::Header;
+use embassy_stm32::can::frame::Id;
+use embassy_stm32::can::BufferedFdCanSender;
+use embassy_stm32::can::CanConfigurator;
+use embassy_stm32::can::RxFdBuf;
+use embassy_stm32::can::TxFdBuf;
+use embassy_stm32::gpio::AnyPin;
+use embassy_stm32::gpio::Input;
+use embassy_stm32::gpio::Level;
+use embassy_stm32::gpio::Output;
+use embassy_stm32::gpio::OutputType;
+use embassy_stm32::gpio::Pin;
+use embassy_stm32::gpio::Pull;
+use embassy_stm32::gpio::Speed;
 use embassy_stm32::lptim::pwm::Ch1;
-use embassy_stm32::peripherals::{self, TIM1, TIM3, FDCAN1};
-use embassy_stm32::time::{Hertz};
-use embassy_stm32::timer::{Channel};
-use embassy_stm32::timer::simple_pwm::{PwmPin, SimplePwm};
-use embassy_stm32::gpio::{AnyPin, Input, Level, Output, Pin, Pull, Speed, OutputType};
+use embassy_stm32::peripherals::FDCAN1;
+use embassy_stm32::peripherals::TIM1;
+use embassy_stm32::peripherals::TIM3;
+use embassy_stm32::peripherals::{self};
+use embassy_stm32::rcc;
+use embassy_stm32::time::Hertz;
+use embassy_stm32::timer::simple_pwm::PwmPin;
+use embassy_stm32::timer::simple_pwm::SimplePwm;
+use embassy_stm32::timer::Channel;
+use embassy_stm32::Config;
 use embassy_time::Delay;
+use embassy_time::Duration;
+use embassy_time::Instant;
 use embassy_time::Ticker;
-use embassy_time::{Duration, Timer, Instant};
-use core::future::Future;
-use core::arch::asm;
-use cortex_m::{Peripherals, itm};
-use embassy_futures::yield_now;
+use embassy_time::Timer;
+use panic_probe as _;
 // pick a panicking behavior
-
-
 
 fn cpu_freq() -> f32 {
     let mut dwt = cortex_m::Peripherals::take().unwrap().DWT;
@@ -54,7 +73,7 @@ fn cpu_freq() -> f32 {
     let start_time = Instant::now();
 
     let mut count: u32 = 100000000;
-    unsafe {    
+    unsafe {
         asm!(
             "0:
             subs {0}, {0}, #1
@@ -62,36 +81,35 @@ fn cpu_freq() -> f32 {
             ",
             inout(reg) count
         );
-    }   
+    }
 
     let end_time = Instant::now();
-    let end_count = dwt.cyccnt.read(); 
+    let end_count = dwt.cyccnt.read();
     let time_passed = end_time - start_time;
 
     dwt.disable_cycle_counter();
 
-    ((end_count - start_count) as f32)/(time_passed.as_micros() as f32)
+    ((end_count - start_count) as f32) / (time_passed.as_micros() as f32)
 }
 
 fn generate_config() -> Config {
     let mut config = Config::default();
-    
+
     // Config
     config.rcc.hsi = Some(rcc::HSIPrescaler::DIV1);
-    config.rcc.pll1 = Some(
-        rcc::Pll {
-            source: rcc::PllSource::HSI,
-            prediv: rcc::PllPreDiv::DIV4, // 64Mhz -> 16MHz
-            mul: rcc::PllMul::MUL60, // 16Mhz -> 960MHz,
-            divp: Some(rcc::PllDiv::DIV2), // 960MHz -> 480MHz
-            divq: Some(rcc::PllDiv::DIV8), // 960MHz -> 120MHz
-            divr: None
-        }
-    );
+    config.rcc.pll1 = Some(rcc::Pll {
+        source: rcc::PllSource::HSI,
+        prediv: rcc::PllPreDiv::DIV4,  // 64Mhz -> 16MHz
+        mul: rcc::PllMul::MUL60,       // 16Mhz -> 960MHz,
+        divp: Some(rcc::PllDiv::DIV2), // 960MHz -> 480MHz
+        divq: Some(rcc::PllDiv::DIV8), // 960MHz -> 120MHz
+        divr: None,
+    });
     config.rcc.sys = rcc::Sysclk::PLL1_P; // 480MHz
     config.rcc.ahb_pre = rcc::AHBPrescaler::DIV2; // 240MHz to peripherals
 
-    // Bump down peripheral clocks to 120MHz, which seems like the typical max interface frequency and is mandated by Embassy
+    // Bump down peripheral clocks to 120MHz, which seems like the typical max
+    // interface frequency and is mandated by Embassy
     config.rcc.apb1_pre = rcc::APBPrescaler::DIV2;
     config.rcc.apb2_pre = rcc::APBPrescaler::DIV2;
     config.rcc.apb3_pre = rcc::APBPrescaler::DIV2;
@@ -112,9 +130,8 @@ bind_interrupts!(struct CanOneInterrupts {
     FDCAN1_IT1 => can::IT1InterruptHandler<FDCAN1>;
 });
 
-
-static mut read_buffer: RxFdBuf<5 > = RxFdBuf::new();
-static mut write_buffer: TxFdBuf<1 > = TxFdBuf::new();
+static mut read_buffer: RxFdBuf<5> = RxFdBuf::new();
+static mut write_buffer: TxFdBuf<1> = TxFdBuf::new();
 
 const DELAY: u32 = 300_000;
 
@@ -132,8 +149,6 @@ async fn blocking_blink(led: AnyPin) {
     }
 }
 
-
-
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let p = embassy_stm32::init(generate_config());
@@ -146,8 +161,9 @@ async fn main(spawner: Spawner) {
     // hprintln!("{:?}", configurator.config().nbtr);
     // hprintln!("{:?}", configurator.config().dbtr);
     //NominalBitTiming { prescaler: 12, seg1: 8, seg2: 1, sync_jump_width: 1 }
-    // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8, seg2: 1, sync_jump_width: 1 }
-    
+    // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8,
+    // seg2: 1, sync_jump_width: 1 }
+
     // let config = configurator.config()
     //     // Configuration for 1Mb/s
     //     .set_nominal_bit_timing(NominalBitTiming {
@@ -175,15 +191,15 @@ async fn main(spawner: Spawner) {
     let mut can = configurator.into_normal_mode();
 
     #[cfg(feature = "read")]
-    let mut can = can.buffered_fd(unsafe{&mut write_buffer}, unsafe{&mut read_buffer});
+    let mut can = can.buffered_fd(unsafe { &mut write_buffer }, unsafe { &mut read_buffer });
 
-    // let frame = FdFrame::new_extended(0x0001, 
+    // let frame = FdFrame::new_extended(0x0001,
     //     &[0xFF; 64]).expect("Frame build error");
     let header = Header::new_fd(
         Id::try_from(0x00000001 as u32).expect("Invalid ID"),
         64,
         false,
-        true
+        true,
     );
 
     let frame = FdFrame::new(header, &[0; 64]).expect("Invalid frame");
@@ -196,31 +212,38 @@ async fn main(spawner: Spawner) {
             let mut received = 0;
 
             for _ in 0..10000 {
-               // hprintln!("Yoo");
-               // hprintln!("Yoo");
-            //    for _ in 0..2 {
-            //         unsafe { read_buffer.try_send(Ok(FdEnvelope{ts: Instant::now(), frame})); }
-            //    }
-               
-               let response = can.read().await;
-               // hprintln!("Yoo");
+                // hprintln!("Yoo");
+                // hprintln!("Yoo");
+                //    for _ in 0..2 {
+                //         unsafe { read_buffer.try_send(Ok(FdEnvelope{ts: Instant::now(),
+                // frame})); }    }
 
-                match response { 
+                let response = can.read().await;
+                // hprintln!("Yoo");
+
+                match response {
                     Ok(ref envelope) => {
                         data_received += envelope.frame.header().len() as usize;
                         received += 1;
-                    },
+                    }
                     Err(ref bus_error) => {
-                        
+
                         // info!("Bus error: {:?}", bus_error.);
                     }
                 }
             }
-            
+
             let current_time = Instant::now() - start_time;
-            info!("Data rate: {}kb/s", (data_received as u64 * 8 * 1000) / (current_time.as_micros()));
+            info!(
+                "Data rate: {}kb/s",
+                (data_received as u64 * 8 * 1000) / (current_time.as_micros())
+            );
             info!("Data recieved: {}b", (data_received as u64 * 8));
-            info!("Received {} messages in {}ms", received, current_time.as_micros()/1000)
+            info!(
+                "Received {} messages in {}ms",
+                received,
+                current_time.as_micros() / 1000
+            )
         }
 
         #[cfg(not(feature = "read"))]
@@ -228,7 +251,6 @@ async fn main(spawner: Spawner) {
             can.write_fd(&frame).await;
         }
     }
-    
-    // hprintln!("CPU Freq: {:.0}MHz", cpu_freq());
-}   
 
+    // hprintln!("CPU Freq: {:.0}MHz", cpu_freq());
+}

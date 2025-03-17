@@ -2,7 +2,6 @@
 //! messages over CAN to test the CAN bus / CAN processing code on the
 //! other PCBs on the bus.
 
-
 #![no_std]
 #![no_main]
 
@@ -198,7 +197,8 @@ async fn main(spawner: Spawner) {
     let mut can = configurator.into_normal_mode();
 
     // #[cfg(feature = "read")]
-    // let mut can = can.buffered_fd(unsafe { &mut write_buffer }, unsafe { &mut read_buffer });
+    // let mut can = can.buffered_fd(unsafe { &mut write_buffer }, unsafe { &mut
+    // read_buffer });
 
     // let frame = FdFrame::new_extended(0x0001,
     //     &[0xFF; 64]).expect("Frame build error");
@@ -214,20 +214,19 @@ async fn main(spawner: Spawner) {
     fn encode_temperature(temp: f32) -> u8 {
         let precision_range_start: f32 = 20.0;
         let precision_range_end: f32 = 30.0;
-    
-        if temp >= precision_range_start && temp <= precision_range_end {
-            0x80 | ((temp - precision_range_start) * 10.0) as u8  
-        } else {
-            temp as u8  
-        }
-    }    
 
-    
+        if temp >= precision_range_start && temp <= precision_range_end {
+            0x80 | ((temp - precision_range_start) * 10.0) as u8
+        } else {
+            temp as u8
+        }
+    }
+
     let mut first_message = true; // Flag to send test values first
 
     loop {
         let mut encoded_temperatures = [0u8; 5];
-    
+
         if first_message {
             // Send precision range values on first message
             encoded_temperatures[0] = encode_temperature(20.0);
@@ -236,7 +235,7 @@ async fn main(spawner: Spawner) {
                 encoded_temperatures[i] = 0; // Fill remaining bytes with 0
             }
             first_message = false; // Prevent sending test values again
-    
+
             defmt::info!("Sent Initial Precision Values: 20°C & 30°C");
         } else {
             // Read actual sensor data and encode it
@@ -244,10 +243,10 @@ async fn main(spawner: Spawner) {
             //     let temp = get_temperature_from_other_board(i);
             //     encoded_temperatures[i] = encode_temperature(temp);
             // }
-    
+
             defmt::info!("Sending Encoded Temperatures: {:?}", encoded_temperatures);
         }
-    
+
         // Create and send CAN FD frame
         let frame = FdFrame::new(
             Header::new_fd(
@@ -259,12 +258,9 @@ async fn main(spawner: Spawner) {
             &encoded_temperatures,
         )
         .expect("Invalid frame");
-    
+
         can.write_fd(&frame).await;
     }
-    
-    
-    
 
     // loop {
     //     defmt::info!("Wrote frame");

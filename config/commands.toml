@@ -57,17 +57,13 @@ id = 0x6c
 name = "PropulsionOff"
 id = 0x6d
 
-[[Command]]
-name = "PropulsionStart"
-id = 0x6e
-
 
 # -----------RUN CONFIGURATION COMMANDS-----------
 
 # Just one for submit run??
-[[Command]]
-name = "SubmitRunConfig"
-id = 0x592
+#[[Command]]
+#name = "SubmitRunConfig"
+#id = 0x592
 
 #[[Command]]
 #name = "SetDirection"

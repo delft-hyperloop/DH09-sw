@@ -11,7 +11,8 @@ pub mod data_tests {
 
     // use fsm::utils::types::EventChannel;
     //
-    // static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+    // static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> =
+    // static_cell::StaticCell::new();
     //
     // #[test]
     // async fn test_emergency_first() {
@@ -35,10 +36,11 @@ pub mod data_tests {
     //         priority_event_pub_sub.add_event(&event).await;
     //     }
     //
-    //     assert_eq!(priority_event_pub_sub.get_event().await, Event::Emergency);
+    //     assert_eq!(priority_event_pub_sub.get_event().await,
+    // Event::Emergency);
     //
     //     for i in 0..expected_events.len() - 1 {
-    //         assert_eq!(priority_event_pub_sub.get_event().await, expected_events[i]);
-    //     }
+    //         assert_eq!(priority_event_pub_sub.get_event().await,
+    // expected_events[i]);     }
     // }
 }

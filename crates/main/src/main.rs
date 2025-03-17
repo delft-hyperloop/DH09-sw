@@ -39,12 +39,6 @@ use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_can::Id;
 use embedded_io_async::Write;
-use fsm::commons::data::PriorityEventPubSub;
-use fsm::commons::traits::Runner;
-use fsm::commons::EmergencyChannel;
-use fsm::commons::EventChannel;
-use fsm::MainFSM;
-use fsm::MainStates;
 use main::can::can1;
 use main::can::can2;
 use main::gs_master;
@@ -57,6 +51,10 @@ use main::gs_master::PodToGsMessage;
 use panic_probe as _;
 use rand_core::RngCore as _;
 use static_cell::StaticCell;
+
+use defmt::todo;
+use fsm::utils::types::{EventChannel, EventReceiver, EventSender};
+use fsm::FSM;
 
 bind_interrupts!(
     struct Irqs {
@@ -87,20 +85,16 @@ async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
 
 // Initialize the channel for publishing events to the FSMs.
 static EVENT_CHANNEL: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-static EMERGENCY_CHANNEL: static_cell::StaticCell<EmergencyChannel> =
-    static_cell::StaticCell::new();
-static FSM_STATE: static_cell::StaticCell<Mutex<NoopRawMutex, MainStates>> =
-    static_cell::StaticCell::new();
+static EVENT_RECEIVER: static_cell::StaticCell<EventReceiver> = static_cell::StaticCell::new();
+static EVENT_SENDER: static_cell::StaticCell<EventSender> = static_cell::StaticCell::new();
 
 #[embassy_executor::task]
 async fn run_fsm(
-    spawner: Spawner,
-    event_channel: &'static EventChannel,
-    emergency_channel: &'static EmergencyChannel,
-    state: &'static Mutex<NoopRawMutex, MainStates>,
+    event_receiver: &'static EventReceiver,
+    event_sender: &'static EventSender,
 ) {
-    let mut main_fsm = MainFSM::new(spawner, state, event_channel, emergency_channel).await;
-    main_fsm.run().await;
+    let mut fsm = FSM::new(event_sender, event_receiver).await;
+    fsm.run().await;
 }
 
 static mut read_buffer: RxFdBuf<5> = RxFdBuf::new();
@@ -122,47 +116,20 @@ async fn forward_gs_to_fsm(
             main::config::Command::DefaultCommand(_) => todo!(),
             main::config::Command::Heartbeat(_) => todo!(),
             main::config::Command::FrontendHeartbeat(_) => todo!(),
-            main::config::Command::ls0(_) => todo!(),
-            main::config::Command::ls1(_) => todo!(),
-            main::config::Command::ls2(_) => todo!(),
-            main::config::Command::enable_axis(_) => todo!(),
-            main::config::Command::disable_axis(_) => todo!(),
-            main::config::Command::init(_) => todo!(),
-            main::config::Command::reboot(_) => todo!(),
-            main::config::Command::launch(_) => todo!(),
-            main::config::Command::vert0(_) => todo!(),
-            main::config::Command::lat0(_) => todo!(),
-            main::config::Command::land(_) => todo!(),
-            main::config::Command::vert_mode_normal(_) => todo!(),
-            main::config::Command::lat_mode_normal(_) => todo!(),
-            main::config::Command::vert_mode_offsets(_) => todo!(),
-            main::config::Command::vert_mode_dance(_) => todo!(),
-            main::config::Command::vert_mode_sine(_) => todo!(),
-            main::config::Command::vert0_reset(_) => todo!(),
-            main::config::Command::lat0_reset(_) => todo!(),
-            main::config::Command::LeviPropulsionStart(_) => todo!(),
-            main::config::Command::LeviPropulsionStop(_) => todo!(),
-            main::config::Command::SetRoute(_) => todo!(),
-            main::config::Command::SetSpeeds(_) => todo!(),
-            main::config::Command::SetOverrides(_) => todo!(),
-            main::config::Command::EmergencyBrake(_) => todo!(),
-            main::config::Command::LeviEmergencyBrake(_) => todo!(),
-            main::config::Command::StartRun(_) => todo!(),
-            main::config::Command::ContinueRun(_) => todo!(),
-            main::config::Command::StartHV(_) => todo!(),
-            main::config::Command::StopHV(_) => todo!(),
+            main::config::Command::LevitationOn(_) => event_channel.add_event(&Event::LevitationOn).await,
+            main::config::Command::LevitationOff(_) => event_channel.add_event(&Event::LevitationOff).await,
+            main::config::Command::EmergencyBrake(_) => event_channel.add_event(&Event::Emergency).await,
+            main::config::Command::StartHV(_) => event_channel.add_event(&Event::HighVoltageOn).await,
+            main::config::Command::StopHV(_) => event_channel.add_event(&Event::HighVoltageOff).await,
             main::config::Command::SystemReset(_) => todo!(),
             main::config::Command::ArmBrakes(_) => todo!(),
-            main::config::Command::FinishRunConfig(_) => todo!(),
-            main::config::Command::EndRun(_) => todo!(),
-            main::config::Command::EnablePropulsion(_) => todo!(),
-            main::config::Command::DisablePropulsion(_) => todo!(),
-            main::config::Command::Shutdown(_) => todo!(),
-            main::config::Command::DcOff(_) => todo!(),
-            main::config::Command::DcOn(_) => todo!(),
-            main::config::Command::SetCurrentSpeed(_) => todo!(),
-            main::config::Command::CreateDatapoint(_) => todo!(),
-            main::config::Command::EmitEvent(_) => todo!(),
+            main::config::Command::Shutdown(_) => event_channel.add_event(&Event::ShutDown).await,
+            main::config::Command::vertical_0_current(_) => todo!(),
+            main::config::Command::vert_0_current_reset(_) => todo!(),
+            main::config::Command::PropulsionOn(_) => event_channel.add_event(&Event::PropulsionOn).await,
+            main::config::Command::PropulsionOff(_) => event_channel.add_event(&Event::PropulsionOff).await,
+            main::config::Command::PropulsionStart(_) => event_channel.add_event(&Event::Accelerate {velocity_profile: 0}).await, // TODO
+            main::config::Command::SubmitRunConfig(_) => todo!()
         }
     }
 }
@@ -198,10 +165,10 @@ async fn forward_fsm_relay_events_to_can1(
 #[embassy_executor::task]
 async fn forward_fsm_relay_events_to_can2(
     cantx: can2::CanTxSender<'static>,
-    mut event_channel: PriorityEventPubSub,
+    mut event_channel: EventChannel,
 ) {
     loop {
-        let event = event_channel.get_event().await;
+        let event = event_channel.receive().await;
         match event {
             fsm::commons::data::Event::HighVoltageOnCanRelay => {
                 let header = can::frame::Header::new_fd(
@@ -226,7 +193,7 @@ async fn forward_fsm_relay_events_to_can2(
 #[embassy_executor::task]
 async fn forward_can1_messages_to_fsm(
     mut canrx: can1::CanRxSubscriber<'static>,
-    event_channel: PriorityEventPubSub,
+    event_channel: EventChannel,
 ) {
     loop {
         let msg = canrx.next_message().await;
@@ -249,7 +216,7 @@ async fn forward_can1_messages_to_fsm(
 
         let fsm_event = main::config::event_for_can_1_id(id);
 
-        if fsm_event != fsm::commons::Event::NoEvent {
+        if fsm_event != fsm::utils::Event::NoEvent {
             event_channel.add_event(&fsm_event).await;
         }
     }

@@ -12,7 +12,6 @@ info_channel = "info_channel"
 warning_channel = "warning_channel"
 error_channel = "error_channel"
 shortcut_channel = "shortcut_channel"
-levi_exec_path = "C:/Rust/Helios_III/gs/station/Levi/windows-x86_64-debug/PmpGettingStartedCs.exe"
 
 [pod.net]
 ip = [192,168,1,17]
@@ -112,10 +111,6 @@ label = "BrakesNotArmed"
 colour = "yellow"
 
 [[Info]]
-label = "InvalidRouteConfiguration"
-colour = "red"
-
-[[Info]]
 label = "LevitationNotStarted"
 colour = "red"
 
@@ -155,10 +150,6 @@ colour = "green"
 [[Info]]
 label = "ConfigHashPassed"
 colour = "green"
-
-[[Info]]
-label = "InvalidRouteConfigurationAbortingRun"
-colour = "red"
 
 [[Info]]
 label = "SettingLSMode"

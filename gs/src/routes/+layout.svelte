@@ -9,14 +9,14 @@
         addEntryToChart,
     } from "$lib";
     import {initializeStores, Modal, Toast} from '@skeletonlabs/skeleton';
-    import {chartStore, latestTimestamp} from "$lib/stores/state";
+    import { chartStore, latestTimestamp, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
     import {initProcedures} from "$lib/stores/data";
-    import {onDestroy} from "svelte";
+    import { onDestroy, onMount } from 'svelte';
     import {listen} from "@tauri-apps/api/event";
     import {parseShortCut, setBitsToBooleans} from "$lib/util/parsers";
     import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
-    import {LOCALISATION_NAME} from "$lib/types";
+    import { GOING_FORWARD, LOCALISATION_NAME } from '$lib/types';
 
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -34,6 +34,17 @@
     let emsTempChart = new PlotBuffer(500, 60000, [0, 120], true, "EMS 1");
     emsTempChart.addSeries(StrokePresets.theoretical("EMS 2"))
     $chartStore.set("EMS Temperatures", emsTempChart);
+
+    let airGapChart = new PlotBuffer(500, 60000, [0, 30], true, "Vertical Air Gap");
+    airGapChart.addSeries(StrokePresets.theoretical("Lateral Air Gap"));
+    $chartStore.set("Air Gaps", airGapChart);
+    // max vertical: 27.5
+    // max lateral: 16
+
+    let rotationChart = new PlotBuffer(500, 60000, [0, 120], true, "Pitch");
+    rotationChart.addSeries(StrokePresets.theoretical("Roll"));
+    $chartStore.set("Rotations", rotationChart);
+    // TODO: max rotations?
 
     let hemsTempChart = new PlotBuffer(500, 60000, [0, 120], true, "HEMS 1");
 
@@ -330,6 +341,8 @@
         return curr;
     });
 
+    gdd.stores.registerStore<boolean>(GOING_FORWARD, true);
+
     gdd.stores.registerStore<number>("Acceleration", 0);
     gdd.stores.registerStore<number>("Direction", 0);
 
@@ -483,6 +496,14 @@
     setInterval(() => {
        latestTimestamp.set(Date.now());
     }, 1000)
+
+    onMount(() => {
+        setInterval(() => {
+            if ($showcasingStates) {
+                showcaseStateCounter.set(($showcaseStateCounter + 1) % 14);
+            }
+        }, 1000)
+    })
 
     onDestroy(async () => {
       GrandDataDistributor.getInstance().kill();

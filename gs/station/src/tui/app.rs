@@ -7,7 +7,6 @@ use gslib::Datapoint;
 use gslib::Datatype;
 use gslib::Event;
 use gslib::Info;
-use gslib::LocationSequence;
 use gslib::Message;
 use gslib::COMMANDS_LIST;
 use gslib::HEARTBEAT;
@@ -125,16 +124,16 @@ impl App {
                             ));
                         },
                     },
-                    Datatype::RoutePlan => {
-                        self.logs.push((
-                            Message::Info(format!(
-                                "Route: \n{}\ncurrently at {}",
-                                LocationSequence::from(datapoint.value.round() as u64),
-                                datapoint.timestamp,
-                            )),
-                            timestamp(),
-                        ));
-                    },
+                    // Datatype::RoutePlan => {
+                    //     self.logs.push((
+                    //         Message::Info(format!(
+                    //             "Route: \n{}\ncurrently at {}",
+                    //             LocationSequence::from(datapoint.value.round() as u64),
+                    //             datapoint.timestamp,
+                    //         )),
+                    //         timestamp(),
+                    //     ));
+                    // },
                     Datatype::FSMState => {
                         self.cur_state =
                             state_to_string(datapoint.value.round() as u64).to_string();
@@ -191,7 +190,7 @@ impl App {
 
     pub fn quit(&mut self) {
         self.exit = true;
-        self.backend.quit_levi();
+        // self.backend.quit_levi();
         self.backend.quit_server();
     }
 }

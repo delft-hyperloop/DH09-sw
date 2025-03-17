@@ -1,3 +1,5 @@
+# -----------DEFAULT COMMANDS-----------
+
 [[Command]]
 name = "DefaultCommand"
 id = 0x01
@@ -10,132 +12,8 @@ id = 0x042
 name = "FrontendHeartbeat"
 id = 0x043
 
-# LEVITATION COMMANDS
 
-[[Command]]
-name = "ls0"
-id = 0x400
-
-[[Command]]
-name = "ls1"
-id = 0x401
-
-[[Command]]
-name = "ls2"
-id = 0x402
-
-[[Command]]
-name = "enable_axis"
-id = 0x403
-
-[[Command]]
-name = "disable_axis"
-id = 0x404
-
-[[Command]]
-name = "init"
-id = 0x405
-
-[[Command]]
-name = "reboot"
-id = 0x406
-
-[[Command]]
-name = "launch"
-id = 0x407
-
-[[Command]]
-name = "vert0"
-id = 0x408
-
-[[Command]]
-name = "lat0"
-id = 0x409
-
-[[Command]]
-name = "land"
-id = 0x410
-
-[[Command]]
-name = "vert_mode_normal"
-id = 0x412
-
-[[Command]]
-name = "lat_mode_normal"
-id = 0x413
-
-[[Command]]
-name = "vert_mode_offsets"
-id = 0x414
-
-[[Command]]
-name = "vert_mode_dance"
-id = 0x415
-
-[[Command]]
-name = "vert_mode_sine"
-id = 0x416
-
-[[Command]]
-name = "vert0_reset"
-id = 0x417
-
-[[Command]]
-name = "lat0_reset"
-id = 0x418
-
-[[Command]]
-name = "LeviPropulsionStart"
-id = 0x68
-
-[[Command]]
-name = "LeviPropulsionStop"
-id = 0x70 
-
-# [[Command]]
-# name = "Discharge"
-# id = 0x71
-#
-# END LEVI COMMANDS 
-
-
-# Configuration commands
-# preparing for a run.
-# only valid in RunConfig state
-
-[[Command]]
-name = "SetRoute"
-id = 0x590
-
-[[Command]]
-name = "SetSpeeds"
-id = 0x591
-
-[[Command]]
-name = "SetOverrides"
-id = 0x592
-
-# END Configuration commands
-
-
-# Run Control commands 
-# used to walk through a run procedure
-
-[[Command]]
-name = "EmergencyBrake"
-id = 0xff
-
-[[Command]]
-name = "LeviEmergencyBrake"
-id = 0xfe
-
-[[Command]]
-name = "StartRun"
-id = 0x5d
-
-[[Command]]
-name = "ContinueRun"
-id = 0x5e
+# -----------HIGH VOLTAGE COMMANDS-----------
 
 [[Command]]
 name = "StartHV"
@@ -145,50 +23,90 @@ id = 0x60
 name = "StopHV"
 id = 0x61
 
+
+# -----------LEVITATION COMMANDS-----------
+
 [[Command]]
-name = "SystemReset"
-id = 0x66
+name = "LevitationOn"
+id = 0x407
+
+[[Command]]
+name = "LevitationOff"
+id = 0x408
+
+[[Command]]
+name = "vertical_0_current"
+id = 0x409
+
+[[Command]]
+name = "vert_0_current_reset"
+id = 0x40a
+
+
+# -----------PROPULSION COMMANDS-----------
+
+[[Command]]
+name = "PropulsionOn"
+id = 0x6c
+
+[[Command]]
+name = "PropulsionOff"
+id = 0x6d
+
+[[Command]]
+name = "PropulsionStart"
+id = 0x6e
+
+
+# -----------RUN CONFIGURATION COMMANDS-----------
+
+# Just one for submit run??
+[[Command]]
+name = "SubmitRunConfig"
+id = 0x592
+
+#[[Command]]
+#name = "SetDirection"
+#id = 0x590
+
+#[[Command]]
+#name = "SetSpeed"
+#id = 0x591
+
+
+# -----------CONTROL COMMANDS-----------
 
 [[Command]]
 name = "ArmBrakes"
 id = 0x69
 
 [[Command]]
-name = "FinishRunConfig"
-id = 0x67
-
-[[Command]]
-name = "EndRun"
-id = 0x6b
-
-[[Command]]
-name = "EnablePropulsion"
-id = 0x6c
-
-[[Command]]
-name = "DisablePropulsion"
-id = 0x6d
-
-
-# Ground station-related commands
-
-[[Command]]
 name = "Shutdown"
 id = 0x5f
+
+[[Command]]
+name = "EmergencyBrake"
+id = 0xff
+
+[[Command]]
+name = "SystemReset"
+id = 0x66
+
+
 
 
 # Override events
 # these are not part of the main control flow, but allow for either 
 # debugging or other similarly useful functionality.
 
-[[Command]]
-name = "DcOff"
-id = 0x64
-
-[[Command]]
-name = "DcOn"
-id = 0x65
-
+#[[Command]]
+#name = "DcOff"
+#id = 0x64
+#
+#[[Command]]
+#name = "DcOn"
+#id = 0x65
+#
 # [[Command]]
 # name = "OpenContactor"
 # id = 0x62
@@ -196,14 +114,14 @@ id = 0x65
 # [[Command]]
 # name = "CloseContactor"
 # id = 0x63
-
-[[Command]]
-name = "SetCurrentSpeed"
-id = 0x5a
-
-[[Command]]
-name = "CreateDatapoint"
-id = 0x5b
+#
+#[[Command]]
+#name = "SetCurrentSpeed"
+#id = 0x5a
+#
+#[[Command]]
+#name = "CreateDatapoint"
+#id = 0x5b
 
 [[Command]]
 name = "EmitEvent"

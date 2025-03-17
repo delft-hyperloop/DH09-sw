@@ -18,7 +18,7 @@
 </script>
 
 <div class="p-4">
-    <h2 class="text-xl font-semibold mb-4">Pneumatics</h2>
+    <h2 class="text-2xl font-semibold mb-4">Pneumatics</h2>
 
     <TileGrid columns="3fr 1fr" rows="">
         <Tile>
@@ -28,8 +28,8 @@
         <Tile>
             <Table background="bg-surface-900" titles={["Section", "Bars"]} tableArr={pressureTable}/>
         </Tile>
-        <Tile>
-            <Chart title="Breaking Comms" />
+        <Tile containerClass="col-span-full">
+            <Chart title="Breaking Comms"/>
         </Tile>
     </TileGrid>
 </div>

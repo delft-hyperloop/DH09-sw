@@ -11,8 +11,8 @@
 //! The messages themselves are of the types [`PodToGsMessage`]
 //! and [`GsToPodMessage`], depending on how they flow.
 //!
-//! The [`GsToPodMessage`] contains an FSM [`fsm::commons::data::Event`],
-//! which may be [`fsm::commons::data::Event::NoEvent`] in case it
+//! The [`GsToPodMessage`] contains an FSM [`fsm::utils::data::Event`],
+//! which may be [`fsm::utils::data::Event::NoEvent`] in case it
 //! shouldn't be processed. In other cases, it is forwarded to the FSM.
 //!
 //! The [`PodToGsMessage`] may contain some very basic logging information,

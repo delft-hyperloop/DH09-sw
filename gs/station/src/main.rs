@@ -18,7 +18,6 @@ pub mod connect;
 mod data;
 #[cfg(feature = "backend")]
 mod frontend;
-mod levi;
 #[cfg(feature = "tui")]
 pub mod tui;
 

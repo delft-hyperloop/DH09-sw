@@ -28,7 +28,6 @@ import Tile from "$lib/components/generic/Tile.svelte";
 import TileGrid from "$lib/components/generic/TileGrid.svelte";
 import ToggleCommand from "$lib/components/abstract/ToggleCommand.svelte";
 import TauriCommand from "$lib/components/abstract/TauriCommand.svelte";
-import SpeedsInput from "$lib/components/SpeedsInput.svelte";
 import Store from "$lib/components/generic/Store.svelte";
 
 // Utils
@@ -39,10 +38,10 @@ import {tempParse, voltParse, addEntryToChart,pressureParse,sensorParse} from "$
 
 // Types
 import type {NamedCommand, Log, LogType, IntervalFunction} from "$lib/types";
-import {EventChannel, RunMode, type RouteStep} from "$lib/types";
+import {EventChannel} from "$lib/types";
 
 // Stores
-import {detailTabSet, inputSpeed, details_pane, vitals_pane, inputTurn, serverStatus} from "$lib/stores/state";
+import {detailTabSet, inputSpeed, details_pane, vitals_pane, serverStatus} from "$lib/stores/state";
 import uPlot from "uplot";
 
 export const chartDataStore = new Map<string, uPlot.AlignedData>();
@@ -56,7 +55,6 @@ export {
     addEntryToChart,
     TauriCommand,
     ToggleCommand,
-    inputTurn,
     StrokePresets,
     GrandDataDistributor,
     PneumaticsTab,
@@ -90,9 +88,6 @@ export {
     Pneumatics,
     Localiser,
     EventChannel,
-    SpeedsInput,
     Store,
-    RunMode,
-    type RouteStep
 }
 export type {NamedCommand, Log, LogType, IntervalFunction}

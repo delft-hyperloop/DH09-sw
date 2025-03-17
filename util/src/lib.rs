@@ -14,7 +14,7 @@ pub mod info;
 pub mod ip;
 pub mod limits;
 pub mod dataflow;
-mod shared;
+// mod shared;
 use anyhow::Result;
 
 pub fn check_config(dp: &str, cp: &str, ep: &str, conf: &str) -> Result<String> {

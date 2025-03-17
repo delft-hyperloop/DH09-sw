@@ -11,12 +11,12 @@ use crate::MessageSender;
 // const CYGNUS_MAX_DIFFERENCE: f64 = 9.0; // Volts
 const LEVI_LED_THRESHOLD: f64 = 50.0;
 
-pub const HV_DATATYPES: [Datatype; 5] = [
-    Datatype::levi_volt_avg,
-    Datatype::levi_volt_min,
-    Datatype::levi_volt_max,
-    Datatype::TotalBatteryVoltageHigh,
-    Datatype::FSMState,
+pub const HV_DATATYPES: [Datatype; 0] = [
+    // Datatype::levi_volt_avg,
+    // Datatype::levi_volt_min,
+    // Datatype::levi_volt_max,
+    // Datatype::TotalBatteryVoltageHigh,
+    // Datatype::FSMState,
 ];
 
 pub type DataReceiver = tokio::sync::broadcast::Receiver<ProcessedData>;
@@ -76,27 +76,27 @@ pub async fn aggregate_voltage_readings(
     loop {
         match data_in.recv().await {
             Ok(data) => match data.datatype {
-                Datatype::levi_volt_avg => {
-                    // backlog.prev_levi_avg = backlog.levi_avg;
-                    backlog.levi_avg = data.value;
-                    if !backlog.is_pre_charging() {
-                        continue;
-                    }
-                },
-                Datatype::levi_volt_min => {
-                    backlog.levi_min = data.value;
-                    if !backlog.is_pre_charging() {
-                        continue;
-                    }
-                },
-                Datatype::levi_volt_max => {
-                    backlog.levi_max = data.value;
-                    if !backlog.is_pre_charging() {
-                        continue;
-                    }
-                },
-                Datatype::TotalBatteryVoltageHigh => backlog.bms_avg = data.value,
-                Datatype::FSMState => backlog.state = data.value,
+                // Datatype::levi_volt_avg => {
+                //     // backlog.prev_levi_avg = backlog.levi_avg;
+                //     backlog.levi_avg = data.value;
+                //     if !backlog.is_pre_charging() {
+                //         continue;
+                //     }
+                // },
+                // Datatype::levi_volt_min => {
+                //     backlog.levi_min = data.value;
+                //     if !backlog.is_pre_charging() {
+                //         continue;
+                //     }
+                // },
+                // Datatype::levi_volt_max => {
+                //     backlog.levi_max = data.value;
+                //     if !backlog.is_pre_charging() {
+                //         continue;
+                //     }
+                // },
+                // Datatype::TotalBatteryVoltageHigh => backlog.bms_avg = data.value,
+                // Datatype::FSMState => backlog.state = data.value,
                 _ => {},
             },
             Err(RecvError::Closed) => {

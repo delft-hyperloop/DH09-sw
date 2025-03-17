@@ -25,9 +25,9 @@ pub async fn handle_incoming_data(
     msg_sender.send(Message::Data(process(&data)))?;
 
     match data.datatype {
-        Datatype::LeviInstruction => {
-            cmd_sender.send(Command::from_id(data.value as u16, 0))?;
-        },
+        // Datatype::LeviInstruction => {
+        //     cmd_sender.send(Command::from_id(data.value as u16, 0))?;
+        // },
         Datatype::CommandHash => {
             if data.value != COMMAND_HASH {
                 msg_sender.send(Message::Error("Command hash mismatch".to_string()))?;
@@ -60,12 +60,12 @@ pub async fn handle_incoming_data(
                 msg_sender.send(Message::Status(Info::ConfigHashPassed))?;
             }
         },
-        Datatype::Info => {
-            msg_sender.send(Message::Status(Info::from_id(data.value as u16)))?;
-        },
-        Datatype::ConnectionStatus => {
-            eprintln!("got a new connection status {:?}", data);
-        },
+        // Datatype::Info => {
+        //     msg_sender.send(Message::Status(Info::from_id(data.value as u16)))?;
+        // },
+        // Datatype::ConnectionStatus => {
+        //     eprintln!("got a new connection status {:?}", data);
+        // },
         x if HV_DATATYPES.contains(&x) => {
             data_sender.send(process(&data))?;
         },

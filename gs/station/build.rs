@@ -9,7 +9,7 @@ use std::path::Path;
 use anyhow::Result;
 use goose_utils::check_config;
 use goose_utils::commands::generate_commands;
-use goose_utils::datatypes::generate_datatypes;
+use goose_utils::datatypes::{generate_data_types_from_config, generate_datatypes};
 use goose_utils::events::generate_events;
 use goose_utils::ip::configure_gs_ip;
 use serde::Deserialize;
@@ -55,6 +55,7 @@ pub const CONFIG_PATH: &str = "../../config/config.toml";
 pub const DATATYPES_PATH: &str = "../../config/datatypes.toml";
 pub const COMMANDS_PATH: &str = "../../config/commands.toml";
 pub const EVENTS_PATH: &str = "../../config/events.toml";
+pub const DATAFLOW_PATH: &str = "../../config/dataflow.yaml";
 
 fn main() -> Result<()> {
     tauri_build::build();
@@ -70,13 +71,17 @@ fn main() -> Result<()> {
 
     content.push_str(&configure_gs(&config));
     content.push_str(&configure_gs_ip(config.gs.ip, config.gs.port, config.gs.force)?);
-    let dt = generate_datatypes(DATATYPES_PATH, true)?;
+    let df = fs::read_to_string(DATAFLOW_PATH)?;
+    let df = goose_utils::dataflow::parse_from(&df);
+    let dt = goose_utils::dataflow::collect_data_types(&df);
+    let dt = generate_data_types_from_config(&dt, true)?;
     content.push_str(&dt);
     content.push_str(&generate_commands(COMMANDS_PATH, false)?);
     content.push_str(&generate_events(EVENTS_PATH, false)?);
     content.push_str(&configure_channels(&config));
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, true)?);
     content.push_str(&levi_req_data(&config, dt)?);
+    content.push_str(&goose_utils::dataflow::make_gs_code(&df));
 
     fs::write(dest_path.clone(), content).unwrap_or_else(|_| {
         panic!("Couldn't write to {}! Build failed.", dest_path.to_str().unwrap());
@@ -86,6 +91,9 @@ fn main() -> Result<()> {
     println!("cargo::rerun-if-changed={}", COMMANDS_PATH);
     println!("cargo::rerun-if-changed={}", DATATYPES_PATH);
     println!("cargo::rerun-if-changed={}", EVENTS_PATH);
+    println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
+    println!("cargo::rerun-if-changed=build.rs");
+    println!("cargo::rerun-if-changed=../../util");
 
     Ok(())
 }

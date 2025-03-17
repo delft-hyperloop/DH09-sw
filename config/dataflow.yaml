@@ -29,8 +29,8 @@ procedures:
     formula: '(x * 100.0) as u64'
   parse-gs_2p_float:
     input: 'u64'
-    output: 'f32'
-    formula: '(x as f32) / 100.0'
+    output: 'f64'
+    formula: '(x as f64) / 100.0'
 
 
 standard-datapoints:
@@ -85,6 +85,12 @@ standard-datapoints:
       name: 'FrontendHeartbeating'
       id: 0x170
     priority: 1
+  - datapoint:
+      name: 'PropulsionCurrent'
+      id: 0x200
+  - datapoint:
+      name: 'Localisation'
+      id: 0x201
 
 
 message-processing:

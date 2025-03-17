@@ -399,8 +399,7 @@ use core::future::Future;
         }
     }
 
-    writeln!(&mut code, "pub fn event_for_can_1_id(id: u32) -> fsm::Event {{ match id {{")
-        .unwrap();
+    writeln!(&mut code, "pub fn event_for_can_1_id(id: u32) -> fsm::Event {{ match id {{").unwrap();
 
     for (id, event) in &can1_ids_to_events {
         writeln!(&mut code, "{} => fsm::Event::{},", id, event).unwrap();
@@ -414,8 +413,7 @@ use core::future::Future;
     )
     .unwrap();
 
-    writeln!(&mut code, "pub fn event_for_can_2_id(id: u32) -> fsm::Event {{ match id {{")
-        .unwrap();
+    writeln!(&mut code, "pub fn event_for_can_2_id(id: u32) -> fsm::Event {{ match id {{").unwrap();
 
     for (id, event) in &can2_ids_to_events {
         writeln!(&mut code, "{} => fsm::Event::{},", id, event).unwrap();
@@ -480,6 +478,23 @@ use core::future::Future;
 
 pub fn make_logging_pcb_code(df: &DataflowSpec) -> String { format!("") }
 
-pub fn make_gs_code(df: &DataflowSpec) -> String { format!("") }
+pub fn make_gs_code(df: &DataflowSpec) -> String {
+    let mut code = String::new();
+
+    code.push_str(r#"
+pub fn process_input_datatype(datatype: Datatype, data: u64) -> f64 {
+"#);
+    code.push_str(&make_procedures(df));
+    code.push_str("match datatype {");
+
+    for dp in df.message_processing.iter().flat_map(|p| p.datapoint_conversion.iter()) {
+        let x = format!("parse_{}", dp.gs.conversion.procedure_suffix);
+        let dtn = &dp.datapoint.name;
+        writeln!(&mut code, "Datatype::{dtn} => {x}(data),").unwrap();
+    }
+    writeln!(&mut code, "_ => data as f64,}}}}").unwrap();
+
+    code
+}
 
 pub fn parse_from(data: &str) -> DataflowSpec { serde_yaml::from_str(data).unwrap() }

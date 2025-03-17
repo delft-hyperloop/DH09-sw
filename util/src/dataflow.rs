@@ -101,7 +101,7 @@ pub struct ProcedureSpec {
 }
 
 #[derive(serde::Deserialize, Debug)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct MessageProcessingSpec {
     pub name: String,
     pub can: CanSpec,
@@ -117,6 +117,7 @@ pub enum CanSpec {
 }
 
 #[derive(serde::Deserialize, Debug)]
+#[serde(deny_unknown_fields)]
 pub struct FsmSpec {
     pub event: String,
 }

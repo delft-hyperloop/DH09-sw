@@ -121,6 +121,8 @@ message-processing:
     can:
       id: 0x4B1
       bus: can1
+    fsm:
+      event: 'ShutDown'
     datapoint-conversion:
       - datapoint:
           name: 'BMSVoltageHigh'

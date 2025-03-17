@@ -12,7 +12,7 @@ use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 
 use crate::entry_methods::enter_fault;
 use crate::utils::data::Event;
-use crate::utils::types::EventReceiver;
+use crate::utils::types::{EventReceiver, EventSender};
 
 /// Enum representing the different states that the `MainFSM` will be in
 #[derive(Eq, PartialEq, Debug, Clone, Copy, Format)]
@@ -60,6 +60,7 @@ pub struct FSM {
     state_mutex: &'static Mutex<NoopRawMutex, States>,
     state: States,
     event_receiver: &'static EventReceiver,
+    event_sender: &'static EventSender,
 }
 
 impl FSM {
@@ -75,12 +76,14 @@ impl FSM {
     pub async fn new(
         // peripherals: // TODO: add peripherals
         event_receiver: &'static EventReceiver,
+        event_sender: &'static EventSender,
         #[cfg(test)]
         state_mutex: &'static Mutex<NoopRawMutex, States>,
     ) -> Self {
         Self {
             state: Boot,
             event_receiver,
+            event_sender,
             #[cfg(test)]
             state_mutex,
         }

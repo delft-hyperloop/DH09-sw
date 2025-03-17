@@ -7,7 +7,7 @@ use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::priority_channel::PriorityChannel;
 use embassy_sync::priority_channel::Sender;
 use embassy_sync::priority_channel::Receiver;
-
+use heapless::binary_heap::Min;
 use crate::utils::Event;
 
 /// Maximum number of events on the channel
@@ -30,7 +30,7 @@ pub struct EventReceiver(
 
 impl EventReceiver {
     /// Wrapper method for the `receive` method of the `EventReceiver`
-    pub(crate) async fn receive(&self) -> Event {
+    pub async fn receive(&self) -> Event {
         self.0.receive().await
     }
 }
@@ -51,5 +51,17 @@ impl Debug for EventSender {
 impl Debug for EventReceiver {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(f, "EventReceiver {{ ... }}")
+    }
+}
+
+impl From<Receiver<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>> for EventReceiver {
+    fn from(receiver: Receiver<'static, NoopRawMutex, Event, Min, MAX_EVENTS>) -> Self {
+        EventReceiver(receiver)
+    }
+}
+
+impl From<Sender<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>> for EventSender {
+    fn from(sender: Sender<'static, NoopRawMutex, Event, Min, MAX_EVENTS>) -> Self {
+        EventSender(sender)
     }
 }

@@ -17,3 +17,4 @@ mod tests;
 
 pub use fsm::States;
 pub use fsm::FSM;
+pub use utils::data::Event;

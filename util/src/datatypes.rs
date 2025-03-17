@@ -11,7 +11,7 @@ use serde::Deserialize;
 
 const NONE: fn() -> Limit = || Limit::No;
 
-#[derive(Deserialize, Hash)]
+#[derive(Deserialize, Hash, Default)]
 pub struct Config {
     pub(crate) Datatype: Vec<Datatype>,
 }
@@ -28,7 +28,7 @@ pub struct Datatype {
     pub priority: Option<usize>,
 }
 
-#[derive(Hash, Clone, Copy)]
+#[derive(Debug, Hash, Clone, Copy)]
 pub enum Limit {
     No,
     Single(u64),
@@ -53,7 +53,7 @@ impl Display for Limit {
     }
 }
 
-#[derive(Deserialize, Hash, Clone, Copy)]
+#[derive(Deserialize, Hash, Clone, Copy, Debug)]
 pub struct Severities {
     pub warn: Option<u64>,
     pub err: Option<u64>,
@@ -69,9 +69,7 @@ pub fn get_data_items(path: &str) -> Result<Vec<(u16, String)>> {
     Ok(get_data_config(path)?.Datatype.iter().map(|x| (x.id, x.name.clone())).collect())
 }
 
-pub fn generate_datatypes(path: &str, drv: bool) -> Result<String> {
-    let config: Config = get_data_config(path)?;
-
+pub fn generate_data_types_from_config(config: &Config, drv: bool) -> Result<String> {
     let mut hasher = DefaultHasher::new();
     config.hash(&mut hasher);
     let hash = hasher.finish();
@@ -86,7 +84,7 @@ pub fn generate_datatypes(path: &str, drv: bool) -> Result<String> {
 
     let mut priorities = String::new();
 
-    for dtype in config.Datatype {
+    for dtype in &config.Datatype {
         data_ids.push(dtype.id);
         enum_definitions.push_str(&format!("    {},\n", dtype.name));
         match_to_id.push_str(&format!("            Datatype::{} => {},\n", dtype.name, dtype.id));
@@ -96,7 +94,7 @@ pub fn generate_datatypes(path: &str, drv: bool) -> Result<String> {
             "            Datatype::{} => ({}, {}),\n",
             dtype.name, dtype.upper, dtype.lower,
         ));
-        if let Some(u) = dtype.display_units {
+        if let Some(u) = &dtype.display_units {
             units.push_str(&format!(
                 "            Datatype::{} => String::from({:?}),\n",
                 dtype.name, u
@@ -230,4 +228,10 @@ impl Datatype {{
         data_ids.len(),
         data_ids.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(", ")
     ) + &format!("\npub const DATA_HASH: u64 = {hash};"))
+}
+
+pub fn generate_datatypes(path: &str, drv: bool) -> Result<String> {
+    let config: Config = get_data_config(path)?;
+
+    generate_data_types_from_config(&config, drv)
 }

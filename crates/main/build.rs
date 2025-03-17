@@ -89,6 +89,7 @@ pub const CONFIG_PATH: &str = "../../config/config.toml";
 pub const DATATYPES_PATH: &str = "../../config/datatypes.toml";
 pub const COMMANDS_PATH: &str = "../../config/commands.toml";
 pub const EVENTS_PATH: &str = "../../config/events.toml";
+pub const DATAFLOW_PATH: &str = "../../config/dataflow.yaml";
 
 fn main() -> Result<()> {
     let out_dir = env::var("OUT_DIR")?;
@@ -118,11 +119,18 @@ fn main() -> Result<()> {
         COMMANDS_PATH,
         true,
     )?);
-    let dt = goose_utils::datatypes::generate_datatypes(DATATYPES_PATH, false)?;
-    content.push_str(&dt);
     content.push_str(&goose_utils::events::generate_events(EVENTS_PATH, true)?);
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, false)?);
+    let df = std::fs::read_to_string(DATAFLOW_PATH)?;
+    let df = goose_utils::dataflow::parse_from(&df);
+    let dt = goose_utils::dataflow::collect_data_types(&df);
+    let dt = goose_utils::datatypes::generate_data_types_from_config(
+        &dt, false,
+    )?;
+    content.push_str(&dt);
     content.push_str(&configure_heartbeats(&config, &dt)?);
+
+    content.push_str(&goose_utils::dataflow::make_main_pcb_code(&df));
     // content.push_str(&*can::main(&id_list));
 
     fs::write(dest_path.clone(), content).unwrap_or_else(|e| {
@@ -136,6 +144,7 @@ fn main() -> Result<()> {
     println!("cargo::rerun-if-changed={}", EVENTS_PATH);
     println!("cargo::rerun-if-changed={}", COMMANDS_PATH);
     println!("cargo::rerun-if-changed={}", DATATYPES_PATH);
+    println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
 
     // Put `memory.x` in our output directory and ensure it's
     // on the linker search path.

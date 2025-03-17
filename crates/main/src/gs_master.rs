@@ -27,7 +27,7 @@ use embassy_net::tcp::TcpWriter;
 use embassy_net::Ipv4Address;
 use embassy_net::Stack;
 use embassy_net::StackResources;
-use embassy_stm32::eth::generic_smi::GenericSMI;
+use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::Ethernet;
 use embassy_stm32::peripherals::ETH;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
@@ -224,7 +224,7 @@ impl GsCommsLayer for EthernetGsCommsLayer {
     }
 }
 
-type EthDevice = Ethernet<'static, ETH, GenericSMI>;
+type EthDevice = Ethernet<'static, ETH, GenericPhy>;
 
 pub struct EthernetGsCommsLayerInitializer {
     seed: u64,
@@ -275,6 +275,7 @@ async fn rx_task(
 
         let mut sock_lock = sock.lock().await;
         if !sock_lock.can_recv() {
+            Timer::after_millis(10).await;
             continue;
         }
         let read_result = sock_lock.read_exact(&mut buf).await;
@@ -299,7 +300,7 @@ async fn rx_task(
             }
         };
         publisher.publish(GsToPodMessage::read_from_buf(&buf)).await;
-        // Timer::after_millis(10).await;
+        Timer::after_millis(10).await;
     }
 }
 
@@ -431,6 +432,8 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
             embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
         unwrap!(spawner.spawn(eth_task(runner)));
         stack.wait_config_up().await;
+
+        info!("Config is up");
 
         static COMMS_BUFFERS_INIT: StaticCell<CommsBuffers> = StaticCell::new();
 

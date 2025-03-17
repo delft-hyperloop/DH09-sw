@@ -59,8 +59,9 @@ pub struct FSM {
     #[cfg(test)]
     state_mutex: &'static Mutex<NoopRawMutex, States>,
     state: States,
-    event_receiver: &'static EventReceiver,
-    event_sender: &'static EventSender,
+    event_receiver: EventReceiver,
+    event_sender1: EventSender,
+    event_sender2: EventSender,
 }
 
 impl FSM {
@@ -75,14 +76,16 @@ impl FSM {
     /// - A future for an instance of the `FSM` struct
     pub async fn new(
         // peripherals: // TODO: add peripherals
-        event_receiver: &'static EventReceiver,
-        event_sender: &'static EventSender,
+        event_receiver: EventReceiver,
+        event_sender1: EventSender,
+        event_sender2: EventSender,
         #[cfg(test)] state_mutex: &'static Mutex<NoopRawMutex, States>,
     ) -> Self {
         Self {
             state: Boot,
             event_receiver,
-            event_sender,
+            event_sender1,
+            event_sender2,
             #[cfg(test)]
             state_mutex,
         }
@@ -95,7 +98,7 @@ impl FSM {
     /// the `ShutDown` event.
     pub async fn run(&mut self) {
         loop {
-            let event = (*self.event_receiver).receive().await;
+            let event = self.event_receiver.receive().await;
 
             defmt::info!(
                 "{}: Received event: {:?}",

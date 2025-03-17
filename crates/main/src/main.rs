@@ -22,8 +22,8 @@ use embassy_stm32::can::config::{self};
 use embassy_stm32::can::frame::CanHeader;
 use embassy_stm32::can::RxFdBuf;
 use embassy_stm32::can::TxFdBuf;
-use embassy_stm32::eth::generic_smi::GenericSMI;
 use embassy_stm32::eth::Ethernet;
+use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::eth::{self};
 use embassy_stm32::peripherals;
@@ -61,7 +61,7 @@ use static_cell::StaticCell;
 bind_interrupts!(
     struct Irqs {
         ETH => eth::InterruptHandler;
-        HASH_RNG => rng::InterruptHandler<peripherals::RNG>;
+        // HASH_RNG => rng::InterruptHandler<peripherals::RNG>;
 
         // CAN
         FDCAN1_IT0 => can::IT0InterruptHandler<peripherals::FDCAN1>;
@@ -78,7 +78,7 @@ fn hlt() -> ! {
     }
 }
 
-type Device = Ethernet<'static, ETH, GenericSMI>;
+type Device = Ethernet<'static, ETH, GenericPhy>;
 
 #[embassy_executor::task]
 async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
@@ -113,7 +113,7 @@ async fn forward_gs_to_fsm(
 ) {
     loop {
         let msg = gsrx.next_message_pure().await;
-        info!("Received message from GS: {:?}", msg);
+        debug!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
         continue;
@@ -177,7 +177,9 @@ async fn forward_fsm_relay_events_to_can1(
         match event {
             fsm::commons::data::Event::HighVoltageOnCanRelay => {
                 let header = can::frame::Header::new_fd(
-                    can::frame::Id::try_from(0x00000001 as u32).expect("Invalid ID"),
+                    embedded_can::Id::from(
+                        embedded_can::ExtendedId::new(0x00000001).expect("Invalid ID"),
+                    ),
                     64,
                     false,
                     true,
@@ -203,7 +205,9 @@ async fn forward_fsm_relay_events_to_can2(
         match event {
             fsm::commons::data::Event::HighVoltageOnCanRelay => {
                 let header = can::frame::Header::new_fd(
-                    can::frame::Id::try_from(0x00000001 as u32).expect("Invalid ID"),
+                    embedded_can::Id::from(
+                        embedded_can::StandardId::new(0x00000001).expect("Invalid ID"),
+                    ),
                     64,
                     false,
                     true,
@@ -218,7 +222,6 @@ async fn forward_fsm_relay_events_to_can2(
         }
     }
 }
-
 
 #[embassy_executor::task]
 async fn forward_can1_messages_to_fsm(
@@ -244,10 +247,36 @@ async fn forward_can1_messages_to_fsm(
             }
         };
 
-        let fsm_event = match id {
-            0x00000001 => fsm::commons::Event::HighVoltageOnCanRelay,
-            _ => fsm::commons::Event::NoEvent,
+        let fsm_event = main::config::event_for_can_1_id(id);
+
+        if fsm_event != fsm::commons::Event::NoEvent {
+            event_channel.add_event(&fsm_event).await;
+        }
+    }
+}
+
+#[embassy_executor::task]
+async fn forward_can2_messages_to_fsm(
+    mut canrx: can2::CanRxSubscriber<'static>,
+    event_channel: PriorityEventPubSub,
+) {
+    loop {
+        let msg = canrx.next_message().await;
+
+        let envelope = match msg {
+            WaitResult::Message(envelope) => envelope,
+            WaitResult::Lagged(i) => {
+                warn!("Lagged {} messages", i);
+                continue;
+            }
         };
+
+        let id = match envelope.id() {
+            Id::Extended(e) => todo!("Nuh-uh"),
+            Id::Standard(s) => s.as_raw(),
+        };
+
+        let fsm_event = main::config::event_for_can_2_id(id as u32);
 
         if fsm_event != fsm::commons::Event::NoEvent {
             event_channel.add_event(&fsm_event).await;
@@ -269,34 +298,12 @@ async fn forward_can1_messages_to_gs(
 
         info!("Received CAN frame with ID: {}", id);
 
-        match id {
-            0x123 => {
-                fn decode_temperature(encoded: u8) -> f32 {
-                    let precision_range_start: f32 = 20.0;
+        let data = can_frame.payload();
 
-                    if encoded & 0x80 != 0 {
-                        precision_range_start + ((encoded & 0x7F) as f32 / 10.0)
-                    // High precision mode
-                    } else {
-                        encoded as f32 // Integer mode
-                    }
-                }
-
-                let temperature = can_frame.payload()[1];
-                let msg = PodToGsMessage {
-                    dp: Datapoint::new(
-                        main::config::Datatype::Ambient_temp,
-                        u64::from_be_bytes(
-                            f64::to_be_bytes(decode_temperature(temperature) as f64),
-                        ),
-                        embassy_time::Instant::now().as_ticks(),
-                    ),
-                };
-
-                gstx.send(msg).await;
-            }
-            _ => {}
-        }
+        main::config::parse_datapoints_can_1(id, data, |dp| async move {
+            gstx.send(PodToGsMessage { dp }).await;
+        })
+        .await;
 
         Timer::after_micros(10).await;
     }
@@ -316,34 +323,12 @@ async fn forward_can2_messages_to_gs(
 
         info!("Received CAN frame with ID: {}", id);
 
-        match id {
-            0x123 => {
-                fn decode_temperature(encoded: u8) -> f32 {
-                    let precision_range_start: f32 = 20.0;
+        let data = can_frame.payload();
 
-                    if encoded & 0x80 != 0 {
-                        precision_range_start + ((encoded & 0x7F) as f32 / 10.0)
-                    // High precision mode
-                    } else {
-                        encoded as f32 // Integer mode
-                    }
-                }
-
-                let temperature = can_frame.payload()[1];
-                let msg = PodToGsMessage {
-                    dp: Datapoint::new(
-                        main::config::Datatype::Ambient_temp,
-                        u64::from_be_bytes(
-                            f64::to_be_bytes(decode_temperature(temperature) as f64),
-                        ),
-                        embassy_time::Instant::now().as_ticks(),
-                    ),
-                };
-
-                gstx.send(msg).await;
-            }
-            _ => {}
-        }
+        main::config::parse_datapoints_can_2(id as u32, data, |dp| async move {
+            gstx.send(PodToGsMessage { dp }).await;
+        })
+        .await;
 
         Timer::after_micros(10).await;
     }
@@ -462,12 +447,24 @@ async fn main(spawner: Spawner) -> ! {
         let config = configurator
             .config()
             // Configuration for 1Mb/s
+            // .set_nominal_bit_timing(NominalBitTiming {
+            //     prescaler: NonZeroU16::new(15).unwrap(),
+            //     seg1: NonZeroU8::new(5).unwrap(),
+            //     seg2: NonZeroU8::new(2).unwrap(),
+            //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+            // })
             .set_nominal_bit_timing(NominalBitTiming {
                 prescaler: NonZeroU16::new(15).unwrap(),
-                seg1: NonZeroU8::new(5).unwrap(),
+                seg1: NonZeroU8::new(13).unwrap(),
                 seg2: NonZeroU8::new(2).unwrap(),
                 sync_jump_width: NonZeroU8::new(1).unwrap(),
             })
+            // .set_nominal_bit_timing(NominalBitTiming {
+            //     prescaler: NonZeroU16::new(15).unwrap(),
+            //     seg1: NonZeroU8::new(13).unwrap(),
+            //     seg2: NonZeroU8::new(2).unwrap(),
+            //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+            // })
             // Configuration for 2Mb/s
             // .set_data_bit_timing(DataBitTiming {
             //     transceiver_delay_compensation: true,
@@ -517,10 +514,10 @@ async fn main(spawner: Spawner) -> ! {
     info!("FSM started!");
 
     // Generate random seed.
-    let mut rng = Rng::new(p.RNG, Irqs);
-    let mut seed = [0; 8];
-    rng.fill_bytes(&mut seed);
-    let seed = u64::from_le_bytes(seed);
+    // let mut rng = Rng::new(p.RNG, Irqs);
+    // let mut seed = [0; 8];
+    // rng.fill_bytes(&mut seed);
+    let seed = 0x123456789ABCDEF_u64;
 
     let mac_addr = main::config::POD_MAC_ADDRESS;
 
@@ -531,16 +528,22 @@ async fn main(spawner: Spawner) -> ! {
         PACKETS.init(PacketQueue::<4, 4>::new()),
         p.ETH,
         Irqs,
-        p.PA1,  // ref_clk
-        p.PA2,  // mdio
-        p.PC1,  // eth_mdc
-        p.PA7,  // CRS_DV: Carrier Sense
-        p.PC4,  // RX_D0: Received Bit 0
-        p.PC5,  // RX_D1: Received Bit 1
-        p.PG13, // TX_D0: Transmit Bit 0
+        p.PA1, // ref_clk
+        p.PA2, // mdio
+        p.PC1, // eth_mdc
+        p.PA7, // CRS_DV: Carrier Sense
+        p.PC4, // RX_D0: Received Bit 0
+        p.PC5, // RX_D1: Received Bit 1
+        // main pcb:
+        p.PB12, // TX_D0: Transmit Bit 0
+        // nucleo:
+        // p.PG13, // TX_D0: Transmit Bit 0
         p.PB13, // TX_D1: Transmit Bit 1
-        p.PG11, // TX_EN: Transmit Enable
-        GenericSMI::new(0),
+        // nucleo:
+        // p.PG11, // TX_EN: Transmit Enable
+        // main pcb:
+        p.PB11,
+        GenericPhy::new(0),
         mac_addr,
     );
 

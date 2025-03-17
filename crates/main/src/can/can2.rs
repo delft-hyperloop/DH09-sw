@@ -37,6 +37,12 @@ pub struct CanEnvelope {
     envelope: embassy_stm32::can::frame::Envelope,
 }
 
+impl defmt::Format for CanEnvelope {
+    fn format(&self, f: defmt::Formatter) {
+        defmt::write!(f, "{:?}", &self.envelope.frame);
+    }
+}
+
 impl CanEnvelope {
     pub fn new_from_frame(frame: Frame) -> Self {
         Self {
@@ -119,20 +125,26 @@ type CanRxPublisher<'a> = Publisher<
 #[embassy_executor::task]
 async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>) -> ! {
     let mut error_counter: usize = 0;
+    let mut last_message_instant = None;
     loop {
-        defmt::info!("reading stuff from CAN2");
+        // defmt::info!("reading stuff from CAN2");
         match can.read().await {
             Ok(envelope) => {
-                defmt::info!("Envelope: {:?}", &envelope);
+                defmt::debug!("Envelope: {:?}", &envelope);
                 publisher.publish(CanEnvelope { envelope }).await;
+                if let Some(lmi) = &last_message_instant {
+                    let diff = Instant::now().duration_since(*lmi);
+                    defmt::debug!("[CAN2] Duration since last: {}ms", diff.as_millis());
+                }
+                last_message_instant = Some(Instant::now());
             }
             Err(e) => {
-                // if error_counter < 10 || error_counter % 2500 == 0 {
+                if error_counter < 10 || error_counter % 2500 == 0 {
                     error!(
                         "[CAN] Error reading from CAN bus (#{}): {:?}",
                         error_counter, e
                     );
-                // }
+                }
                 Timer::after_millis(500).await;
                 error_counter = error_counter.wrapping_add(1);
             }
@@ -164,6 +176,7 @@ async fn can_tx_task(
 ) -> ! {
     loop {
         let envelope = rx.receive().await;
+        info!("sending stuff to CAN2: {:?}", &envelope);
         let frame = can.write(&envelope.envelope.frame).await;
         match frame {
             None => {

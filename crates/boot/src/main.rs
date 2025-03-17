@@ -115,7 +115,7 @@ async fn forward_gs_to_fsm(
 ) {
     loop {
         let msg = gsrx.next_message_pure().await;
-        info!("Received message from GS: {:?}", msg);
+        debug!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
         continue;

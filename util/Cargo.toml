@@ -8,4 +8,5 @@ anyhow = "1.0.86"
 local-ip-address = "=0.6.1"
 serde = { version = "1.0.201", features = ["derive"] }
 toml = "0.8.12"
+serde_yaml = "0.9"
 

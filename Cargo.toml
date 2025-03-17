@@ -5,7 +5,7 @@ resolver = "2"
 
 [workspace.dependencies]
 fdcan = {version = "0.2.1", features = ["fdcan_h7"]}
-stm32h7xx-hal = {version = "0.16.0", features = ["stm32h753v", "can", "device-selected"]}
+stm32h7xx-hal = {version = "0.16.0", features = ["stm32h743v", "can", "device-selected"]}
 
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",
@@ -44,10 +44,10 @@ goose_utils = {path = "util"}
 
 [workspace.dependencies.embassy-stm32]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 features = [
     "defmt",
-    "stm32h753zi",
+    "stm32h743zi",
     "time-driver-any",
     "exti",
     # "memory-x",
@@ -57,21 +57,21 @@ features = [
 
 [workspace.dependencies.embassy-boot]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 
 [workspace.dependencies.embassy-boot-stm32]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 
 
 [workspace.dependencies.embassy-sync]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 features = ["defmt"]
 
 [workspace.dependencies.embassy-executor]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 features = [
     "task-arena-size-32768",
     "arch-cortex-m",
@@ -82,7 +82,7 @@ features = [
 
 [workspace.dependencies.embassy-net]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 features = [
     "medium-ethernet",
     "proto-ipv4",
@@ -94,11 +94,11 @@ features = [
 
 [workspace.dependencies.embassy-time]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 
 [workspace.dependencies.embassy-futures]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0dd324f9e10b5de01b01e540696fe9f174591221"
+rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 
 [patch.crates-io]
 defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }

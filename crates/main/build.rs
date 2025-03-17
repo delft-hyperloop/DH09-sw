@@ -89,6 +89,7 @@ pub const CONFIG_PATH: &str = "../../config/config.toml";
 pub const DATATYPES_PATH: &str = "../../config/datatypes.toml";
 pub const COMMANDS_PATH: &str = "../../config/commands.toml";
 pub const EVENTS_PATH: &str = "../../config/events.toml";
+pub const DATAFLOW_PATH: &str = "../../config/dataflow.yaml";
 
 fn main() -> Result<()> {
     let out_dir = env::var("OUT_DIR")?;
@@ -99,27 +100,51 @@ fn main() -> Result<()> {
 
     let mut content = String::from("//@generated\n");
 
-    content.push_str(&check_config(DATATYPES_PATH, COMMANDS_PATH, EVENTS_PATH, CONFIG_PATH)?);
+    content.push_str(&check_config(
+        DATATYPES_PATH,
+        COMMANDS_PATH,
+        EVENTS_PATH,
+        CONFIG_PATH,
+    )?);
 
     content.push_str(&configure_ip(&config));
-    content.push_str(&configure_gs_ip(config.gs.ip, config.gs.port, config.gs.force)?);
+    content.push_str(&configure_gs_ip(
+        config.gs.ip,
+        config.gs.port,
+        config.gs.force,
+    )?);
     content.push_str(&configure_pod(&config));
     content.push_str(&configure_internal(&config));
-    content.push_str(&goose_utils::commands::generate_commands(COMMANDS_PATH, true)?);
-    let dt = goose_utils::datatypes::generate_datatypes(DATATYPES_PATH, false)?;
-    content.push_str(&dt);
+    content.push_str(&goose_utils::commands::generate_commands(
+        COMMANDS_PATH,
+        true,
+    )?);
     content.push_str(&goose_utils::events::generate_events(EVENTS_PATH, true)?);
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, false)?);
+    let df = std::fs::read_to_string(DATAFLOW_PATH)?;
+    let df = goose_utils::dataflow::parse_from(&df);
+    let dt = goose_utils::dataflow::collect_data_types(&df);
+    let dt = goose_utils::datatypes::generate_data_types_from_config(
+        &dt, false,
+    )?;
+    content.push_str(&dt);
     content.push_str(&configure_heartbeats(&config, &dt)?);
+
+    content.push_str(&goose_utils::dataflow::make_main_pcb_code(&df));
     // content.push_str(&*can::main(&id_list));
 
     fs::write(dest_path.clone(), content).unwrap_or_else(|e| {
-        panic!("Couldn't write to {}! Build failed with error: {}", dest_path.to_str().unwrap(), e)
+        panic!(
+            "Couldn't write to {}! Build failed with error: {}",
+            dest_path.to_str().unwrap(),
+            e
+        )
     });
     println!("cargo::rerun-if-changed={}", CONFIG_PATH);
     println!("cargo::rerun-if-changed={}", EVENTS_PATH);
     println!("cargo::rerun-if-changed={}", COMMANDS_PATH);
     println!("cargo::rerun-if-changed={}", DATATYPES_PATH);
+    println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
 
     // Put `memory.x` in our output directory and ensure it's
     // on the linker search path.
@@ -158,8 +183,10 @@ fn configure_heartbeats(config: &Config, dt: &str) -> Result<String> {
 }
 
 fn configure_ip(config: &Config) -> String {
-    format!("pub const NETWORK_BUFFER_SIZE: usize = {};\n", config.gs.buffer_size)
-        + &*format!("pub const IP_TIMEOUT: u64 = {};\n", config.gs.timeout)
+    format!(
+        "pub const NETWORK_BUFFER_SIZE: usize = {};\n",
+        config.gs.buffer_size
+    ) + &*format!("pub const IP_TIMEOUT: u64 = {};\n", config.gs.timeout)
 }
 
 fn configure_pod(config: &Config) -> String {
@@ -193,73 +220,76 @@ fn configure_pod(config: &Config) -> String {
 }
 
 fn configure_internal(config: &Config) -> String {
-    format!("pub const EVENT_QUEUE_SIZE: usize = {};\n", config.pod.internal.event_queue_size)
-        + &*format!("pub const DATA_QUEUE_SIZE: usize = {};\n", config.pod.internal.data_queue_size)
-        + &*format!("pub const CAN_QUEUE_SIZE: usize = {};\n", config.pod.internal.can_queue_size)
-        + &*format!(
-            "pub const LV_IDS: [u16;{}] = [{}];\n",
-            config.pod.comm.bms_lv_ids.len(),
-            config
-                .pod
-                .comm
-                .bms_lv_ids
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join(", ")
-        )
-        + &*format!(
-            "pub const HV_IDS: [u16;{}] = [{}];\n",
-            config.pod.comm.bms_hv_ids.len(),
-            config
-                .pod
-                .comm
-                .bms_hv_ids
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join(", ")
-        )
-        + &*format!(
-            "pub const GFD_IDS: [u16;{}] = [{}];\n",
-            config.pod.comm.gfd_ids.len(),
-            config
-                .pod
-                .comm
-                .gfd_ids
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join(", ")
-        )
-        + &*format!(
-            "pub const BATTERY_GFD_IDS: [u16;{}] = [{},{},{}];\n",
-            config.pod.comm.bms_lv_ids.len()
-                + config.pod.comm.bms_hv_ids.len()
-                + config.pod.comm.gfd_ids.len(),
-            config
-                .pod
-                .comm
-                .bms_lv_ids
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join(", "),
-            config
-                .pod
-                .comm
-                .bms_hv_ids
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join(", "),
-            config
-                .pod
-                .comm
-                .gfd_ids
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join(", ")
-        )
+    format!(
+        "pub const EVENT_QUEUE_SIZE: usize = {};\n",
+        config.pod.internal.event_queue_size
+    ) + &*format!(
+        "pub const DATA_QUEUE_SIZE: usize = {};\n",
+        config.pod.internal.data_queue_size
+    ) + &*format!(
+        "pub const CAN_QUEUE_SIZE: usize = {};\n",
+        config.pod.internal.can_queue_size
+    ) + &*format!(
+        "pub const LV_IDS: [u16;{}] = [{}];\n",
+        config.pod.comm.bms_lv_ids.len(),
+        config
+            .pod
+            .comm
+            .bms_lv_ids
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
+    ) + &*format!(
+        "pub const HV_IDS: [u16;{}] = [{}];\n",
+        config.pod.comm.bms_hv_ids.len(),
+        config
+            .pod
+            .comm
+            .bms_hv_ids
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
+    ) + &*format!(
+        "pub const GFD_IDS: [u16;{}] = [{}];\n",
+        config.pod.comm.gfd_ids.len(),
+        config
+            .pod
+            .comm
+            .gfd_ids
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
+    ) + &*format!(
+        "pub const BATTERY_GFD_IDS: [u16;{}] = [{},{},{}];\n",
+        config.pod.comm.bms_lv_ids.len()
+            + config.pod.comm.bms_hv_ids.len()
+            + config.pod.comm.gfd_ids.len(),
+        config
+            .pod
+            .comm
+            .bms_lv_ids
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(", "),
+        config
+            .pod
+            .comm
+            .bms_hv_ids
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(", "),
+        config
+            .pod
+            .comm
+            .gfd_ids
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
+    )
 }

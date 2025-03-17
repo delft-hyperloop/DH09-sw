@@ -1,0 +1,162 @@
+# Define procedures
+
+procedures:
+  # ====== Decode =======
+  decode_temperature:
+    input: 'u8'
+    output: 'f32'
+    formula: |
+      let precision_range_start: f32 = 20.0;
+      if x & 0x80 != 0 {
+        precision_range_start + ((x & 0x7F) as f32 / 10.0)
+        // High precision mode
+      } else {
+        x as f32 // Integer mode
+      }
+  decode_bms_voltage:
+    input: 'u16'
+    output: 'f32'
+    formula: '(x as f32) / 10.0'
+  decode_bms_temperature:
+    input: 'u16'
+    output: 'f32'
+    formula: 'x as f32'
+
+  # ======= GS communication =======
+  dump-gs_2p_float:
+    input: 'f32'
+    output: 'u64'
+    formula: '(x * 100.0) as u64'
+  parse-gs_2p_float:
+    input: 'u64'
+    output: 'f32'
+    formula: '(x as f32) / 100.0'
+
+
+standard-datapoints:
+  - datapoint:
+      name: 'DefaultDatatype'
+      id: 0x00
+    # upper: 42002
+  - datapoint:
+      name: 'CommandHash'
+      id: 0x167
+    priority: 1
+
+  - datapoint:
+      name: 'EventsHash'
+      id: 0x168
+    priority: 1
+
+  - datapoint:
+      name: 'DataHash'
+      id: 0x169
+    priority: 1
+
+  - datapoint:
+      name: 'ConfigHash'
+      id: 0x171
+    priority: 1
+
+  - datapoint:
+      name: 'ValueError'
+      id: 0x16a
+    priority: 1
+
+  - datapoint:
+      name: 'ValueWarning'
+      id: 0x16b
+    priority: 1
+
+  - datapoint:
+      name: 'ValueCausedBraking'
+      id: 0x16c
+    priority: 1
+
+  - datapoint:
+      name: 'LocalisationHeartbeat'
+      id: 0x16e
+
+  - datapoint:
+      name: 'SensorHubHeartbeat'
+      id: 0x16f
+
+  - datapoint:
+      name: 'FrontendHeartbeating'
+      id: 0x170
+    priority: 1
+
+
+message-processing:
+  - name: 'TempAmbient'
+    can:
+      id: 0x12
+      bus: can1
+    datapoint-conversion:
+      - datapoint:
+          name: 'TempAmbient0'
+          id: 0x4B0
+        getter: 'u8[0..1]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempAmbient1'
+          id: 0x4B1
+        getter: 'u8[1..2]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempAmbient2'
+          id: 0x4B2
+        getter: 'u8[2..3]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'BMSLog1'
+    can:
+      id: 0x4B1
+      bus: can1
+    datapoint-conversion:
+      - datapoint:
+          name: 'BMSVoltageHigh'
+          id: 0x3A1
+        getter: 'u16[0..2]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+        display-units: 'V'
+        limits:
+          upper: { warn: 360, err: 420 }
+          lower: { warn: 280, err: 270 }
+      - datapoint: 
+          name: 'BMSVoltageLow'
+          id: 0x19D
+        getter: 'u16[2..4]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+        display-units: 'V'
+        limits:
+          upper: { warn: 360, err: 420 }
+          lower: { warn: 280, err: 270 }
+      - datapoint:
+          name: 'BMSTemperatureHigh'
+          id: 0x3A2
+        getter: 'u16[4..6]'
+        can-conversion: 'decode_bms_temperature:u16->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'BMSTemperatureLow'
+          id: 0x19E
+        getter: 'u16[6..8]'
+        can-conversion: 'decode_bms_temperature:u16->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'

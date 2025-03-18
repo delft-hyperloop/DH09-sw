@@ -11,7 +11,7 @@
         BatteriesTab,
         DebugTab, details_pane
     } from "$lib";
-    import { ViewWindow } from "$lib/util/WindowControl"
+    // import { ViewWindow } from "$lib/util/WindowControl"
 
     let i = 0;
     let tabs = [

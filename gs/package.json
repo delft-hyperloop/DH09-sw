@@ -13,7 +13,8 @@
     "test:integration": "playwright test",
     "test:unit": "vitest",
     "generate:commands": "./scripts/populate_commands.sh",
-    "generate:datatypes": "./scripts/pupulate_datatypes.sh"
+    "generate:datatypes": "./scripts/populate_datatypes.sh",
+    "generate:datatypes:macos": "./scripts/populate_datatypes_macos.sh"
   },
   "devDependencies": {
     "@iconify/svelte": "^3.1.6",

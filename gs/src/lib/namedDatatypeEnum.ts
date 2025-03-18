@@ -60,6 +60,7 @@ export enum DatatypeEnum {
   FSMEVENT="FSMEvent",
   ENDOFTRACKTRIGGERED="EndOfTrackTriggered",
   LOCALISATION="Localisation",
+  GOINGFORWARD="GoingForward",
   VELOCITY="Velocity",
   ACCELERATION="Acceleration",
   DIRECTION="Direction",

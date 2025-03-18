@@ -4,17 +4,13 @@ use std::str::FromStr;
 use chrono::Local;
 use gslib::Datapoint;
 use gslib::Datatype;
-use gslib::LocationSequence;
-use gslib::LocationSpeedMap;
 use gslib::Message;
 use gslib::ProcessedData;
-use gslib::Route;
 use rand::Rng;
 use tauri::Manager;
 use tauri::State;
 
 use crate::backend::Backend;
-use crate::data::validate::validate_route_internal;
 use crate::frontend::app::APP_HANDLE;
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
@@ -92,23 +88,6 @@ pub fn connect_to_pod() -> bool {
     }
 }
 
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn start_levi() {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().start_levi();
-    }
-}
-
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn quit_levi() {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().quit_levi();
-    }
-}
 
 #[macro_export]
 #[allow(unused)]
@@ -196,49 +175,49 @@ pub fn test_panic() {
     panic!("kill yourself");
 }
 
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn test_route() -> Route { Route::default() }
-
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn validate_route(route: Route) -> bool { validate_route_internal(route) }
-
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn speeds_to_u64(speeds: LocationSpeedMap) -> u64 { speeds.into() }
-
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn speeds_from_u64(speeds: String) -> Result<LocationSpeedMap, String> {
-    match u64::from_str(&speeds) {
-        Ok(parsed_speeds) => Ok(parsed_speeds.into()),
-        Err(e) => Err(format!("Failed to parse speeds from string: {}", e)),
-    }
-}
-
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn positions_to_u64(positions: LocationSequence) -> String {
-    let positions_u64: u64 = positions.into();
-    positions_u64.to_string()
-}
-
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn positions_from_u64(positions: String) -> Result<LocationSequence, String> {
-    match u64::from_str(&positions) {
-        Ok(parsed_positions) => Ok(parsed_positions.into()),
-        Err(e) => Err(format!("Failed to parse positions from string: {}", e)),
-    }
-}
-
+// #[macro_export]
+// #[allow(unused)]
+// #[tauri::command]
+// pub fn test_route() -> Route { Route::default() }
+//
+// #[macro_export]
+// #[allow(unused)]
+// #[tauri::command]
+// pub fn validate_route(route: Route) -> bool { validate_route_internal(route) }
+//
+// #[macro_export]
+// #[allow(unused)]
+// #[tauri::command]
+// pub fn speeds_to_u64(speeds: LocationSpeedMap) -> u64 { speeds.into() }
+//
+// #[macro_export]
+// #[allow(unused)]
+// #[tauri::command]
+// pub fn speeds_from_u64(speeds: String) -> Result<LocationSpeedMap, String> {
+//     match u64::from_str(&speeds) {
+//         Ok(parsed_speeds) => Ok(parsed_speeds.into()),
+//         Err(e) => Err(format!("Failed to parse speeds from string: {}", e)),
+//     }
+// }
+//
+// #[macro_export]
+// #[allow(unused)]
+// #[tauri::command]
+// pub fn positions_to_u64(positions: LocationSequence) -> String {
+//     let positions_u64: u64 = positions.into();
+//     positions_u64.to_string()
+// }
+//
+// #[macro_export]
+// #[allow(unused)]
+// #[tauri::command]
+// pub fn positions_from_u64(positions: String) -> Result<LocationSequence, String> {
+//     match u64::from_str(&positions) {
+//         Ok(parsed_positions) => Ok(parsed_positions.into()),
+//         Err(e) => Err(format!("Failed to parse positions from string: {}", e)),
+//     }
+// }
+//
 // #[macro_export]
 // #[allow(unused)]
 // #[tauri::command]
@@ -246,15 +225,14 @@ pub fn positions_from_u64(positions: String) -> Result<LocationSequence, String>
 //     send_command("SetRoute".into(), 1822648539875311616)
 //         && send_command("SetSpeeds".into(), 14104086254467416064)
 // }
-
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn set_route(route: Route) -> bool {
-    send_command("SetRoute".into(), route.positions.into())
-        && send_command("SetSpeeds".into(), route.speeds.into())
-}
-
+//
+// #[macro_export]
+// #[allow(unused)]
+// #[tauri::command]
+// pub fn set_route(route: Route) -> bool {
+//     send_command("SetRoute".into(), route.positions.into())
+//         && send_command("SetSpeeds".into(), route.speeds.into())
+// }
 
 #[macro_export]
 #[allow(unused)]

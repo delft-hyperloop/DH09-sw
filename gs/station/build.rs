@@ -5,7 +5,6 @@ use std::env;
 use std::fmt::Write;
 use std::fs;
 use std::path::Path;
-use std::path::PathBuf;
 
 use anyhow::Result;
 use goose_utils::check_config;
@@ -50,7 +49,6 @@ struct GS {
     info_channel: String,
     error_channel: String,
     shortcut_channel: String,
-    levi_exec_path: PathBuf,
 }
 
 pub const CONFIG_PATH: &str = "../../config/config.toml";
@@ -124,10 +122,6 @@ fn configure_gs(config: &Config) -> String {
     ) + &*format!("pub const NETWORK_BUFFER_SIZE: usize = {};\n", config.gs.buffer_size)
         + &format!("pub const IP_TIMEOUT: u64 = {};\n", config.gs.timeout)
         + &format!("pub const HEARTBEAT: u64 = {};\n", config.gs.heartbeat)
-        + &format!(
-            "pub const LEVI_EXEC_PATH: &str = \"{}\";\n",
-            config.gs.levi_exec_path.to_str().unwrap()
-        )
 }
 
 fn configure_channels(config: &Config) -> String {

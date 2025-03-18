@@ -1,17 +1,21 @@
 <script lang="ts">
-  import {Battery, Table, FSM, TileGrid, Tile, Command, GrandDataDistributor, Localiser, Store} from "$lib";
-    import {AppBar, getToastStore} from "@skeletonlabs/skeleton";
+    import {Battery, Table, FSM, TileGrid, Tile, Command, GrandDataDistributor, Store} from "$lib";
+    import { AppBar, getToastStore } from '@skeletonlabs/skeleton';
     import Icon from "@iconify/svelte";
     import {invoke} from "@tauri-apps/api/tauri";
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
-  import {LOCALISATION_NAME, STATUS} from "$lib/types";
+    import { LOCALISATION_NAME } from '$lib/types';
+    import Localization from '$lib/components/Localization.svelte';
+    import Light from '$lib/components/Light.svelte';
+    import MainFSM from '$lib/components/MainFSM.svelte';
+    import { showcaseStateCounter, showcasingStates } from '$lib/stores/state';
 
     let width: number;
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const lvBattery = storeManager.getWritable("ChargeStateLow");
     const hvBattery = storeManager.getWritable("ChargeStateHigh");
-    const statuses = storeManager.getWritable("ConnectionStatus");
+    const fsmState = storeManager.getWritable("FSMState");
 
     let tableTempsArr: any[][];
     let tableArr2: any[][];
@@ -45,15 +49,26 @@
     const location = storeManager.getWritable(LOCALISATION_NAME);
 
     const toastStore = getToastStore();
-
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
-    <AppBar padding="p-3" border="border-b border-b-surface-900" background="bg-surface-700">
+    <AppBar padding="pl-8 pr-8 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDefault="place-self-center">
         <svelte:fragment slot="lead">
-            <Icon icon="codicon:graph-line"/>
+            <div class="gap-2 flex flex-row items-center">
+                <Icon icon="codicon:graph-line"/>
+                <span>Vitals</span>
+            </div>
         </svelte:fragment>
-        <span>Vitals</span>
+
+        <div class="flex gap-5 items-center ">
+            <span>IMD: &ltstatus&gt</span>
+            <div class="flex flex-row gap-2 items-center">
+                <span>HVAL:</span>
+                <Light isGreen={true}/>
+                <Light isGreen={false}/>
+            </div>
+        </div>
+
         <svelte:fragment slot="trail">
             <Command callback={() => {
                 toastStore.trigger({
@@ -84,11 +99,11 @@
         <div class="snap-x scroll-px-0.5 snap-mandatory overflow-x-auto h-[90vh]">
             <TileGrid className="p-4 w-full" columns="1fr 1fr" rows="">
                 <Tile bgToken={800} containerClass="col-span-2">
-                    <Localiser turning={$statuses.value[STATUS.TURNING]} loc={$location.value} showLabels={false} />
+                    <Localization location={$location.value} showLabels={true}/>
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
-                    <div class="flex flex-wrap justify-between">
-                        <div class="flex gap-4 ">
+                    <div class="flex flex-wrap justify-between gap-4">
+                        <div class="flex gap-4">
                             <p>
                                 Velocity: <Store datatype="Velocity" /> m/s
                                 <br>
@@ -116,17 +131,23 @@
                             <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
                             <span>Total: <Store datatype="TotalBatteryVoltageHigh" /></span>
                         </div>
+                        <div class="flex flex-col gap-4">
+                            <span>High Voltage BMS: &ltstatus&gt</span>
+                            <span>Emergency Breaking System: &ltstatus&gt</span>
+<!--                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>-->
+<!--                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>-->
+                        </div>
+                        <div class="flex flex-col gap-4">
+                            <span>LV Total Safe: -Insert values- V</span>
+                            <span>HV Total Safe: -Insert values- V</span>
+                        </div>
                     </div>
                     <div class="flex flex-wrap justify-between mt-4">
-                        <div class="flex gap-4">
+                        <div class="flex gap-4 flex-wrap">
                             <Command cmd="StopHV" className="py-1 text-error-400 border-error-400 border-2" />
                             <Command cmd="ArmBrakes" className="py-1 bg-primary-500 text-surface-900 " />
                             <Command cmd="StartRun" className="py-1 bg-primary-500 text-surface-900" />
                             <Command cmd="ContinueRun" className="py-1 bg-primary-500 text-surface-900" />
-                        </div>
-                        <div class="flex flex-col">
-                            <span>LV Total Safe: [21, 29.5] V</span>
-                            <span>HV Total Safe: [347, 470] V</span>
                         </div>
                     </div>
                 </Tile>
@@ -139,8 +160,10 @@
                 <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>
                     <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>
                 </Tile>
-                <Tile bgToken={800} containerClass="col-span-2 px-16">
-                    <FSM />
+                <Tile
+                    bgToken={800}
+                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
+                    <MainFSM/>
                 </Tile>
             </TileGrid>
         </div>

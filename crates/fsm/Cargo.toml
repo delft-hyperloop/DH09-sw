@@ -50,19 +50,14 @@ harness = false
 path = "src/tests/data.rs"
 
 [[test]]
-name = "main_fsm"
+name = "fsm"
 harness = false
-path = "src/tests/main_fsm.rs"
-
-[[test]]
-name = "high_voltage_fsm"
-harness = false
-path = "src/tests/high_voltage_fsm.rs"
+path = "src/tests/fsm.rs"
 
 [lib]
 name = "fsm"
 path = "src/lib.rs"
 doctest = false
 harness = false
-test=false
+test = false
 crate-type = ["lib"]

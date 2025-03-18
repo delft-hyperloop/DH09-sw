@@ -10,8 +10,6 @@ use ratatui::prelude::Color;
 
 include!(concat!(env!("OUT_DIR"), "/config.rs"));
 
-include!("../../../util/src/shared/routes.rs");
-
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Datapoint {
     pub datatype: Datatype,

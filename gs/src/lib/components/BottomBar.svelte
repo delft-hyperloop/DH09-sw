@@ -16,7 +16,7 @@
     });
 
     const storeManager = GrandDataDistributor.getInstance().stores;
-    const fsmState = storeManager.getWritable("FSMState");
+    // const fsmState = storeManager.getWritable("FSMState");
 </script>
 
 <!---->
@@ -33,9 +33,9 @@
 <footer class="text-zinc-100 text-sm {$bigErrorStatus === 0 ? 'bg-primary-600' :
                $bigErrorStatus === 1 ? 'bg-warning-500' : 'bg-error-500'} w-full flex
                flex-row flex-nowrap justify-between px-4 gap-4 border-t border-black">
-    <p>Delft Hyperloop: Helios III</p>
+    <p>Delft Hyperloop: Theia</p>
     <div class="flex gap-4">
-        <p>Current state: {$fsmState.value}</p>
+<!--        <p>Current state: {$fsmState.value}</p>-->
         <p class="">{time}</p>
     </div>
 </footer>

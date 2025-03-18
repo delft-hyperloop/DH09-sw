@@ -96,29 +96,6 @@ impl Backend {
         }
     }
 
-    pub fn start_levi(&mut self) {
-        if self.levi_handle.is_none() {
-            match crate::levi::levi_main(
-                self.message_transmitter.clone(),
-                self.command_transmitter.clone(),
-                self.command_receiver.resubscribe(),
-                self.message_receiver.resubscribe(),
-                self.processed_data_sender.clone(),
-            ) {
-                Ok(lh) => {
-                    self.levi_handle = Some(lh);
-                    self.status(Info::LeviProgramStarted);
-                    self.info("Levi process started".to_string());
-                },
-                Err(e) => {
-                    self.err(format!("Error starting levi: {}", e));
-                },
-            }
-        } else {
-            self.warn("Levi already running".to_string());
-        }
-    }
-
     pub fn send_command(&mut self, cmd: Command) -> bool {
         // self.info(format!("[TRACE] enqueuing command {:?}", cmd));
         #[cfg(all(feature = "backend", not(feature = "tui")))]
@@ -144,14 +121,6 @@ impl Backend {
         self.message_transmitter.send(Message::Status(status)).unwrap();
     }
 
-    pub fn quit_levi(&mut self) {
-        if let Some((lh1, lh2)) = self.levi_handle.take() {
-            self.info("Quitting levi_handle_1".into());
-            lh1.abort();
-            self.info("Quitting levi_handle_2".into());
-            lh2.abort();
-        }
-    }
 
     pub fn quit_server(&mut self) {
         if let Some(sh) = self.server_handle.take() {

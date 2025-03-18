@@ -22,7 +22,7 @@ export const latestTimestamp: Writable<number> = writable(0);
 
 export const logsVisible: Writable<boolean> = writable(false);
 
-export const goingForward: Writable<boolean> = writable(true);
+export const goingForwardState: Writable<boolean> = writable(true);
 
 export const RedHVALTurnedOn: Writable<boolean> = writable(false);
 export const GreenHVALTurnedOn: Writable<boolean> = writable(false);
@@ -31,3 +31,5 @@ export const showcaseStateCounter: Writable<number> = writable(0);
 export const showcasingStates: Writable<boolean> = writable(false);
 
 export const debugModeActive: Writable<boolean> = writable(false);
+
+export const propControlWord: Writable<number> = writable<number>(0);

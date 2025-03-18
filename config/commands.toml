@@ -57,6 +57,9 @@ id = 0x6c
 name = "PropulsionOff"
 id = 0x6d
 
+[[Command]]
+name = "SendPropulsionControlWord"
+id = 0x6e
 
 # -----------RUN CONFIGURATION COMMANDS-----------
 

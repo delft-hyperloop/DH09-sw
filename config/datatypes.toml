@@ -135,10 +135,6 @@ display_units = "rad/s²"
 
 
 [[Datatype]]
-name = "IMDGeneralInfo"
-id = 0x37
-
-[[Datatype]]
 name = "IMDIsolationDetails"
 id = 0x38
 display_units = "Ω"

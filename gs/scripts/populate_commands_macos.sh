@@ -20,11 +20,22 @@ commands_union=$(echo "$commands" | sed -E ':a;N;$!ba;s/\n/ | /g')
 # Format into TS array
 commands_array=$(echo "$commands" | sed -E ':a;N;$!ba;s/\n/, /g')
 
-# Replace the NamedCommand type definition
-sed -i '' "" "s|^export type NamedCommand.*|export type NamedCommand = $commands_union;|" ./src/lib/types.ts
+# Use a temporary file to ensure safe modifications
+tmp_file=$(mktemp)
 
-# Replace the NamedCommandValues array
-sed -i '' "" "s|^export const NamedCommandValues.*|export const NamedCommandValues:NamedCommand[] = [$commands_array];|" ./src/lib/types.ts
+# Step 1: Delete the content after the AUTO GENERATED comment
+awk '!/AUTO GENERATED USING npm run generate:commands/ {print} /AUTO GENERATED USING npm run generate:commands/ {print; next}' ./src/lib/types.ts > "$tmp_file" && mv "$tmp_file" ./src/lib/types.ts
 
-echo $commands_union
-echo $commands_array
+# Step 2: Insert the new content after the comment
+awk -v commands_union="$commands_union" -v commands_array="$commands_array" '
+    /AUTO GENERATED USING npm run generate:commands/ {
+        print;
+        print "export type NamedCommand = " commands_union ";";  # Insert union type
+        print "export const NamedCommandValues: NamedCommand[] = [" commands_array "];";  # Insert array
+        next;
+    }
+    { print }
+' ./src/lib/types.ts > "$tmp_file" && mv "$tmp_file" ./src/lib/types.ts
+
+echo "Updated NamedCommand with: $commands_union"
+echo "Updated NamedCommandValues with: $commands_array"

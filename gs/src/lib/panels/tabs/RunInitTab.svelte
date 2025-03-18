@@ -1,21 +1,23 @@
 <script lang="ts">
     import {
+        Store,
         Table,
         Status,
         Command,
         Tile,
         TileGrid,
         GrandDataDistributor,
-        Chart
-    } from "$lib";
+        Chart,
+    } from '$lib';
     import {DatatypeEnum} from "$lib/namedDatatypeEnum";
     import {invoke} from "@tauri-apps/api/tauri";
     import {STATUS} from "$lib/types";
     import { podSpeed } from '$lib/stores/data';
-    import { goingForward } from '$lib/stores/state';
+    import { goingForwardState } from '$lib/stores/state';
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const statuses = storeManager.getWritable("ConnectionStatus")
+    const goingForward = storeManager.getWritable("GoingForward");
 
     export let pop_up: boolean = true;
 
@@ -29,7 +31,7 @@
         ["Gyroscope Z", DatatypeEnum.GYROSCOPEZ],
     ]
 
-    let currentDirectionForward: boolean = $goingForward;
+    let currentDirectionForward: boolean = $goingForward.value;
     let currentSpeed: number = $podSpeed;
 
     // const modalStore = getModalStore();
@@ -50,11 +52,15 @@
     // }
 
     function submitRun() {
-        goingForward.set(currentDirectionForward);
+        goingForwardState.set(currentDirectionForward);
         podSpeed.set(currentSpeed);
-        invoke('send_command', {cmdName: "SubmitRun", val: 0}).then(() => {
-            console.log("Speed sent to pod");
-        }) // TODO: see how command is sent
+
+        invoke('send_command', {cmdName: "SubmitDirection", val: currentDirectionForward}).then(() => {
+            console.log(`Direction goingForward = ${currentDirectionForward} sent to the pod`);
+        });
+        invoke('send_command', {cmdName: "SubmitSpeed", val: currentSpeed}).then(() => {
+            console.log(`Speed of ${currentSpeed} sent to the pod`);
+        }); // TODO: see how command is sent
     }
 
 </script>
@@ -97,7 +103,7 @@
                 <p>Desired Speed:</p>
                 <p>{$podSpeed} m/s</p>
                 <p>Run Direction:</p>
-                {#if $goingForward}
+                {#if $goingForwardState}
                     <p>Forward</p>
                 {:else}
                     <p>Backward</p>

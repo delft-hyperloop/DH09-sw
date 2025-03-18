@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import {GrandDataDistributor} from "$lib";
     import {bigErrorStatus} from "$lib/stores/state";
 
     let time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
@@ -14,9 +13,6 @@
             clearInterval(interval);
         };
     });
-
-    const storeManager = GrandDataDistributor.getInstance().stores;
-    // const fsmState = storeManager.getWritable("FSMState");
 </script>
 
 <!---->

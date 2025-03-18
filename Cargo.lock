@@ -254,6 +254,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "braking-testing"
+version = "0.1.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "cortex-m-semihosting",
+ "defmt",
+ "defmt-rtt",
+ "embassy-boot",
+ "embassy-boot-stm32",
+ "embassy-executor 0.6.3",
+ "embassy-net",
+ "embassy-stm32",
+ "embassy-sync",
+ "embassy-time",
+ "embedded-io-async",
+ "embedded-storage",
+ "heapless 0.8.0",
+ "panic-probe",
+ "rand_core 0.6.4",
+ "static_cell",
+]
+
+[[package]]
 name = "brotli"
 version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

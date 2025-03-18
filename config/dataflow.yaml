@@ -289,7 +289,7 @@ message-processing:
         can-conversion: 'identity:u8->bool'
   - name: 'PPControlParameters'
     can:
-      id: 0x830
+      id: 0x33E
       bus: can1
     datapoint-conversion:
       - datapoint:
@@ -314,7 +314,7 @@ message-processing:
         can-conversion: 'scale:i16->f32,10'
   - name: 'PPDebugParameters1'
     can:
-      id: 0x831
+      id: 0x33F
       bus: can1
     datapoint-conversion:
       - datapoint:
@@ -359,7 +359,7 @@ message-processing:
         can-conversion: 'scale:i16->f32,10'
   - name: 'PPDebugParameters2'
     can:
-      id: 0x832
+      id: 0x340
       bus: can1
     datapoint-conversion:
       - datapoint:
@@ -384,7 +384,7 @@ message-processing:
         can-conversion: 'scale:i16->f32,1000'
   - name: 'PPTestControlParameters'
     can:
-      id: 0x833
+      id: 0x341
       bus: can1
     datapoint-conversion:
       - datapoint:

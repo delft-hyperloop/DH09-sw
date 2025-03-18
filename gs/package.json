@@ -14,7 +14,8 @@
     "test:unit": "vitest",
     "generate:commands": "./scripts/populate_commands.sh",
     "generate:datatypes": "./scripts/populate_datatypes.sh",
-    "generate:datatypes:macos": "./scripts/populate_datatypes_macos.sh"
+    "generate:datatypes:macos": "./scripts/populate_datatypes_macos.sh",
+    "generate:commands:macos": "./scripts/populate_commands_macos.sh"
   },
   "devDependencies": {
     "@iconify/svelte": "^3.1.6",

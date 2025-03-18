@@ -9,9 +9,10 @@
         LeviTab,
         PneumaticsTab,
         BatteriesTab,
-        DebugTab, details_pane
+        DebugTab,
+        details_pane
     } from "$lib";
-    // import { ViewWindow } from "$lib/util/WindowControl"
+    import { debugModeActive } from '$lib/stores/state';
 
     let i = 0;
     let tabs = [
@@ -31,9 +32,11 @@
 
 <TabGroup regionPanel="m-0 !mt-0" padding="px-3 py-3" regionList="bg-surface-700" border="border-b border-surface-900" >
     {#each tabs as tab}
-        <Tab bind:group={$detailTabSet} value={tab.value} name={tab.name}>
-            <span>{tab.name}</span>
-        </Tab>
+        {#if $debugModeActive || (!$debugModeActive && tab.name !== "Debug")}
+            <Tab bind:group={$detailTabSet} value={tab.value} name={tab.name}>
+                <span>{tab.name}</span>
+            </Tab>
+        {/if}
     {/each}
     <svelte:fragment slot="panel">
         <div style={style} class="snap-x scroll-px-4 snap-mandatory scroll-smooth overflow-x-auto">

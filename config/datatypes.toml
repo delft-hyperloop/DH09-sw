@@ -74,6 +74,50 @@ id = 0x00
 upper = 42002
 
 [[Datatype]]
+name = "PropIQMeasured"
+id = 0x213
+
+[[Datatype]]
+name = "PropIQReference"
+id = 0x214
+
+[[Datatype]]
+name = "PropIDMeasured"
+id = 0x215
+
+[[Datatype]]
+name = "PropIDReference"
+id = 0x216
+
+[[Datatype]]
+name = "Ta"
+id = 0x217
+
+[[Datatype]]
+name = "Tb"
+id = 0x218
+
+[[Datatype]]
+name = "Tc"
+id = 0x219
+
+[[Datatype]]
+name = "VQ"
+id = 0x21a
+
+[[Datatype]]
+name = "VD"
+id = 0x21b
+
+[[Datatype]]
+name = "Vbus"
+id = 0x21c
+
+[[Datatype]]
+name = "Ibus"
+id = 0x21d
+
+[[Datatype]]
 name = "ConnectionStatus"
 id = 0x7fe
 

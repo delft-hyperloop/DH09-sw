@@ -5,7 +5,7 @@ resolver = "2"
 
 [workspace.dependencies]
 fdcan = {version = "0.2.1", features = ["fdcan_h7"]}
-stm32h7xx-hal = {version = "0.16.0", features = ["stm32h743v", "can", "device-selected"]}
+stm32h7xx-hal = {version = "0.16.0", features = ["stm32h753v", "can", "device-selected"]}
 
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",
@@ -47,7 +47,7 @@ git = "https://github.com/delft-hyperloop/embassy"
 rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 features = [
     "defmt",
-    "stm32h743zi",
+    "stm32h753zi",
     "time-driver-any",
     "exti",
     # "memory-x",

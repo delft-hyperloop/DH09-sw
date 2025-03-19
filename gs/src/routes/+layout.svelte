@@ -407,6 +407,7 @@
     let propLog3Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Ta");
     propLog3Chart.addSeries(StrokePresets.yellow("Tb"))
     propLog3Chart.addSeries(StrokePresets.blue("Tc"))
+    propLog3Chart.addSeries(StrokePresets.theoretical("Tcase"))
     $chartStore.set("Propulsion Log 3", propLog3Chart);
 
     gdd.stores.registerStore<number>("Ta", 0, data => {
@@ -424,6 +425,11 @@
         $chartStore.get("Propulsion Log 3")!.addEntry(3, curr);
         return curr;
     });
+    gdd.stores.registerStore<number>("Tcase", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 3")!.addEntry(4, curr);
+        return curr;
+    })
 
     gdd.stores.registerStore<number>("PropulsionTemperature", 0);
     gdd.stores.registerStore<number>("PropulsionCurrent", 0);

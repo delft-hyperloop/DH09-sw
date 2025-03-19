@@ -325,6 +325,7 @@
 
     gdd.stores.registerStore<number>("Temp_Motor_1", 0);
     gdd.stores.registerStore<number>("Temp_Motor_2", 0);
+
     ////////////////////////////////////////////////////////////////
     ///////////////// PROPULSION REGISTER //////////////////////////
     ////////////////////////////////////////////////////////////////
@@ -345,6 +346,84 @@
 
     gdd.stores.registerStore<number>("Acceleration", 0);
     gdd.stores.registerStore<number>("Direction", 0);
+
+    // Prop log 1 chart for test runs
+    let propLog1Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Id measured");
+    propLog1Chart.addSeries(StrokePresets.yellow("Id reference"))
+    propLog1Chart.addSeries(StrokePresets.blue("Iq measured"))
+    propLog1Chart.addSeries(StrokePresets.theoretical("Iq reference"))
+    $chartStore.set("Propulsion Log 1", propLog1Chart);
+
+    gdd.stores.registerStore<number>("PropIDMeasured", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 1")!.addEntry(1, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("PropIDReference", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 1")!.addEntry(2, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("PropIQMeasured", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 1")!.addEntry(3, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("PropIQReference", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 1")!.addEntry(4, curr);
+        return curr;
+    });
+
+    // Prop log 2 chart for test runs
+    let propLog2Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "VQ");
+    propLog2Chart.addSeries(StrokePresets.yellow("VD"))
+    propLog2Chart.addSeries(StrokePresets.blue("Vbus"))
+    propLog2Chart.addSeries(StrokePresets.theoretical("Ibus"))
+    $chartStore.set("Propulsion Log 2", propLog2Chart);
+
+    gdd.stores.registerStore<number>("VQ", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 2")!.addEntry(1, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("VD", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 2")!.addEntry(2, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("Vbus", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 2")!.addEntry(3, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("Ibus", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 2")!.addEntry(4, curr);
+        return curr;
+    });
+
+    // Prop log 3 chart for test runs
+    let propLog3Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Ta");
+    propLog3Chart.addSeries(StrokePresets.yellow("Tb"))
+    propLog3Chart.addSeries(StrokePresets.blue("Tc"))
+    $chartStore.set("Propulsion Log 3", propLog3Chart);
+
+    gdd.stores.registerStore<number>("Ta", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("Tb", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 3")!.addEntry(2, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("Tc", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 3")!.addEntry(3, curr);
+        return curr;
+    });
 
     gdd.stores.registerStore<number>("PropulsionTemperature", 0);
     gdd.stores.registerStore<number>("PropulsionCurrent", 0);

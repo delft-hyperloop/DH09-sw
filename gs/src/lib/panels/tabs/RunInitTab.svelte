@@ -136,4 +136,14 @@
             <Chart height={250} background="bg-surface-900" title="Velocity" />
         </Tile>
     </TileGrid>
+
+    <Tile containerClass="col-span-4 mt-2" heading="Propulsion Log 1">
+        <Chart title="Propulsion Log 1" background="bg-surface-900" />
+    </Tile>
+    <Tile containerClass="col-span-4 mt-2" heading="Propulsion Log 2">
+        <Chart title="Propulsion Log 2" background="bg-surface-900" />
+    </Tile>
+    <Tile containerClass="col-span-4 mt-2" heading="Propulsion Log 3">
+        <Chart title="Propulsion Log 3" background="bg-surface-900" />
+    </Tile>
 </div>

@@ -4,8 +4,8 @@
 #runner = "arch gdb-multiarch -q -x openocd.gdb"
 # runner = "probe-rs run --chip STM32h753zitx --probe 0483:374e:0026003E3233511239363634" # main
 # runner = "probe-rs run --chip STM32h753zitx --probe 483:374e:004000283532511331333430" # CAN sender
-# runner = "probe-rs run --chip STM32h753zitx --probe 0483:374e:0032002F3133510537363734"
-runner = "probe-rs run --chip STM32h753zitx --probe 0483:3754:002F002A3232511639353236" # Thijs' main PCB
+ runner = "probe-rs run --chip STM32h753zitx --probe 0483:374e:0032002F3133510537363734"
+#runner = "probe-rs run --chip STM32h753zitx --probe 0483:3754:002F002A3232511639353236" # Thijs' main PCB
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
 rustflags = [

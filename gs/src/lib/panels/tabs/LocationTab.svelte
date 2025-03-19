@@ -1,6 +1,6 @@
 <script lang="ts">
     import {TileGrid, Tile, Chart, GrandDataDistributor } from "$lib"
-    import { GOING_FORWARD, LOCALISATION_NAME } from '$lib/types';
+    import { LOCALISATION_NAME } from '$lib/types';
     import Localization from '$lib/components/Localization.svelte';
 
     let tableArr2:any[][];
@@ -18,7 +18,7 @@
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const location = storeManager.getWritable(LOCALISATION_NAME);
-    const going_forward = storeManager.getWritable(GOING_FORWARD);
+    const going_forward = storeManager.getWritable("GoingForward");
 
     export const pop_up: boolean = true;
 </script>

@@ -99,7 +99,11 @@ async fn run_fsm(
 }
 
 #[embassy_executor::task]
-async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sender: EventSender) {
+async fn forward_gs_to_fsm(
+    mut gsrx: gs_master::RxSubscriber<'static>,
+    event_sender: EventSender,
+    cantx: can2::CanTxSender<'static>,
+) {
     loop {
         let msg = gsrx.next_message_pure().await;
         debug!("Received message from GS: {:?}", msg);
@@ -120,6 +124,7 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sen
             main::config::Command::Heartbeat(_) => todo!(),
             main::config::Command::FrontendHeartbeat(_) => todo!(),
             main::config::Command::EmitEvent(_) => todo!(),
+
             // HV commands
             main::config::Command::StartHV(_) => {
                 event_sender.send(fsm::utils::Event::StartPreCharge).await
@@ -127,6 +132,7 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sen
             main::config::Command::StopHV(_) => {
                 event_sender.send(fsm::utils::Event::Discharge).await
             }
+
             // Levi commands
             main::config::Command::LevitationOn(_) => {
                 event_sender.send(fsm::utils::Event::Levitate).await
@@ -136,6 +142,7 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sen
             }
             main::config::Command::vertical_0_current(_) => todo!(),
             main::config::Command::vert_0_current_reset(_) => todo!(),
+
             // Propulsion commands
             main::config::Command::PropulsionOn(_) => {
                 event_sender.send(fsm::utils::Event::Accelerate).await
@@ -143,6 +150,42 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sen
             main::config::Command::PropulsionOff(_) => {
                 event_sender.send(fsm::utils::Event::Cruise).await
             }
+            main::config::Command::SendPropulsionControlWord(value) => {
+                send_can2_message(
+                    &*((value & 0x3FF) as u16).to_le_bytes(),
+                    cantx,
+                    main::config::Command::SendPropulsionControlWord(value).to_id(),
+                ).await;
+            }
+            main::config::Command::PPControlParams(value) => {
+                send_can2_message(
+                    &*value.to_le_bytes(),
+                    cantx,
+                    main::config::Command::PPControlParams(value).to_id()
+                ).await;
+            }
+            main::config::Command::PPDebugParams1(value) => {
+                send_can2_message(
+                    &*value.to_le_bytes(),
+                    cantx,
+                    main::config::Command::PPDebugParams1(value).to_id()
+                ).await;
+            }
+            main::config::Command::PPDebugParams2(value) => {
+                send_can2_message(
+                    &*value.to_le_bytes(),
+                    cantx,
+                    main::config::Command::PPDebugParams2(value).to_id()
+                ).await;
+            }
+            main::config::Command::PPTestControlParams(value) => {
+                send_can2_message(
+                    &*value.to_le_bytes(),
+                    cantx,
+                    main::config::Command::PPTestControlParams(value).to_id()
+                ).await;
+            }
+
             // Control commands
             main::config::Command::ArmBrakes(_) => {
                 event_sender.send(fsm::utils::Event::EnterDemo).await
@@ -154,12 +197,37 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sen
 
             _ => {
                 info!(
-                    "Received unknown or not interpreted command from GS: {:?}",
+                    "Received unknown or uninterpreted command from GS: {:?}",
                     command
                 );
             }
         }
     }
+}
+
+/// Sends a message on the 2nd CAN bus with the values provided.
+///
+/// # Params:
+/// - `value` The data to be sent
+/// - `cantx` The sender object for the 2nd CAN bus
+/// - `id` The id of the message
+async fn send_can2_message(
+    value: &[u8],
+    cantx: can2::CanTxSender<'static>,
+    id: u16,
+) {
+    let header = can::frame::Header::new_fd(
+        embedded_can::Id::from(
+            embedded_can::StandardId::new(
+                id,
+            ).expect("Invalid ID"),
+        ),
+        64,
+        false,
+        true,
+    );
+    let frame = can::frame::Frame::new(header, value).expect("Invalid frame!");
+    cantx.send(can2::CanEnvelope::new_from_frame(frame)).await;
 }
 
 #[embassy_executor::task]
@@ -577,7 +645,7 @@ async fn main(spawner: Spawner) -> ! {
     let gsrx = gs_master.subscribe();
     let gstx = gs_master.transmitter();
 
-    unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, event_sender_gs_to_fsm)));
+    unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, event_sender_gs_to_fsm, can2.new_sender())));
 
     unwrap!(spawner.spawn(forward_can1_messages_to_gs(
         can1.new_subscriber(),

@@ -222,7 +222,7 @@ message-processing:
         limits:
           upper: { warn: 360, err: 420 }
           lower: { warn: 280, err: 270 }
-      - datapoint: 
+      - datapoint:
           name: 'BMSVoltageLow'
           id: 0x19D
         getter: 'u16[2..4]'

@@ -37,7 +37,7 @@ import util from "$lib/util/util";
 import {tempParse, voltParse, addEntryToChart,pressureParse,sensorParse} from "$lib/util/parsers";
 
 // Types
-import type {NamedCommand, Log, LogType, IntervalFunction} from "$lib/types";
+import type {NamedCommand, Log, LogType} from "$lib/types";
 import {EventChannel} from "$lib/types";
 
 // Stores
@@ -90,4 +90,4 @@ export {
     EventChannel,
     Store,
 }
-export type {NamedCommand, Log, LogType, IntervalFunction}
+export type {NamedCommand, Log, LogType}

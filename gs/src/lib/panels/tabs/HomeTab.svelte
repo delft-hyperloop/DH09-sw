@@ -3,6 +3,7 @@
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { pinnedCharts, procedures } from '$lib/stores/data';
     import {parseProcedure} from "$lib/util/parsers";
+    import { debugModeActive } from '$lib/stores/state';
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -28,7 +29,6 @@
 
 <div class="h-full w-full p-5 flex flex-col gap-8">
     <div class="flex flex-row items-center gap-5">
-<!--        <enhanced:img src="/static/images/logo-green-new.png?w=160" alt="Delft Hyperloop logo"/>-->
         <img src="/images/logo-green-new.png" alt="Delft Hyperloop logo" class="w-40" />
         <h1 class="text-4xl text-primary-500">Delft Hyperloop Ground Station</h1>
     </div>
@@ -39,6 +39,17 @@
         <TauriCommand cmd="quit_levi" />
         <TauriCommand cmd="procedures" textOverride="Refresh Procedures" successCallback={parseProcedures} />
         <TauriCommand cmd="save_logs"/>
+        {#if $debugModeActive}
+            <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+               py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(false)}}>
+                Disable Debug Mode
+            </button>
+        {:else}
+            <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+               py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>
+                Enable Debug Mode
+            </button>
+        {/if}
     </div>
     <p><kbd class="kbd">Esc</kbd> to trigger Emergency Braking.</p>
     {#if $pinnedCharts.length === 0}

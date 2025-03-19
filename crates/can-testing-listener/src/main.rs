@@ -25,7 +25,6 @@ use embassy_stm32::can::config::NominalBitTiming;
 use embassy_stm32::can::config::{self};
 use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::PacketQueue;
-use embassy_stm32::eth::generic_smi::GenericSMI;
 use embassy_stm32::eth::{self};
 use embassy_stm32::peripherals;
 use embassy_stm32::peripherals::*;
@@ -117,7 +116,7 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("Embassy initialized!");
 
-    let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs);
+    let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
 
     // hprintln!("{:?}", configurator.config().nbtr);
     // hprintln!("{:?}", configurator.config().dbtr);
@@ -125,27 +124,41 @@ async fn main(spawner: Spawner) -> ! {
     // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8,
     // seg2: 1, sync_jump_width: 1 }
 
-    let config = configurator
-        .config()
-        // Configuration for 1Mb/s
-        .set_nominal_bit_timing(NominalBitTiming {
-            prescaler: NonZeroU16::new(10).unwrap(),
-            seg1: NonZeroU8::new(8).unwrap(),
-            seg2: NonZeroU8::new(3).unwrap(),
-            sync_jump_width: NonZeroU8::new(3).unwrap(),
-        })
-        // Configuration for 2Mb/s
-        .set_data_bit_timing(DataBitTiming {
-            transceiver_delay_compensation: true,
-            prescaler: NonZeroU16::new(5).unwrap(),
-            seg1: NonZeroU8::new(7).unwrap(),
-            seg2: NonZeroU8::new(4).unwrap(),
-            sync_jump_width: NonZeroU8::new(4).unwrap(),
-        })
-        .set_tx_buffer_mode(config::TxBufferMode::Priority)
-        .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+    
+    // let config = configurator
+    // .config()
+    // // Configuration for 1Mb/s
+    // // .set_nominal_bit_timing(NominalBitTiming {
+    // //     prescaler: NonZeroU16::new(15).unwrap(),
+    // //     seg1: NonZeroU8::new(5).unwrap(),
+    // //     seg2: NonZeroU8::new(2).unwrap(),
+    // //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+    // // })
+    // .set_nominal_bit_timing(NominalBitTiming {
+    //     prescaler: NonZeroU16::new(15).unwrap(),
+    //     seg1: NonZeroU8::new(13).unwrap(),
+    //     seg2: NonZeroU8::new(2).unwrap(),
+    //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+    // })
+    // // .set_nominal_bit_timing(NominalBitTiming {
+    // //     prescaler: NonZeroU16::new(15).unwrap(),
+    // //     seg1: NonZeroU8::new(13).unwrap(),
+    // //     seg2: NonZeroU8::new(2).unwrap(),
+    // //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+    // // })
+    // // Configuration for 2Mb/s
+    // // .set_data_bit_timing(DataBitTiming {
+    // //     transceiver_delay_compensation: true,
+    // //     prescaler: NonZeroU16::new(12).unwrap(),
+    // //     seg1: NonZeroU8::new(13).unwrap(),
+    // //     seg2: NonZeroU8::new(2).unwrap(),
+    // //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+    // // })
+    // .set_tx_buffer_mode(config::TxBufferMode::Priority)
+    // .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+configurator.set_bitrate(1_000_000);
 
-    configurator.set_config(config);
+    // configurator.set_config(config);
 
     // hprintln!("Generated config: {:?}", configurator.config());
 
@@ -171,14 +184,15 @@ async fn main(spawner: Spawner) -> ! {
     }
 
     loop {
-        let response = can.read_fd().await;
+        info!("Waiting for CAN Frame...");
+        let response = can.read().await;
 
         match response {
             Ok(ref envelope) => {
                 let header = envelope.frame.header();
                 let data = envelope.frame.data(); // Extract received data
 
-                info!("Received CAN Frame: {:?}", header);
+                info!("Received CAN Frame: {:?} ({:?})", header, data);
 
                 if data.len() >= 1 {
                     // Ensure at least 1 byte received
@@ -189,7 +203,7 @@ async fn main(spawner: Spawner) -> ! {
                 }
             }
             Err(ref bus_error) => {
-                info!("Bus error: {:?}", bus_error);
+                error!("Bus error: {:?}", bus_error);
             }
         }
     }

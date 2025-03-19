@@ -121,8 +121,12 @@ async fn forward_gs_to_fsm(
             main::config::Command::DefaultCommand(_) => {
                 event_sender.send(fsm::utils::Event::NoEvent).await
             }
-            main::config::Command::Heartbeat(_) => todo!(),
-            main::config::Command::FrontendHeartbeat(_) => todo!(),
+            main::config::Command::Heartbeat(_) => {
+
+            },
+            main::config::Command::FrontendHeartbeat(_) => {
+
+            },
             main::config::Command::EmitEvent(_) => todo!(),
 
             // HV commands
@@ -404,6 +408,7 @@ async fn forward_can2_messages_to_gs(
 #[embassy_executor::task]
 async fn gs_heartbeat(mut gstx: gs_master::TxSender<'static>) {
     loop {
+        // info!("Sending heartbeat");
         gstx.send(PodToGsMessage {
             dp: Datapoint::new(
                 main::config::Datatype::FrontendHeartbeating,
@@ -523,40 +528,40 @@ async fn main(spawner: Spawner) -> ! {
     let can2 = {
         let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
 
-        let config = configurator
-            .config()
-            // Configuration for 1Mb/s
-            // .set_nominal_bit_timing(NominalBitTiming {
-            //     prescaler: NonZeroU16::new(15).unwrap(),
-            //     seg1: NonZeroU8::new(5).unwrap(),
-            //     seg2: NonZeroU8::new(2).unwrap(),
-            //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-            // })
-            .set_nominal_bit_timing(NominalBitTiming {
-                prescaler: NonZeroU16::new(15).unwrap(),
-                seg1: NonZeroU8::new(13).unwrap(),
-                seg2: NonZeroU8::new(2).unwrap(),
-                sync_jump_width: NonZeroU8::new(1).unwrap(),
-            })
-            // .set_nominal_bit_timing(NominalBitTiming {
-            //     prescaler: NonZeroU16::new(15).unwrap(),
-            //     seg1: NonZeroU8::new(13).unwrap(),
-            //     seg2: NonZeroU8::new(2).unwrap(),
-            //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-            // })
-            // Configuration for 2Mb/s
-            // .set_data_bit_timing(DataBitTiming {
-            //     transceiver_delay_compensation: true,
-            //     prescaler: NonZeroU16::new(12).unwrap(),
-            //     seg1: NonZeroU8::new(13).unwrap(),
-            //     seg2: NonZeroU8::new(2).unwrap(),
-            //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-            // })
-            .set_tx_buffer_mode(config::TxBufferMode::Priority)
-            .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
-        // configurator.set_bitrate(500_000);
+        // let config = configurator
+        //     .config()
+        //     // Configuration for 1Mb/s
+        //     // .set_nominal_bit_timing(NominalBitTiming {
+        //     //     prescaler: NonZeroU16::new(15).unwrap(),
+        //     //     seg1: NonZeroU8::new(5).unwrap(),
+        //     //     seg2: NonZeroU8::new(2).unwrap(),
+        //     //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+        //     // })
+        //     .set_nominal_bit_timing(NominalBitTiming {
+        //         prescaler: NonZeroU16::new(15).unwrap(),
+        //         seg1: NonZeroU8::new(13).unwrap(),
+        //         seg2: NonZeroU8::new(2).unwrap(),
+        //         sync_jump_width: NonZeroU8::new(1).unwrap(),
+        //     })
+        //     // .set_nominal_bit_timing(NominalBitTiming {
+        //     //     prescaler: NonZeroU16::new(15).unwrap(),
+        //     //     seg1: NonZeroU8::new(13).unwrap(),
+        //     //     seg2: NonZeroU8::new(2).unwrap(),
+        //     //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+        //     // })
+        //     // Configuration for 2Mb/s
+        //     // .set_data_bit_timing(DataBitTiming {
+        //     //     transceiver_delay_compensation: true,
+        //     //     prescaler: NonZeroU16::new(12).unwrap(),
+        //     //     seg1: NonZeroU8::new(13).unwrap(),
+        //     //     seg2: NonZeroU8::new(2).unwrap(),
+        //     //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+        //     // })
+        //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
+        //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+        configurator.set_bitrate(1_000_000);
 
-        configurator.set_config(config);
+        // configurator.set_config(config);
 
         let mut can = configurator.into_normal_mode();
 
@@ -617,14 +622,14 @@ async fn main(spawner: Spawner) -> ! {
         p.PC4, // RX_D0: Received Bit 0
         p.PC5, // RX_D1: Received Bit 1
         // main pcb:
-        p.PB12, // TX_D0: Transmit Bit 0
+        // p.PB12, // TX_D0: Transmit Bit 0
         // nucleo:
-        // p.PG13, // TX_D0: Transmit Bit 0
+        p.PG13, // TX_D0: Transmit Bit 0
         p.PB13, // TX_D1: Transmit Bit 1
         // nucleo:
-        // p.PG11, // TX_EN: Transmit Enable
+        p.PG11, // TX_EN: Transmit Enable
         // main pcb:
-        p.PB11,
+        // p.PB11,
         GenericPhy::new(0),
         mac_addr,
     );

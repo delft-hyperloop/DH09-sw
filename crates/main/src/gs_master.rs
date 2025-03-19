@@ -459,6 +459,8 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
             break sock;
         };
 
+        info!("Connected to gs");
+
         static SOCK: StaticCell<Mutex<NoopRawMutex, TcpSocket<'static>>> = StaticCell::new();
         let sock = SOCK.init(Mutex::new(sock));
 

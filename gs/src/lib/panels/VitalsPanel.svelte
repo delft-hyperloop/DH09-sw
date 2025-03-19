@@ -13,9 +13,9 @@
     let width: number;
 
     const storeManager = GrandDataDistributor.getInstance().stores;
-    const lvBattery = storeManager.getWritable("ChargeStateLow");
-    const hvBattery = storeManager.getWritable("ChargeStateHigh");
-    const fsmState = storeManager.getWritable("FSMState");
+    // const lvBattery = storeManager.getWritable("ChargeStateLow");
+    // const hvBattery = storeManager.getWritable("ChargeStateHigh");
+    // const fsmState = storeManager.getWritable("FSMState");
 
     let tableTempsArr: any[][];
     let tableArr2: any[][];
@@ -23,27 +23,27 @@
     let tableBatteryTitles = ["", "HV Voltages", "HV Temp", "LV Voltages", "LV Temp"]
 
     $: tableBatteryVitals = [
-        ["Min", DE.BATTERYMINVOLTAGEHIGH, DE.BATTERYMINTEMPERATUREHIGH, DE.BATTERYMINVOLTAGELOW, DE.BATTERYMINTEMPERATURELOW],
-        ["Max", DE.BATTERYMAXVOLTAGEHIGH, DE.BATTERYMAXTEMPERATUREHIGH, DE.BATTERYMAXVOLTAGELOW, DE.BATTERYMAXTEMPERATURELOW],
-        ["Avg", DE.BATTERYVOLTAGEHIGH, DE.BATTERYTEMPERATUREHIGH, DE.BATTERYVOLTAGELOW, DE.BATTERYTEMPERATURELOW],
+        ["Min", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
+        ["Max", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
+        ["Avg", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
         ["Safe Range", "[360, 420] V", "[15,50] °C", "[280,360] V", "[15,50] °C"]
     ]
 
     $: tableTempsArr = [
-        ["Up VB", DE.AVERAGE_TEMP_VB_TOP, "[0,70] °C", "HEMS 1", DE.TEMP_HEMS_1, "[0,80] °C"],
-        ["Low VB", DE.AVERAGE_TEMP_VB_BOTTOM, "[0,70] °C", "HEMS 2", DE.TEMP_HEMS_2, "[0,80] °C"],
-        ["Ambient", DE.AMBIENT_TEMP, "[0,50] °C", "HEMS 3", DE.TEMP_HEMS_3, "[0,80] °C"],
-        ["Motor Front", "Temp_Motor_1", "[0,80] °C", "HEMS 4", DE.TEMP_HEMS_4, "[0,80] °C"],
-        ["Motor Back", "Temp_Motor_2", "[0,80] °C", "EMS 1", DE.TEMP_EMS_1, "[0,80] °C"],
-        ["", "", "", "EMS 2", DE.TEMP_EMS_2, "[0,80] °C"],
+        ["Up VB", DE.Alpha1, "[0,70] °C", "HEMS 1", DE.Alpha1, "[0,80] °C"],
+        ["Low VB", DE.Alpha1, "[0,70] °C", "HEMS 2", DE.Alpha1, "[0,80] °C"],
+        ["Ambient", DE.Temp0, "[0,50] °C", "HEMS 3", DE.Alpha1, "[0,80] °C"],
+        ["Motor Front", "Temp_Motor_1", "[0,80] °C", "HEMS 4", DE.Alpha1, "[0,80] °C"],
+        ["Motor Back", "Temp_Motor_2", "[0,80] °C", "EMS 1", DE.Alpha1, "[0,80] °C"],
+        ["", "", "", "EMS 2", DE.Alpha1, "[0,80] °C"],
     ]
 
     $: tableArr2 = [
-        ["HEMS A1", DE.LEVI_HEMS_CURRENT_A1, "[-10,10] A", "HEMS A2", DE.LEVI_HEMS_CURRENT_A2, "[-10,10] A"],
-        ["HEMS B1", DE.LEVI_HEMS_CURRENT_B1, "[-10,10] A", "HEMS B2", DE.LEVI_HEMS_CURRENT_B2, "[-10,10] A"],
-        ["HEMS C1", DE.LEVI_HEMS_CURRENT_C1, "[-10,10] A", "HEMS C2", DE.LEVI_HEMS_CURRENT_C2, "[-10,10] A"],
-        ["HEMS D1", DE.LEVI_HEMS_CURRENT_D1, "[-10,10] A", "HEMS D2", DE.LEVI_HEMS_CURRENT_D2, "[-10,10] A"],
-        ["EMS AB", DE.LEVI_EMS_CURRENT_AB, "[-10,10] A", "EMS CD", DE.LEVI_EMS_CURRENT_CD, "[-10,10] A"],
+        ["HEMS A1", DE.Alpha1, "[-10,10] A", "HEMS A2", DE.Alpha1, "[-10,10] A"],
+        ["HEMS B1", DE.Alpha1, "[-10,10] A", "HEMS B2", DE.Alpha1, "[-10,10] A"],
+        ["HEMS C1", DE.Alpha1, "[-10,10] A", "HEMS C2", DE.Alpha1, "[-10,10] A"],
+        ["HEMS D1", DE.Alpha1, "[-10,10] A", "HEMS D2", DE.Alpha1, "[-10,10] A"],
+        ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
     ]
 
     const location = storeManager.getWritable(LOCALISATION_NAME);
@@ -52,7 +52,7 @@
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
-    <AppBar padding="pl-8 pr-8 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDefault="place-self-center">
+    <AppBar padding="pl-8 pr-8 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDE.Alpha1="place-self-center">
         <svelte:fragment slot="lead">
             <div class="gap-2 flex flex-row items-center">
                 <Icon icon="codicon:graph-line"/>
@@ -91,8 +91,8 @@
             </button>
             <span style="writing-mode: vertical-lr" class="font-medium">Vitals Panel</span>
             <div class="flex flex-col gap-4">
-                <Battery fill="#3b669c" orientation="vertical" height={55} perc={Number($lvBattery.value)}/>
-                <Battery fill="#723f9c" orientation="vertical" height={55} perc={Number($hvBattery.value)}/>
+                <!-- <Battery fill="#3b669c" orientation="vertical" height={55} perc={Number($lvBattery.value)}/>
+                <Battery fill="#723f9c" orientation="vertical" height={55} perc={Number($hvBattery.value)}/> -->
             </div>
         </div>
     {:else}
@@ -101,7 +101,7 @@
                 <Tile bgToken={800} containerClass="col-span-2">
                     <Localization location={$location.value} showLabels={true}/>
                 </Tile>
-                <Tile bgToken={700} containerClass="col-span-2">
+                <!-- <Tile bgToken={700} containerClass="col-span-2">
                     <div class="flex flex-wrap justify-between gap-4">
                         <div class="flex gap-4">
                             <p>
@@ -135,7 +135,7 @@
                             <span>High Voltage BMS: &ltstatus&gt</span>
                             <span>Emergency Breaking System: &ltstatus&gt</span>
 <!--                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>-->
-<!--                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>-->
+<!--                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>LV Total Safe: -Insert values- V</span>
@@ -150,7 +150,7 @@
                             <Command cmd="ContinueRun" className="py-1 bg-primary-500 text-surface-900" />
                         </div>
                     </div>
-                </Tile>
+                </Tile> -->
                 <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>
                     <Table titles={tableBatteryTitles} tableArr={tableBatteryVitals}/>
                 </Tile>
@@ -160,11 +160,11 @@
                 <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>
                     <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>
                 </Tile>
-                <Tile
+                <!-- <Tile
                     bgToken={800}
                     containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
                     <MainFSM/>
-                </Tile>
+                </Tile> -->
             </TileGrid>
         </div>
     {/if}

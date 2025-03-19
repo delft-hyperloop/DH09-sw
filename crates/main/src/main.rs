@@ -85,7 +85,6 @@ async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
 
 // Initialize the channel for publishing events to the FSMs.
 static EVENT_CHANNEL_FSM: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-static EVENT_RECEIVER_FSM: static_cell::StaticCell<EventReceiver> = static_cell::StaticCell::new();
 static EVENT_CHANNEL_CAN1: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 static EVENT_CHANNEL_CAN2: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 

@@ -59,22 +59,33 @@ id = 0x6d
 
 [[Command]]
 name = "SendPropulsionControlWord"
-id = 0x6e
+id = 0x191
+
+[[Command]]
+name = "PPControlParams"
+id = 0x33E
+
+[[Command]]
+name = "PPDebugParams1"
+id = 0x33F
+
+[[Command]]
+name = "PPDebugParams2"
+id = 0x340
+
+[[Command]]
+name = "PPTestControlParams"
+id = 0x341
 
 # -----------RUN CONFIGURATION COMMANDS-----------
 
-# Just one for submit run??
-#[[Command]]
-#name = "SubmitRunConfig"
-#id = 0x592
+[[Command]]
+name = "SubmitDirection"
+id = 0x590
 
-#[[Command]]
-#name = "SetDirection"
-#id = 0x590
-
-#[[Command]]
-#name = "SetSpeed"
-#id = 0x591
+[[Command]]
+name = "SubmitSpeed"
+id = 0x591
 
 
 # -----------CONTROL COMMANDS-----------

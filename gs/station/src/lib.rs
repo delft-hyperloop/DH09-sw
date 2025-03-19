@@ -69,39 +69,36 @@ pub struct ApiStruct {
     pub message_receiver: Receiver<Message>,
 }
 
-///
-/// pub enum State {
-/// 00    Boot,
-/// 01    EstablishConnection,
-/// 02    RunConfig,
-/// 03    Idle,
-/// 04    HVOn,
-/// 05    Levitating,
-/// 06    MovingST,
-/// 07    MovingLSST,
-/// 08    MovingLSCV,
-/// 09    EndST,
-/// 10    EndLS,
-/// 11    EmergencyBraking,
-/// 12    Exit,
-/// 13    Crashing,
-/// }
+/// 0 - Boot
+/// 1 - ConnectedToGS
+/// 2 - SystemCheck
+/// 3 - Idle
+/// 4 - PreCharge
+/// 5 - Active
+/// 6 - Demo
+/// 7 - Levitating
+/// 8 - Accelerating
+/// 9 - Cruising
+/// 10 - Braking
+/// 11 - Discharge
+/// 12 - Charging
+/// 13 - Fault
 pub fn state_to_string(state: u64) -> String {
     match state {
         0 => "Boot".to_string(),
-        1 => "EstablishConnection".to_string(),
-        2 => "RunConfig".to_string(),
+        1 => "ConnectedToGS".to_string(),
+        2 => "SystemCheck".to_string(),
         3 => "Idle".to_string(),
-        4 => "HVOn".to_string(),
-        5 => "Levitating".to_string(),
-        6 => "MovingST".to_string(),
-        7 => "MovingLSST".to_string(),
-        8 => "MovingLSCV".to_string(),
-        9 => "EndST".to_string(),
-        10 => "EndLS".to_string(),
-        11 => "EmergencyBraking".to_string(),
-        12 => "Exit".to_string(),
-        13 => "Crashing".to_string(),
+        4 => "PreCharge".to_string(),
+        5 => "Active".to_string(),
+        6 => "Demo".to_string(),
+        7 => "Levitating".to_string(),
+        8 => "Accelerating".to_string(),
+        9 => "Cruising".to_string(),
+        10 => "Braking".to_string(),
+        11 => "Discharge".to_string(),
+        12 => "Charging".to_string(),
+        13 => "Fault".to_string(),
         _ => "Unknown!!".to_string(),
     }
 }

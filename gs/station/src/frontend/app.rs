@@ -38,8 +38,6 @@ pub fn tauri_main(backend: Backend) {
             procedures,
             test_panic,
             save_logs,
-            demonstration_a,
-            demonstration_b,
         ])
         .setup(move |app| {
             let app_handle = app.handle();

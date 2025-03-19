@@ -1,6 +1,5 @@
 <script lang="ts">
     import {
-        Store,
         Table,
         Status,
         Command,
@@ -60,7 +59,7 @@
         });
         invoke('send_command', {cmdName: "SubmitSpeed", val: currentSpeed}).then(() => {
             console.log(`Speed of ${currentSpeed} sent to the pod`);
-        }); // TODO: see how command is sent
+        });
     }
 
 </script>

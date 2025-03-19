@@ -152,32 +152,36 @@ async fn forward_gs_to_fsm(
                 event_sender.send(fsm::utils::Event::Cruise).await
             }
             main::config::Command::SendPropulsionControlWord(value) => {
-                send_propulsion_control_word(value, cantx).await;
+                send_can2_message(
+                    &*((value & 0x3FF) as u16).to_le_bytes(),
+                    cantx,
+                    main::config::Command::SendPropulsionControlWord(value).to_id(),
+                ).await;
             }
             main::config::Command::PPControlParams(value) => {
                 send_can2_message(
-                    value,
+                    &*value.to_le_bytes(),
                     cantx,
                     main::config::Command::PPControlParams(value).to_id()
                 ).await;
             }
             main::config::Command::PPDebugParams1(value) => {
                 send_can2_message(
-                    value,
+                    &*value.to_le_bytes(),
                     cantx,
                     main::config::Command::PPDebugParams1(value).to_id()
                 ).await;
             }
             main::config::Command::PPDebugParams2(value) => {
                 send_can2_message(
-                    value,
+                    &*value.to_le_bytes(),
                     cantx,
                     main::config::Command::PPDebugParams2(value).to_id()
                 ).await;
             }
             main::config::Command::PPTestControlParams(value) => {
                 send_can2_message(
-                    value,
+                    &*value.to_le_bytes(),
                     cantx,
                     main::config::Command::PPTestControlParams(value).to_id()
                 ).await;
@@ -209,7 +213,7 @@ async fn forward_gs_to_fsm(
 /// - `cantx` The sender object for the 2nd CAN bus
 /// - `id` The id of the message
 async fn send_can2_message(
-    value: u64,
+    value: &[u8],
     cantx: can2::CanTxSender<'static>,
     id: u16,
 ) {
@@ -223,31 +227,7 @@ async fn send_can2_message(
         false,
         true,
     );
-    let data = value.to_le_bytes();
-
-    let frame = can::frame::Frame::new(header, &*data).expect("Invalid frame!");
-    cantx.send(can2::CanEnvelope::new_from_frame(frame)).await;
-}
-
-/// Sends the Control Word for Propulsion over the 2nd CAN bus.
-async fn send_propulsion_control_word(
-    word: u64,
-    cantx: can2::CanTxSender<'static>)
-{
-    let header = can::frame::Header::new_fd(
-        embedded_can::Id::from(
-            embedded_can::StandardId::new(
-                main::config::Command::SendPropulsionControlWord(word).to_id(),
-            ).expect("Invalid ID"),
-        ),
-        64,
-        false,
-        true,
-    );
-
-    let bytes = ((word & 0x3FF) as u16).to_le_bytes();
-
-    let frame = can::frame::Frame::new(header, &bytes[..]).expect("Invalid frame");
+    let frame = can::frame::Frame::new(header, value).expect("Invalid frame!");
     cantx.send(can2::CanEnvelope::new_from_frame(frame)).await;
 }
 

@@ -152,35 +152,35 @@ async fn forward_gs_to_fsm(
             }
             main::config::Command::SendPropulsionControlWord(value) => {
                 send_can2_message(
-                    &*((value & 0x3FF) as u16).to_le_bytes(),
+                    &((value & 0x3FF) as u16).to_le_bytes(),
                     cantx,
                     main::config::Command::SendPropulsionControlWord(value).to_id(),
                 ).await;
             }
             main::config::Command::PPControlParams(value) => {
                 send_can2_message(
-                    &*value.to_le_bytes(),
+                    &value.to_le_bytes(),
                     cantx,
                     main::config::Command::PPControlParams(value).to_id()
                 ).await;
             }
             main::config::Command::PPDebugParams1(value) => {
                 send_can2_message(
-                    &*value.to_le_bytes(),
+                    &value.to_le_bytes(),
                     cantx,
                     main::config::Command::PPDebugParams1(value).to_id()
                 ).await;
             }
             main::config::Command::PPDebugParams2(value) => {
                 send_can2_message(
-                    &*value.to_le_bytes(),
+                    &value.to_le_bytes(),
                     cantx,
                     main::config::Command::PPDebugParams2(value).to_id()
                 ).await;
             }
             main::config::Command::PPTestControlParams(value) => {
                 send_can2_message(
-                    &*value.to_le_bytes(),
+                    &value.to_le_bytes(),
                     cantx,
                     main::config::Command::PPTestControlParams(value).to_id()
                 ).await;

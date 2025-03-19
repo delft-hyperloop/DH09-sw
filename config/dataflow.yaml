@@ -178,7 +178,7 @@ message-processing:
   - name: 'TempAmbient'
     can:
       id: 0x12
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'TempAmbient0'
@@ -207,7 +207,7 @@ message-processing:
   - name: 'BMSLog1'
     can:
       id: 0x4B1
-      bus: can1
+      bus: can2
     fsm:
       event: 'ShutDown'
     datapoint-conversion:
@@ -252,7 +252,7 @@ message-processing:
   - name: 'TemperaturePrecisionRange'
     can:
       id: 0x1AA
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'TempRangeStart'
@@ -273,7 +273,7 @@ message-processing:
   - name: 'Localization'
     can:
       id: 0x320
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'Loc1'
@@ -310,7 +310,7 @@ message-processing:
   - name: 'Temperature'
     can:
       id: 0x33A
-      bus: can2
+      bus: can1
     datapoint-conversion:
       - datapoint:
           name: 'Temp0'
@@ -379,7 +379,7 @@ message-processing:
   - name: 'ResetSenseCon'
     can:
       id: 0x193
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'ResetSenseCon'
@@ -391,7 +391,7 @@ message-processing:
   - name: 'ResetPropulsion'
     can:
       id: 0x195
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'ResetPropulsion'
@@ -403,7 +403,7 @@ message-processing:
   - name: 'PPControlParameters'
     can:
       id: 0x33E
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'ModulationFactor1'
@@ -436,7 +436,7 @@ message-processing:
   - name: 'PPDebugParameters1'
     can:
       id: 0x33F
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'Kpq1'
@@ -497,7 +497,7 @@ message-processing:
   - name: 'PPDebugParameters2'
     can:
       id: 0x340
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'PositionOffset1'
@@ -530,7 +530,7 @@ message-processing:
   - name: 'PPTestControlParameters'
     can:
       id: 0x341
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'Iq1'
@@ -591,7 +591,7 @@ message-processing:
   - name: 'PPEmergency'
     can:
       id: 0x002
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'PPEmergency'
@@ -603,7 +603,7 @@ message-processing:
   - name: 'Word'
     can:
       id: 0x4B3
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'Word1'
@@ -622,7 +622,7 @@ message-processing:
   - name: 'Log1'
     can:
       id: 0x4B4
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'IqMeasured1'
@@ -655,7 +655,7 @@ message-processing:
   - name: 'Log2'
     can:
       id: 0x4B9
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'Vq1_Log'
@@ -716,7 +716,7 @@ message-processing:
   - name: 'Log3'
     can:
       id: 0x4C2
-      bus: can1
+      bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'Ta1'

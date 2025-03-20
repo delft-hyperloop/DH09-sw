@@ -106,7 +106,7 @@ async fn forward_gs_to_fsm(
 ) {
     loop {
         let msg = gsrx.next_message_pure().await;
-        debug!("Received message from GS: {:?}", msg);
+        info!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
         match command {
@@ -226,7 +226,7 @@ async fn send_can2_message(
                 id,
             ).expect("Invalid ID"),
         ),
-        64,
+        value.len() as u8,
         false,
         true,
     );
@@ -367,7 +367,7 @@ async fn forward_can1_messages_to_gs(
             Id::Standard(_) => todo!("Nuh-uh"),
         };
 
-        info!("Received CAN frame with ID: {}", id);
+        // info!("Received CAN frame with ID: {}", id);
 
         let data = can_frame.payload();
 
@@ -392,7 +392,7 @@ async fn forward_can2_messages_to_gs(
             Id::Standard(id) => id.as_raw(),
         };
 
-        info!("Received CAN frame with ID: {}", id);
+        // info!("Received CAN frame with ID: {}", id);
 
         let data = can_frame.payload();
 

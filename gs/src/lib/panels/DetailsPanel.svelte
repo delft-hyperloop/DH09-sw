@@ -10,9 +10,8 @@
         PneumaticsTab,
         BatteriesTab,
         DebugTab,
-        details_pane
-    } from "$lib";
-    import { debugModeActive } from '$lib/stores/state';
+    } from '$lib';
+    import { debugModeActive, logsPanelSize } from '$lib/stores/state';
 
     let i = 0;
     let tabs = [
@@ -27,7 +26,7 @@
     ];
 
     let style: string;
-    $: style = `height: ${$details_pane-9}vh`;
+    $: style = `height: ${100 - ($logsPanelSize + 8.2 - 0.04 * $logsPanelSize)}vh`;
 </script>
 
 <TabGroup regionPanel="m-0 !mt-0" padding="px-3 py-3" regionList="bg-surface-700" border="border-b border-surface-900" >
@@ -39,7 +38,7 @@
         {/if}
     {/each}
     <svelte:fragment slot="panel">
-        <div style={style} class="snap-x scroll-px-4 snap-mandatory scroll-smooth overflow-x-auto">
+        <div style={style} class="overflow-y-scroll scroll-smooth">
             <div class="h-full">
                 {#if $detailTabSet === 0}
                     <HomeTab />

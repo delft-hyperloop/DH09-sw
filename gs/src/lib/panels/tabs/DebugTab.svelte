@@ -57,7 +57,7 @@
 
 <div class="p-4 h-full">
     <h2 class="text-2xl font-semibold mb-4">Debug Commands</h2>
-    <TileGrid columns="1fr 1fr" rows="">
+    <TileGrid className="mb-5" columns="1fr 1fr" rows="">
         <CollapsibleTile title="Propulsion Commands">
             <div slot="content">
                 <div class="grid grid-cols-12 gap-2 items-center mt-2 mb-3 ">
@@ -157,7 +157,7 @@
         </CollapsibleTile>
         <CollapsibleTile title="General Commands">
             <div slot="content">
-                <div class="grid grid-cols-4 w-full gap-4 pb-20 ">
+                <div class="grid grid-cols-4 w-full gap-4">
                     {#each NamedCommandValues as cmd, i}
                         <Command {cmd} val={Number(values[i])}/>
                         <input bind:value={values[i]} type="number" class="input p-4 rounded-md">

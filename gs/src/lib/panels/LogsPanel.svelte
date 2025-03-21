@@ -4,7 +4,7 @@
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
-    import { bigErrorStatus, ErrorStatus, logsVisible } from '$lib/stores/state';
+    import { bigErrorStatus, ErrorStatus, logsPanelSize, logsVisible } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
 
     let unlistens: UnlistenFn[] = [];
@@ -40,6 +40,11 @@
 
     function toggleLogsVisibility() {
         logsVisible.set(!$logsVisible);
+        if ($logsVisible) {
+            logsPanelSize.set(30);
+        } else {
+            logsPanelSize.set(5);
+        }
     }
 
     onMount(async () => {
@@ -89,7 +94,7 @@
     });
 </script>
 
-<div>
+<div class="h-full">
     <AppBar padding="p-3" background="bg-surface-700 text-surface-50">
         <svelte:fragment slot="lead">
             <button class="text-sm" on:click={toggleLogsVisibility}>
@@ -104,19 +109,19 @@
             <button class="line-through" class:active={filters['STATUS']} on:click={() => toggleFilter('STATUS')}>
                 STATUS
             </button>
-            <button class="line-through"  class:active={filters['INFO']} on:click={() => toggleFilter('INFO')}>
+            <button class="line-through" class:active={filters['INFO']} on:click={() => toggleFilter('INFO')}>
                 INFO
             </button>
-            <button class="line-through"  class:active={filters['WARNING']} on:click={() => toggleFilter('WARNING')}>
+            <button class="line-through" class:active={filters['WARNING']} on:click={() => toggleFilter('WARNING')}>
                 WARNING
             </button>
-            <button class="line-through"  class:active={filters['ERROR']} on:click={() => toggleFilter('ERROR')}>
+            <button class="line-through" class:active={filters['ERROR']} on:click={() => toggleFilter('ERROR')}>
                 ERROR
             </button>
         </svelte:fragment>
     </AppBar>
 
-    <div class="h-full p-1 pb-16 overflow-y-auto" bind:this={logContainer}>
+    <div class="h-full p-1 overflow-y-auto" bind:this={logContainer}>
         {#each filteredLogs as log}
             <div class="flex items-center">
                 <p class="{colours.get(log.log_type)}"><span class="font-mono font-light">[{log.timestamp}]</span>{log.message}</p>

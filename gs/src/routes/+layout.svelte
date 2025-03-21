@@ -308,11 +308,6 @@
     gdd.stores.registerStore<number>("SingleCellVoltageHV112", 0.0);
 
 
-    gdd.stores.registerStore<number>("BatteryCurrentLow", 0.0, data => {
-        const curr = Number(data) / 10;
-        lvCurrent.addEntry(1, curr + 150);
-        return curr;
-    });
 
     gdd.stores.registerStore<number>("BatteryCurrentHigh", 0.0, data => {
         const curr = Number(data) / 10;
@@ -354,22 +349,22 @@
     propLog1Chart.addSeries(StrokePresets.theoretical("Iq reference"))
     $chartStore.set("Propulsion Log 1", propLog1Chart);
 
-    gdd.stores.registerStore<number>("PropIDMeasured", 0, data => {
+    gdd.stores.registerStore<number>("IdMeasured", 0, data => {
         const curr = Number(data);
         $chartStore.get("Propulsion Log 1")!.addEntry(1, curr);
         return curr;
     });
-    gdd.stores.registerStore<number>("PropIDReference", 0, data => {
+    gdd.stores.registerStore<number>("IdReference", 0, data => {
         const curr = Number(data);
         $chartStore.get("Propulsion Log 1")!.addEntry(2, curr);
         return curr;
     });
-    gdd.stores.registerStore<number>("PropIQMeasured", 0, data => {
+    gdd.stores.registerStore<number>("IqMeasured", 0, data => {
         const curr = Number(data);
         $chartStore.get("Propulsion Log 1")!.addEntry(3, curr);
         return curr;
     });
-    gdd.stores.registerStore<number>("PropIQReference", 0, data => {
+    gdd.stores.registerStore<number>("IqReference", 0, data => {
         const curr = Number(data);
         $chartStore.get("Propulsion Log 1")!.addEntry(4, curr);
         return curr;

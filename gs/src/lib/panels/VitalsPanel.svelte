@@ -60,7 +60,7 @@
             </div>
         </svelte:fragment>
 
-        <div class="flex gap-5 items-center ">
+        <div class="flex gap-5 items-center justify-center">
             <span>IMD: &ltstatus&gt</span>
             <div class="flex flex-row gap-2 items-center">
                 <span>HVAL:</span>

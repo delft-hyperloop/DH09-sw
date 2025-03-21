@@ -4,6 +4,7 @@
     import { pinnedCharts, procedures } from '$lib/stores/data';
     import {parseProcedure} from "$lib/util/parsers";
     import { debugModeActive } from '$lib/stores/state';
+    import Icon from '@iconify/svelte';
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -42,11 +43,13 @@
         {#if $debugModeActive}
             <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(false)}}>
+                <Icon icon="mdi:bug-outline" class="mr-2 w-6 h-6"/>
                 Disable Debug Mode
             </button>
         {:else}
             <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>
+                <Icon icon="mdi:bug-outline" class="mr-2 w-6 h-6"/>
                 Enable Debug Mode
             </button>
         {/if}

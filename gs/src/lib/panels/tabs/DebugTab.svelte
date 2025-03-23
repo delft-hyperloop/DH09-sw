@@ -5,52 +5,59 @@
     import { propControlWord } from '$lib/stores/state';
     import CollapsibleTile from '$lib/components/generic/CollapsibleTile.svelte';
 
-    const values:number[] = new Array(NamedCommandValues.length).fill(0);
+    const values: number[] = new Array(NamedCommandValues.length).fill(0);
+    const propLabels: string[] = [
+        "Motor On",
+        "Phase Enable 1",
+        "Phase Enable 2",
+        "Phase Enable 3",
+        "Logic Enable 1",
+        "Logic Enable 2",
+        "Logic Enable 3",
+        "Reset",
+        "Direction",
+        "General Fault"
+    ];
 
     // Propulsion debug stuff
-    // 2
     let modulation_factor: number = 0;
     let maximum_velocity: number = 0
+    let ppControlParams: number = 0;
 
-    // 3
-    let kpq: number = 0;
-    let kiq: number = 0;
-    let kpd: number = 0;
-    let kid: number = 0;
+    let kpq: bigint = 0n;
+    let kiq: bigint = 0n;
+    let kpd: bigint = 0n;
+    let kid: bigint = 0n;
+    let ppDebugParams1: bigint = 0n;
 
-    // 4
     let pos_offset: number = 0;
     let alpha: number = 0;
+    let ppDebugParams2: number = 0;
 
-    // 5
     let iq_ref: number = 0;
     let id_ref: number = 0;
     let vq_ref: number = 0;
     let vd_ref: number = 0;
+    let testControlParams: bigint = 0n;
 
-    let submitPPControlParams = () => {
-        let data = (modulation_factor << 16) | maximum_velocity;
-        values[2] = data;
-        // TODO
+    let calculatePPControlParams = () => {
+        ppControlParams = (modulation_factor << 16) | maximum_velocity;
     }
 
-    let submitPPDebugParams1 = () => {
-        let data1 = kiq | (kpq << 16);
-        let data2 = kid | (kpd << 16);
-        // TODO
+    let calculatePPDebugParams1 = () => {
+        let data1: bigint = (BigInt(kpq) << 16n) | BigInt(kiq);
+        let data2: bigint = (BigInt(kpd) << 16n) | BigInt(kid);
+        ppDebugParams1 = (data1 << 32n) | data2;
     }
 
-    let submitPPDebugParams2 = () => {
-        let data = (pos_offset << 16) | alpha;
-        values[4] = data;
-        console.log(data);
-        // TODO
+    let calculatePPDebugParams2 = () => {
+        ppDebugParams2 = (pos_offset << 16) | alpha;
     }
 
-    let submitTestControlParams = () => {
-        let data1 = (iq_ref << 16) | id_ref;
-        let data2 = (vq_ref << 16) | vd_ref;
-        // TODO
+    let calculateTestControlParams = () => {
+        let data1 = (BigInt(iq_ref) << 16n) | BigInt(id_ref);
+        let data2 = (BigInt(vq_ref) << 16n) | BigInt(vd_ref);
+        testControlParams = (data1 << 32n) | data2;
     }
 
 </script>
@@ -62,89 +69,60 @@
             <div slot="content">
                 <div class="grid grid-cols-12 gap-2 items-center mt-2 mb-3 ">
                     <span class="text-center">Propulsion Control Word:</span>
-                    <BinaryInput index={9} />
-                    <BinaryInput index={8} />
-                    <BinaryInput index={7} />
-                    <BinaryInput index={6} />
-                    <BinaryInput index={5} />
-                    <BinaryInput index={4} />
-                    <BinaryInput index={3} />
-                    <BinaryInput index={2} />
-                    <BinaryInput index={1} />
-                    <BinaryInput index={0} />
-                    <!--        <BinaryInput associatedStore={direction} />-->
+                    {#each Array.from({ length: 10 }, (_, i) => 9 - i) as i}
+                        <BinaryInput index={i} />
+                    {/each}
                     <Command cmd="SendPropulsionControlWord" val={$propControlWord} text={"Send"}/>
 
                     <span/>
-                    <span class="text-center">Motor On</span>
-                    <span class="text-center">Phase Enable 1</span>
-                    <span class="text-center">Phase Enable 2</span>
-                    <span class="text-center">Phase Enable 3</span>
-                    <span class="text-center">Logic Enable 1</span>
-                    <span class="text-center">Logic Enable 2</span>
-                    <span class="text-center">Logic Enable 3</span>
-                    <span class="text-center">Reset</span>
-                    <span class="text-center">Direction</span>
-                    <span class="text-center">General Fault</span>
+                    {#each propLabels as l}
+                        <span class="text-center">{l}</span>
+                    {/each}
                     <span/>
                 </div>
                 <div class="grid grid-cols-2 gap-4 m-4 items-center ">
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg ">
-                        <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium text-wrap"
-                                on:click={submitPPControlParams}>
-                            Submit PP
-                            Control Params
-                        </button>
+                        <Command cmd="PPControlParams" text="Submit PP Control Params" val={ppControlParams} />
                         <div class="grid grid-cols-2 gap-2 ">
                             <div class="text-center content-center">Modulation Factor</div>
-                            <input bind:value={modulation_factor} type="number" class="input p-4 rounded-md">
+                            <input bind:value={modulation_factor} type="number" class="input p-4 rounded-md" on:change={calculatePPControlParams}>
                             <div class="text-center content-center">Maximum Velocity</div>
-                            <input bind:value={maximum_velocity} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={maximum_velocity} type="number" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
                         </div>
                     </div>
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg">
-                        <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium text-wrap "
-                                on:click={submitPPDebugParams2}>
-                            Submit PP Debug Params 2
-                        </button>
+                        <Command cmd="PPDebugParams2" text="Submit PP Debug Params 2" val={ppDebugParams2}/>
                         <div class="grid grid-cols-2 gap-2">
                             <div class="text-center content-center">Position Offset</div>
-                            <input bind:value={pos_offset} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={pos_offset} type="number" class="input p-4 rounded-md " on:change={calculatePPDebugParams2}>
                             <div class="text-center content-center">Position Alpha</div>
-                            <input bind:value={alpha} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={alpha} type="number" class="input p-4 rounded-md " on:change={calculatePPDebugParams2}>
                         </div>
                     </div>
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg">
-                        <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium text-wrap"
-                                on:click={submitPPDebugParams1}>
-                            Submit PP
-                            Debug Params 1
-                        </button>
+                        <Command cmd="PPDebugParams1" text="Submit PP Debug Params 1" val={ppDebugParams1} />
                         <div class="grid grid-cols-2 gap-2">
                             <div class="text-center content-center">kpq</div>
-                            <input bind:value={kpq} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={kpq} type="number" class="input p-4 rounded-md " on:change={calculatePPDebugParams1}>
                             <div class="text-center content-center">kiq</div>
-                            <input bind:value={kiq} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={kiq} type="number" class="input p-4 rounded-md " on:change={calculatePPDebugParams1}>
                             <div class="text-center content-center">kpd</div>
-                            <input bind:value={kpd} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={kpd} type="number" class="input p-4 rounded-md " on:change={calculatePPDebugParams1}>
                             <div class="text-center content-center">kid</div>
-                            <input bind:value={kid} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={kid} type="number" class="input p-4 rounded-md " on:change={calculatePPDebugParams1}>
                         </div>
                     </div>
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg">
-                        <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium text-wrap"
-                                on:click={submitTestControlParams}>
-                            Submit PP Test Control Params
-                        </button>
+                        <Command cmd="PPTestControlParams" text="Submit PP Test Control Params" val={testControlParams} />
                         <div class="gap-2 grid grid-cols-2">
                             <div class="text-center content-center">iq_ref</div>
-                            <input bind:value={iq_ref} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={iq_ref} type="number" class="input p-4 rounded-md " on:change={calculateTestControlParams}>
                             <div class="text-center content-center">id_ref</div>
-                            <input bind:value={id_ref} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={id_ref} type="number" class="input p-4 rounded-md " on:change={calculateTestControlParams}>
                             <div class="text-center content-center">vq_ref</div>
-                            <input bind:value={vq_ref} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={vq_ref} type="number" class="input p-4 rounded-md " on:change={calculateTestControlParams}>
                             <div class="text-center content-center">vd_ref</div>
-                            <input bind:value={vd_ref} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={vd_ref} type="number" class="input p-4 rounded-md " on:change={calculateTestControlParams}>
                         </div>
                     </div>
                 </div>

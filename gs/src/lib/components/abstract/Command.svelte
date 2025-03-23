@@ -4,8 +4,8 @@
 
     export let className: string = '';
     export let cmd: NamedCommand;
-    export let val: number = 0;
-    export let callback: (val:number) => void = () => {};
+    export let val: number | bigint = 0;
+    export let callback: (val:number | bigint) => void = () => {};
     export let text: string = '';
 
     let send = async () => {

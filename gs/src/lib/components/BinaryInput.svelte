@@ -1,5 +1,4 @@
 <script lang="ts">
-
     import { propControlWord } from '$lib/stores/state';
 
     export let index: number = 0;

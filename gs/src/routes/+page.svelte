@@ -23,7 +23,7 @@
                 <Pane minSize={50} class="bg-surface-800">
                     <DetailsPanel />
                 </Pane>
-                <Pane size={($logsVisible) ? 30 : 5} minSize={5} class="bg-surface-800 ">
+                <Pane size={($logsVisible) ? $logsPanelSize : 5} minSize={5} class="bg-surface-800">
                     <LogsPanel />
                 </Pane>
             </Splitpanes>

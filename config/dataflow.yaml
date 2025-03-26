@@ -653,6 +653,14 @@ message-processing:
       - datapoint:
           name: 'IqMeasured'
           id: 0x4B5
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 1")!.addEntry(3, curr);
+                  return curr;
+              }
         getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -660,6 +668,14 @@ message-processing:
       - datapoint:
           name: 'IqReference'
           id: 0x4B7
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 1")!.addEntry(4, curr);
+                  return curr;
+              }
         getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -667,6 +683,14 @@ message-processing:
       - datapoint:
           name: 'IdMeasured'
           id: 0x4B6
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 1")!.addEntry(1, curr);
+                  return curr;
+              }
         getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -674,6 +698,14 @@ message-processing:
       - datapoint:
           name: 'IdReference'
           id: 0x4B8
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 1")!.addEntry(2, curr);
+                  return curr;
+              }
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -719,6 +751,14 @@ message-processing:
       - datapoint:
           name: 'Ta'
           id: 0x4C3
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
+                  return curr;
+              }
         getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -726,6 +766,14 @@ message-processing:
       - datapoint:
           name: 'Tb'
           id: 0x4C5
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 3")!.addEntry(2, curr);
+                  return curr;
+              }
         getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -733,6 +781,14 @@ message-processing:
       - datapoint:
           name: 'Tc'
           id: 0x4C7
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 3")!.addEntry(3, curr);
+                  return curr;
+              }
         getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -741,6 +797,14 @@ message-processing:
       - datapoint:
           name: 'TCASE'
           id: 0x4C8
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 3")!.addEntry(4, curr);
+                  return curr;
+              }
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:

@@ -6,6 +6,7 @@ use std::str::FromStr;
 
 use crate::commands;
 use crate::datatypes::Limit;
+use crate::datatypes::StoreInfo;
 
 #[derive(serde::Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
@@ -215,6 +216,8 @@ impl TryFrom<String> for ConversionGsSpec {
 pub struct DatapointSpec {
     pub name: String,
     pub id: u16,
+
+    pub store: Option<StoreInfo>,
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -381,6 +384,7 @@ pub fn collect_data_types(df: &DataflowSpec) -> crate::datatypes::Config {
                 upper: dpc.limits.as_ref().map(|l| l.upper).unwrap_or(Limit::No),
                 display_units: dpc.display_units.clone(),
                 priority: None,
+                store: dpc.datapoint.store.clone(),
             });
         }
     }
@@ -392,6 +396,7 @@ pub fn collect_data_types(df: &DataflowSpec) -> crate::datatypes::Config {
             upper: Limit::No,
             display_units: None,
             priority: sd.priority,
+            store: sd.datapoint.store.clone(),
         });
     }
 
@@ -512,7 +517,9 @@ use core::future::Future;
     for command in &df.commands {
         if let Some(CanCommandSpec { can: CanSpec::Can1 { id, .. }, conversion }) = &command.can {
             can1commands.push((&command.name, *id, conversion));
-        } else if let Some(CanCommandSpec { can: CanSpec::Can2 { id, .. }, conversion }) = &command.can {
+        } else if let Some(CanCommandSpec { can: CanSpec::Can2 { id, .. }, conversion }) =
+            &command.can
+        {
             can2commands.push((&command.name, *id, conversion));
         }
     }
@@ -577,6 +584,98 @@ pub fn collect_commands(df: &DataflowSpec) -> commands::Config {
         commands.Command.push(commands::Command { id: cmd.id, name: cmd.name.clone() });
     }
     commands
+}
+
+pub fn output_gs_frontend_code(df: &DataflowSpec) -> String {
+    let mut code = String::new();
+    write!(
+        &mut code,
+        r#"
+/* AUTO GENERATED USING npm run generate:gs */
+export type NamedCommand = "#
+    )
+    .unwrap();
+
+    for (id, command) in df.commands.iter().enumerate() {
+        if id != 0 {
+            write!(&mut code, " | ").unwrap();
+        }
+        write!(&mut code, "\"{}\"", command.name).unwrap();
+    }
+
+    writeln!(
+        &mut code,
+        r#";
+export const NamedCommandValues:NamedCommand[] = ["#
+    )
+    .unwrap();
+    for (id, command) in df.commands.iter().enumerate() {
+        if id != 0 {
+            write!(&mut code, ", ").unwrap();
+        }
+        write!(&mut code, "\"{}\"", command.name).unwrap();
+    }
+    write!(
+        &mut code,
+        r#"];
+
+export type NamedDatatype = "#
+    )
+    .unwrap();
+
+    let dt = collect_data_types(df);
+
+    dt.Datatype.iter().enumerate().for_each(|(id, datatype)| {
+        if id != 0 {
+            write!(&mut code, " | ").unwrap();
+        }
+        write!(&mut code, "\"{}\"", datatype.name).unwrap();
+    });
+
+    writeln!(
+        &mut code,
+        r#";
+
+export const NamedDatatypeValues = ["#
+    )
+    .unwrap();
+
+    dt.Datatype.iter().enumerate().for_each(|(id, datatype)| {
+        if id != 0 {
+            write!(&mut code, ", ").unwrap();
+        }
+        write!(&mut code, "\"{}\"", datatype.name).unwrap();
+    });
+
+    writeln!(
+        &mut code,
+        r#"];
+
+
+        // gdd stores registration
+        // auto-generated with npm run generate:gs
+        "#
+    )
+    .unwrap();
+
+    for d in &dt.Datatype {
+        if let Some(store) = &d.store {
+            write!(
+                &mut code,
+                r#"
+gdd.stores.registerStore<{type}>("{name}", {default}"#,
+                type = store.ty,
+                name = d.name,
+                default = store.default,
+            )
+            .unwrap();
+            if let Some(callback) = &store.callback {
+                write!(&mut code, ", {callback}").unwrap();
+            }
+        }
+    }
+
+    code
 }
 
 pub fn parse_from(data: &str) -> DataflowSpec { serde_yaml::from_str(data).unwrap() }

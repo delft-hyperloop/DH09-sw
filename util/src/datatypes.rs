@@ -26,6 +26,19 @@ pub struct Datatype {
     pub upper: Limit,
     pub display_units: Option<String>,
     pub priority: Option<usize>,
+    pub store: Option<StoreInfo>,
+}
+
+#[derive(Deserialize, Hash, Debug, Clone)]
+pub struct StoreInfo {
+    pub default: String,
+    #[serde(rename = "type", default = "number_s")]
+    pub ty: String,
+    pub callback: Option<String>,
+}
+
+fn number_s() -> String {
+    "number".into()
 }
 
 #[derive(Debug, Hash, Clone, Copy)]

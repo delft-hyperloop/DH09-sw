@@ -4,8 +4,12 @@ default-members = ["crates/main"]
 resolver = "2"
 
 [workspace.dependencies]
-fdcan = {version = "0.2.1", features = ["fdcan_h7"]}
-stm32h7xx-hal = {version = "0.16.0", features = ["stm32h743v", "can", "device-selected"]}
+fdcan = { version = "0.2.1", features = ["fdcan_h7"] }
+stm32h7xx-hal = { version = "0.16.0", features = [
+    "stm32h743v",
+    "can",
+    "device-selected",
+] }
 
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",
@@ -31,16 +35,16 @@ static_cell = { version = "2", features = ["nightly"] }
 defmt = "*"
 defmt-rtt = "*"
 defmt-decoder = { version = "*", features = ["unstable"] }
-defmt-semihosting = {version = "*", features = []}
+defmt-semihosting = { version = "*", features = [] }
 anyhow = "1"
 
-fsm = {path = "crates/fsm"}
-embedded-test  = { version = "0.6.0", features = ["embassy", "defmt"] }
-rtt-target = { version = "*", features=["defmt"]}
+fsm = { path = "crates/fsm" }
+embedded-test = { version = "0.6.0", features = ["embassy", "defmt"] }
+rtt-target = { version = "*", features = ["defmt"] }
 #features = ["defmt"]
 panic-rtt-target = "*"
 
-goose_utils = {path = "util"}
+goose_utils = { path = "util" }
 
 [workspace.dependencies.embassy-stm32]
 git = "https://github.com/delft-hyperloop/embassy"
@@ -83,14 +87,11 @@ features = [
 [workspace.dependencies.embassy-net]
 git = "https://github.com/delft-hyperloop/embassy"
 rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
-features = [
-    "medium-ethernet",
-    "proto-ipv4",
-    "tcp",
-    "dns",
-    "dhcpv4",
-    "defmt",
-]
+features = ["medium-ethernet", "proto-ipv4", "tcp", "dns", "dhcpv4", "defmt", "packet-trace"]
+
+[workspace.dependencies.embassy-net-driver]
+git = "https://github.com/delft-hyperloop/embassy"
+rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
 
 [workspace.dependencies.embassy-time]
 git = "https://github.com/delft-hyperloop/embassy"

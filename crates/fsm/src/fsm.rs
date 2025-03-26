@@ -169,7 +169,7 @@ impl FSM {
     /// Transitions the FSM to a new state while executing the
     /// former state's exit method and the new state's entry method.
     async fn transition(&mut self, new_state: States) {
-        self.get_entry_method(self.state).await;
+        self.call_entry_method(self.state).await;
 
         self.state = new_state;
         #[cfg(test)]
@@ -177,12 +177,12 @@ impl FSM {
             **self.state_mutex.lock().await = new_state;
         }
 
-        self.get_exit_method(self.state).await;
+        self.call_exit_method(self.state).await;
     }
 
     /// Matches a state with its entry method and executes it. Should be called
     /// whenever a transition happens.
-    async fn get_entry_method(&self, state: States) {
+    async fn call_entry_method(&self, state: States) {
         match state {
             States::Fault => enter_fault().await,
             _ => {}
@@ -191,7 +191,7 @@ impl FSM {
 
     ///Matches a state with its exit method and executes it. Should be called
     /// whenever a transition happens
-    async fn get_exit_method(&self, state: States) {
+    async fn call_exit_method(&self, state: States) {
         match state {
             _ => {}
         }

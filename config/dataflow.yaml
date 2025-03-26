@@ -58,11 +58,11 @@ procedures:
   dump-gs_2p_float:
     input: 'f32'
     output: 'u64'
-    formula: '(1000.0 + x * 100.0) as u64'
+    formula: '(10000.0 + x) * 100.0 as u64'
   parse-gs_2p_float:
     input: 'u64'
     output: 'f64'
-    formula: '((x - 1000) as f64) / 100.0'
+    formula: '(x as f64) / 100.0 - 10000.0'
   
   dump-gs_u64:
     input: 'u64'

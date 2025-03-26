@@ -222,7 +222,7 @@ async fn send_can2_message(
                 id,
             ).expect("Invalid ID"),
         ),
-        64,
+        value.len() as u8,
         false,
         true,
     );
@@ -631,9 +631,9 @@ async fn main(spawner: Spawner) -> ! {
 
     let config = embassy_net::Config::dhcpv4(Default::default());
     // let config = embassy_net::Config::ipv4_static(embassy_net::StaticConfigV4 {
-    //    address: Ipv4Cidr::new(Ipv4Address::new(10, 42, 0, 61), 24),
-    //    dns_servers: Vec::new(),
-    //    gateway: Some(Ipv4Address::new(10, 42, 0, 1)),
+    //    address: embassy_net::Ipv4Cidr::new(Ipv4Address::new(169, 254, 42, 80), 16),
+    //    dns_servers: heapless::Vec::new(),
+    //    gateway: None,
     // });
 
     let gs_master = GsMaster::new(

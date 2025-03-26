@@ -1,7 +1,8 @@
 [gs]
 # ip = [192,168,0,52]
 # ip = [127,0,0,1]
-ip = [192,168,1,19]
+ip = [192,168,1,22]
+# ip = [169,254,218,60]
 force = true 
 port = 6949
 buffer_size = 1460 # this is the MAXIMUM size of messages transmitted, in bytes.
@@ -17,7 +18,7 @@ shortcut_channel = "shortcut_channel"
 ip = [192,168,1,17]
 port = 6946
 dhcp = true # if true, ip and port are unused
-mac_addr = [0x00, 0x1e, 0x67, 0x4c, 0x5c, 0x3e]
+mac_addr = [0x00, 0x80, 0xe1, 0x00, 0x00, 0x00]
 keep_alive = 1000 # keep alive interval, in milliseconds.
 
 [pod.internal]

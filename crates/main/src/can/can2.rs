@@ -132,11 +132,11 @@ async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>
             Ok(envelope) => {
                 defmt::debug!("Envelope: {:?}", &envelope);
                 publisher.publish(CanEnvelope { envelope }).await;
-                if let Some(lmi) = &last_message_instant {
-                    let diff = Instant::now().duration_since(*lmi);
-                    defmt::debug!("[CAN2] Duration since last: {}ms", diff.as_millis());
-                }
-                last_message_instant = Some(Instant::now());
+                // if let Some(lmi) = &last_message_instant {
+                //     let diff = Instant::now().duration_since(*lmi);
+                //     defmt::debug!("[CAN2] Duration since last: {}ms", diff.as_millis());
+                // }
+                // last_message_instant = Some(Instant::now());
             }
             Err(e) => {
                 if error_counter < 10 || error_counter % 2500 == 0 {

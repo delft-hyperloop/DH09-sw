@@ -1,9 +1,10 @@
 <script lang="ts">
-    import { Command, TileGrid } from '$lib';
+    import { Command, EventChannel, type NamedCommand, TileGrid, util } from '$lib';
     import { NamedCommandValues } from "$lib/types";
     import BinaryInput from '$lib/components/BinaryInput.svelte';
     import { propControlWord } from '$lib/stores/state';
     import CollapsibleTile from '$lib/components/generic/CollapsibleTile.svelte';
+    import { invoke } from '@tauri-apps/api/tauri';
 
     const values: number[] = new Array(NamedCommandValues.length).fill(0);
     const propLabels: string[] = [
@@ -24,11 +25,12 @@
     let maximum_velocity: number = 0
     let ppControlParams: number = 0;
 
-    let kpq: bigint = 0n;
-    let kiq: bigint = 0n;
-    let kpd: bigint = 0n;
-    let kid: bigint = 0n;
-    let ppDebugParams1: bigint = 0n;
+    let kpq: number = 0;
+    let kiq: number = 0;
+    let kpd: number = 0;
+    let kid: number = 0;
+    let ppDebugParams11: number = 0;
+    let ppDebugParams12: number = 0;
 
     let pos_offset: number = 0;
     let alpha: number = 0;
@@ -38,16 +40,16 @@
     let id_ref: number = 0;
     let vq_ref: number = 0;
     let vd_ref: number = 0;
-    let testControlParams: bigint = 0n;
+    let testControlParams1: number = 0;
+    let testControlParams2: number = 0;
 
     let calculatePPControlParams = () => {
         ppControlParams = (modulation_factor << 16) | maximum_velocity;
     }
 
     let calculatePPDebugParams1 = () => {
-        let data1: bigint = (BigInt(kpq) << 16n) | BigInt(kiq);
-        let data2: bigint = (BigInt(kpd) << 16n) | BigInt(kid);
-        ppDebugParams1 = (data1 << 32n) | data2;
+        ppDebugParams11 = (kpq << 16) | kiq;
+        ppDebugParams12 = (kpd << 16) | kid;
     }
 
     let calculatePPDebugParams2 = () => {
@@ -55,10 +57,19 @@
     }
 
     let calculateTestControlParams = () => {
-        let data1 = (BigInt(iq_ref) << 16n) | BigInt(id_ref);
-        let data2 = (BigInt(vq_ref) << 16n) | BigInt(vd_ref);
-        testControlParams = (data1 << 32n) | data2;
+        testControlParams1 = (iq_ref << 16) | id_ref;
+        testControlParams2 = (vq_ref << 16) | vd_ref;
     }
+
+    let sendCommands = async (cmd: NamedCommand, val: number) => {
+        console.log(`Sending command: ${cmd}, value: ${val}`);
+        await invoke('send_command', {cmdName: cmd, val}).then(() => {
+            console.log(`Command ${cmd} sent`);
+        }).catch((e) => {
+            console.error(`Error sending command ${cmd}: ${e}`);
+        });
+        util.log(`Command ${cmd} sent`, EventChannel.INFO);
+    };
 
 </script>
 
@@ -100,7 +111,14 @@
                         </div>
                     </div>
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg">
-                        <Command cmd="PPDebugParams1" text="Submit PP Debug Params 1" val={ppDebugParams1} />
+                        <button on:click={() => {
+                                    sendCommands("PPDebugParams11", ppDebugParams11);
+                                    sendCommands("PPDebugParams12", ppDebugParams12);
+                                }}
+                                class="btn rounded-md font-number font-medium text-wrap overflow-auto py-2 bg-primary-500 text-surface-900"
+                        >
+                            Submit PP Debug Params 1
+                        </button>
                         <div class="grid grid-cols-2 gap-2">
                             <div class="text-center content-center">kpq</div>
                             <input bind:value={kpq} type="number" class="input p-4 rounded-md " on:change={calculatePPDebugParams1}>
@@ -113,7 +131,14 @@
                         </div>
                     </div>
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg">
-                        <Command cmd="PPTestControlParams" text="Submit PP Test Control Params" val={testControlParams} />
+                        <button on:click={() => {
+                                    sendCommands("PPTestControlParams1", testControlParams1);
+                                    sendCommands("PPTestControlParams2", testControlParams2);
+                                }}
+                                class="btn rounded-md font-number font-medium text-wrap overflow-auto py-2 bg-primary-500 text-surface-900"
+                        >
+                            Submit PP Test Control Params
+                        </button>
                         <div class="gap-2 grid grid-cols-2">
                             <div class="text-center content-center">iq_ref</div>
                             <input bind:value={iq_ref} type="number" class="input p-4 rounded-md " on:change={calculateTestControlParams}>

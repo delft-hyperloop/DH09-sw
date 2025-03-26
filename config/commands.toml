@@ -66,16 +66,24 @@ name = "PPControlParams"
 id = 0x33E
 
 [[Command]]
-name = "PPDebugParams1"
+name = "PPDebugParams11"
 id = 0x33F
 
 [[Command]]
-name = "PPDebugParams2"
+name = "PPDebugParams12"
 id = 0x340
 
 [[Command]]
-name = "PPTestControlParams"
+name = "PPDebugParams2"
 id = 0x341
+
+[[Command]]
+name = "PPTestControlParams1"
+id = 0x342
+
+[[Command]]
+name = "PPTestControlParams2"
+id = 0x343
 
 # -----------RUN CONFIGURATION COMMANDS-----------
 

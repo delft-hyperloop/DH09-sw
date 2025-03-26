@@ -42,7 +42,7 @@ use embedded_io_async::Write;
 use fsm::utils::types::EventChannel;
 use fsm::utils::types::EventReceiver;
 use fsm::utils::types::EventSender;
-use fsm::FSM;
+use fsm::{Event, FSM};
 use main::can::can1;
 use main::can::can2;
 use main::gs_master;
@@ -104,6 +104,8 @@ async fn forward_gs_to_fsm(
     event_sender: EventSender,
     cantx: can2::CanTxSender<'static>,
 ) {
+    let mut prop_debug_params: u64 = 0;
+    let mut prop_test_control_params: u64 = 0;
     loop {
         let msg = gsrx.next_message_pure().await;
         info!("Received message from GS: {:?}", msg);
@@ -168,11 +170,18 @@ async fn forward_gs_to_fsm(
                     main::config::Command::PPControlParams(value).to_id()
                 ).await;
             }
-            main::config::Command::PPDebugParams1(value) => {
+            main::config::Command::PPDebugParams11(value) => {
+                prop_debug_params = value;
+            }
+            main::config::Command::PPDebugParams12(value) => {
+                let mut data: [u8; 8] = [0; 8];
+                data[0..4].copy_from_slice(&(value as u32).to_le_bytes());
+                data[4..8].copy_from_slice(&(prop_debug_params as u32).to_le_bytes());
+
                 send_can2_message(
-                    &value.to_le_bytes(),
+                    &data,
                     cantx,
-                    main::config::Command::PPDebugParams1(value).to_id()
+                    main::config::Command::PPDebugParams12(value).to_id()
                 ).await;
             }
             main::config::Command::PPDebugParams2(value) => {
@@ -182,11 +191,18 @@ async fn forward_gs_to_fsm(
                     main::config::Command::PPDebugParams2(value).to_id()
                 ).await;
             }
-            main::config::Command::PPTestControlParams(value) => {
+            main::config::Command::PPTestControlParams1(value) => {
+                prop_test_control_params = value;
+            }
+            main::config::Command::PPTestControlParams2(value) => {
+                let mut data: [u8; 8] = [0; 8];
+                data[0..4].copy_from_slice(&(value as u32).to_le_bytes());
+                data[4..8].copy_from_slice(&(prop_test_control_params as u32).to_le_bytes());
+
                 send_can2_message(
-                    &value.to_le_bytes(),
+                    &data,
                     cantx,
-                    main::config::Command::PPTestControlParams(value).to_id()
+                    main::config::Command::PPTestControlParams2(prop_test_control_params).to_id()
                 ).await;
             }
 
@@ -347,7 +363,23 @@ async fn forward_can2_messages_to_fsm(
             Id::Standard(s) => s.as_raw(),
         };
 
+        // TODO: Get config to match correct event
         let fsm_event = main::config::event_for_can_2_id(id as u32);
+
+        // let fsm_event = match (id as u32) {
+        //     1 => fsm::Event::ConnectToGS,
+        //     2 => fsm::Event::StartSystemCheck,
+        //     3 => fsm::Event::SystemCheckSuccess,
+        //     4 => fsm::Event::StartPreCharge,
+        //     5 => fsm::Event::Activate,
+        //     6 => fsm::Event::EnterDemo,
+        //     7 => fsm::Event::Levitate,
+        //     // 8 => fsm::Event::StopLevitating,
+        //     8 => fsm::Event::Accelerate,
+        //     9 => fsm::Event::Brake,
+        //     10 => fsm::Event::ShutDown,
+        //     _ => fsm::Event::NoEvent,
+        // };
 
         if fsm_event != fsm::Event::NoEvent {
             event_sender.send(fsm_event).await;

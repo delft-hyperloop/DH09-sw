@@ -444,7 +444,7 @@ message-processing:
         can-conversion: 'convert_i16_to_u64:i16->u64'
         gs:
           conversion: 'gs_u64:u64'
-  - name: 'PPDebugParameters1'
+  - name: 'PPDebugParameters11'
     can:
       id: 0x33F
       bus: can2
@@ -477,37 +477,42 @@ message-processing:
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'PPDebugParams12'
+    can:
+      id: 0x340
+      bus: can2
+    datapoint-conversion:
       - datapoint:
           name: 'Kpd1'
           id: 0x838
-        getter: 'i16[8..10]'
+        getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Kpd2'
           id: 0x839
-        getter: 'i16[10..12]'
+        getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Kid1'
           id: 0x83A
-        getter: 'i16[12..14]'
+        getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Kid2'
           id: 0x83B
-        getter: 'i16[14..16]'
+        getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
   - name: 'PPDebugParameters2'
     can:
-      id: 0x340
+      id: 0x341
       bus: can2
     datapoint-conversion:
       - datapoint:
@@ -538,9 +543,9 @@ message-processing:
         can-conversion: 'scale_1000:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
-  - name: 'PPTestControlParameters'
+  - name: 'PPTestControlParameters1'
     can:
-      id: 0x341
+      id: 0x342
       bus: can2
     datapoint-conversion:
       - datapoint:
@@ -571,31 +576,36 @@ message-processing:
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'PPTestControlParameters2'
+    can:
+      id: 0x343
+      bus: can2
+    datapoint-conversion:
       - datapoint:
           name: 'Vq1_C'
           id: 0x844
-        getter: 'i16[8..10]'
+        getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Vq2_C'
           id: 0x845
-        getter: 'i16[10..12]'
+        getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Vd1_C'
           id: 0x846
-        getter: 'i16[12..14]'
+        getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Vd2_C'
           id: 0x847
-        getter: 'i16[14..16]'
+        getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'

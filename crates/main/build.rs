@@ -100,6 +100,9 @@ fn main() -> Result<()> {
 
     let mut content = String::from("//@generated\n");
 
+    let df = std::fs::read_to_string(DATAFLOW_PATH)?;
+    let df = goose_utils::dataflow::parse_from(&df);
+
     content.push_str(&check_config(
         DATATYPES_PATH,
         COMMANDS_PATH,
@@ -115,14 +118,13 @@ fn main() -> Result<()> {
     )?);
     content.push_str(&configure_pod(&config));
     content.push_str(&configure_internal(&config));
-    content.push_str(&goose_utils::commands::generate_commands(
-        COMMANDS_PATH,
+    let commands = goose_utils::dataflow::collect_commands(&df);
+    content.push_str(&goose_utils::commands::generate_commands_from_config(
+        &commands,
         true,
-    )?);
+    ));
     content.push_str(&goose_utils::events::generate_events(EVENTS_PATH, true)?);
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, false)?);
-    let df = std::fs::read_to_string(DATAFLOW_PATH)?;
-    let df = goose_utils::dataflow::parse_from(&df);
     let dt = goose_utils::dataflow::collect_data_types(&df);
     let dt = goose_utils::datatypes::generate_data_types_from_config(
         &dt, false,

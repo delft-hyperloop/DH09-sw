@@ -8,7 +8,7 @@ use std::path::Path;
 
 use anyhow::Result;
 use goose_utils::check_config;
-use goose_utils::commands::generate_commands;
+use goose_utils::commands::{generate_commands, generate_commands_from_config};
 use goose_utils::datatypes::{generate_data_types_from_config, generate_datatypes};
 use goose_utils::events::generate_events;
 use goose_utils::ip::configure_gs_ip;
@@ -76,7 +76,8 @@ fn main() -> Result<()> {
     let dt = goose_utils::dataflow::collect_data_types(&df);
     let dt = generate_data_types_from_config(&dt, true)?;
     content.push_str(&dt);
-    content.push_str(&generate_commands(COMMANDS_PATH, false)?);
+    let commands = goose_utils::dataflow::collect_commands(&df);
+    content.push_str(&generate_commands_from_config(&commands, false));
     content.push_str(&generate_events(EVENTS_PATH, false)?);
     content.push_str(&configure_channels(&config));
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, true)?);

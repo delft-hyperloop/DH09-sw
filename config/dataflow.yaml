@@ -58,11 +58,11 @@ procedures:
   dump-gs_2p_float:
     input: 'f32'
     output: 'u64'
-    formula: '(10000.0 + x) * 100.0 as u64'
+    formula: '((10000.0 + x) * 100.0) as u64'
   parse-gs_2p_float:
     input: 'u64'
     output: 'f64'
-    formula: '(x as f64) / 100.0 - 10000.0'
+    formula: '((x as f64) / 100.0) - 10000.0'
   
   dump-gs_u64:
     input: 'u64'
@@ -123,6 +123,11 @@ procedures:
     input: 'u64'
     output: 'f64'
     formula: 'x as f64'
+
+  default_command_process:
+    input: 'u64'
+    output: '[u8; 8]'
+    formula: 'x.to_be_bytes()'
 
 
 standard-datapoints:
@@ -743,4 +748,77 @@ message-processing:
 
 
  
- 
+commands:
+  - name: 'DefaultCommand'
+    id: 0x01
+  - name: 'Heartbeat'
+    id: 0x042
+  - name: 'FrontendHeartbeat'
+    id: 0x043
+  - name: 'EmitEvent'
+    id: 0x7A0
+  - name: 'StartHV'
+    id: 0x60
+  - name: 'StopHV'
+    id: 0x61
+  - name: 'LevitationOn'
+    id: 0x407
+  - name: 'LevitationOff'
+    id: 0x408
+  - name: 'vertical_0_current'
+    id: 0x409
+  - name: 'vert_0_current_reset'
+    id: 0x40a
+  - name: 'PropulsionOn'
+    id: 0x6c
+  - name: 'PropulsionOff'
+    id: 0x6d
+  - name: 'SendPropulsionControlWord'
+    id: 0x191
+  - name: 'PPControlParams'
+    id: 0x33E
+    can:
+      id: 0x33E
+      bus: can2
+  - name: 'PPDebugParams11'
+    id: 0x33F
+    can:
+      id: 0x33F
+      bus: can2
+  - name: 'PPDebugParams12'
+    id: 0x340
+    can:
+      id: 0x340
+      bus: can2
+  - name: 'PPDebugParams2'
+    id: 0x341
+    can:
+      id: 0x341
+      bus: can2
+  - name: 'PPTestControlParams1'
+    id: 0x342
+    can:
+      id: 0x342
+      bus: can2
+  - name: 'PPTestControlParams2'
+    id: 0x343
+    can:
+      id: 0x343
+      bus: can2
+  - name: 'SubmitDirection'
+    id: 0x590
+  - name: 'SubmitSpeed'
+    id: 0x591
+  - name: 'ArmBrakes'
+    id: 0x69
+  - name: 'Shutdown'
+    id: 0x5f
+  - name: 'EmergencyBrake'
+    id: 0xff
+    can:
+      id: 0x002
+      bus: can2
+  - name: 'SystemReset'
+    id: 0x66
+
+

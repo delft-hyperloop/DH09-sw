@@ -4,17 +4,12 @@ default-members = ["crates/main"]
 resolver = "2"
 
 [workspace.dependencies]
-<<<<<<< HEAD
 fdcan = { version = "0.2.1", features = ["fdcan_h7"] }
 stm32h7xx-hal = { version = "0.16.0", features = [
     "stm32h743v",
     "can",
     "device-selected",
 ] }
-=======
-fdcan = {version = "0.2.1", features = ["fdcan_h7"]}
-stm32h7xx-hal = {version = "0.16.0", features = ["stm32h753v", "can", "device-selected"]}
->>>>>>> origin/prop-test
 
 cortex-m = { version = "0.7.7", features = [
     "inline-asm",

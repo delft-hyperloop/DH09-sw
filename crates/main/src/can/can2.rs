@@ -125,7 +125,7 @@ type CanRxPublisher<'a> = Publisher<
 #[embassy_executor::task]
 async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>) -> ! {
     let mut error_counter: usize = 0;
-    let mut last_message_instant = None;
+    // let mut last_message_instant = None;
     loop {
         defmt::debug!("reading stuff from CAN2");
         match can.read().await {

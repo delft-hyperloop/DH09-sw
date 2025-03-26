@@ -31,6 +31,11 @@ pub fn get_command_items(path: &str) -> Result<Vec<(u16, String)>> {
 
 pub fn generate_commands(path: &str, drv: bool) -> Result<String> {
     let config: Config = get_command_config(path)?;
+
+    Ok(generate_commands_from_config(&config, drv))
+}
+
+pub fn generate_commands_from_config(config: &Config, drv: bool) -> String {
     // println!("{:?}", config);
 
     let mut hasher = DefaultHasher::new();
@@ -64,7 +69,7 @@ pub fn generate_commands(path: &str, drv: bool) -> Result<String> {
         to_idx.push_str(&format!("            Command::{}(_) => {i},\n", &command.name));
     }
 
-    Ok(format!(
+    format!(
         "\n
 #[allow(non_camel_case_types)]
 #[allow(non_snake_case)]
@@ -122,5 +127,5 @@ pub const COMMANDS_LIST: [&str; {}] = [{}];
         if drv { "#[derive(Debug, Clone, Copy, defmt::Format, PartialEq)]" } else { "#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]" },
         ids.len(), ids.join(", "), name_list.len(), name_list.join(", ")
     )
-    + &format!("\npub const COMMAND_HASH: u64 = {hash};"))
+    + &format!("\npub const COMMAND_HASH: u64 = {hash};")
 }

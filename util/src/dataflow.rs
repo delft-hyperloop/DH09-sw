@@ -4,6 +4,7 @@ use std::fmt::Display;
 use std::fmt::Write;
 use std::str::FromStr;
 
+use crate::commands;
 use crate::datatypes::Limit;
 
 #[derive(serde::Deserialize, Debug)]
@@ -12,6 +13,7 @@ pub struct DataflowSpec {
     pub procedures: HashMap<String, ProcedureSpec>,
     pub standard_datapoints: Vec<StandardDatapointSpec>,
     pub message_processing: Vec<MessageProcessingSpec>,
+    pub commands: Vec<CommandSpec>,
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -22,7 +24,7 @@ pub struct StandardDatapointSpec {
 }
 
 #[derive(serde::Deserialize, Debug, Copy, Clone, Eq, PartialEq)]
-#[serde(rename_all = "lowercase")]
+#[serde(try_from = "String")]
 pub enum Ty {
     U8,
     U16,
@@ -35,6 +37,7 @@ pub enum Ty {
     F16,
     F32,
     F64,
+    U8Arr(usize),
 }
 
 impl Ty {
@@ -44,6 +47,7 @@ impl Ty {
             Self::U16 | Self::I16 | Self::F16 => 2,
             Self::U32 | Self::I32 | Self::F32 => 4,
             Self::U64 | Self::I64 | Self::F64 => 8,
+            Self::U8Arr(n) => n,
         }
     }
 }
@@ -64,6 +68,10 @@ impl FromStr for Ty {
             "f16" => Ok(Self::F16),
             "f32" => Ok(Self::F32),
             "f64" => Ok(Self::F64),
+            s if s.starts_with("[u8;") && s.ends_with(']') => {
+                let n = s[4..s.len() - 1].trim().parse().map_err(|_| "invalid array size")?;
+                Ok(Self::U8Arr(n))
+            },
             _ => Err("invalid type"),
         }
     }
@@ -89,6 +97,7 @@ impl Display for Ty {
             Self::F16 => write!(f, "f16"),
             Self::F32 => write!(f, "f32"),
             Self::F64 => write!(f, "f64"),
+            Self::U8Arr(n) => write!(f, "[u8; {}]", n),
         }
     }
 }
@@ -215,6 +224,22 @@ pub struct GetterSpec {
     pub can_payload_range: std::ops::Range<usize>,
 }
 
+#[derive(serde::Deserialize, Debug)]
+#[serde(rename_all = "kebab-case")]
+pub struct CommandSpec {
+    pub name: String,
+    pub id: u16,
+    pub can: Option<CanCommandSpec>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+#[serde(rename_all = "kebab-case")]
+pub struct CanCommandSpec {
+    #[serde(flatten)]
+    pub can: CanSpec,
+    pub conversion: Option<String>,
+}
+
 impl GetterSpec {
     fn get_from_can_frame(&self, data_slice: &str) -> String {
         let start = self.can_payload_range.start;
@@ -252,6 +277,14 @@ impl GetterSpec {
             },
             Ty::F32 => format!("f32::from_be_bytes({})", size_4_bytes(data_slice, start)),
             Ty::F64 => format!("f64::from_be_bytes({})", size_8_bytes(data_slice, start)),
+            Ty::U8Arr(n) => {
+                let mut s = String::from("[");
+                for i in 0..n {
+                    s.push_str(&format!("{data_slice}[{start} + {i}], ", i = i));
+                }
+                s.push(']');
+                s
+            },
         }
     }
 }
@@ -379,7 +412,7 @@ use core::future::Future;
     for mp in &df.message_processing {
         if let Some(fsm) = &mp.fsm {
             match &mp.can {
-                CanSpec::Can1 { id } => {
+                CanSpec::Can1 { id, .. } => {
                     if let Some(old_event) = can1_ids_to_events.insert(*id, &fsm.event) {
                         panic!(
                             "duplicate event for CAN1 id: {} ({} and {})",
@@ -387,7 +420,7 @@ use core::future::Future;
                         );
                     }
                 },
-                CanSpec::Can2 { id } => {
+                CanSpec::Can2 { id, .. } => {
                     if let Some(old_event) = can2_ids_to_events.insert(*id, &fsm.event) {
                         panic!(
                             "duplicate event for CAN2 id: {} ({} and {})",
@@ -429,7 +462,7 @@ use core::future::Future;
 
     writeln!(&mut code, "pub async fn parse_datapoints_can_1<F, Fut>(id: u32, data: &[u8], mut f: F) where F: FnMut(Datapoint) -> Fut, Fut: Future<Output=()> {{ {proc} match id {{").unwrap();
     for mp in &df.message_processing {
-        if let CanSpec::Can1 { id } = mp.can {
+        if let CanSpec::Can1 { id, .. } = mp.can {
             writeln!(
                 &mut code,
                 "{} => {{
@@ -452,7 +485,7 @@ use core::future::Future;
 
     writeln!(&mut code, "pub async fn parse_datapoints_can_2<F, Fut>(id: u32, data: &[u8], mut f: F) where F: FnMut(Datapoint) -> Fut, Fut: Future<Output=()> {{ {proc} match id {{").unwrap();
     for mp in &df.message_processing {
-        if let CanSpec::Can2 { id } = mp.can {
+        if let CanSpec::Can2 { id, .. } = mp.can {
             writeln!(
                 &mut code,
                 "{} => {{
@@ -473,6 +506,45 @@ use core::future::Future;
     }
     writeln!(&mut code, "_ => {{}}}}}}").unwrap();
 
+    let mut can1commands = vec![];
+    let mut can2commands = vec![];
+
+    for command in &df.commands {
+        if let Some(CanCommandSpec { can: CanSpec::Can1 { id, .. }, conversion }) = &command.can {
+            can1commands.push((&command.name, *id, conversion));
+        } else if let Some(CanCommandSpec { can: CanSpec::Can2 { id, .. }, conversion }) = &command.can {
+            can2commands.push((&command.name, *id, conversion));
+        }
+    }
+
+    writeln!(&mut code, "pub async fn gs_to_can1<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::can1::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
+    for (command_name, id, conversion) in &can1commands {
+        writeln!(
+            &mut code,
+            r#"Command::{command_name}(v) => {{
+                let data = {conversion}(v);
+                f(crate::can::can1::CanEnvelope::new_from_frame(embassy_stm32::can::frame::FdFrame::new_extended({id}, &data).expect("Invalid frame!"))).await;
+            }}"#,
+            conversion = conversion.as_deref().unwrap_or("default_command_process"),
+        )
+        .unwrap();
+    }
+    writeln!(&mut code, "_ => {{}}}}}}").unwrap();
+
+    writeln!(&mut code, "pub async fn gs_to_can2<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::can2::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
+    for (command_name, id, conversion) in &can2commands {
+        writeln!(
+            &mut code,
+            r#"Command::{command_name}(v) => {{
+                let data = {conversion}(v);
+                f(crate::can::can2::CanEnvelope::new_from_frame(embassy_stm32::can::frame::Frame::new_standard({id}, &data).expect("Invalid frame!"))).await;
+            }}"#,
+            conversion = conversion.as_deref().unwrap_or("default_command_process"),
+        )
+        .unwrap();
+    }
+    writeln!(&mut code, "_ => {{}}}}}}").unwrap();
+
     code
 }
 
@@ -481,9 +553,11 @@ pub fn make_logging_pcb_code(df: &DataflowSpec) -> String { format!("") }
 pub fn make_gs_code(df: &DataflowSpec) -> String {
     let mut code = String::new();
 
-    code.push_str(r#"
+    code.push_str(
+        r#"
 pub fn process_input_datatype(datatype: Datatype, data: u64) -> f64 {
-"#);
+"#,
+    );
     code.push_str(&make_procedures(df));
     code.push_str("match datatype {");
 
@@ -495,6 +569,14 @@ pub fn process_input_datatype(datatype: Datatype, data: u64) -> f64 {
     writeln!(&mut code, "_ => data as f64,}}}}").unwrap();
 
     code
+}
+
+pub fn collect_commands(df: &DataflowSpec) -> commands::Config {
+    let mut commands = commands::Config { Command: Vec::new() };
+    for cmd in &df.commands {
+        commands.Command.push(commands::Command { id: cmd.id, name: cmd.name.clone() });
+    }
+    commands
 }
 
 pub fn parse_from(data: &str) -> DataflowSpec { serde_yaml::from_str(data).unwrap() }

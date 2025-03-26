@@ -42,7 +42,8 @@ use embedded_io_async::Write;
 use fsm::utils::types::EventChannel;
 use fsm::utils::types::EventReceiver;
 use fsm::utils::types::EventSender;
-use fsm::{Event, FSM};
+use fsm::Event;
+use fsm::FSM;
 use main::can::can1;
 use main::can::can2;
 use main::gs_master;
@@ -99,11 +100,7 @@ async fn run_fsm(
 }
 
 #[embassy_executor::task]
-async fn forward_gs_to_fsm(
-    mut gsrx: gs_master::RxSubscriber<'static>,
-    event_sender: EventSender,
-    cantx: can2::CanTxSender<'static>,
-) {
+async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sender: EventSender) {
     let mut prop_debug_params: u64 = 0;
     let mut prop_test_control_params: u64 = 0;
     loop {
@@ -123,12 +120,8 @@ async fn forward_gs_to_fsm(
             main::config::Command::DefaultCommand(_) => {
                 event_sender.send(fsm::utils::Event::NoEvent).await
             }
-            main::config::Command::Heartbeat(_) => {
-
-            },
-            main::config::Command::FrontendHeartbeat(_) => {
-
-            },
+            main::config::Command::Heartbeat(_) => {}
+            main::config::Command::FrontendHeartbeat(_) => {}
             main::config::Command::EmitEvent(_) => todo!(),
 
             // HV commands
@@ -156,55 +149,13 @@ async fn forward_gs_to_fsm(
             main::config::Command::PropulsionOff(_) => {
                 event_sender.send(fsm::utils::Event::Cruise).await
             }
-            main::config::Command::SendPropulsionControlWord(value) => {
-                send_can2_message(
-                    &((value & 0x3FF) as u16).to_le_bytes(),
-                    cantx,
-                    main::config::Command::SendPropulsionControlWord(value).to_id(),
-                ).await;
-            }
-            main::config::Command::PPControlParams(value) => {
-                send_can2_message(
-                    &value.to_le_bytes(),
-                    cantx,
-                    main::config::Command::PPControlParams(value).to_id()
-                ).await;
-            }
-            main::config::Command::PPDebugParams11(value) => {
-                prop_debug_params = value;
-            }
-            main::config::Command::PPDebugParams12(value) => {
-                let mut data: [u8; 8] = [0; 8];
-                data[0..4].copy_from_slice(&(value as u32).to_le_bytes());
-                data[4..8].copy_from_slice(&(prop_debug_params as u32).to_le_bytes());
-
-                send_can2_message(
-                    &data,
-                    cantx,
-                    main::config::Command::PPDebugParams12(value).to_id()
-                ).await;
-            }
-            main::config::Command::PPDebugParams2(value) => {
-                send_can2_message(
-                    &value.to_le_bytes(),
-                    cantx,
-                    main::config::Command::PPDebugParams2(value).to_id()
-                ).await;
-            }
-            main::config::Command::PPTestControlParams1(value) => {
-                prop_test_control_params = value;
-            }
-            main::config::Command::PPTestControlParams2(value) => {
-                let mut data: [u8; 8] = [0; 8];
-                data[0..4].copy_from_slice(&(value as u32).to_le_bytes());
-                data[4..8].copy_from_slice(&(prop_test_control_params as u32).to_le_bytes());
-
-                send_can2_message(
-                    &data,
-                    cantx,
-                    main::config::Command::PPTestControlParams2(prop_test_control_params).to_id()
-                ).await;
-            }
+            main::config::Command::SendPropulsionControlWord(value) => {}
+            main::config::Command::PPControlParams(value) => {}
+            main::config::Command::PPDebugParams11(value) => {}
+            main::config::Command::PPDebugParams12(value) => {}
+            main::config::Command::PPDebugParams2(value) => {}
+            main::config::Command::PPTestControlParams1(value) => {}
+            main::config::Command::PPTestControlParams2(value) => {}
 
             // Control commands
             main::config::Command::ArmBrakes(_) => {
@@ -225,23 +176,43 @@ async fn forward_gs_to_fsm(
     }
 }
 
+#[embassy_executor::task]
+async fn forward_gs_to_can1(
+    mut gsrx: gs_master::RxSubscriber<'static>,
+    cantx: can1::CanTxSender<'static>,
+) {
+    loop {
+        let msg = gsrx.next_message_pure().await;
+        info!("Received message from GS: {:?}", msg);
+        let command = msg.command;
+
+        main::config::gs_to_can1(command, |frame| cantx.send(frame)).await;
+    }
+}
+
+#[embassy_executor::task]
+async fn forward_gs_to_can2(
+    mut gsrx: gs_master::RxSubscriber<'static>,
+    cantx: can2::CanTxSender<'static>,
+) {
+    loop {
+        let msg = gsrx.next_message_pure().await;
+        info!("Received message from GS: {:?}", msg);
+        let command = msg.command;
+
+        main::config::gs_to_can2(command, |frame| cantx.send(frame)).await;
+    }
+}
+
 /// Sends a message on the 2nd CAN bus with the values provided.
 ///
 /// # Params:
 /// - `value` The data to be sent
 /// - `cantx` The sender object for the 2nd CAN bus
 /// - `id` The id of the message
-async fn send_can2_message(
-    value: &[u8],
-    cantx: can2::CanTxSender<'static>,
-    id: u16,
-) {
+async fn send_can2_message(value: &[u8], cantx: can2::CanTxSender<'static>, id: u16) {
     let header = can::frame::Header::new_fd(
-        embedded_can::Id::from(
-            embedded_can::StandardId::new(
-                id,
-            ).expect("Invalid ID"),
-        ),
+        embedded_can::Id::from(embedded_can::StandardId::new(id).expect("Invalid ID")),
         value.len() as u8,
         false,
         true,
@@ -668,8 +639,8 @@ async fn main(spawner: Spawner) -> ! {
 
     let config = embassy_net::Config::dhcpv4(Default::default());
     // let config = embassy_net::Config::ipv4_static(embassy_net::StaticConfigV4 {
-    //    address: embassy_net::Ipv4Cidr::new(Ipv4Address::new(169, 254, 42, 80), 16),
-    //    dns_servers: heapless::Vec::new(),
+    //    address: embassy_net::Ipv4Cidr::new(Ipv4Address::new(169, 254, 42, 80),
+    // 16),    dns_servers: heapless::Vec::new(),
     //    gateway: None,
     // });
 
@@ -679,10 +650,12 @@ async fn main(spawner: Spawner) -> ! {
     )
     .await;
 
-    let gsrx = gs_master.subscribe();
-    let gstx = gs_master.transmitter();
+    unwrap!(spawner.spawn(forward_gs_to_fsm(
+        gs_master.subscribe(),
+        event_sender_gs_to_fsm,
+    )));
 
-    unwrap!(spawner.spawn(forward_gs_to_fsm(gsrx, event_sender_gs_to_fsm, can2.new_sender())));
+    unwrap!(spawner.spawn(forward_gs_to_can2(gs_master.subscribe(), can2.new_sender())));
 
     unwrap!(spawner.spawn(forward_can1_messages_to_gs(
         can1.new_subscriber(),

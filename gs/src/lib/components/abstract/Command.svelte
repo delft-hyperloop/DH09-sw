@@ -4,8 +4,8 @@
 
     export let className: string = '';
     export let cmd: NamedCommand;
-    export let val: number = 0;
-    export let callback: (val:number) => void = () => {};
+    export let val: number | bigint = 0;
+    export let callback: (val:number | bigint) => void = () => {};
     export let text: string = '';
 
     let send = async () => {
@@ -20,7 +20,7 @@
     };
 </script>
 
-<button class="btn rounded-md font-number font-medium {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
+<button class="btn rounded-md font-number font-medium text-wrap overflow-auto {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
         on:click={send}>
     {text ? text : util.snakeToCamel(cmd)}
 </button>

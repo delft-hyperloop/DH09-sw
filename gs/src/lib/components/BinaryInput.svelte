@@ -1,5 +1,4 @@
 <script lang="ts">
-
     import { propControlWord } from '$lib/stores/state';
 
     export let index: number = 0;
@@ -16,6 +15,6 @@
 
 <div class="flex flex-col items-center">
     <button on:click={changeValue}>▲</button>
-    <input type="text" maxlength="1" class="text-center input" bind:value={value}>
+    <input type="text" maxlength="1" class="text-center input rounded-md " bind:value={value}>
     <button on:click={changeValue}>▼</button>
 </div>

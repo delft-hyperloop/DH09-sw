@@ -42,7 +42,7 @@ use embedded_io_async::Write;
 use fsm::utils::types::EventChannel;
 use fsm::utils::types::EventReceiver;
 use fsm::utils::types::EventSender;
-use fsm::FSM;
+use fsm::{Event, FSM};
 use main::can::can1;
 use main::can::can2;
 use main::gs_master;
@@ -104,9 +104,11 @@ async fn forward_gs_to_fsm(
     event_sender: EventSender,
     cantx: can2::CanTxSender<'static>,
 ) {
+    let mut prop_debug_params: u64 = 0;
+    let mut prop_test_control_params: u64 = 0;
     loop {
         let msg = gsrx.next_message_pure().await;
-        debug!("Received message from GS: {:?}", msg);
+        info!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
         match command {
@@ -121,8 +123,12 @@ async fn forward_gs_to_fsm(
             main::config::Command::DefaultCommand(_) => {
                 event_sender.send(fsm::utils::Event::NoEvent).await
             }
-            main::config::Command::Heartbeat(_) => todo!(),
-            main::config::Command::FrontendHeartbeat(_) => todo!(),
+            main::config::Command::Heartbeat(_) => {
+
+            },
+            main::config::Command::FrontendHeartbeat(_) => {
+
+            },
             main::config::Command::EmitEvent(_) => todo!(),
 
             // HV commands
@@ -164,11 +170,18 @@ async fn forward_gs_to_fsm(
                     main::config::Command::PPControlParams(value).to_id()
                 ).await;
             }
-            main::config::Command::PPDebugParams1(value) => {
+            main::config::Command::PPDebugParams11(value) => {
+                prop_debug_params = value;
+            }
+            main::config::Command::PPDebugParams12(value) => {
+                let mut data: [u8; 8] = [0; 8];
+                data[0..4].copy_from_slice(&(value as u32).to_le_bytes());
+                data[4..8].copy_from_slice(&(prop_debug_params as u32).to_le_bytes());
+
                 send_can2_message(
-                    &value.to_le_bytes(),
+                    &data,
                     cantx,
-                    main::config::Command::PPDebugParams1(value).to_id()
+                    main::config::Command::PPDebugParams12(value).to_id()
                 ).await;
             }
             main::config::Command::PPDebugParams2(value) => {
@@ -178,11 +191,18 @@ async fn forward_gs_to_fsm(
                     main::config::Command::PPDebugParams2(value).to_id()
                 ).await;
             }
-            main::config::Command::PPTestControlParams(value) => {
+            main::config::Command::PPTestControlParams1(value) => {
+                prop_test_control_params = value;
+            }
+            main::config::Command::PPTestControlParams2(value) => {
+                let mut data: [u8; 8] = [0; 8];
+                data[0..4].copy_from_slice(&(value as u32).to_le_bytes());
+                data[4..8].copy_from_slice(&(prop_test_control_params as u32).to_le_bytes());
+
                 send_can2_message(
-                    &value.to_le_bytes(),
+                    &data,
                     cantx,
-                    main::config::Command::PPTestControlParams(value).to_id()
+                    main::config::Command::PPTestControlParams2(prop_test_control_params).to_id()
                 ).await;
             }
 
@@ -343,7 +363,23 @@ async fn forward_can2_messages_to_fsm(
             Id::Standard(s) => s.as_raw(),
         };
 
+        // TODO: Get config to match correct event
         let fsm_event = main::config::event_for_can_2_id(id as u32);
+
+        // let fsm_event = match (id as u32) {
+        //     1 => fsm::Event::ConnectToGS,
+        //     2 => fsm::Event::StartSystemCheck,
+        //     3 => fsm::Event::SystemCheckSuccess,
+        //     4 => fsm::Event::StartPreCharge,
+        //     5 => fsm::Event::Activate,
+        //     6 => fsm::Event::EnterDemo,
+        //     7 => fsm::Event::Levitate,
+        //     // 8 => fsm::Event::StopLevitating,
+        //     8 => fsm::Event::Accelerate,
+        //     9 => fsm::Event::Brake,
+        //     10 => fsm::Event::ShutDown,
+        //     _ => fsm::Event::NoEvent,
+        // };
 
         if fsm_event != fsm::Event::NoEvent {
             event_sender.send(fsm_event).await;
@@ -363,7 +399,7 @@ async fn forward_can1_messages_to_gs(
             Id::Standard(_) => todo!("Nuh-uh"),
         };
 
-        info!("Received CAN frame with ID: {}", id);
+        // info!("Received CAN frame with ID: {}", id);
 
         let data = can_frame.payload();
 
@@ -388,7 +424,7 @@ async fn forward_can2_messages_to_gs(
             Id::Standard(id) => id.as_raw(),
         };
 
-        info!("Received CAN frame with ID: {}", id);
+        // info!("Received CAN frame with ID: {}", id);
 
         let data = can_frame.payload();
 
@@ -404,6 +440,7 @@ async fn forward_can2_messages_to_gs(
 #[embassy_executor::task]
 async fn gs_heartbeat(mut gstx: gs_master::TxSender<'static>) {
     loop {
+        // info!("Sending heartbeat");
         gstx.send(PodToGsMessage {
             dp: Datapoint::new(
                 main::config::Datatype::FrontendHeartbeating,
@@ -523,40 +560,40 @@ async fn main(spawner: Spawner) -> ! {
     let can2 = {
         let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
 
-        let config = configurator
-            .config()
-            // Configuration for 1Mb/s
-            // .set_nominal_bit_timing(NominalBitTiming {
-            //     prescaler: NonZeroU16::new(15).unwrap(),
-            //     seg1: NonZeroU8::new(5).unwrap(),
-            //     seg2: NonZeroU8::new(2).unwrap(),
-            //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-            // })
-            .set_nominal_bit_timing(NominalBitTiming {
-                prescaler: NonZeroU16::new(15).unwrap(),
-                seg1: NonZeroU8::new(13).unwrap(),
-                seg2: NonZeroU8::new(2).unwrap(),
-                sync_jump_width: NonZeroU8::new(1).unwrap(),
-            })
-            // .set_nominal_bit_timing(NominalBitTiming {
-            //     prescaler: NonZeroU16::new(15).unwrap(),
-            //     seg1: NonZeroU8::new(13).unwrap(),
-            //     seg2: NonZeroU8::new(2).unwrap(),
-            //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-            // })
-            // Configuration for 2Mb/s
-            // .set_data_bit_timing(DataBitTiming {
-            //     transceiver_delay_compensation: true,
-            //     prescaler: NonZeroU16::new(12).unwrap(),
-            //     seg1: NonZeroU8::new(13).unwrap(),
-            //     seg2: NonZeroU8::new(2).unwrap(),
-            //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-            // })
-            .set_tx_buffer_mode(config::TxBufferMode::Priority)
-            .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
-        // configurator.set_bitrate(500_000);
+        // let config = configurator
+        //     .config()
+        //     // Configuration for 1Mb/s
+        //     // .set_nominal_bit_timing(NominalBitTiming {
+        //     //     prescaler: NonZeroU16::new(15).unwrap(),
+        //     //     seg1: NonZeroU8::new(5).unwrap(),
+        //     //     seg2: NonZeroU8::new(2).unwrap(),
+        //     //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+        //     // })
+        //     .set_nominal_bit_timing(NominalBitTiming {
+        //         prescaler: NonZeroU16::new(15).unwrap(),
+        //         seg1: NonZeroU8::new(13).unwrap(),
+        //         seg2: NonZeroU8::new(2).unwrap(),
+        //         sync_jump_width: NonZeroU8::new(1).unwrap(),
+        //     })
+        //     // .set_nominal_bit_timing(NominalBitTiming {
+        //     //     prescaler: NonZeroU16::new(15).unwrap(),
+        //     //     seg1: NonZeroU8::new(13).unwrap(),
+        //     //     seg2: NonZeroU8::new(2).unwrap(),
+        //     //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+        //     // })
+        //     // Configuration for 2Mb/s
+        //     // .set_data_bit_timing(DataBitTiming {
+        //     //     transceiver_delay_compensation: true,
+        //     //     prescaler: NonZeroU16::new(12).unwrap(),
+        //     //     seg1: NonZeroU8::new(13).unwrap(),
+        //     //     seg2: NonZeroU8::new(2).unwrap(),
+        //     //     sync_jump_width: NonZeroU8::new(1).unwrap(),
+        //     // })
+        //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
+        //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+        configurator.set_bitrate(1_000_000);
 
-        configurator.set_config(config);
+        // configurator.set_config(config);
 
         let mut can = configurator.into_normal_mode();
 
@@ -617,14 +654,14 @@ async fn main(spawner: Spawner) -> ! {
         p.PC4, // RX_D0: Received Bit 0
         p.PC5, // RX_D1: Received Bit 1
         // main pcb:
-        p.PB12, // TX_D0: Transmit Bit 0
+        // p.PB12, // TX_D0: Transmit Bit 0
         // nucleo:
-        // p.PG13, // TX_D0: Transmit Bit 0
+        p.PG13, // TX_D0: Transmit Bit 0
         p.PB13, // TX_D1: Transmit Bit 1
         // nucleo:
-        // p.PG11, // TX_EN: Transmit Enable
+        p.PG11, // TX_EN: Transmit Enable
         // main pcb:
-        p.PB11,
+        // p.PB11,
         GenericPhy::new(0),
         mac_addr,
     );

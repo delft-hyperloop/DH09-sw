@@ -169,7 +169,7 @@ impl FSM {
     /// Transitions the FSM to a new state while executing the
     /// former state's exit method and the new state's entry method.
     async fn transition(&mut self, new_state: States) {
-        self.call_entry_method(self.state).await;
+        self.call_exit_method(self.state).await;
 
         self.state = new_state;
         #[cfg(test)]
@@ -177,7 +177,8 @@ impl FSM {
             **self.state_mutex.lock().await = new_state;
         }
 
-        self.call_exit_method(self.state).await;
+        self.call_entry_method(self.state).await;
+        defmt::info!("Transitioned to state {}", self.state);
     }
 
     /// Matches a state with its entry method and executes it. Should be called

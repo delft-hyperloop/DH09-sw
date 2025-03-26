@@ -55,7 +55,7 @@
             </div>
             {#if pop_up}
                 <button on:click={() => new ViewWindow(title, `/view/chart/${title}`)}>
-                    <Icon icon="carbon:popup" />
+                    <Icon icon="carbon:shrink-screen" />
                 </button>
             {/if}
         </div>

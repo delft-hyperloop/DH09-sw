@@ -12,7 +12,7 @@
     import {invoke} from "@tauri-apps/api/tauri";
     import {STATUS} from "$lib/types";
     import { podSpeed } from '$lib/stores/data';
-    import { goingForwardState } from '$lib/stores/state';
+    import { debugModeActive, goingForwardState } from '$lib/stores/state';
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const statuses = storeManager.getWritable("ConnectionStatus")
@@ -65,7 +65,7 @@
 </script>
 
 <div class="p-4 h-full">
-    <h2 class="text-2xl font-semibold mb-4">Initialization</h2>
+    <h2 class="text-2xl font-semibold mb-4 ">Initialization</h2>
 
     <TileGrid columns="1fr 1fr 1.5fr" rows="auto 1fr">
         <Tile containerClass="row-span-2" insideClass="flex flex-col gap-2" heading="Run Initialisation">
@@ -136,4 +136,16 @@
             <Chart height={250} background="bg-surface-900" title="Velocity" />
         </Tile>
     </TileGrid>
+
+    {#if $debugModeActive}
+        <Tile containerClass="col-span-4 mt-2" heading="Propulsion Log 1">
+            <Chart title="Propulsion Log 1" background="bg-surface-900" />
+        </Tile>
+        <Tile containerClass="col-span-4 mt-2" heading="Propulsion Log 2">
+            <Chart title="Propulsion Log 2" background="bg-surface-900" />
+        </Tile>
+        <Tile containerClass="col-span-4 mt-2" heading="Propulsion Log 3">
+            <Chart title="Propulsion Log 3" background="bg-surface-900" />
+        </Tile>
+    {/if}
 </div>

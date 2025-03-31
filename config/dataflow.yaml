@@ -185,9 +185,19 @@ standard-datapoints:
   - datapoint:
       name: 'PropulsionCurrent'
       id: 0x200
+      store:
+        default: 0
   - datapoint:
       name: 'Localisation'
       id: 0x201
+      store:
+        default: 0
+        callback: |
+          data => {
+            const curr = Number(data);
+            $chartStore.get("Localisation")!.addEntry(1, curr);
+            return curr;
+          }
 
 
 message-processing:
@@ -199,6 +209,8 @@ message-processing:
       - datapoint:
           name: 'TempAmbient0'
           id: 0x4B0
+          store:
+            default: 0
         getter: 'u8[0..1]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -207,6 +219,8 @@ message-processing:
       - datapoint:
           name: 'TempAmbient1'
           id: 0x4B1
+          store:
+            default: 0
         getter: 'u8[1..2]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -215,6 +229,8 @@ message-processing:
       - datapoint:
           name: 'TempAmbient2'
           id: 0x4B2
+          store:
+            default: 0
         getter: 'u8[2..3]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -230,6 +246,8 @@ message-processing:
       - datapoint:
           name: 'BMSVoltageHigh'
           id: 0x3A1
+          store:
+            default: 0
         getter: 'u16[0..2]'
         can-conversion: 'decode_bms_voltage:u16->f32'
         gs:
@@ -241,6 +259,8 @@ message-processing:
       - datapoint:
           name: 'BMSVoltageLow'
           id: 0x19D
+          store:
+            default: 0
         getter: 'u16[2..4]'
         can-conversion: 'decode_bms_voltage:u16->f32'
         gs:
@@ -252,6 +272,8 @@ message-processing:
       - datapoint:
           name: 'BMSTemperatureHigh'
           id: 0x3A2
+          store:
+            default: 0
         getter: 'u16[4..6]'
         can-conversion: 'decode_bms_temperature:u16->f32'
         display-units: '°C'
@@ -260,6 +282,8 @@ message-processing:
       - datapoint:
           name: 'BMSTemperatureLow'
           id: 0x19E
+          store:
+            default: 0
         getter: 'u16[6..8]'
         can-conversion: 'decode_bms_temperature:u16->f32'
         display-units: '°C'
@@ -273,6 +297,8 @@ message-processing:
       - datapoint:
           name: 'TempRangeStart'
           id: 0x1AA
+          store:
+            default: 0
         getter: 'i16[0..2]' 
         can-conversion: 'identity_i16:i16->i16'
         display-units: '°C'
@@ -281,6 +307,8 @@ message-processing:
       - datapoint:
           name: 'TempRangeEnd'
           id: 0x1AB
+          store:
+            default: 0
         getter: 'i16[2..4]' 
         can-conversion: 'identity_i16:i16->i16'
         display-units: '°C'
@@ -294,6 +322,8 @@ message-processing:
       - datapoint:
           name: 'Loc1'
           id: 0x320
+          store:
+            default: 0
         getter: 'i32[0..4]'
         can-conversion: 'identity_i32:i32->i32'
         display-units: 'mm'
@@ -302,6 +332,8 @@ message-processing:
       - datapoint:
           name: 'Loc2'
           id: 0x321
+          store:
+            default: 0
         getter: 'i32[4..8]'
         can-conversion: 'identity_i32:i32->i32'
         display-units: 'mm'
@@ -331,6 +363,8 @@ message-processing:
       - datapoint:
           name: 'Temp0'
           id: 0x33A
+          store:
+            default: 0
         getter: 'u8[0..1]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -339,6 +373,8 @@ message-processing:
       - datapoint:
           name: 'Temp1'
           id: 0x33B
+          store:
+            default: 0
         getter: 'u8[1..2]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -347,6 +383,8 @@ message-processing:
       - datapoint:
           name: 'Temp2'
           id: 0x33C
+          store:
+            default: 0
         getter: 'u8[2..3]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -355,6 +393,8 @@ message-processing:
       - datapoint:
           name: 'Temp3'
           id: 0x33D
+          store:
+            default: 0
         getter: 'u8[3..4]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -363,6 +403,8 @@ message-processing:
       - datapoint:
           name: 'Temp4'
           id: 0x33E
+          store:
+            default: 0
         getter: 'u8[4..5]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -371,6 +413,8 @@ message-processing:
       - datapoint:
           name: 'Temp5'
           id: 0x33F
+          store:
+            default: 0
         getter: 'u8[5..6]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -379,6 +423,8 @@ message-processing:
       - datapoint:
           name: 'Temp6'
           id: 0x340
+          store:
+            default: 0
         getter: 'u8[6..7]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -387,6 +433,8 @@ message-processing:
       - datapoint:
           name: 'Temp7'
           id: 0x341
+          store:
+            default: 0
         getter: 'u8[7..8]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
@@ -400,6 +448,8 @@ message-processing:
       - datapoint:
           name: 'ResetSenseCon'
           id: 0x193
+          store:
+            default: 0
         getter: 'u8[0..1]'
         can-conversion: 'identity_u8:u8->u8'
         gs:
@@ -412,6 +462,8 @@ message-processing:
       - datapoint:
           name: 'ResetPropulsion'
           id: 0x195
+          store:
+            default: 0
         getter: 'u8[0..1]'
         can-conversion: 'identity_u8:u8->u8'
         gs:
@@ -424,6 +476,8 @@ message-processing:
       - datapoint:
           name: 'ModulationFactor1'
           id: 0x830
+          store:
+            default: 0
         getter: 'i16[0..2]'
         can-conversion: 'convert_i16_to_u64:i16->u64'  # Convert i16 to f32
         gs:
@@ -431,6 +485,8 @@ message-processing:
       - datapoint:
           name: 'ModulationFactor2'
           id: 0x831
+          store:
+            default: 0
         getter: 'i16[2..4]'
         can-conversion: 'convert_i16_to_u64:i16->u64'  # Convert i16 to f32
         gs:
@@ -438,6 +494,8 @@ message-processing:
       - datapoint:
           name: 'MaximumVelocity1'
           id: 0x832
+          store:
+            default: 0
         getter: 'i16[4..6]'
         can-conversion: 'convert_i16_to_u64:i16->u64'
         gs:
@@ -445,6 +503,8 @@ message-processing:
       - datapoint:
           name: 'MaximumVelocity2'
           id: 0x833
+          store:
+            default: 0
         getter: 'i16[6..8]'
         can-conversion: 'convert_i16_to_u64:i16->u64'
         gs:
@@ -457,6 +517,8 @@ message-processing:
       - datapoint:
           name: 'Kpq1'
           id: 0x834
+          store:
+            default: 0
         getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -464,6 +526,8 @@ message-processing:
       - datapoint:
           name: 'Kpq2'
           id: 0x835
+          store:
+            default: 0
         getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -471,6 +535,8 @@ message-processing:
       - datapoint:
           name: 'Kiq1'
           id: 0x836
+          store:
+            default: 0
         getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -478,6 +544,8 @@ message-processing:
       - datapoint:
           name: 'Kiq2'
           id: 0x837
+          store:
+            default: 0
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -490,6 +558,8 @@ message-processing:
       - datapoint:
           name: 'Kpd1'
           id: 0x838
+          store:
+            default: 0
         getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -497,6 +567,8 @@ message-processing:
       - datapoint:
           name: 'Kpd2'
           id: 0x839
+          store:
+            default: 0
         getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -504,6 +576,8 @@ message-processing:
       - datapoint:
           name: 'Kid1'
           id: 0x83A
+          store:
+            default: 0
         getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -511,6 +585,8 @@ message-processing:
       - datapoint:
           name: 'Kid2'
           id: 0x83B
+          store:
+            default: 0
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -523,6 +599,8 @@ message-processing:
       - datapoint:
           name: 'PositionOffset1'
           id: 0x83C
+          store:
+            default: 0
         getter: 'i16[0..2]'
         can-conversion: 'scale_1000:i16->f32'
         gs:
@@ -530,6 +608,8 @@ message-processing:
       - datapoint:
           name: 'PositionOffset2'
           id: 0x83D
+          store:
+            default: 0
         getter: 'i16[2..4]'
         can-conversion: 'scale_1000:i16->f32'
         gs:
@@ -537,6 +617,8 @@ message-processing:
       - datapoint:
           name: 'Alpha1'
           id: 0x83E
+          store:
+            default: 0
         getter: 'i16[4..6]'
         can-conversion: 'scale_1000:i16->f32'
         gs:
@@ -544,6 +626,8 @@ message-processing:
       - datapoint:
           name: 'Alpha2'
           id: 0x83F
+          store:
+            default: 0
         getter: 'i16[6..8]'
         can-conversion: 'scale_1000:i16->f32'
         gs:
@@ -556,6 +640,8 @@ message-processing:
       - datapoint:
           name: 'Iq1'
           id: 0x840
+          store:
+            default: 0
         getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -563,6 +649,8 @@ message-processing:
       - datapoint:
           name: 'Iq2'
           id: 0x841
+          store:
+            default: 0
         getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -570,6 +658,8 @@ message-processing:
       - datapoint:
           name: 'Id1'
           id: 0x842
+          store:
+            default: 0
         getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -577,6 +667,8 @@ message-processing:
       - datapoint:
           name: 'Id2'
           id: 0x843
+          store:
+            default: 0
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -589,6 +681,8 @@ message-processing:
       - datapoint:
           name: 'Vq1_C'
           id: 0x844
+          store:
+            default: 0
         getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -596,6 +690,8 @@ message-processing:
       - datapoint:
           name: 'Vq2_C'
           id: 0x845
+          store:
+            default: 0
         getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -603,6 +699,8 @@ message-processing:
       - datapoint:
           name: 'Vd1_C'
           id: 0x846
+          store:
+            default: 0
         getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -610,6 +708,8 @@ message-processing:
       - datapoint:
           name: 'Vd2_C'
           id: 0x847
+          store:
+            default: 0
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -622,6 +722,8 @@ message-processing:
       - datapoint:
           name: 'PPEmergency'
           id: 0x002
+          store:
+            default: 0
         getter: 'u8[0..1]'
         can-conversion: 'identity_u8:u8->u8'
         gs:
@@ -634,6 +736,8 @@ message-processing:
       - datapoint:
           name: 'Word1'
           id: 0x4B3
+          store:
+            default: 0
         getter: 'u16[0..2]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
@@ -641,6 +745,8 @@ message-processing:
       - datapoint:
           name: 'Word2'
           id: 0x4B4
+          store:
+            default: 0
         getter: 'u16[2..4]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
@@ -718,6 +824,8 @@ message-processing:
       - datapoint:
           name: 'Vq_Log'
           id: 0x4BA
+          store:
+            default: 0
         getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -725,6 +833,8 @@ message-processing:
       - datapoint:
           name: 'Vd_Log'
           id: 0x4BC
+          store:
+            default: 0
         getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -732,6 +842,8 @@ message-processing:
       - datapoint:
           name: 'Vbus'
           id: 0x4BE
+          store:
+            default: 0
         getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
@@ -739,6 +851,8 @@ message-processing:
       - datapoint:
           name: 'Ibus'
           id: 0x4C0
+          store:
+            default: 0
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:

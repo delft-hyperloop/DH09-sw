@@ -625,24 +625,24 @@ async fn main(spawner: Spawner) -> ! {
         p.PC4, // RX_D0: Received Bit 0
         p.PC5, // RX_D1: Received Bit 1
         // main pcb:
-        // p.PB12, // TX_D0: Transmit Bit 0
+        p.PB12, // TX_D0: Transmit Bit 0
         // nucleo:
-        p.PG13, // TX_D0: Transmit Bit 0
+        // p.PG13, // TX_D0: Transmit Bit 0
         p.PB13, // TX_D1: Transmit Bit 1
         // nucleo:
-        p.PG11, // TX_EN: Transmit Enable
+        // p.PG11, // TX_EN: Transmit Enable
         // main pcb:
-        // p.PB11,
+        p.PB11,
         GenericPhy::new(0),
         mac_addr,
     );
 
-    let config = embassy_net::Config::dhcpv4(Default::default());
-    // let config = embassy_net::Config::ipv4_static(embassy_net::StaticConfigV4 {
-    //    address: embassy_net::Ipv4Cidr::new(Ipv4Address::new(169, 254, 42, 80),
-    // 16),    dns_servers: heapless::Vec::new(),
-    //    gateway: None,
-    // });
+    // let config = embassy_net::Config::dhcpv4(Default::default());
+    let config = embassy_net::Config::ipv4_static(embassy_net::StaticConfigV4 {
+        address: embassy_net::Ipv4Cidr::new(Ipv4Address::new(192, 168, 1, 25), 24),
+        dns_servers: heapless::Vec::new(),
+        gateway: Some(Ipv4Address::new(192, 168, 1, 1)),
+    });
 
     let gs_master = GsMaster::new(
         EthernetGsCommsLayerInitializer::new(device, config),

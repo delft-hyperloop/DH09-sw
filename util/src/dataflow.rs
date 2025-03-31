@@ -672,6 +672,8 @@ gdd.stores.registerStore<{type}>("{name}", {default}"#,
             if let Some(callback) = &store.callback {
                 write!(&mut code, ", {callback}").unwrap();
             }
+
+            writeln!(&mut code, ");").unwrap();
         }
     }
 

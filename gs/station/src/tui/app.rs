@@ -52,37 +52,37 @@ impl App {
             cur_state: "None Yet".to_string(),
             last_heartbeat: "None Yet".to_string(),
             special_data: BTreeMap::from([
-                (Datatype::FrontendHeartbeating, 0.0),
-                (Datatype::InsulationNegative, 0.0),
-                (Datatype::InsulationPositive, 0.0),
-                (Datatype::InsulationOriginal, 0.0),
-                (Datatype::IMDVoltageDetails, 0.0),
-                (Datatype::IMDIsolationDetails, 0.0),
-                (Datatype::IMDGeneralInfo, 0.0),
-                (Datatype::Average_Temp_VB_top, 0.0),
-                (Datatype::GyroscopeX, 0.0),
-                (Datatype::GyroscopeY, 0.0),
-                (Datatype::GyroscopeZ, 0.0),
-                (Datatype::LowPressureSensor, 0.0),
-                (Datatype::BatteryCurrentHigh, 0.0),
-                (Datatype::BatteryTemperatureHigh, 0.0),
-                (Datatype::TotalBatteryVoltageLow, 0.0),
-                (Datatype::TotalBatteryVoltageHigh, 0.0),
-                (Datatype::SingleCellVoltageLow, 0.0),
-                (Datatype::BatteryMaxBalancingLow, 0.0),
-                (Datatype::Localisation, 0.0),
-                (Datatype::Velocity, 0.0),
-                (Datatype::LowPressureSensor, 0.0),
-                (Datatype::HighPressureSensor, 0.0),
-                (Datatype::PropulsionCurrent, 0.0),
-                (Datatype::PropulsionVoltage, 0.0),
-                (Datatype::PropulsionSpeed, 0.0),
-                (Datatype::PropulsionVRefInt, 0.0),
-                (Datatype::BrakingCommDebug, 0.0),
-                (Datatype::BrakingSignalDebug, 42.0),
-                (Datatype::BrakingBoolDebug, 42.0),
-                (Datatype::BrakingRearmDebug, 42.0),
-                (Datatype::PropGPIODebug, 42.0),
+                // (Datatype::FrontendHeartbeating, 0.0),
+                // (Datatype::InsulationNegative, 0.0),
+                // (Datatype::InsulationPositive, 0.0),
+                // (Datatype::InsulationOriginal, 0.0),
+                // (Datatype::IMDVoltageDetails, 0.0),
+                // (Datatype::IMDIsolationDetails, 0.0),
+                // (Datatype::IMDGeneralInfo, 0.0),
+                // (Datatype::Average_Temp_VB_top, 0.0),
+                // (Datatype::GyroscopeX, 0.0),
+                // (Datatype::GyroscopeY, 0.0),
+                // (Datatype::GyroscopeZ, 0.0),
+                // (Datatype::LowPressureSensor, 0.0),
+                // (Datatype::BatteryCurrentHigh, 0.0),
+                // (Datatype::BatteryTemperatureHigh, 0.0),
+                // (Datatype::TotalBatteryVoltageLow, 0.0),
+                // (Datatype::TotalBatteryVoltageHigh, 0.0),
+                // (Datatype::SingleCellVoltageLow, 0.0),
+                // (Datatype::BatteryMaxBalancingLow, 0.0),
+                // (Datatype::Localisation, 0.0),
+                // (Datatype::Velocity, 0.0),
+                // (Datatype::LowPressureSensor, 0.0),
+                // (Datatype::HighPressureSensor, 0.0),
+                // (Datatype::PropulsionCurrent, 0.0),
+                // (Datatype::PropulsionVoltage, 0.0),
+                // (Datatype::PropulsionSpeed, 0.0),
+                // (Datatype::PropulsionVRefInt, 0.0),
+                // (Datatype::BrakingCommDebug, 0.0),
+                // (Datatype::BrakingSignalDebug, 42.0),
+                // (Datatype::BrakingBoolDebug, 42.0),
+                // (Datatype::BrakingRearmDebug, 42.0),
+                // (Datatype::PropGPIODebug, 42.0),
             ]),
             backend,
             safe: true,
@@ -110,20 +110,20 @@ impl App {
             self.backend.log_msg(&msg);
             match msg {
                 Message::Data(datapoint) => match datapoint.datatype {
-                    Datatype::Info => match Info::from_id(datapoint.value as u16) {
-                        Info::Safe => {
-                            self.safe = true;
-                        },
-                        Info::Unsafe => {
-                            self.safe = false;
-                        },
-                        x => {
-                            self.logs.push((
-                                Message::Status(x),
-                                format!("[info: {} at {}]", datapoint.value, datapoint.timestamp),
-                            ));
-                        },
-                    },
+                    // Datatype::Info => match Info::from_id(datapoint.value as u16) {
+                    //     Info::Safe => {
+                    //         self.safe = true;
+                    //     },
+                    //     Info::Unsafe => {
+                    //         self.safe = false;
+                    //     },
+                    //     x => {
+                    //         self.logs.push((
+                    //             Message::Status(x),
+                    //             format!("[info: {} at {}]", datapoint.value, datapoint.timestamp),
+                    //         ));
+                    //     },
+                    // },
                     // Datatype::RoutePlan => {
                     //     self.logs.push((
                     //         Message::Info(format!(
@@ -134,38 +134,38 @@ impl App {
                     //         timestamp(),
                     //     ));
                     // },
-                    Datatype::FSMState => {
-                        self.cur_state =
-                            state_to_string(datapoint.value.round() as u64).to_string();
-                        self.logs.push((
-                            Message::Warning(format!(
-                                "State is now: {:?}",
-                                datapoint.value.to_be_bytes()
-                            )),
-                            timestamp(),
-                        ));
-                        self.logs.push((Message::Data(datapoint), timestamp()))
-                    },
-                    Datatype::FSMEvent => {
-                        if (datapoint.value - Event::Heartbeating.to_id() as f64).abs()
-                            <= f64::EPSILON * 2.0
-                        {
-                            self.last_heartbeat = timestamp();
-                        } else if self
-                            .special_data
-                            .keys()
-                            .collect::<Vec<&Datatype>>()
-                            .contains(&&datapoint.datatype)
-                        {
-                            self.special_data.insert(datapoint.datatype, datapoint.value);
-                        } else {
-                            self.logs.push((Message::Data(datapoint), timestamp()))
-                        }
-                    },
-                    Datatype::ResponseHeartbeat => {
-                        self.special_data
-                            .insert(Datatype::ResponseHeartbeat, datapoint.timestamp as f64);
-                    },
+                    // Datatype::FSMState => {
+                    //     self.cur_state =
+                    //         state_to_string(datapoint.value.round() as u64).to_string();
+                    //     self.logs.push((
+                    //         Message::Warning(format!(
+                    //             "State is now: {:?}",
+                    //             datapoint.value.to_be_bytes()
+                    //         )),
+                    //         timestamp(),
+                    //     ));
+                    //     self.logs.push((Message::Data(datapoint), timestamp()))
+                    // },
+                    // Datatype::FSMEvent => {
+                    //     if (datapoint.value - Event::Heartbeating.to_id() as f64).abs()
+                    //         <= f64::EPSILON * 2.0
+                    //     {
+                    //         self.last_heartbeat = timestamp();
+                    //     } else if self
+                    //         .special_data
+                    //         .keys()
+                    //         .collect::<Vec<&Datatype>>()
+                    //         .contains(&&datapoint.datatype)
+                    //     {
+                    //         self.special_data.insert(datapoint.datatype, datapoint.value);
+                    //     } else {
+                    //         self.logs.push((Message::Data(datapoint), timestamp()))
+                    //     }
+                    // },
+                    // Datatype::ResponseHeartbeat => {
+                    //     self.special_data
+                    //         .insert(Datatype::ResponseHeartbeat, datapoint.timestamp as f64);
+                    // },
                     x if self.special_data.keys().collect::<Vec<&Datatype>>().contains(&&x) => {
                         self.special_data.insert(x, datapoint.value);
                     },

@@ -431,6 +431,8 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         let (stack, runner) =
             embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
         unwrap!(spawner.spawn(eth_task(runner)));
+
+        info!("Waiting for config to come up");
         stack.wait_config_up().await;
 
         info!("Config is up");

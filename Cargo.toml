@@ -48,10 +48,10 @@ goose_utils = { path = "util" }
 
 [workspace.dependencies.embassy-stm32]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
+rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 features = [
     "defmt",
-    "stm32h753zi",
+    "stm32h743zi",
     "time-driver-any",
     "exti",
     # "memory-x",
@@ -61,23 +61,23 @@ features = [
 
 [workspace.dependencies.embassy-boot]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
+rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 
 [workspace.dependencies.embassy-boot-stm32]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
+rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 
 
 [workspace.dependencies.embassy-sync]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
+rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 features = ["defmt"]
 
 [workspace.dependencies.embassy-executor]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
+rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 features = [
-    "task-arena-size-32768",
+    # "task-arena-size-32768",
     "arch-cortex-m",
     "executor-thread",
     "defmt",
@@ -86,20 +86,24 @@ features = [
 
 [workspace.dependencies.embassy-net]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
+rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 features = ["medium-ethernet", "proto-ipv4", "tcp", "dns", "dhcpv4", "defmt", "packet-trace"]
 
 [workspace.dependencies.embassy-net-driver]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
+rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 
 [workspace.dependencies.embassy-time]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
+rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 
 [workspace.dependencies.embassy-futures]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "0edd45e61013539f0d8379bf38177f6cb03f5fc0"
+rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+
+[workspace.dependencies.smoltcp]
+git = "https://github.com/smoltcp-rs/smoltcp"
+rev = "f8bfa311206aaf29a8dbd55c5920b1fe674a5db1"
 
 [patch.crates-io]
 defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
@@ -112,3 +116,7 @@ defmt-decoder = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f560
 
 rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }
 #panic-rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }
+
+[patch.crates-io.smoltcp]
+git = "https://github.com/smoltcp-rs/smoltcp"
+rev = "f8bfa311206aaf29a8dbd55c5920b1fe674a5db1"

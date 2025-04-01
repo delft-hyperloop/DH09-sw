@@ -55,6 +55,8 @@ procedures:
     formula: 'x'
 
   # ======= GS communication =======
+  # dump = Main PCB to GS
+  # parse = GS to Main PCB
   dump-gs_2p_float:
     input: 'f32'
     output: 'u64'
@@ -182,11 +184,13 @@ standard-datapoints:
       name: 'FrontendHeartbeating'
       id: 0x170
     priority: 1
+
   - datapoint:
       name: 'PropulsionCurrent'
       id: 0x200
       store:
         default: 0
+
   - datapoint:
       name: 'Localisation'
       id: 0x201
@@ -199,6 +203,9 @@ standard-datapoints:
             return curr;
           }
 
+  - datapoint:
+      name: 'FSMState'
+      id: 0x202
 
 message-processing:
   - name: 'TempAmbient'
@@ -299,7 +306,7 @@ message-processing:
           id: 0x1AA
           store:
             default: 0
-        getter: 'i16[0..2]' 
+        getter: 'i16[0..2]'
         can-conversion: 'identity_i16:i16->i16'
         display-units: '°C'
         gs:
@@ -309,7 +316,7 @@ message-processing:
           id: 0x1AB
           store:
             default: 0
-        getter: 'i16[2..4]' 
+        getter: 'i16[2..4]'
         can-conversion: 'identity_i16:i16->i16'
         display-units: '°C'
         gs:
@@ -734,20 +741,11 @@ message-processing:
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Word1'
+          name: 'Word'
           id: 0x4B3
           store:
             default: 0
         getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
-        gs:
-          conversion: 'gs_u16:u16'
-      - datapoint:
-          name: 'Word2'
-          id: 0x4B4
-          store:
-            default: 0
-        getter: 'u16[2..4]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
@@ -953,35 +951,28 @@ commands:
     id: 0x6d
   - name: 'SendPropulsionControlWord'
     id: 0x191
+    can:
+      id: 0x191
+      bus: can2
   - name: 'PPControlParams'
     id: 0x33E
     can:
       id: 0x33E
       bus: can2
-  - name: 'PPDebugParams11'
+  - name: 'PPDebugParams1'
     id: 0x33F
     can:
       id: 0x33F
       bus: can2
-  - name: 'PPDebugParams12'
+  - name: 'PPDebugParams2'
     id: 0x340
     can:
       id: 0x340
       bus: can2
-  - name: 'PPDebugParams2'
+  - name: 'PPTestControlParams'
     id: 0x341
     can:
       id: 0x341
-      bus: can2
-  - name: 'PPTestControlParams1'
-    id: 0x342
-    can:
-      id: 0x342
-      bus: can2
-  - name: 'PPTestControlParams2'
-    id: 0x343
-    can:
-      id: 0x343
       bus: can2
   - name: 'SubmitDirection'
     id: 0x590

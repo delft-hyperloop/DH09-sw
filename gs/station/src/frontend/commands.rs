@@ -77,6 +77,25 @@ pub fn send_command(cmd_name: String, val: u64) -> bool {
     }
 }
 
+fn u32_to_u64(x: [u32; 2]) -> u64 {
+    let a = u32::to_be_bytes(x[0]);
+    let b = u32::to_be_bytes(x[1]);
+    u64::from_be_bytes([a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3]])
+}
+
+#[macro_export]
+#[allow(unused)]
+#[tauri::command]
+pub fn send_command_64_bits(cmd_name: String, vals: [u32; 2]) -> bool {
+    eprintln!("Received commmand {} with values {} {} [{}]", cmd_name, vals[0..4], vals[4..8], Local::now());
+    let c = Command::from_string(&cmd_name, u32_to_u64(vals));
+    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
+        backend_mutex.get_mut().unwrap().send_command(c)
+    } else {
+        panic!("kys");
+    }
+}
+
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]

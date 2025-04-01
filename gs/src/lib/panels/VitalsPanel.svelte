@@ -8,14 +8,14 @@
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
-    import { showcaseStateCounter, showcasingStates } from '$lib/stores/state';
+    import { GreenHVALTurnedOn, RedHVALTurnedOn, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
 
     let width: number;
 
     const storeManager = GrandDataDistributor.getInstance().stores;
-    // const lvBattery = storeManager.getWritable("ChargeStateLow");
-    // const hvBattery = storeManager.getWritable("ChargeStateHigh");
-    // const fsmState = storeManager.getWritable("FSMState");
+    const lvBattery = storeManager.getWritable("BMSVoltageLow");
+    const hvBattery = storeManager.getWritable("BMSVoltageHigh");
+    const fsmState = storeManager.getWritable("FSMState");
 
     let tableTempsArr: any[][];
     let tableArr2: any[][];
@@ -52,7 +52,7 @@
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
-    <AppBar padding="pl-8 pr-8 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDE.Alpha1="place-self-center">
+    <AppBar padding="pl-8 pr-8 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDefault="place-self-center">
         <svelte:fragment slot="lead">
             <div class="gap-2 flex flex-row items-center">
                 <Icon icon="codicon:graph-line"/>
@@ -101,7 +101,7 @@
                 <Tile bgToken={800} containerClass="col-span-2">
                     <Localization location={$location.value} showLabels={true}/>
                 </Tile>
-                <!-- <Tile bgToken={700} containerClass="col-span-2">
+                <Tile bgToken={700} containerClass="col-span-2">
                     <div class="flex flex-wrap justify-between gap-4">
                         <div class="flex gap-4">
                             <p>
@@ -116,11 +116,11 @@
                                 <br>
                                 LV Current: <Store datatype="BatteryCurrentLow" /> - [0, 10] A
                             </p>
-                            <p>
-                                Low Pressure: <Store datatype="LowPressureSensor" /> - [40, 52] bar
-                                <br>
-                                High Pressure: <Store datatype="HighPressureSensor" /> - [80, 180] bar
-                            </p>
+<!--                            <p>-->
+<!--                                Low Pressure: <Store datatype="LowPressureSensor" /> - [40, 52] bar-->
+<!--                                <br>-->
+<!--                                High Pressure: <Store datatype="HighPressureSensor" /> - [80, 180] bar-->
+<!--                            </p>-->
                         </div>
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2">
                             <span>LV: </span>
@@ -134,8 +134,8 @@
                         <div class="flex flex-col gap-4">
                             <span>High Voltage BMS: &ltstatus&gt</span>
                             <span>Emergency Breaking System: &ltstatus&gt</span>
-<!--                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>-->
-<!--                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>
+                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>-->
+                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>LV Total Safe: -Insert values- V</span>
@@ -146,25 +146,25 @@
                         <div class="flex gap-4 flex-wrap">
                             <Command cmd="StopHV" className="py-1 text-error-400 border-error-400 border-2" />
                             <Command cmd="ArmBrakes" className="py-1 bg-primary-500 text-surface-900 " />
-                            <Command cmd="StartRun" className="py-1 bg-primary-500 text-surface-900" />
-                            <Command cmd="ContinueRun" className="py-1 bg-primary-500 text-surface-900" />
+<!--                            <Command cmd="StartRun" className="py-1 bg-primary-500 text-surface-900" />-->
+<!--                            <Command cmd="ContinueRun" className="py-1 bg-primary-500 text-surface-900" />-->
                         </div>
                     </div>
                 </Tile> -->
-                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>
-                    <Table titles={tableBatteryTitles} tableArr={tableBatteryVitals}/>
-                </Tile>
-                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>
-                    <Table tableArr={tableTempsArr} titles={["Module", "Temp °C", "Safe range", "Module", "Temp °C", "Safe range"]}/>
-                </Tile>
-                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>
-                    <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>
-                </Tile>
-                <!-- <Tile
+<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
+<!--                    <Table titles={tableBatteryTitles} tableArr={tableBatteryVitals}/>-->
+<!--                </Tile>-->
+<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
+<!--                    <Table tableArr={tableTempsArr} titles={["Module", "Temp °C", "Safe range", "Module", "Temp °C", "Safe range"]}/>-->
+<!--                </Tile>-->
+<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
+<!--                    <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>-->
+<!--                </Tile>-->
+                <Tile
                     bgToken={800}
                     containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
                     <MainFSM/>
-                </Tile> -->
+                </Tile>
             </TileGrid>
         </div>
     {/if}

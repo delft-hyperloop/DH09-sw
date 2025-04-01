@@ -701,6 +701,26 @@ gdd.stores.registerStore<number>("Vbus", 0);
 
 gdd.stores.registerStore<number>("Ibus", 0);
 
+    gdd.stores.registerStore<number>("Ta", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("Tb", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 3")!.addEntry(2, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("Tc", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 3")!.addEntry(3, curr);
+        return curr;
+    });
+    gdd.stores.registerStore<number>("TCASE", 0, data => {
+        const curr = Number(data);
+        $chartStore.get("Propulsion Log 3")!.addEntry(4, curr);
+        return curr;
+    })
 gdd.stores.registerStore<number>("Ta", 0, data => {
     const curr = Number(data);
     $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
@@ -731,6 +751,124 @@ gdd.stores.registerStore<number>("TCASE", 0, data => {
 
 gdd.stores.registerStore<number>("PropulsionCurrent", 0);
 
+    // gdd.stores.registerStore<number>("LevitationTemperature", 0);
+    //
+    // gdd.stores.registerStore<number>("Average_Temp_VB_Bottom", 0.0);
+    // gdd.stores.registerStore<number>("Average_Temp_VB_top", 0.0);
+    // gdd.stores.registerStore<number>("Ambient_temp", 0.0);
+    //
+    // gdd.stores.registerStore<number>("Temp_HEMS_1", 0.0, data => {
+    //     const curr = Number(data);
+    //     hemsTempChart.addEntry(1, curr);
+    //     return curr;
+    // });
+    //
+    // gdd.stores.registerStore<number>("Temp_HEMS_2", 0.0, data => {
+    //     const curr = Number(data);
+    //     hemsTempChart.addEntry(2, curr);
+    //     return curr;
+    // })
+    //
+    // gdd.stores.registerStore<number>("Temp_HEMS_3", 0.0, data => {
+    //     const curr = Number(data);
+    //     hemsTempChart.addEntry(3, curr);
+    //     return curr;
+    // })
+    //
+    // gdd.stores.registerStore<number>("Temp_HEMS_4", 0.0, data => {
+    //     const curr = Number(data);
+    //     hemsTempChart.addEntry(4, curr);
+    //     return curr;
+    // })
+    //
+    //
+    // gdd.stores.registerStore<number>("Temp_EMS_1", 0.0, data => {
+    //     const curr = Number(data);
+    //     emsTempChart.addEntry(1, curr);
+    //     return curr;
+    // })
+    //
+    // gdd.stores.registerStore<number>("Temp_EMS_2", 0.0, data => {
+    //     const curr = Number(data);
+    //     emsTempChart.addEntry(2, curr);
+    //     return curr;
+    // })
+
+    ///////////////////////////////////////////////////////////////
+    ///////////////////// REGISTER LEVI DATA //////////////////////
+    ///////////////////////////////////////////////////////////////
+
+    // gdd.stores.registerStore<number>("levi_hems_gap_a", 0.0)
+    // gdd.stores.registerStore<number>("levi_hems_gap_b", 0.0)
+    // gdd.stores.registerStore<number>("levi_hems_gap_c", 0.0)
+    // gdd.stores.registerStore<number>("levi_hems_gap_d", 0.0)
+    //
+    // gdd.stores.registerStore<number>("levi_ems_gap_a", 0.0)
+    // gdd.stores.registerStore<number>("levi_ems_gap_b", 0.0)
+    // gdd.stores.registerStore<number>("levi_ems_gap_c", 0.0)
+    // gdd.stores.registerStore<number>("levi_ems_gap_d", 0.0)
+    //
+    // gdd.stores.registerStore<number>("levi_hems_current_a1", 0.0, data => addEntryToChart(hemsCurrentChart, data, 1))
+    // gdd.stores.registerStore<number>("levi_hems_current_a2", 0.0, data => addEntryToChart(hemsCurrentChart, data, 2))
+    // gdd.stores.registerStore<number>("levi_hems_current_b1", 0.0, data => addEntryToChart(hemsCurrentChart, data, 3))
+    // gdd.stores.registerStore<number>("levi_hems_current_b2", 0.0, data => addEntryToChart(hemsCurrentChart, data, 4))
+    // gdd.stores.registerStore<number>("levi_hems_current_c1", 0.0, data => addEntryToChart(hemsCurrentChart, data, 5))
+    // gdd.stores.registerStore<number>("levi_hems_current_c2", 0.0, data => addEntryToChart(hemsCurrentChart, data, 6))
+    // gdd.stores.registerStore<number>("levi_hems_current_d1", 0.0, data => addEntryToChart(hemsCurrentChart, data, 7))
+    // gdd.stores.registerStore<number>("levi_hems_current_d2", 0.0, data => addEntryToChart(hemsCurrentChart, data, 8))
+    //
+    // gdd.stores.registerStore<number>("levi_ems_current_ab", 0.0, data => addEntryToChart(emsCurrentChart, data, 1))
+    // gdd.stores.registerStore<number>("levi_ems_current_cd", 0.0, data => addEntryToChart(emsCurrentChart, data, 2))
+    //
+    // gdd.stores.registerStore<number>("levi_hems_airgap", 0.0, data => addEntryToChart(voffChart, data, 1))
+    // gdd.stores.registerStore<number>("levi_hems_roll", 0.0, data => addEntryToChart(rolPitchChart, data, 1))
+    // gdd.stores.registerStore<number>("levi_hems_pitch", 0.0, data => addEntryToChart(rolPitchChart, data, 2))
+    //
+    // gdd.stores.registerStore<number>("levi_ems_offset_ab", 0.0, data => {
+    //     hoffChart.addEntry(1, data);
+    //     return data;
+    // })
+    // gdd.stores.registerStore<number>("levi_ems_offset_cd", 0.0, data => {
+    //     hoffChart.addEntry(2, data);
+    //     return data;
+    // })
+    //
+    // gdd.stores.registerStore<number>("levi_hems_power", 0.0)
+    // gdd.stores.registerStore<number>("levi_ems_power", 0.0)
+    //
+    // gdd.stores.registerStore<number>("levi_volt_min", 0.0)
+    // gdd.stores.registerStore<number>("levi_volt_max", 0.0)
+    // gdd.stores.registerStore<number>("levi_volt_avg", 0.0)
+
+    ///////////////////////////////////////////////////////////////
+    ///////////////////////// PNEUMATICS //////////////////////////
+    ///////////////////////////////////////////////////////////////
+
+    // gdd.stores.registerStore<number>("LowPressureSensor", 0);
+    // gdd.stores.registerStore<number>("HighPressureSensor", 0);
+    // gdd.stores.registerStore<number>("BrakingCommDebug", 0, data => {
+    //     breakingCommsChart.addEntry(1, data);
+    //     return data;
+    // });
+    // gdd.stores.registerStore<number>("BrakingSignalDebug", 0)
+    // gdd.stores.registerStore<number>("BrakingRearmDebug", 0)
+
+    ///////////////////////////////////////////////////////////////
+    /////////////////// GROUND FAULT DETECTION ////////////////////
+    ///////////////////////////////////////////////////////////////
+
+    // gdd.stores.registerStore<number>("InsulationOriginal", 0);
+    // gdd.stores.registerStore<number>("InsulationPositive", 0);
+    // gdd.stores.registerStore<number>("InsulationNegative", 0);
+    // gdd.stores.registerStore<number>("IMDVoltageDetails", 0);
+
+    ///////////////////////////////////////////////////////////////
+    ///////////////// REGISTER META & ADDITIONAL //////////////////
+    ///////////////////////////////////////////////////////////////
+
+    gdd.stores.registerStore<number>("FSMState", 0);
+
+    // gdd.stores.registerStore<boolean[]>("ConnectionStatus", [false, false, false, false, false, false, false, false, false], setBitsToBooleans)
 gdd.stores.registerStore<number>("Localisation", 0, data => {
   const curr = Number(data);
   $chartStore.get("Localisation")!.addEntry(1, curr);

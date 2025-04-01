@@ -52,8 +52,6 @@ struct GS {
 }
 
 pub const CONFIG_PATH: &str = "../../config/config.toml";
-pub const DATATYPES_PATH: &str = "../../config/datatypes.toml";
-pub const COMMANDS_PATH: &str = "../../config/commands.toml";
 pub const EVENTS_PATH: &str = "../../config/events.toml";
 pub const DATAFLOW_PATH: &str = "../../config/dataflow.yaml";
 
@@ -67,7 +65,7 @@ fn main() -> Result<()> {
 
     let mut content = String::from("//@generated\n");
 
-    content.push_str(&check_config(DATATYPES_PATH, COMMANDS_PATH, EVENTS_PATH, CONFIG_PATH)?);
+    content.push_str(&check_config(EVENTS_PATH, CONFIG_PATH)?);
 
     content.push_str(&configure_gs(&config));
     content.push_str(&configure_gs_ip(config.gs.ip, config.gs.port, config.gs.force)?);
@@ -89,8 +87,6 @@ fn main() -> Result<()> {
     });
 
     println!("cargo::rerun-if-changed={}", CONFIG_PATH);
-    println!("cargo::rerun-if-changed={}", COMMANDS_PATH);
-    println!("cargo::rerun-if-changed={}", DATATYPES_PATH);
     println!("cargo::rerun-if-changed={}", EVENTS_PATH);
     println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
     println!("cargo::rerun-if-changed=build.rs");

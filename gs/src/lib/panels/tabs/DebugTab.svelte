@@ -61,15 +61,15 @@
         testControlParams2 = (vq_ref << 16) | vd_ref;
     }
 
-    let sendCommands = async (cmd: NamedCommand, val: number) => {
-        console.log(`Sending command: ${cmd}, value: ${val}`);
-        await invoke('send_command', {cmdName: cmd, val}).then(() => {
+    let sendCommands64Bits = async (cmd: NamedCommand, values: [number, number]) => {
+        console.log(`Sending command: ${cmd}, values: ${values[0]}  ${values[1]}`);
+        await invoke('send_command_64_bits', {cmdName: cmd, values}).then(() => {
             console.log(`Command ${cmd} sent`);
         }).catch((e) => {
             console.error(`Error sending command ${cmd}: ${e}`);
         });
         util.log(`Command ${cmd} sent`, EventChannel.INFO);
-    };
+    }
 
 </script>
 
@@ -111,10 +111,7 @@
                         </div>
                     </div>
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg">
-                        <button on:click={() => {
-                                    sendCommands("PPDebugParams11", ppDebugParams11);
-                                    sendCommands("PPDebugParams12", ppDebugParams12);
-                                }}
+                        <button on:click={() => sendCommands64Bits("PPDebugParams1", [ppDebugParams11, ppDebugParams12])}
                                 class="btn rounded-md font-number font-medium text-wrap overflow-auto py-2 bg-primary-500 text-surface-900"
                         >
                             Submit PP Debug Params 1
@@ -131,10 +128,7 @@
                         </div>
                     </div>
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg">
-                        <button on:click={() => {
-                                    sendCommands("PPTestControlParams1", testControlParams1);
-                                    sendCommands("PPTestControlParams2", testControlParams2);
-                                }}
+                        <button on:click={() => sendCommands64Bits("PPTestControlParams", [testControlParams1, testControlParams2])}
                                 class="btn rounded-md font-number font-medium text-wrap overflow-auto py-2 bg-primary-500 text-surface-900"
                         >
                             Submit PP Test Control Params

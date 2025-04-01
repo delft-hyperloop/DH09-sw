@@ -32,6 +32,7 @@ pub fn tauri_main(backend: Backend) {
         .invoke_handler(tauri::generate_handler![
             unload_buffer,
             send_command,
+            send_command_64_bits,
             generate_test_data,
             connect_to_pod,
             disconnect,

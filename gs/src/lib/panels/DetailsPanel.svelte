@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {Tab, TabGroup} from "@skeletonlabs/skeleton";
+    import { Tab, TabGroup } from '@skeletonlabs/skeleton';
     import {
         HomeTab,
         ProceduresTab,

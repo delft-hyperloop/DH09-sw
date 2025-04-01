@@ -1,7 +1,8 @@
-import {type dataConvFun, type Procedure, STATUS} from "$lib/types";
+import {type dataConvFun, type Procedure} from "$lib/types";
 import {PlotBuffer} from "$lib/util/PlotBuffer";
 import {detailTabSet} from "$lib";
 import {invoke} from "@tauri-apps/api/tauri";
+import { debugModeActive, memeModeActive } from '$lib/stores/state';
 const MAX_VALUE = 4_294_967_295;
 
 const tempParse: dataConvFun<number> = (data: number) => {
@@ -54,10 +55,17 @@ const parseProcedure = (data: string[]):Procedure => {
     }
 }
 
-const parseShortCut = async (shortcut:string):Promise<void> => {
+const parseShortCut = async (shortcut:string, debugMode: boolean, memeMode: boolean):Promise<void> => {
     const tabMatch = shortcut.match(/^tab_(\d)$/);
-    if (tabMatch) {
-        const tab = tabMatch[1];
+    if (shortcut === "MemeMode") {
+        if (memeMode) {
+            console.log(`Meme mode disabled`);
+        } else {
+            console.log(`Meme mode activated`);
+        }
+        memeModeActive.set(!memeMode);
+    } else if (tabMatch) {
+        const tab = Math.min(Number(tabMatch[1]), 7 + (debugMode ? 1 : 0));
         console.log(`Switching to tab ${tab}`);
         detailTabSet.set(Number(tab) - 1);
     } else if (shortcut === "emergency_brake") {
@@ -65,6 +73,13 @@ const parseShortCut = async (shortcut:string):Promise<void> => {
         await invoke('send_command', {cmdName: "EmergencyBrake", val: 0});
     } else if (shortcut === "heartbeat") {
         await invoke('send_command', {cmdName: "FrontendHeartbeat", val: 0});
+    } else if (shortcut === "DebugMode") {
+        if (debugMode) {
+            console.log(`Debug mode disabled`);
+        } else {
+            console.log(`Debug mode activated`);
+        }
+        debugModeActive.set(!debugMode);
     }
 }
 

@@ -63,7 +63,10 @@
             </button>
         {/if}
     </div>
-    <p><kbd class="kbd">Esc</kbd> to trigger Emergency Braking.</p>
+    <p>
+        Press <kbd class="kbd">Esc</kbd> or <kbd class="kbd">Space</kbd> to trigger Emergency Braking or
+        <kbd class="kbd">D</kbd> to toggle Debug Mode. Use numbers to navigate through tabs.
+    </p>
     {#if $pinnedCharts.length === 0}
         <p>Pinned tabs will appear here.</p>
     {/if}

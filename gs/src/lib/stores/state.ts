@@ -32,3 +32,5 @@ export const showcasingStates: Writable<boolean> = writable(false);
 export const debugModeActive: Writable<boolean> = writable(false);
 
 export const propControlWord: Writable<number> = writable<number>(0);
+
+export const memeModeActive: Writable<boolean> = writable(false);

@@ -90,11 +90,36 @@ pub fn tauri_main(backend: Backend) {
                             ss.emit_all(STATUS_CHANNEL, "Emergency Brake triggered!;red").unwrap();
                         })
                         .expect("Could not register shortcut");
+
+                        let ss = s.clone();
+                        sh.register("COMMANDORCTRL+SHIFT+M", move || {
+                            ss.emit_all(SHORTCUT_CHANNEL, "MemeMode").unwrap();
+                        })
+                        .expect("Could not register shortcut bruh");
+
+                        let ss = s.clone();
+                        sh.register("D", move || {
+                            ss.emit_all(SHORTCUT_CHANNEL, "DebugMode").unwrap();
+                        })
+                            .expect("Could not register shortcut bruh");
+
+                        for i in 1..10 {
+                            let ss = s.clone();
+                            sh.register(&format!("{}", i), move || {
+                                ss.emit_all(SHORTCUT_CHANNEL, format!("tab_{i}")).unwrap();
+                            })
+                                .expect("Could not register shortcut");
+                        }
                     },
                     WindowEvent::Focused(false) => {
                         // Unregister shortcuts when window loses focus
                         sh.unregister("Esc").expect("Could not unregister shortcut");
                         sh.unregister("Space").expect("Could not unregister shortcut");
+                        sh.unregister("COMMANDORCTRL+SHIFT+M").expect("Could not unregister shortcut");
+                        sh.unregister("D").expect("Could not unregister shortcut");
+                        for i in 1..10 {
+                            sh.unregister(&format!("{}", i)).expect("Could not unregister shortcut");
+                        }
                     },
                     _ => {},
                 }

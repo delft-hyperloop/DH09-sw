@@ -206,6 +206,8 @@ standard-datapoints:
   - datapoint:
       name: 'FSMState'
       id: 0x202
+      store:
+        default: 0
 
 message-processing:
   - name: 'TempAmbient'

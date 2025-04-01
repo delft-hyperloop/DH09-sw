@@ -46,8 +46,6 @@
         ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
     ]
 
-    const location = storeManager.getWritable(LOCALISATION_NAME);
-
     const toastStore = getToastStore();
 </script>
 
@@ -99,23 +97,23 @@
         <div class="snap-x scroll-px-0.5 snap-mandatory overflow-x-auto h-[90vh]">
             <TileGrid className="p-4 w-full" columns="1fr 1fr" rows="">
                 <Tile bgToken={800} containerClass="col-span-2">
-                    <Localization location={$location.value} showLabels={true}/>
+                    <Localization showLabels={true}/>
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
                     <div class="flex flex-wrap justify-between gap-4">
                         <div class="flex gap-4">
                             <p>
-                                Velocity: <Store datatype="Velocity" /> m/s
+<!--                                Velocity: <Store datatype="Velocity" /> m/s-->
                                 <br>
                                 Position: <Store datatype={LOCALISATION_NAME} /> mm
                                 <br>
-                                Acceleration: <Store datatype="Acceleration" /> m/s²
+<!--                                Acceleration: <Store datatype="Acceleration" /> m/s²-->
                             </p>
-                            <p>
-                                HV Current: <Store datatype="BatteryCurrentHigh" /> - [0, 25] A
-                                <br>
-                                LV Current: <Store datatype="BatteryCurrentLow" /> - [0, 10] A
-                            </p>
+<!--                            <p>-->
+<!--                                HV Current: <Store datatype="BatteryCurrentHigh" /> - [0, 25] A-->
+<!--                                <br>-->
+<!--                                LV Current: <Store datatype="BatteryCurrentLow" /> - [0, 10] A-->
+<!--                            </p>-->
 <!--                            <p>-->
 <!--                                Low Pressure: <Store datatype="LowPressureSensor" /> - [40, 52] bar-->
 <!--                                <br>-->
@@ -125,17 +123,17 @@
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2">
                             <span>LV: </span>
                             <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>
-                            <span>Total: <Store datatype="TotalBatteryVoltageLow" /></span>
+<!--                            <span>Total: <Store datatype="TotalBatteryVoltageLow" /></span>-->
 
                             <span>HV: </span>
                             <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
-                            <span>Total: <Store datatype="TotalBatteryVoltageHigh" /></span>
+<!--                            <span>Total: <Store datatype="TotalBatteryVoltageHigh" /></span>-->
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>High Voltage BMS: &ltstatus&gt</span>
                             <span>Emergency Breaking System: &ltstatus&gt</span>
-                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>-->
-                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>
+<!--                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>&ndash;&gt;-->
+<!--                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>-->
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>LV Total Safe: -Insert values- V</span>
@@ -150,7 +148,7 @@
 <!--                            <Command cmd="ContinueRun" className="py-1 bg-primary-500 text-surface-900" />-->
                         </div>
                     </div>
-                </Tile> -->
+                </Tile>
 <!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
 <!--                    <Table titles={tableBatteryTitles} tableArr={tableBatteryVitals}/>-->
 <!--                </Tile>-->

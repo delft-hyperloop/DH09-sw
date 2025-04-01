@@ -87,8 +87,9 @@ fn u32_to_u64(x: [u32; 2]) -> u64 {
 #[allow(unused)]
 #[tauri::command]
 pub fn send_command_64_bits(cmd_name: String, vals: [u32; 2]) -> bool {
-    eprintln!("Received commmand {} with values {} {} [{}]", cmd_name, vals[0..4], vals[4..8], Local::now());
-    let c = Command::from_string(&cmd_name, u32_to_u64(vals));
+    let value = u32_to_u64(vals);
+    eprintln!("Received command {} with value {} [{}]", cmd_name, value, Local::now());
+    let c = Command::from_string(&cmd_name, value);
     if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
         backend_mutex.get_mut().unwrap().send_command(c)
     } else {

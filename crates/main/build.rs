@@ -85,8 +85,11 @@ struct InternalConfig {
     can_queue_size: usize,
 }
 
+/// Path to config file
 pub const CONFIG_PATH: &str = "../../config/config.toml";
+/// Path to events file
 pub const EVENTS_PATH: &str = "../../config/events.toml";
+/// Path to dataflow file
 pub const DATAFLOW_PATH: &str = "../../config/dataflow.yaml";
 
 fn main() -> Result<()> {

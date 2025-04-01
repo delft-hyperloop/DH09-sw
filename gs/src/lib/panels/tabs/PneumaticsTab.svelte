@@ -3,16 +3,16 @@
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
 
     const storeManager = GrandDataDistributor.getInstance().stores;
-    const lowPressure = storeManager.getWritable("LowPressureSensor");
-    const highPressure = storeManager.getWritable("HighPressureSensor");
+    // const lowPressure = storeManager.getWritable("LowPressureSensor");
+    // const highPressure = storeManager.getWritable("HighPressureSensor");
 
-    $: pressureTable = [
-        ["Low Pressure", DE.LOWPRESSURESENSOR],
-        ["High Pressure", DE.HIGHPRESSURESENSOR],
-        ["Braking Comm", DE.BRAKINGCOMMDEBUG],
-        ["Braking Signal", DE.BRAKINGSIGNALDEBUG],
-        ["Braking Rearm", DE.BRAKINGREARMDEBUG],
-    ]
+    // $: pressureTable = [
+    //     ["Low Pressure", DE.LOWPRESSURESENSOR],
+    //     ["High Pressure", DE.HIGHPRESSURESENSOR],
+    //     ["Braking Comm", DE.BRAKINGCOMMDEBUG],
+    //     ["Braking Signal", DE.BRAKINGSIGNALDEBUG],
+    //     ["Braking Rearm", DE.BRAKINGREARMDEBUG],
+    // ]
 
     export const pop_up: boolean = true;
 </script>
@@ -22,11 +22,11 @@
 
     <TileGrid columns="3fr 1fr" rows="">
         <Tile>
-            <Pneumatics pressure_left={$highPressure.value} max_pressure_left={250}
-                        pressure_right={$lowPressure.value} max_pressure_right={100}/>
+<!--            <Pneumatics pressure_left={$highPressure.value} max_pressure_left={250}-->
+<!--                        pressure_right={$lowPressure.value} max_pressure_right={100}/>-->
         </Tile>
         <Tile>
-            <Table background="bg-surface-900" titles={["Section", "Bars"]} tableArr={pressureTable}/>
+<!--            <Table background="bg-surface-900" titles={["Section", "Bars"]} tableArr={pressureTable}/>-->
         </Tile>
         <Tile containerClass="col-span-full">
             <Chart title="Breaking Comms"/>

@@ -3,7 +3,7 @@
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { pinnedCharts, procedures } from '$lib/stores/data';
     import {parseProcedure} from "$lib/util/parsers";
-    import { debugModeActive } from '$lib/stores/state';
+    import { debugModeActive, GreenHVALTurnedOn, RedHVALTurnedOn } from '$lib/stores/state';
     import Icon from '@iconify/svelte';
 
     const toastStore = getToastStore();
@@ -26,6 +26,7 @@
     const parseProcedures = (rawProcedures: string[][]) => {
         procedures.set(rawProcedures.map(parseProcedure));
     };
+
 </script>
 
 <div class="h-full w-full p-5 flex flex-col gap-8">
@@ -36,8 +37,8 @@
     <div class="flex gap-3 flex-wrap">
         <TauriCommand cmd="connect_to_pod" successCallback={handleSuccess} errorCallback={handleFailure} />
         <TauriCommand cmd="disconnect" successCallback={() => serverStatus.set(false)} />
-        <TauriCommand cmd="start_levi" />
-        <TauriCommand cmd="quit_levi" />
+<!--        <TauriCommand cmd="start_levi" />-->
+<!--        <TauriCommand cmd="quit_levi" />-->
         <TauriCommand cmd="procedures" textOverride="Refresh Procedures" successCallback={parseProcedures} />
         <TauriCommand cmd="save_logs"/>
         {#if $debugModeActive}
@@ -45,6 +46,14 @@
                py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(false)}}>
                 <Icon icon="mdi:bug-outline" class="mr-2 w-6 h-6"/>
                 Disable Debug Mode
+            </button>
+            <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+               py-2 bg-primary-500 text-surface-900" on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>
+                Toggle Green HVAL
+            </button>
+            <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+               py-2 bg-primary-500 text-surface-900" on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>
+                Toggle Red HVAL
             </button>
         {:else}
             <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium

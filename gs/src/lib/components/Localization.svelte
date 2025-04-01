@@ -1,10 +1,14 @@
 <script lang="ts">
 
     import { goingForwardState } from '$lib/stores/state';
+    import { LOCALISATION_NAME } from '$lib/types';
+    import { GrandDataDistributor } from '$lib';
 
     export let max: number = 10000;
-    export let location: number = 0;
     export let showLabels: boolean = true;
+
+    const storeManager = GrandDataDistributor.getInstance().stores;
+    const location = storeManager.getWritable(LOCALISATION_NAME);
 
     // SVG elements
     let progress_container: SVGGElement;
@@ -31,19 +35,19 @@
         let path_length: number = progress.getTotalLength();
 
         path.style.strokeDasharray = path_length.toString();
-        point_half.style.fill = location > max / 2 ? color_active : color_off;
-        progress.style.strokeDashoffset = (path_length - path_length * (location / max)).toString();
+        point_half.style.fill = $location.value > max / 2 ? color_active : color_off;
+        progress.style.strokeDashoffset = (path_length - path_length * ($location.value / max)).toString();
 
         if ($goingForwardState) {
-            point_start.style.fill = location > 0 ? color_active : color_off;
-            point_quarter.style.fill = location > max / 4 ? color_active : color_off;
-            point_three_quarters.style.fill = location > max / 4 * 3 ? color_active : color_off;
-            point_end.style.fill = location >= max ? color_active : color_off;
+            point_start.style.fill = $location.value > 0 ? color_active : color_off;
+            point_quarter.style.fill = $location.value > max / 4 ? color_active : color_off;
+            point_three_quarters.style.fill = $location.value > max / 4 * 3 ? color_active : color_off;
+            point_end.style.fill = $location.value >= max ? color_active : color_off;
         } else {
-            point_end.style.fill = location > 0 ? color_active : color_off;
-            point_three_quarters.style.fill = location > max / 4 ? color_active : color_off;
-            point_quarter.style.fill = location > max / 4 * 3 ? color_active : color_off;
-            point_start.style.fill = location >= max ? color_active : color_off;
+            point_end.style.fill = $location.value > 0 ? color_active : color_off;
+            point_three_quarters.style.fill = $location.value > max / 4 ? color_active : color_off;
+            point_quarter.style.fill = $location.value > max / 4 * 3 ? color_active : color_off;
+            point_start.style.fill = $location.value >= max ? color_active : color_off;
         }
     }
 

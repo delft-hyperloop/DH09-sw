@@ -9,8 +9,8 @@
         TileGrid, ToggleCommand,
     } from "$lib"
   const storeManager = GrandDataDistributor.getInstance().stores;
-  const lvBattery = storeManager.getWritable("ChargeStateLow");
-  const hvBattery = storeManager.getWritable("ChargeStateHigh");
+  // const lvBattery = storeManager.getWritable("ChargeStateLow");
+  // const hvBattery = storeManager.getWritable("ChargeStateHigh");
 
   const avg1Temp = "Module1AvgTemperature", max1Temp = "Module1MaxTemperature", min1Temp = "Module1MinTemperature",
     avg1Vol = "Module1AvgVoltage", max1Vol = "Module1MaxVoltage", min1Vol = "Module1MinVoltage",
@@ -176,7 +176,7 @@
     let dcStatus:boolean = false;
     let connectorStatus:boolean = false;
 
-    const lvTotalStore = storeManager.getWritable("TotalBatteryVoltageLow");
+    // const lvTotalStore = storeManager.getWritable("TotalBatteryVoltageLow");
     export const pop_up: boolean = true;
 </script>
 
@@ -187,11 +187,11 @@
     <TileGrid columns="1fr 1fr 1fr 1fr" rows="auto 1fr auto">
         <Tile insideClass="flex h-full items-center gap-4">
             <div class="flex flex-col items-center">
-                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />
+<!--                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />-->
                 <p>Low voltage</p>
             </div>
             <div class="flex flex-col items-center">
-                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery.value)} />
+<!--                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery.value)} />-->
                 <p>High voltage</p>
             </div>
         </Tile>
@@ -203,7 +203,7 @@
             </div>
             <div class="w-full flex justify-between items-center">
                 <Status label="DC Converter status" on="charging" off="off" offColor="text-surface-50" bind:status={dcStatus} />
-                <ToggleCommand onCmd="DcOn" offCmd="DcOff" bind:status={dcStatus} disabled={$lvTotalStore.value > 21} />
+<!--                <ToggleCommand onCmd="DcOn" offCmd="DcOff" bind:status={dcStatus} disabled={$lvTotalStore.value > 21} />-->
             </div>
         </Tile>
         <Tile insideClass="flex h-full items-center ">

@@ -19,7 +19,6 @@ use embassy_stm32::can;
 use embassy_stm32::can::config::DataBitTiming;
 use embassy_stm32::can::config::NominalBitTiming;
 use embassy_stm32::can::config::{self};
-use embassy_stm32::can::frame::CanHeader;
 use embassy_stm32::can::RxFdBuf;
 use embassy_stm32::can::TxFdBuf;
 use embassy_stm32::eth::Ethernet;
@@ -31,8 +30,6 @@ use embassy_stm32::peripherals::*;
 use embassy_stm32::rcc;
 use embassy_stm32::rng::Rng;
 use embassy_stm32::rng::{self};
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::mutex::Mutex;
 use embassy_sync::pubsub::PubSubBehavior;
 use embassy_sync::pubsub::WaitResult;
 use embassy_time::Instant;
@@ -42,7 +39,6 @@ use embedded_io_async::Write;
 use fsm::utils::types::EventChannel;
 use fsm::utils::types::EventReceiver;
 use fsm::utils::types::EventSender;
-use fsm::Event;
 use fsm::FSM;
 use main::can::can1;
 use main::can::can2;
@@ -101,8 +97,6 @@ async fn run_fsm(
 
 #[embassy_executor::task]
 async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sender: EventSender) {
-    let mut prop_debug_params: u64 = 0;
-    let mut prop_test_control_params: u64 = 0;
     loop {
         let msg = gsrx.next_message_pure().await;
         info!("Received message from GS: {:?}", msg);
@@ -149,13 +143,6 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sen
             main::config::Command::PropulsionOff(_) => {
                 event_sender.send(fsm::utils::Event::Cruise).await
             }
-            main::config::Command::SendPropulsionControlWord(value) => {}
-            main::config::Command::PPControlParams(value) => {}
-            main::config::Command::PPDebugParams11(value) => {}
-            main::config::Command::PPDebugParams12(value) => {}
-            main::config::Command::PPDebugParams2(value) => {}
-            main::config::Command::PPTestControlParams1(value) => {}
-            main::config::Command::PPTestControlParams2(value) => {}
 
             // Control commands
             main::config::Command::ArmBrakes(_) => {
@@ -165,13 +152,7 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sen
                 event_sender.send(fsm::utils::Event::ShutDown).await
             }
             main::config::Command::SystemReset(_) => todo!(),
-
-            _ => {
-                info!(
-                    "Received unknown or uninterpreted command from GS: {:?}",
-                    command
-                );
-            }
+            _ => {}
         }
     }
 }
@@ -202,23 +183,6 @@ async fn forward_gs_to_can2(
 
         main::config::gs_to_can2(command, |frame| cantx.send(frame)).await;
     }
-}
-
-/// Sends a message on the 2nd CAN bus with the values provided.
-///
-/// # Params:
-/// - `value` The data to be sent
-/// - `cantx` The sender object for the 2nd CAN bus
-/// - `id` The id of the message
-async fn send_can2_message(value: &[u8], cantx: can2::CanTxSender<'static>, id: u16) {
-    let header = can::frame::Header::new_fd(
-        embedded_can::Id::from(embedded_can::StandardId::new(id).expect("Invalid ID")),
-        value.len() as u8,
-        false,
-        true,
-    );
-    let frame = can::frame::Frame::new(header, value).expect("Invalid frame!");
-    cantx.send(can2::CanEnvelope::new_from_frame(frame)).await;
 }
 
 #[embassy_executor::task]

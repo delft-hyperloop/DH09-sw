@@ -17,13 +17,9 @@ pub mod dataflow;
 // mod shared;
 use anyhow::Result;
 
-pub fn check_config(dp: &str, cp: &str, ep: &str, conf: &str) -> Result<String> {
+pub fn check_config(ep: &str, conf: &str) -> Result<String> {
     let mut items = vec![];
-    let d = datatypes::get_data_items(dp)?;
-    let c = commands::get_command_items(cp)?;
     let e = events::get_event_items(ep)?;
-    items.extend(&d);
-    items.extend(&c);
     items.extend(&e);
     let mut seen = HashSet::new();
     let mut seen_names = HashSet::new();
@@ -57,16 +53,12 @@ pub fn check_config(dp: &str, cp: &str, ep: &str, conf: &str) -> Result<String> 
             panic!(
                 "\nDuplicate entry found:\n1: {} {}->{} \n2: {} {}->{}\n",
                 category(
-                    &d.iter().map(|x| x.0).collect::<Vec<u16>>(),
-                    &c.iter().map(|x| x.0).collect::<Vec<u16>>(),
                     &e.iter().map(|x| x.0).collect::<Vec<u16>>(),
                     *id
                 ),
                 name,
                 format_args!("{:#05x}", id),
                 category(
-                    &d.iter().map(|x| x.0).collect::<Vec<u16>>(),
-                    &c.iter().map(|x| x.0).collect::<Vec<u16>>(),
                     &e.iter().map(|x| x.0).collect::<Vec<u16>>(),
                     other.0
                 ),
@@ -97,12 +89,8 @@ fn nearest_id(id: u16, ids: &[u16]) -> u16 {
     panic!("There are no more available ids!")
 }
 
-fn category(d: &[u16], c: &[u16], e: &[u16], i: u16) -> String {
-    if d.contains(&i) {
-        "[[Datatype]]".into()
-    } else if c.contains(&i) {
-        "[[Command]]".into()
-    } else if e.contains(&i) {
+fn category(e: &[u16], i: u16) -> String {
+    if e.contains(&i) {
         "[[Event]]".into()
     } else {
         unreachable!("This ID had to come from somewhere...")

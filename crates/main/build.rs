@@ -85,10 +85,11 @@ struct InternalConfig {
     can_queue_size: usize,
 }
 
+/// Path to config file
 pub const CONFIG_PATH: &str = "../../config/config.toml";
-pub const DATATYPES_PATH: &str = "../../config/datatypes.toml";
-pub const COMMANDS_PATH: &str = "../../config/commands.toml";
+/// Path to events file
 pub const EVENTS_PATH: &str = "../../config/events.toml";
+/// Path to dataflow file
 pub const DATAFLOW_PATH: &str = "../../config/dataflow.yaml";
 
 fn main() -> Result<()> {
@@ -104,8 +105,6 @@ fn main() -> Result<()> {
     let df = goose_utils::dataflow::parse_from(&df);
 
     content.push_str(&check_config(
-        DATATYPES_PATH,
-        COMMANDS_PATH,
         EVENTS_PATH,
         CONFIG_PATH,
     )?);
@@ -144,8 +143,6 @@ fn main() -> Result<()> {
     });
     println!("cargo::rerun-if-changed={}", CONFIG_PATH);
     println!("cargo::rerun-if-changed={}", EVENTS_PATH);
-    println!("cargo::rerun-if-changed={}", COMMANDS_PATH);
-    println!("cargo::rerun-if-changed={}", DATATYPES_PATH);
     println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
 
     // Put `memory.x` in our output directory and ensure it's

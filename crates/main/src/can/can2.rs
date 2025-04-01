@@ -141,7 +141,7 @@ async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>
             Err(e) => {
                 if error_counter < 10 || error_counter % 2500 == 0 {
                     error!(
-                        "[CAN] Error reading from CAN bus (#{}): {:?}",
+                        "[CAN2] Error reading from CAN bus (#{}): {:?}",
                         error_counter, e
                     );
                 }

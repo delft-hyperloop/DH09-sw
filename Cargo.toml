@@ -6,7 +6,7 @@ resolver = "2"
 [workspace.dependencies]
 fdcan = { version = "0.2.1", features = ["fdcan_h7"] }
 stm32h7xx-hal = { version = "0.16.0", features = [
-    "stm32h743v",
+    "stm32h753v",
     "can",
     "device-selected",
 ] }
@@ -51,7 +51,7 @@ git = "https://github.com/delft-hyperloop/embassy"
 rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 features = [
     "defmt",
-    "stm32h743zi",
+    "stm32h753zi",
     "time-driver-any",
     "exti",
     # "memory-x",

@@ -30,3 +30,4 @@ export const routeConfig:Writable<RouteConfig> = writable({
 
 export const pinnedCharts: Writable<Array<string>> = writable([]);
 export const podSpeed: Writable<number> = writable(0);
+export const propModulationFactor: Writable<number> = writable(100);

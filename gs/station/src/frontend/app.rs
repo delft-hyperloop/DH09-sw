@@ -105,7 +105,7 @@ pub fn tauri_main(backend: Backend) {
 
                         for i in 1..10 {
                             let ss = s.clone();
-                            sh.register(&format!("{}", i), move || {
+                            sh.register(&format!("SHIFT+{}", i), move || {
                                 ss.emit_all(SHORTCUT_CHANNEL, format!("tab_{i}")).unwrap();
                             })
                                 .expect("Could not register shortcut");
@@ -118,7 +118,7 @@ pub fn tauri_main(backend: Backend) {
                         sh.unregister("COMMANDORCTRL+SHIFT+M").expect("Could not unregister shortcut");
                         sh.unregister("D").expect("Could not unregister shortcut");
                         for i in 1..10 {
-                            sh.unregister(&format!("{}", i)).expect("Could not unregister shortcut");
+                            sh.unregister(&format!("SHIFT+{}", i)).expect("Could not unregister shortcut");
                         }
                     },
                     _ => {},

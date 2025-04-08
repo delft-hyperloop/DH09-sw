@@ -8,7 +8,7 @@
         let old = $propControlWord;
         $propControlWord = $propControlWord ^ (1 << index);
         value = $propControlWord >> index & 1;
-        console.log($propControlWord);
+        console.log(`Control Word: ${$propControlWord}`);
     }
 
 </script>

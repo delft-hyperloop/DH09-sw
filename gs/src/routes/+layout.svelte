@@ -231,6 +231,8 @@
 
     gdd.stores.registerStore<number>("Vd2_C", 0);
 
+    gdd.stores.registerStore<number>("PPInitFault", 0);
+
     gdd.stores.registerStore<number>("PPEmergency", 0);
 
     gdd.stores.registerStore<number>("Word", 0);
@@ -271,8 +273,6 @@
 
     gdd.stores.registerStore<number>("Ibus", 0);
 
-    gdd.stores.registerStore<number>("FSMState", 0);
-
     gdd.stores.registerStore<number>("Ta", 0, data => {
             const curr = Number(data);
             $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
@@ -309,6 +309,10 @@
             return curr;
         }
     );
+
+    gdd.stores.registerStore<number>("FSMState", 0);
+
+    // End of generated
 
     gdd.start(50);
 

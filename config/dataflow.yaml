@@ -723,6 +723,20 @@ message-processing:
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'PPInitFault'
+    can:
+      id: 0x4BA
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'PPInitFault'
+          id: 0x4BA
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
   - name: 'PPEmergency'
     can:
       id: 0x002
@@ -927,6 +941,11 @@ message-processing:
 
  
 commands:
+  - name: 'FSMUpdate'
+    id: 0x190
+    can:
+      id: 0x190
+      bus: can2
   - name: 'DefaultCommand'
     id: 0x01
   - name: 'Heartbeat'

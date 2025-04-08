@@ -6,7 +6,7 @@
         Tile,
         TileGrid,
         GrandDataDistributor,
-        Chart,
+        Chart, util, EventChannel,
     } from '$lib';
     import {DatatypeEnum} from "$lib/namedDatatypeEnum";
     import {invoke} from "@tauri-apps/api/tauri";
@@ -14,6 +14,7 @@
     import { podSpeed, propModulationFactor } from '$lib/stores/data';
     import { debugModeActive, goingForwardState } from '$lib/stores/state';
     import RangeSlider from 'svelte-range-slider-pips';
+    import { getModalStore } from '@skeletonlabs/skeleton';
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     // const statuses = storeManager.getWritable("ConnectionStatus")
@@ -36,7 +37,6 @@
     // Didn't work with a different name for some reason.
     let values = [100];
 
-    // const modalStore = getModalStore();
 
     // const input:ModalComponent = {ref: SpeedsInput};
     // let inputModal = () => {
@@ -53,18 +53,25 @@
     //     });
     // }
 
-    function submitRun() {
+    async function submitRun() {
         goingForwardState.set(currentDirectionForward);
         podSpeed.set(currentSpeed);
         propModulationFactor.set(values[0]);
+        const value = ($propModulationFactor << 16) | $podSpeed;
 
-        invoke('send_command', {cmdName: "SubmitDirection", val: currentDirectionForward}).then(() => {
-            console.log(`Direction goingForward = ${currentDirectionForward} sent to the pod`);
+        await invoke('send_command', {cmdName: "PPControlParams", val: value}).then(() => {
+            console.log(`Sending command: PPControlParams, value: ${value}`);
+        }).catch((e) => {
+            console.error(`Error sending command PPControlParams: ${e}`);
         });
-        invoke('send_command', {cmdName: "SubmitSpeed", val: currentSpeed}).then(() => {
-            console.log(`Speed of ${currentSpeed} sent to the pod`);
-        });
-        // TODO: send config command
+        util.log(`Command PPControlParams sent`, EventChannel.INFO);
+
+        // await invoke('send_command', {cmdName: "SendDirection", val: 0}).then(() => {
+        //     console.log(`Sending command: SendDirection, value: ${0}`); // TODO: fix this
+        // }).catch((e) => {
+        //     console.error(`Error sending command SendPropulsionControlWord: ${e}`);
+        // });
+        // util.log(`Command SendPropulsionControlWord sent`, EventChannel.INFO);
     }
 
 </script>
@@ -119,6 +126,13 @@
                         on:click={submitRun} disabled={false}>
                     Submit New Run Parameters
                 </button>
+<!--                <Command-->
+<!--                    cmds={["PPControlParams", "SendPropulsionControlWord"]}-->
+<!--                    values={[($propModulationFactor << 16) | $podSpeed, 0]}-->
+<!--                    callbacks={[() => {}, () => {}]}-->
+<!--                    text="Submit New Run Parameters"-->
+<!--                    className="col-span-full py-2 bg-primary-500 text-surface-900"-->
+<!--                />-->
                 <hr class="col-span-full">
                 <p class="col-span-full font-normal text-xl justify-center text-center pb-3 ">Current Values:</p>
                 <p>Desired Speed:</p>

@@ -55,8 +55,8 @@ procedures:
     formula: 'x'
 
   # ======= GS communication =======
-  # dump = Main PCB to GS
-  # parse = GS to Main PCB
+  # dump = convert Main PCB values to u64, to dump over ethernet (on main PCB)
+  # parse = convert the u64 values received from ethernet to f64 (for display, on GS)
   dump-gs_2p_float:
     input: 'f32'
     output: 'u64'

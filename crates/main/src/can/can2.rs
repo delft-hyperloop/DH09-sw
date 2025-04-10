@@ -130,7 +130,7 @@ async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>
         defmt::debug!("reading stuff from CAN2");
         match can.read().await {
             Ok(envelope) => {
-                defmt::debug!("Envelope: {:?}", &envelope);
+                defmt::debug!("[CAN2] Envelope: {:?}", &envelope);
                 publisher.publish(CanEnvelope { envelope }).await;
                 // if let Some(lmi) = &last_message_instant {
                 //     let diff = Instant::now().duration_since(*lmi);

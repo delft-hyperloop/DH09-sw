@@ -6,14 +6,19 @@
         PlotBuffer,
         StrokePresets,
         TitleBar,
-        addEntryToChart,
     } from "$lib";
     import {initializeStores, Modal, Toast} from '@skeletonlabs/skeleton';
-    import { chartStore, latestTimestamp, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
+    import {
+        chartStore,
+        debugModeActive,
+        latestTimestamp, memeModeActive,
+        showcaseStateCounter,
+        showcasingStates,
+    } from '$lib/stores/state';
     import {initProcedures} from "$lib/stores/data";
     import { onDestroy, onMount } from 'svelte';
     import {listen} from "@tauri-apps/api/event";
-    import {parseShortCut, setBitsToBooleans} from "$lib/util/parsers";
+    import {parseShortCut} from "$lib/util/parsers";
     import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
     import { LOCALISATION_NAME } from '$lib/types';
@@ -22,7 +27,7 @@
 
     initProcedures();
 
-    const unlisten = listen("shortcut_channel", (event: {payload: string}) => parseShortCut(event.payload));
+    const unlisten = listen("shortcut_channel", (event: {payload: string}) => parseShortCut(event.payload, $debugModeActive, $memeModeActive));
 
     //////////////////////////////
     /////////// CHARTS ///////////
@@ -131,7 +136,7 @@
     let propLog3Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Ta");
     propLog3Chart.addSeries(StrokePresets.yellow("Tb"))
     propLog3Chart.addSeries(StrokePresets.blue("Tc"))
-    propLog3Chart.addSeries(StrokePresets.theoretical("Tcase"))
+    propLog3Chart.addSeries(StrokePresets.theoretical("TCASE"))
     $chartStore.set("Propulsion Log 3", propLog3Chart);
 
     // generated
@@ -226,38 +231,38 @@
 
     gdd.stores.registerStore<number>("Vd2_C", 0);
 
+    gdd.stores.registerStore<number>("PPInitFault", 0);
+
     gdd.stores.registerStore<number>("PPEmergency", 0);
 
-    gdd.stores.registerStore<number>("Word1", 0);
-
-    gdd.stores.registerStore<number>("Word2", 0);
+    gdd.stores.registerStore<number>("Word", 0);
 
     gdd.stores.registerStore<number>("IqMeasured", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 1")!.addEntry(3, curr);
-        return curr;
-    }
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 1")!.addEntry(3, curr);
+            return curr;
+        }
     );
 
     gdd.stores.registerStore<number>("IqReference", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 1")!.addEntry(4, curr);
-        return curr;
-    }
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 1")!.addEntry(4, curr);
+            return curr;
+        }
     );
 
     gdd.stores.registerStore<number>("IdMeasured", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 1")!.addEntry(1, curr);
-        return curr;
-    }
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 1")!.addEntry(1, curr);
+            return curr;
+        }
     );
 
     gdd.stores.registerStore<number>("IdReference", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 1")!.addEntry(2, curr);
-        return curr;
-    }
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 1")!.addEntry(2, curr);
+            return curr;
+        }
     );
 
     gdd.stores.registerStore<number>("Vq_Log", 0);
@@ -269,63 +274,45 @@
     gdd.stores.registerStore<number>("Ibus", 0);
 
     gdd.stores.registerStore<number>("Ta", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
-        return curr;
-    });
-    gdd.stores.registerStore<number>("Tb", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 3")!.addEntry(2, curr);
-        return curr;
-    });
-    gdd.stores.registerStore<number>("Tc", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 3")!.addEntry(3, curr);
-        return curr;
-    });
-    gdd.stores.registerStore<number>("TCASE", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 3")!.addEntry(4, curr);
-        return curr;
-    })
-    gdd.stores.registerStore<number>("Ta", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
-        return curr;
-    }
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
+            return curr;
+        }
     );
 
     gdd.stores.registerStore<number>("Tb", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 3")!.addEntry(2, curr);
-        return curr;
-    }
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3")!.addEntry(2, curr);
+            return curr;
+        }
     );
 
     gdd.stores.registerStore<number>("Tc", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 3")!.addEntry(3, curr);
-        return curr;
-    }
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3")!.addEntry(3, curr);
+            return curr;
+        }
     );
 
     gdd.stores.registerStore<number>("TCASE", 0, data => {
-        const curr = Number(data);
-        $chartStore.get("Propulsion Log 3")!.addEntry(4, curr);
-        return curr;
-    }
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3")!.addEntry(4, curr);
+            return curr;
+        }
     );
 
     gdd.stores.registerStore<number>("PropulsionCurrent", 0);
 
+    gdd.stores.registerStore<number>("Localisation", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Localisation")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
     gdd.stores.registerStore<number>("FSMState", 0);
 
-    gdd.stores.registerStore<number>("Localisation", 0, data => {
-      const curr = Number(data);
-      $chartStore.get("Localisation")!.addEntry(1, curr);
-      return curr;
-    }
-    );
+    // End of generated
 
     gdd.start(50);
 

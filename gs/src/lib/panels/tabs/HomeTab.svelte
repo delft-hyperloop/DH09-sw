@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Chart, serverStatus, TauriCommand, TileGrid } from '$lib';
+    import { Chart, serverStatus, TauriCommand, Tile, TileGrid } from '$lib';
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { pinnedCharts, procedures } from '$lib/stores/data';
     import {parseProcedure} from "$lib/util/parsers";
@@ -37,6 +37,7 @@
     <div class="flex gap-3 flex-wrap">
         <TauriCommand cmd="connect_to_pod" successCallback={handleSuccess} errorCallback={handleFailure} />
         <TauriCommand cmd="disconnect" successCallback={() => serverStatus.set(false)} />
+        <TauriCommand cmd="system_check"/>
 <!--        <TauriCommand cmd="start_levi" />-->
 <!--        <TauriCommand cmd="quit_levi" />-->
         <TauriCommand cmd="procedures" textOverride="Refresh Procedures" successCallback={parseProcedures} />
@@ -63,13 +64,18 @@
             </button>
         {/if}
     </div>
-    <p><kbd class="kbd">Esc</kbd> to trigger Emergency Braking.</p>
+    <p>
+        Press <kbd class="kbd">Esc</kbd> or <kbd class="kbd">Space</kbd> to trigger Emergency Braking or
+        <kbd class="kbd">D</kbd> to toggle Debug Mode. Use <kbd class="kbd">Shift+Number</kbd> to navigate through tabs.
+    </p>
     {#if $pinnedCharts.length === 0}
-        <p>Pinned tabs will appear here.</p>
+        <p>Pinned graphs will appear here.</p>
     {/if}
     <TileGrid columns="" rows="">
         {#each $pinnedCharts as title}
-            <Chart title={title} background="bg-surface-900" height={250}/>
+            <Tile>
+                <Chart title={title} background="bg-surface-900" height={250}/>
+            </Tile>
         {/each}
     </TileGrid>
 </div>

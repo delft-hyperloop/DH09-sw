@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Command, EventChannel, type NamedCommand, TileGrid, util } from '$lib';
+    import { Command, EventChannel, GrandDataDistributor, type NamedCommand, TileGrid, util } from '$lib';
     import { NamedCommandValues } from "$lib/types";
     import BinaryInput from '$lib/components/BinaryInput.svelte';
     import { propControlWord } from '$lib/stores/state';
@@ -8,17 +8,27 @@
 
     const values: number[] = new Array(NamedCommandValues.length).fill(0);
     const propLabels: string[] = [
-        "Motor On",
+        // "Motor On",
+        "Reset",
         "Phase Enable 1",
         "Phase Enable 2",
         "Phase Enable 3",
         "Logic Enable 1",
         "Logic Enable 2",
         "Logic Enable 3",
-        "Reset",
+        // "Direction",
+        // "General Fault"
+    ].reverse();
+
+    const propReadLabels: string[] = [
         "Direction",
-        "General Fault"
-    ];
+        "General Fault",
+        "State",
+        "State",
+    ].reverse().concat(propLabels);
+
+    const storeManager = GrandDataDistributor.getInstance().stores;
+    const ppControlWordStore = storeManager.getWritable("Word");
 
     // Propulsion debug stuff
     let modulation_factor: number = 0;
@@ -78,15 +88,26 @@
     <TileGrid className="mb-5" columns="1fr 1fr" rows="">
         <CollapsibleTile title="Propulsion Commands">
             <div slot="content">
-                <div class="grid grid-cols-12 gap-2 items-center mt-2 mb-3 ">
+                <div class="grid grid-cols-9 gap-2 items-center mt-2 mb-3 ">
                     <span class="text-center">Propulsion Control Word:</span>
-                    {#each Array.from({ length: 10 }, (_, i) => 9 - i) as i}
+                    {#each Array.from({ length: propLabels.length }, (_, i) => propLabels.length - 1 - i) as i}
                         <BinaryInput index={i} />
                     {/each}
                     <Command cmd="SendPropulsionControlWord" val={$propControlWord} text={"Send"}/>
 
                     <span/>
                     {#each propLabels as l}
+                        <span class="text-center">{l}</span>
+                    {/each}
+                    <span/>
+                </div>
+                <div class="grid grid-cols-12 gap-2 items-center mt-2 mb-3 ">
+                    <span class="text-center">Received Control Word:</span>
+                    {#each Array.from({ length: propReadLabels.length }, (_, i) => propReadLabels.length - 1 - i) as i}
+                        <span class="text-center">{$propControlWord >> i & 1}</span>
+                    {/each}
+                    <span/>
+                    {#each propReadLabels as l}
                         <span class="text-center">{l}</span>
                     {/each}
                     <span/>

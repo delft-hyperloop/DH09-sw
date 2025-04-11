@@ -1,10 +1,9 @@
 <script lang="ts">
-    import { Command, EventChannel, GrandDataDistributor, type NamedCommand, TileGrid, util } from '$lib';
+    import { Command, GrandDataDistributor, TileGrid } from '$lib';
     import { NamedCommandValues } from "$lib/types";
     import BinaryInput from '$lib/components/BinaryInput.svelte';
-    import { propControlWord } from '$lib/stores/state';
+    import { propControlWord, propulsionConfigSent } from '$lib/stores/state';
     import CollapsibleTile from '$lib/components/generic/CollapsibleTile.svelte';
-    import { invoke } from '@tauri-apps/api/tauri';
     import Command64Bits from '$lib/components/abstract/Command64Bits.svelte';
 
     const values: number[] = new Array(NamedCommandValues.length).fill(0);
@@ -24,7 +23,6 @@
     const propReadLabels: string[] = [
         "Direction",
         "General Fault",
-        "State",
         "State",
     ].reverse().concat(propLabels);
 
@@ -95,12 +93,12 @@
                     {/each}
                     <span/>
                 </div>
-                <div class="grid grid-cols-12 gap-2 items-center mt-2 mb-3 ">
+                <div class="grid grid-cols-11 gap-2 items-center mt-2 mb-3 ">
                     <span class="text-center">Received Control Word:</span>
-                    <span class="text-center">-</span>
                     <span class="text-center">{($ppControlWordStore.value >> 2 & 1) + ($ppControlWordStore.value >> 3 & 1) * 2}</span>
-                    <span class="text-center">a</span>
-                    {#each Array.from({ length: 8 }, (_, i) => propReadLabels.length - i) as i}
+                    <span class="text-center">{$ppControlWordStore.value >> 1 & 1}</span>
+                    <span class="text-center">{$ppControlWordStore.value & 1}</span>
+                    {#each Array.from({ length: 7 }, (_, i) => propReadLabels.length - i) as i}
                         <span class="text-center">{$ppControlWordStore.value >> (i + 4) & 1}</span>
                     {/each}
                     <span/>
@@ -111,7 +109,12 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4 m-4 items-center ">
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg ">
-                        <Command64Bits cmd="PPControlParams" text="Submit PP Control Params" values={[ppControlParams, direction << 16]} />
+                        <Command64Bits
+                            cmd="PPControlParams"
+                            text="Submit PP Control Params"
+                            values={[ppControlParams, direction << 16]}
+                            onClickMethod={() => {propulsionConfigSent.set(true)}}
+                        />
                         <div class="grid grid-cols-2 gap-2 ">
                             <div class="text-center content-center">Modulation Factor</div>
                             <input bind:value={modulation_factor} type="number" class="input p-4 rounded-md" on:change={calculatePPControlParams}>
@@ -126,7 +129,7 @@
                         <div class="grid grid-cols-2 gap-2">
                             <div class="text-center content-center">Position Offset</div>
                             <input bind:value={pos_offset} type="number" class="input p-4 rounded-md " on:change={calculatePPDebugParams2}>
-                            <div class="text-center content-center">Position Alpha</div>
+                            <div class="text-center content-center">Alpha</div>
                             <input bind:value={alpha} type="number" class="input p-4 rounded-md " on:change={calculatePPDebugParams2}>
                         </div>
                     </div>

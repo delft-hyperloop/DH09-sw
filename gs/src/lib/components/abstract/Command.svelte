@@ -1,14 +1,32 @@
 <script lang="ts">
     import {invoke} from '@tauri-apps/api/tauri';
     import {EventChannel, type NamedCommand, util} from "$lib";
+    import { writable, type Writable } from 'svelte/store';
+    import { getModalStore } from '@skeletonlabs/skeleton';
+    import { MODAL_SETTINGS } from '$lib/types';
 
     export let className: string = '';
     export let cmd: NamedCommand;
     export let val: number = 0;
     export let callback: (val:number) => void = () => {};
     export let text: string = '';
+    export let onClickMethod: () => void = () => {};
+    export let dependency: Writable<boolean> = writable<boolean>(true);
+    export let dependencyMessage: string = '';
+    export let dependencyTitle: string = '';
+
+    let modalStore = getModalStore();
 
     let send = async () => {
+        if (dependency && !$dependency) {
+            MODAL_SETTINGS.body = dependencyMessage;
+            MODAL_SETTINGS.title = dependencyTitle;
+            modalStore.trigger(MODAL_SETTINGS);
+            return;
+        }
+
+        onClickMethod();
+
         console.log(`Sending command: ${cmd}, value: ${val}`);
         await invoke('send_command', {cmdName: cmd, val}).then(() => {
             console.log(`Command ${cmd} sent`);

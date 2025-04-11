@@ -1,4 +1,7 @@
 /* AUTO GENERATED USING npm run generate:gs */
+import type { ModalSettings } from '@skeletonlabs/skeleton';
+import Battery from '$lib/components/Battery.svelte';
+
 export type NamedCommand = "FSMUpdate" | "DefaultCommand" | "Heartbeat" | "FrontendHeartbeat" | "EmitEvent" | "StartHV" | "StopHV" | "LevitationOn" | "LevitationOff" | "vertical_0_current" | "vert_0_current_reset" | "PropulsionOn" | "PropulsionOff" | "SendPropulsionControlWord" | "PPControlParams" | "PPDebugParams1" | "PPDebugParams2" | "PPTestControlParams" | "SubmitDirection" | "SubmitSpeed" | "ArmBrakes" | "Shutdown" | "EmergencyBrake" | "SystemReset";
 export const NamedCommandValues:NamedCommand[] = [
     "FSMUpdate", "DefaultCommand", "Heartbeat", "FrontendHeartbeat", "EmitEvent", "StartHV", "StopHV", "LevitationOn", "LevitationOff", "vertical_0_current", "vert_0_current_reset", "PropulsionOn", "PropulsionOff", "SendPropulsionControlWord", "PPControlParams", "PPDebugParams1", "PPDebugParams2", "PPTestControlParams", "SubmitDirection", "SubmitSpeed", "ArmBrakes", "Shutdown", "EmergencyBrake", "SystemReset"];
@@ -100,10 +103,20 @@ export enum STATUS {
 
 export type LogType = 'INFO' | 'WARNING' | 'ERROR' | 'STATUS';
 
-export type RouteConfig = {
-    speed: number,
-    current_position: number
-}
-
 export const LOCALISATION_NAME = "Localisation"; // 'levi_location'
 export const GOING_FORWARD = "GoingForward";
+
+export const MODAL_SETTINGS: ModalSettings = {
+    backdropClasses: '',
+    body: '',
+    buttonTextCancel: 'Close',
+    // component: ,
+    // image: '',
+    // meta: undefined,
+    // modalClasses: '',
+    // position: '',
+    // response(r: any): void {
+    // },
+    title: '',
+    type: 'alert',
+}

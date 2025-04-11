@@ -1,26 +1,20 @@
 <script lang="ts">
     import {
         Table,
-        Status,
         Command,
         Tile,
         TileGrid,
-        GrandDataDistributor,
         Chart, util, EventChannel,
     } from '$lib';
-    import {DatatypeEnum} from "$lib/namedDatatypeEnum";
-    import {invoke} from "@tauri-apps/api/tauri";
-    import {STATUS} from "$lib/types";
     import { podSpeed, propModulationFactor } from '$lib/stores/data';
-    import { debugModeActive, goingForwardState } from '$lib/stores/state';
+    import { debugModeActive, goingForward, propulsionConfigSent } from '$lib/stores/state';
     import RangeSlider from 'svelte-range-slider-pips';
-    import { getModalStore } from '@skeletonlabs/skeleton';
-    import Command64Bits from '$lib/components/abstract/Command64Bits.svelte';
+    import { invoke } from '@tauri-apps/api/tauri';
 
-    const storeManager = GrandDataDistributor.getInstance().stores;
+    // const storeManager = GrandDataDistributor.getInstance().stores;
     // const statuses = storeManager.getWritable("ConnectionStatus")
 
-    export let pop_up: boolean = true;
+    // export let pop_up: boolean = true;
 
     let tableArr2:any[][];
     // $: tableArr2 = [
@@ -32,53 +26,31 @@
     //     ["Gyroscope Z", DatatypeEnum.GYROSCOPEZ],
     // ]
 
-    let currentDirectionForward: boolean = $goingForwardState;
+    let currentDirectionForward: boolean = $goingForward;
     let currentSpeed: number = $podSpeed;
     // Value bound to the modulation factor slider.
     // Didn't work with a different name for some reason.
-    let values = [100];
-
-
-    // const input:ModalComponent = {ref: SpeedsInput};
-    // let inputModal = () => {
-    //     modalStore.trigger({
-    //         type: "component",
-    //         component: input,
-    //         title: "Run Configuration",
-    //     })
-    // }
-    // let finishRunConfig = () => {
-    //     invoke('send_command', {cmdName: "FinishRunConfig", val: 0}).then(() => {
-    //         console.log(`Command FinishRunConfig sent`);
-    //         modalStore.close();
-    //     });
-    // }
-
-    let onChange = () => {
-        goingForwardState.set(currentDirectionForward);
-        podSpeed.set(currentSpeed);
-        propModulationFactor.set(values[0]);
-    }
+    let values = [1];
 
     async function submitRun() {
-        goingForwardState.set(currentDirectionForward);
+        goingForward.set(currentDirectionForward);
         podSpeed.set(currentSpeed);
         propModulationFactor.set(values[0]);
-        const value = ($propModulationFactor * 10 << 16) | $podSpeed * 10;
+        const value = ($propModulationFactor * 1000 << 16) | $podSpeed * 10;
 
-        await invoke('send_command_64_bits', {cmdName: "PPControlParams", vals: [value, 1 << 16]}).then(() => {
+        let direction: number = 1;
+        if (!$goingForward) {
+            direction = 0;
+        }
+
+        await invoke('send_command_64_bits', {cmdName: "PPControlParams", vals: [value, direction << 16]}).then(() => {
             console.log(`Sending command: PPControlParams, value: ${value}`);
         }).catch((e) => {
             console.error(`Error sending command PPControlParams: ${e}`);
         });
         util.log(`Command PPControlParams sent`, EventChannel.INFO);
 
-        // await invoke('send_command', {cmdName: "SendDirection", val: 0}).then(() => {
-        //     console.log(`Sending command: SendDirection, value: ${0}`); // TODO: fix this
-        // }).catch((e) => {
-        //     console.error(`Error sending command SendPropulsionControlWord: ${e}`);
-        // });
-        // util.log(`Command SendPropulsionControlWord sent`, EventChannel.INFO);
+        propulsionConfigSent.set(true);
     }
 
 </script>
@@ -89,7 +61,14 @@
     <TileGrid columns="1fr 1fr 1.5fr" rows="auto 1fr">
         <Tile containerClass="row-span-2" insideClass="flex flex-col gap-2" heading="Run Initialization">
             <div class="grid grid-cols-2 gap-2">
-                <Command cmd="EnablePropulsion" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto"/>
+                <Command
+                    cmd="EnablePropulsion"
+                    className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto"
+                    dependency={propulsionConfigSent}
+                    dependencyMessage="Run configuration was not sent! Can't start propulsion without specifying
+                    a direction, top speed and modulation factor!"
+                    dependencyTitle="Configuration not sent"
+                />
                 <Command cmd="DisablePropulsion" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
                 <Command cmd="SystemReset" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
                 <Command cmd="ArmBrakes" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
@@ -107,7 +86,7 @@
                     Backward
                 </button>
                 <p class="col-span-full">
-                    Change Speed:
+                    Target Speed:
                 </p>
                 <input class="input rounded-lg px-1 col-span-2 min-h-10"
                        type="number"
@@ -120,35 +99,51 @@
                 </p>
                 <input class="input rounded-lg px-1 col-span-2 min-h-10"
                        type="number"
-                       max="100"
+                       max="1"
                        min="0"
                        bind:value={values[0]}
+                       step="0.01"
                 />
                 <div class="col-span-full mb-4">
-                    <RangeSlider value={100} bind:values min={0} max={100} pips all="label" suffix="%" pipstep={25}
-
+                    <RangeSlider
+                        value={1}
+                        bind:values
+                        min={0}
+                        max={1}
+                        pips
+                        all="label"
+                        step={0.01}
+                        pipstep={25}
                     />
                 </div>
                 <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow overflow-auto font-medium"
                         on:click={submitRun} disabled={false}>
                     Submit New Run Parameters
                 </button>
-                <Command64Bits cmd="PPControlParams"
-                               values={[($propModulationFactor * 1000 << 16) | $podSpeed * 10, 1 << 16]}
-                               text="Submit Control Parameters"
-                />
                 <hr class="col-span-full">
                 <p class="col-span-full font-normal text-xl justify-center text-center pb-3 ">Current Values:</p>
                 <p>Desired Speed:</p>
-                <p>{$podSpeed} m/s</p>
-                <p>Run Direction:</p>
-                {#if $goingForwardState}
-                    <p>Forward</p>
+                {#if $propulsionConfigSent}
+                    <p>{$podSpeed} m/s</p>
                 {:else}
-                    <p>Backward</p>
+                    <p>Not set</p>
+                {/if}
+                <p>Run Direction:</p>
+                {#if $propulsionConfigSent}
+                    {#if $goingForward}
+                        <p>Forward</p>
+                    {:else}
+                        <p>Backward</p>
+                    {/if}
+                {:else}
+                    <p>Not set</p>
                 {/if}
                 <p>Modulation Factor:</p>
-                <p>{$propModulationFactor}%</p>
+                {#if $propulsionConfigSent}
+                    <p>{$propModulationFactor}</p>
+                {:else}
+                    <p>Not set</p>
+                {/if}
             </div>
         </Tile>
         <Tile insideClass="grid grid-cols-2 gap-y-2 auto-rows-min" heading="Statuses" >

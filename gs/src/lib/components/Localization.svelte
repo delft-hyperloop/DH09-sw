@@ -1,6 +1,6 @@
 <script lang="ts">
 
-    import { goingForwardState } from '$lib/stores/state';
+    import { goingForward } from '$lib/stores/state';
     import { LOCALISATION_NAME } from '$lib/types';
     import { GrandDataDistributor } from '$lib';
 
@@ -38,7 +38,7 @@
         point_half.style.fill = $location.value > max / 2 ? color_active : color_off;
         progress.style.strokeDashoffset = (path_length - path_length * ($location.value / max)).toString();
 
-        if ($goingForwardState) {
+        if ($goingForward) {
             point_start.style.fill = $location.value > 0 ? color_active : color_off;
             point_quarter.style.fill = $location.value > max / 4 ? color_active : color_off;
             point_three_quarters.style.fill = $location.value > max / 4 * 3 ? color_active : color_off;
@@ -59,7 +59,7 @@
                 <g id="progress_container" bind:this={progress_container}>
                     <g id="path" bind:this={path}>
                         <path d="M10 26H909" stroke="#525B5B" stroke-width="6" />
-                        {#if $goingForwardState}
+                        {#if $goingForward}
                             <path bind:this={progress} d="M10 25.7224H909" stroke="#4D9C89" stroke-width="6" />
                         {:else}
                             <path bind:this={progress} d="M909 25.7224H10" stroke="#4D9C89" stroke-width="6" />

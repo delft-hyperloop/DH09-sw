@@ -144,7 +144,7 @@
                         <div class="flex gap-4 flex-wrap">
                             <Command cmd="StopHV" className="py-1 text-error-400 border-error-400 border-2" />
                             <Command cmd="ArmBrakes" className="py-1 bg-primary-500 text-surface-900 " />
-                            <Command cmd="StartRun" className="py-1 bg-primary-500 text-surface-900" />
+<!--                            <Command cmd="StartRun" className="py-1 bg-primary-500 text-surface-900" />-->
 <!--                            <Command cmd="ContinueRun" className="py-1 bg-primary-500 text-surface-900" />-->
                         </div>
                     </div>

@@ -4,19 +4,19 @@
 
     export let className: string = '';
     export let cmd: NamedCommand;
-    export let val: number = 0;
-    export let callback: (val:number) => void = () => {};
+    export let values: number[] = [0];
+    export let callback: (val:number[]) => void = () => {};
     export let text: string = '';
 
     let send = async () => {
-        console.log(`Sending command: ${cmd}, value: ${val}`);
-        await invoke('send_command', {cmdName: cmd, val}).then(() => {
+        console.log(`Sending command: ${cmd}, values: ${values[0]}, ${values[1]}`);
+        await invoke('send_command_64_bits', {cmdName: cmd, vals: values}).then(() => {
             console.log(`Command ${cmd} sent`);
         }).catch((e) => {
             console.error(`Error sending command ${cmd}: ${e}`);
         });
         util.log(`Command ${cmd} sent`, EventChannel.INFO);
-        callback(val);
+        callback(values);
     };
 </script>
 

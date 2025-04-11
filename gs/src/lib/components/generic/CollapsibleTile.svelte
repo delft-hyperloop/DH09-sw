@@ -5,7 +5,7 @@
 
     export let title: string;
 
-    let visible: boolean = false;
+    let visible: boolean = true;
 
     let toggleVisibility = () => {
         visible = !visible;

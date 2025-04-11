@@ -15,6 +15,7 @@
     import { debugModeActive, goingForwardState } from '$lib/stores/state';
     import RangeSlider from 'svelte-range-slider-pips';
     import { getModalStore } from '@skeletonlabs/skeleton';
+    import Command64Bits from '$lib/components/abstract/Command64Bits.svelte';
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     // const statuses = storeManager.getWritable("ConnectionStatus")
@@ -53,13 +54,19 @@
     //     });
     // }
 
+    let onChange = () => {
+        goingForwardState.set(currentDirectionForward);
+        podSpeed.set(currentSpeed);
+        propModulationFactor.set(values[0]);
+    }
+
     async function submitRun() {
         goingForwardState.set(currentDirectionForward);
         podSpeed.set(currentSpeed);
         propModulationFactor.set(values[0]);
-        const value = ($propModulationFactor << 16) | $podSpeed;
+        const value = ($propModulationFactor * 10 << 16) | $podSpeed * 10;
 
-        await invoke('send_command', {cmdName: "PPControlParams", val: value}).then(() => {
+        await invoke('send_command_64_bits', {cmdName: "PPControlParams", vals: [value, 1 << 16]}).then(() => {
             console.log(`Sending command: PPControlParams, value: ${value}`);
         }).catch((e) => {
             console.error(`Error sending command PPControlParams: ${e}`);
@@ -126,13 +133,10 @@
                         on:click={submitRun} disabled={false}>
                     Submit New Run Parameters
                 </button>
-<!--                <Command-->
-<!--                    cmds={["PPControlParams", "SendPropulsionControlWord"]}-->
-<!--                    values={[($propModulationFactor << 16) | $podSpeed, 0]}-->
-<!--                    callbacks={[() => {}, () => {}]}-->
-<!--                    text="Submit New Run Parameters"-->
-<!--                    className="col-span-full py-2 bg-primary-500 text-surface-900"-->
-<!--                />-->
+                <Command64Bits cmd="PPControlParams"
+                               values={[($propModulationFactor * 1000 << 16) | $podSpeed * 10, 1 << 16]}
+                               text="Submit Control Parameters"
+                />
                 <hr class="col-span-full">
                 <p class="col-span-full font-normal text-xl justify-center text-center pb-3 ">Current Values:</p>
                 <p>Desired Speed:</p>

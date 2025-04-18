@@ -11,7 +11,7 @@
     import {
         chartStore,
         debugModeActive,
-        latestTimestamp, memeModeActive,
+        latestTimestamp, logsPanelSize, logsVisible,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
@@ -32,7 +32,15 @@
 
     initProcedures();
 
-    const unlisten = listen("shortcut_channel", (event: {payload: string}) => parseShortCut(event.payload, $debugModeActive, $memeModeActive));
+    logsVisible.subscribe(() => {
+        if ($logsVisible) {
+            logsPanelSize.set(30);
+        } else {
+            logsPanelSize.set(5);
+        }
+    });
+
+    const unlisten = listen("shortcut_channel", (event: {payload: string}) => parseShortCut(event.payload, $debugModeActive, $logsVisible));
 
     //////////////////////////////
     /////////// CHARTS ///////////

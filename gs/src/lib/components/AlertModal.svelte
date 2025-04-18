@@ -21,10 +21,10 @@
             <path d="M23 16C23 15.4477 23.4477 15 24 15V15C24.5523 15 25 15.4477 25 16V24C25 24.5523 24.5523 25 24 25V25C23.4477 25 23 24.5523 23 24V16Z" fill="#619A89"/>
             <rect x="23" y="27" width="2" height="2" rx="1" fill="#619A89"/>
         </svg>
-        <h3 class="text-xl mb-2 font-medium w-full text-center">
+        <h3 class="text-2xl mb-2 font-medium w-full text-center">
             {$modalTitle}
         </h3>
-        <span class="text-center text-wrap">
+        <span class="text-center text-wrap text-lg">
             {$modalBody}
         </span>
         <button

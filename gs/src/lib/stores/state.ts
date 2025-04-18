@@ -8,7 +8,6 @@ export enum ErrorStatus {
 }
 
 export const detailTabSet: Writable<number> = writable(0);
-export const inputSpeed: Writable<number> = writable(50);
 export const inputEmerg: Writable<number> = writable(-1);
 
 export const logsPanelSize: Writable<number> = writable(5);
@@ -32,7 +31,5 @@ export const showcasingStates: Writable<boolean> = writable(false);
 export const debugModeActive: Writable<boolean> = writable(false);
 
 export const propControlWord: Writable<number> = writable<number>(0);
-
-export const memeModeActive: Writable<boolean> = writable(false);
 
 export const propulsionConfigSent: Writable<boolean> = writable(false);

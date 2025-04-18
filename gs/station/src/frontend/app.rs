@@ -24,9 +24,6 @@ pub static APP_HANDLE: Mutex<Option<AppHandle>> = Mutex::new(None);
 
 pub fn tauri_main(backend: Backend) {
     println!("Starting tauri application");
-    println!("Starting tauri application");
-    println!("Starting tauri application");
-    println!("Starting tauri application");
     tauri::Builder::default()
         .manage(BackendState::default())
         .invoke_handler(tauri::generate_handler![
@@ -92,10 +89,10 @@ pub fn tauri_main(backend: Backend) {
                         .expect("Could not register shortcut");
 
                         let ss = s.clone();
-                        sh.register("COMMANDORCTRL+SHIFT+M", move || {
-                            ss.emit_all(SHORTCUT_CHANNEL, "MemeMode").unwrap();
+                        sh.register("L", move || {
+                            ss.emit_all(SHORTCUT_CHANNEL, "ToggleLogs").unwrap();
                         })
-                        .expect("Could not register shortcut bruh");
+                        .expect("Could not register shortcut");
 
                         let ss = s.clone();
                         sh.register("D", move || {
@@ -115,7 +112,7 @@ pub fn tauri_main(backend: Backend) {
                         // Unregister shortcuts when window loses focus
                         sh.unregister("Esc").expect("Could not unregister shortcut");
                         sh.unregister("Space").expect("Could not unregister shortcut");
-                        sh.unregister("COMMANDORCTRL+SHIFT+M").expect("Could not unregister shortcut");
+                        sh.unregister("L").expect("Could not unregister shortcut");
                         sh.unregister("D").expect("Could not unregister shortcut");
                         for i in 1..10 {
                             sh.unregister(&format!("SHIFT+{}", i)).expect("Could not unregister shortcut");

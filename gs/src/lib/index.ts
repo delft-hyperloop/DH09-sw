@@ -41,7 +41,7 @@ import type {NamedCommand, Log, LogType} from "$lib/types";
 import {EventChannel} from "$lib/types";
 
 // Stores
-import {detailTabSet, inputSpeed, serverStatus} from "$lib/stores/state";
+import {detailTabSet, serverStatus} from "$lib/stores/state";
 import uPlot from "uplot";
 
 export const chartDataStore = new Map<string, uPlot.AlignedData>();
@@ -82,7 +82,6 @@ export {
     PlotBuffer,
     serverStatus,
     detailTabSet,
-    inputSpeed,
     Pneumatics,
     Localiser,
     EventChannel,

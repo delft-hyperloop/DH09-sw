@@ -67,7 +67,7 @@
                     dependency={propulsionConfigSent}
                     dependencyMessage="Run configuration was not sent! Can't start propulsion without specifying
                     a direction, top speed and modulation factor!"
-                    dependencyTitle="Configuration not sent"
+                    dependencyTitle="Configuration not sent!"
                 />
                 <Command cmd="DisablePropulsion" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
                 <Command cmd="SystemReset" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />

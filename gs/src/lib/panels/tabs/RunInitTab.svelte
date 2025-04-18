@@ -116,7 +116,7 @@
                         pipstep={25}
                     />
                 </div>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow overflow-auto font-medium"
+                <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow overflow-auto font-medium"
                         on:click={submitRun} disabled={false}>
                     Submit New Run Parameters
                 </button>

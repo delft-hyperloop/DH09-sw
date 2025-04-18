@@ -27,3 +27,6 @@ export const pinnedCharts: Writable<Array<string>> = writable([]);
 
 export const podSpeed: Writable<number> = writable(0);
 export const propModulationFactor: Writable<number> = writable(1);
+
+export const modalTitle: Writable<string> = writable("");
+export const modalBody: Writable<string> = writable("");

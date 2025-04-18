@@ -7,7 +7,7 @@
         StrokePresets,
         TitleBar,
     } from "$lib";
-    import {initializeStores, Modal, Toast} from '@skeletonlabs/skeleton';
+    import { initializeStores, Modal, type ModalComponent, Toast } from '@skeletonlabs/skeleton';
     import {
         chartStore,
         debugModeActive,
@@ -22,8 +22,13 @@
     import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
     import { LOCALISATION_NAME } from '$lib/types';
+    import AlertModal from '$lib/components/AlertModal.svelte';
 
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+
+    const modalRegistry: Record<string, ModalComponent> = {
+        alertModal: { ref: AlertModal },
+    };
 
     initProcedures();
 
@@ -339,7 +344,7 @@
 
 <div class="flex flex-col w-screen h-screen max-h-screen overflow-hidden">
     <Toast/>
-    <Modal/>
+    <Modal components={modalRegistry}/>
     <TitleBar/>
     <slot/>
     <BottomBar/>

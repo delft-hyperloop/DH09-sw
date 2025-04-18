@@ -107,16 +107,6 @@ export const LOCALISATION_NAME = "Localisation"; // 'levi_location'
 export const GOING_FORWARD = "GoingForward";
 
 export const MODAL_SETTINGS: ModalSettings = {
-    backdropClasses: '',
-    body: '',
-    buttonTextCancel: 'Close',
-    // component: ,
-    // image: '',
-    // meta: undefined,
-    // modalClasses: '',
-    // position: '',
-    // response(r: any): void {
-    // },
-    title: '',
-    type: 'alert',
+    component: 'alertModal',
+    type: 'component',
 }

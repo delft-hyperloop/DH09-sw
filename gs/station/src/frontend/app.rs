@@ -110,13 +110,7 @@ pub fn tauri_main(backend: Backend) {
                     },
                     WindowEvent::Focused(false) => {
                         // Unregister shortcuts when window loses focus
-                        sh.unregister("Esc").expect("Could not unregister shortcut");
-                        sh.unregister("Space").expect("Could not unregister shortcut");
-                        sh.unregister("L").expect("Could not unregister shortcut");
-                        sh.unregister("D").expect("Could not unregister shortcut");
-                        for i in 1..10 {
-                            sh.unregister(&format!("SHIFT+{}", i)).expect("Could not unregister shortcut");
-                        }
+                        sh.unregister_all().expect("Couldn't unregister shortcuts");
                     },
                     _ => {},
                 }

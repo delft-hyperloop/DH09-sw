@@ -723,13 +723,13 @@ message-processing:
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
-  - name: 'PPInitFault'
+  - name: 'PPInitFault1'
     can:
       id: 0x4BA
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PPInitFault'
+          name: 'PPInitFault1'
           id: 0x4BA
           store:
             default: 0
@@ -737,13 +737,27 @@ message-processing:
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'
-  - name: 'PPEmergency'
+  - name: 'PPInitFault2'
+    can:
+      id: 0x4BB
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'PPInitFault2'
+          id: 0x4BA
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'PPEmergency1'
     can:
       id: 0x002
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PPEmergency'
+          name: 'PPEmergency1'
           id: 0x002
           store:
             default: 0
@@ -751,13 +765,27 @@ message-processing:
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'
-  - name: 'Word'
+  - name: 'PPEmergency2'
+    can:
+      id: 0x003
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'PPEmergency2'
+          id: 0x003
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'Word1'
     can:
       id: 0x4B3
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Word'
+          name: 'Word1'
           id: 0x4B3
           store:
             default: 0
@@ -765,20 +793,34 @@ message-processing:
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
-  - name: 'Log1'
+  - name: 'Word2'
+    can:
+      id: 0x4B7
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'Word2'
+          id: 0x4B7
+          store:
+            default: 0
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+  - name: 'Log1MD1'
     can:
       id: 0x4B4
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'IqMeasured'
+          name: 'IqMeasured1'
           id: 0x4B5
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -786,14 +828,14 @@ message-processing:
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
-          name: 'IqReference'
+          name: 'IqReference1'
           id: 0x4B7
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -801,14 +843,14 @@ message-processing:
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
-          name: 'IdMeasured'
+          name: 'IdMeasured1'
           id: 0x4B6
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
@@ -816,75 +858,229 @@ message-processing:
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
-          name: 'IdReference'
+          name: 'IdReference1'
           id: 0x4B8
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
-  - name: 'Log2'
+  - name: 'Log1MD2'
     can:
-      id: 0x4B5
+      id: 0x4B8
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Vq_Log'
-          id: 0x4BA
+          name: 'IqMeasured2'
+          id: 0x4B5
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(3, curr);
+                  return curr;
+              }
         getter: 'i16[0..2]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
-          name: 'Vd_Log'
-          id: 0x4BC
+          name: 'IqReference2'
+          id: 0x4B7
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(4, curr);
+                  return curr;
+              }
         getter: 'i16[2..4]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
-          name: 'Vbus'
-          id: 0x4BE
+          name: 'IdMeasured2'
+          id: 0x4B6
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(1, curr);
+                  return curr;
+              }
         getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
-          name: 'Ibus'
-          id: 0x4C0
+          name: 'IdReference2'
+          id: 0x4B8
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(2, curr);
+                  return curr;
+              }
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
-  - name: 'Log3'
+  - name: 'Log2MD1'
+    can:
+      id: 0x4B5
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'Vq_Log1'
+          id: 0x4BA
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'i16[0..2]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Vd_Log1'
+          id: 0x4BC
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(4, curr);
+                  return curr;
+              }
+        getter: 'i16[2..4]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Vbus1'
+          id: 0x4BE
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'i16[4..6]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Ibus1'
+          id: 0x4C0
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'i16[6..8]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'Log2MD2'
+    can:
+      id: 0x4B9
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'Vq_Log2'
+          id: 0x4BA
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'i16[0..2]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Vd_Log2'
+          id: 0x4BC
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(4, curr);
+                  return curr;
+              }
+        getter: 'i16[2..4]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Vbus2'
+          id: 0x4BE
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'i16[4..6]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Ibus2'
+          id: 0x4C0
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'i16[6..8]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'Log3MD1'
     can:
       id: 0x4B6
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Ta'
+          name: 'Ta1'
           id: 0x4C3
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -892,14 +1088,14 @@ message-processing:
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
-          name: 'Tb'
+          name: 'Tb1'
           id: 0x4C5
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -907,30 +1103,94 @@ message-processing:
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
-          name: 'Tc'
+          name: 'Tc1'
           id: 0x4C7
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
-
       - datapoint:
-          name: 'TCASE'
+          name: 'TCASE1'
           id: 0x4C8
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(4, curr);
+                  return curr;
+              }
+        getter: 'i16[6..8]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'Log3MD2'
+    can:
+      id: 0x7DC
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'Ta2'
+          id: 0x4C3
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'i16[0..2]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Tb2'
+          id: 0x4C5
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'i16[2..4]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Tc2'
+          id: 0x4C7
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'i16[4..6]'
+        can-conversion: 'scale_10:i16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TCASE2'
+          id: 0x4C8
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[6..8]'
@@ -970,10 +1230,15 @@ commands:
     id: 0x6c
   - name: 'PropulsionOff'
     id: 0x6d
-  - name: 'SendPropulsionControlWord'
+  - name: 'SendPropulsionControlWord1'
     id: 0x191
     can:
       id: 0x191
+      bus: can2
+  - name: 'SendPropulsionControlWord2'
+    id: 0x192
+    can:
+      id: 0x192
       bus: can2
   - name: 'PPControlParams'
     id: 0x33E

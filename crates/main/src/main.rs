@@ -463,7 +463,7 @@ async fn main(spawner: Spawner) -> ! {
     info!("Embassy initialized!");
 
     let can1 = {
-        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs);
+        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
 
         let config = configurator
             .config()
@@ -493,7 +493,7 @@ async fn main(spawner: Spawner) -> ! {
     };
 
     let can2 = {
-        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
+        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs);
 
         // let config = configurator
         //     .config()

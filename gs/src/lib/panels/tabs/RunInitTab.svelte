@@ -177,22 +177,22 @@
     {#if $debugModeActive}
         <TileGrid columns="1fr 1fr" rows="auto" className="mt-2">
             <Tile containerClass="col-span-1" heading="Propulsion Log 1 - MD1">
-                <Chart title="Propulsion Log 1" background="bg-surface-900" />
+                <Chart title="Propulsion Log 1 - MD1" background="bg-surface-900" />
             </Tile>
             <Tile containerClass="col-span-1" heading="Propulsion Log 1 - MD2">
-                <Chart title="Propulsion Log 1" background="bg-surface-900" />
+                <Chart title="Propulsion Log 1 - MD2" background="bg-surface-900" />
             </Tile>
             <Tile containerClass="col-span-1" heading="Propulsion Log 2 - MD1">
-                <Chart title="Propulsion Log 2" background="bg-surface-900" />
+                <Chart title="Propulsion Log 2 - MD1" background="bg-surface-900" />
             </Tile>
             <Tile containerClass="col-span-1" heading="Propulsion Log 2 - MD2">
-                <Chart title="Propulsion Log 2" background="bg-surface-900" />
+                <Chart title="Propulsion Log 2 - MD2" background="bg-surface-900" />
             </Tile>
             <Tile containerClass="col-span-1" heading="Propulsion Log 3 - MD1">
-                <Chart title="Propulsion Log 3" background="bg-surface-900" />
+                <Chart title="Propulsion Log 3 - MD1" background="bg-surface-900" />
             </Tile>
             <Tile containerClass="col-span-1" heading="Propulsion Log 3 - MD2">
-                <Chart title="Propulsion Log 3" background="bg-surface-900" />
+                <Chart title="Propulsion Log 3 - MD2" background="bg-surface-900" />
             </Tile>
         </TileGrid>
     {/if}

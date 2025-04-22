@@ -326,7 +326,7 @@ async fn tx_task(
             debug!("Actually writing");
             let mut sock_lock = sock.lock().await;
             let tx_result = sock_lock.write_all(&bytes).await;
-            let _ = sock_lock.flush().await;
+            // let _ = sock_lock.flush().await;
             drop(sock_lock);
 
             debug!("Written");

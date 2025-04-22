@@ -950,7 +950,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -965,7 +965,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -980,7 +980,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
@@ -995,7 +995,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[6..8]'
@@ -1015,7 +1015,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -1030,7 +1030,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -1045,7 +1045,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
@@ -1060,7 +1060,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[6..8]'

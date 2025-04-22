@@ -152,11 +152,11 @@
                         />
                         <div class="grid grid-cols-2 gap-2 ">
                             <div class="text-center content-center">Modulation Factor</div>
-                            <input bind:value={modulation_factor} type="number" class="input p-4 rounded-md" on:change={calculatePPControlParams}>
+                            <input bind:value={modulation_factor} type="number" max={1} min={0} class="input p-4 rounded-md" on:change={calculatePPControlParams}>
                             <div class="text-center content-center">Maximum Velocity</div>
                             <input bind:value={maximum_velocity} type="number" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
                             <div class="text-center content-center">Direction</div>
-                            <input bind:value={direction} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={direction} type="number" min="0" max="1" class="input p-4 rounded-md ">
                         </div>
                     </div>
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg h-full">

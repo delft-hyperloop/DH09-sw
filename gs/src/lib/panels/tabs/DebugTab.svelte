@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Command, GrandDataDistributor, TileGrid } from '$lib';
+    import { Chart, Command, GrandDataDistributor, Tile, TileGrid } from '$lib';
     import { NamedCommandValues } from "$lib/types";
     import BinaryInput from '$lib/components/BinaryInput.svelte';
     import { propControlWord, propulsionConfigSent } from '$lib/stores/state';
@@ -69,8 +69,8 @@
     }
 
     let calculateTestControlParams = () => {
-        testControlParams1 = (iq_ref << 16) | id_ref;
-        testControlParams2 = (vq_ref << 16) | vd_ref;
+        testControlParams1 = (iq_ref * 10 << 16) | id_ref * 10;
+        testControlParams2 = (vq_ref * 10 << 16) | vd_ref * 10;
     }
 
 </script>
@@ -160,6 +160,26 @@
                         </div>
                     </div>
                 </div>
+                <TileGrid columns="1fr 1fr" rows="auto" className="mt-2">
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 1 - MD1">
+                        <Chart title="Propulsion Log 1" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 1 - MD2">
+                        <Chart title="Propulsion Log 1" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 2 - MD1">
+                        <Chart title="Propulsion Log 2" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 2 - MD2">
+                        <Chart title="Propulsion Log 2" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 3 - MD1">
+                        <Chart title="Propulsion Log 3" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 3 - MD2">
+                        <Chart title="Propulsion Log 3" background="bg-surface-900" />
+                    </Tile>
+                </TileGrid>
             </div>
         </CollapsibleTile>
         <CollapsibleTile title="Levi Commands">

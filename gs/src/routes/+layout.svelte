@@ -335,56 +335,56 @@
 
     gdd.stores.registerStore<number>("Vq_Log1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(3, curr);
+            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(1, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("Vd_Log1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(4, curr);
+            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(2, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("Vbus1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(1, curr);
+            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(3, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("Ibus1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(2, curr);
+            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(4, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("Vq_Log2", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(3, curr);
+            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(1, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("Vd_Log2", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(4, curr);
+            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(2, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("Vbus2", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(1, curr);
+            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(3, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("Ibus2", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(2, curr);
+            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(4, curr);
             return curr;
         }
     );

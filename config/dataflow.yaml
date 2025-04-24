@@ -730,7 +730,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'PPInitFault1'
-          id: 0x4BA
+          id: 0x4B3
           store:
             default: 0
         getter: 'u8[0..1]'
@@ -744,7 +744,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'PPInitFault2'
-          id: 0x4BA
+          id: 0x4B4
           store:
             default: 0
         getter: 'u8[0..1]'
@@ -786,7 +786,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'Word1'
-          id: 0x4B3
+          id: 0x4B5
           store:
             default: 0
         getter: 'u16[0..2]'
@@ -800,7 +800,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'Word2'
-          id: 0x4B7
+          id: 0x4B6
           store:
             default: 0
         getter: 'u16[0..2]'
@@ -814,7 +814,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'IqMeasured1'
-          id: 0x4B5
+          id: 0x4B7
           store:
             default: 0
             callback: |
@@ -829,7 +829,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'IqReference1'
-          id: 0x4B7
+          id: 0x4B8
           store:
             default: 0
             callback: |
@@ -844,7 +844,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'IdMeasured1'
-          id: 0x4B6
+          id: 0x4B9
           store:
             default: 0
             callback: |
@@ -859,7 +859,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'IdReference1'
-          id: 0x4B8
+          id: 0x4BA
           store:
             default: 0
             callback: |
@@ -879,7 +879,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'IqMeasured2'
-          id: 0x4B5
+          id: 0x4BB
           store:
             default: 0
             callback: |
@@ -894,7 +894,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'IqReference2'
-          id: 0x4B7
+          id: 0x4BC
           store:
             default: 0
             callback: |
@@ -909,7 +909,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'IdMeasured2'
-          id: 0x4B6
+          id: 0x4BD
           store:
             default: 0
             callback: |
@@ -924,7 +924,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'IdReference2'
-          id: 0x4B8
+          id: 0x4BE
           store:
             default: 0
             callback: |
@@ -944,7 +944,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'Vq_Log1'
-          id: 0x4BA
+          id: 0x4BF
           store:
             default: 0
             callback: |
@@ -959,7 +959,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Vd_Log1'
-          id: 0x4BC
+          id: 0x4C0
           store:
             default: 0
             callback: |
@@ -974,7 +974,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Vbus1'
-          id: 0x4BE
+          id: 0x4C1
           store:
             default: 0
             callback: |
@@ -989,7 +989,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Ibus1'
-          id: 0x4C0
+          id: 0x4C2
           store:
             default: 0
             callback: |
@@ -1009,7 +1009,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'Vq_Log2'
-          id: 0x4BA
+          id: 0x4C3
           store:
             default: 0
             callback: |
@@ -1024,7 +1024,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Vd_Log2'
-          id: 0x4BC
+          id: 0x4C4
           store:
             default: 0
             callback: |
@@ -1039,7 +1039,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Vbus2'
-          id: 0x4BE
+          id: 0x4C5
           store:
             default: 0
             callback: |
@@ -1054,7 +1054,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Ibus2'
-          id: 0x4C0
+          id: 0x4C6
           store:
             default: 0
             callback: |
@@ -1074,7 +1074,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'Ta1'
-          id: 0x4C3
+          id: 0x4C7
           store:
             default: 0
             callback: |
@@ -1089,7 +1089,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Tb1'
-          id: 0x4C5
+          id: 0x4C8
           store:
             default: 0
             callback: |
@@ -1104,7 +1104,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Tc1'
-          id: 0x4C7
+          id: 0x4C9
           store:
             default: 0
             callback: |
@@ -1119,7 +1119,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'TCASE1'
-          id: 0x4C8
+          id: 0x4CA
           store:
             default: 0
             callback: |
@@ -1134,12 +1134,12 @@ message-processing:
           conversion: 'gs_2p_float:f32'
   - name: 'Log3MD2'
     can:
-      id: 0x7DC
+      id: 0x4BC
       bus: can2
     datapoint-conversion:
       - datapoint:
           name: 'Ta2'
-          id: 0x4C3
+          id: 0x4CB
           store:
             default: 0
             callback: |
@@ -1154,7 +1154,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Tb2'
-          id: 0x4C5
+          id: 0x4CC
           store:
             default: 0
             callback: |
@@ -1169,7 +1169,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Tc2'
-          id: 0x4C7
+          id: 0x4CD
           store:
             default: 0
             callback: |
@@ -1184,7 +1184,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'TCASE2'
-          id: 0x4C8
+          id: 0x4CE
           store:
             default: 0
             callback: |

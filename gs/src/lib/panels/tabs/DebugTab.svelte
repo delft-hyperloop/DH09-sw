@@ -57,7 +57,6 @@
 
     let calculatePPControlParams = () => {
         ppControlParams = (modulation_factor * 1000 << 16) | maximum_velocity * 10;
-        console.log(ppControlParams);
     }
 
     let calculatePPDebugParams1 = () => {
@@ -67,7 +66,6 @@
 
     let calculatePPDebugParams2 = () => {
         ppDebugParams2 = (pos_offset * 1000 << 16) | alpha * 1000;
-        console.log(ppDebugParams2);
     }
 
     let calculateTestControlParams = () => {

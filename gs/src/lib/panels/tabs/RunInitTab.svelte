@@ -6,7 +6,7 @@
         TileGrid,
         Chart, util, EventChannel,
     } from '$lib';
-    import { podSpeed, propModulationFactor } from '$lib/stores/data';
+    import { podSpeed, propMaxPower, propModulationFactor } from '$lib/stores/data';
     import { debugModeActive, goingForward, propulsionConfigSent } from '$lib/stores/state';
     import RangeSlider from 'svelte-range-slider-pips';
     import { invoke } from '@tauri-apps/api/tauri';
@@ -28,6 +28,8 @@
 
     let currentDirectionForward: boolean = $goingForward;
     let currentSpeed: number = $podSpeed;
+    let currentMaxPower: number = $propMaxPower;
+
     // Value bound to the modulation factor slider.
     // Didn't work with a different name for some reason.
     let values = [1];
@@ -36,15 +38,18 @@
         goingForward.set(currentDirectionForward);
         podSpeed.set(currentSpeed);
         propModulationFactor.set(values[0]);
-        const value = ($propModulationFactor * 1000 << 16) | $podSpeed * 10;
+        propMaxPower.set(currentMaxPower); // TODO: Add here
 
         let direction: number = 1;
         if (!$goingForward) {
             direction = 0;
         }
 
-        await invoke('send_command_64_bits', {cmdName: "PPControlParams", vals: [value, direction << 16]}).then(() => {
-            console.log(`Sending command: PPControlParams, value: ${value}`);
+        const value1 = ($propModulationFactor * 1000 << 16) | $podSpeed * 10;
+        const value2 = (direction << 16) | $propMaxPower;
+
+        await invoke('send_command_64_bits', {cmdName: "PPControlParams", vals: [value1, value2]}).then(() => {
+            console.log(`Sending command: PPControlParams, value: ${value1} ${value2}`);
         }).catch((e) => {
             console.error(`Error sending command PPControlParams: ${e}`);
         });
@@ -95,6 +100,15 @@
                        bind:value={currentSpeed}
                 />
                 <p class="col-span-full">
+                    Maximum power:
+                </p>
+                <input class="input rounded-lg px-1 col-span-2 min-h-10"
+                       type="number"
+                       max="50000"
+                       min="0"
+                       bind:value={currentMaxPower}
+                />
+                <p class="col-span-full">
                     Modulation factor:
                 </p>
                 <input class="input rounded-lg px-1 col-span-2 min-h-10"
@@ -122,12 +136,6 @@
                 </button>
                 <hr class="col-span-full">
                 <p class="col-span-full font-normal text-xl justify-center text-center pb-3 ">Current Values:</p>
-                <p>Desired Speed:</p>
-                {#if $propulsionConfigSent}
-                    <p>{$podSpeed} m/s</p>
-                {:else}
-                    <p>Not set</p>
-                {/if}
                 <p>Run Direction:</p>
                 {#if $propulsionConfigSent}
                     {#if $goingForward}
@@ -135,6 +143,18 @@
                     {:else}
                         <p>Backward</p>
                     {/if}
+                {:else}
+                    <p>Not set</p>
+                {/if}
+                <p>Desired Speed:</p>
+                {#if $propulsionConfigSent}
+                    <p>{$podSpeed} m/s</p>
+                {:else}
+                    <p>Not set</p>
+                {/if}
+                <p>Maximum power:</p>
+                {#if $propulsionConfigSent}
+                    <p>{$propMaxPower} W</p>
                 {:else}
                     <p>Not set</p>
                 {/if}

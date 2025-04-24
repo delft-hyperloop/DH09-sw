@@ -2,7 +2,7 @@ use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
 
-use gslib::Message;
+use gslib::{Datapoint, Message};
 use gslib::ERROR_CHANNEL;
 use gslib::HEARTBEAT;
 use gslib::INFO_CHANNEL;
@@ -19,6 +19,7 @@ use crate::backend::Backend;
 use crate::frontend::commands::*;
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
+use crate::frontend::datapoint_dict::DatapointDict;
 
 pub static APP_HANDLE: Mutex<Option<AppHandle>> = Mutex::new(None);
 
@@ -119,6 +120,9 @@ pub fn tauri_main(backend: Backend) {
             // --
 
             tokio::spawn(async move {
+                let capacity = 20;
+                let mut datapoint_dict: DatapointDict = DatapointDict::new(20);
+                print!("{}", "\n".repeat(capacity + 3));
                 loop {
                     match message_rcv.try_recv() {
                         Ok(msg) => {
@@ -128,7 +132,9 @@ pub fn tauri_main(backend: Backend) {
 
                             match msg {
                                 Message::Data(dp) => {
-                                    println!("Received datapoint: {:?}", dp);
+                                    // println!("Received datapoint: {:?}", dp);
+                                    datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp)); // TODO: change such that it uses f64 instead of u64
+                                    print!("{}", datapoint_dict);
                                     app_handle
                                         .state::<BackendState>()
                                         .data_buffer

@@ -10,7 +10,7 @@ use ratatui::prelude::Color;
 
 include!(concat!(env!("OUT_DIR"), "/config.rs"));
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Copy)]
 pub struct Datapoint {
     pub datatype: Datatype,
     pub value: u64,

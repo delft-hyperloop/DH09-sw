@@ -220,11 +220,6 @@
                 </TileGrid>
             </div>
         </CollapsibleTile>
-        <CollapsibleTile title="Levi Commands">
-            <div slot="content">
-                <h1>To be added...</h1>
-            </div>
-        </CollapsibleTile>
         <CollapsibleTile title="General Commands">
             <div slot="content">
                 <div class="grid grid-cols-4 w-full gap-4">

@@ -38,7 +38,7 @@
         goingForward.set(currentDirectionForward);
         podSpeed.set(currentSpeed);
         propModulationFactor.set(values[0]);
-        propMaxPower.set(currentMaxPower); // TODO: Add here
+        propMaxPower.set(currentMaxPower);
 
         let direction: number = 1;
         if (!$goingForward) {
@@ -67,14 +67,15 @@
         <Tile containerClass="row-span-2" insideClass="flex flex-col gap-2" heading="Run Initialization">
             <div class="grid grid-cols-2 gap-2">
                 <Command
-                    cmd="EnablePropulsion"
+                    cmd="PropulsionOn"
+                    text="Enable Propulsion"
                     className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto"
                     dependency={propulsionConfigSent}
                     dependencyMessage="Run configuration was not sent! Can't start propulsion without specifying
                     a direction, top speed and modulation factor!"
                     dependencyTitle="Configuration not sent!"
                 />
-                <Command cmd="DisablePropulsion" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
+                <Command text="Disable Propulsion" cmd="PropulsionOff" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
                 <Command cmd="SystemReset" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
                 <Command cmd="ArmBrakes" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
                 <p class="col-span-2">

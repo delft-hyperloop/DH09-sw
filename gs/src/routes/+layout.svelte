@@ -21,7 +21,6 @@
     import {parseShortCut} from "$lib/util/parsers";
     import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
-    import { LOCALISATION_NAME } from '$lib/types';
     import AlertModal from '$lib/components/AlertModal.svelte';
 
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
@@ -102,12 +101,10 @@
     let velChart = new PlotBuffer(500, 60000, [0, 100], false)
     $chartStore.set('Velocity', velChart);
 
-    let localisationChart = new PlotBuffer(500, 60000, [0, 13000], false);
-    $chartStore.set(LOCALISATION_NAME, localisationChart);
-
-    let trr = new PlotBuffer(500, 60000, [0, 50], false)
-    trr.addSeries(StrokePresets.theoretical())
-    $chartStore.set('Theoretical vs Real run', trr)
+    let localizationChart = new PlotBuffer(500, 60000, [0, 13000], false);
+    localizationChart.addSeries(StrokePresets.yellow("Localization 1"))
+    localizationChart.addSeries(StrokePresets.blue("Localization 2"))
+    $chartStore.set("Localization", localizationChart);
 
     let lvCurrent = new PlotBuffer(500, 60000, [-15, 15], false)
     $chartStore.set('LV Current', lvCurrent)
@@ -121,14 +118,10 @@
     let hvTotal = new PlotBuffer(500, 2*60000, [-10, 450], false)
     $chartStore.set('HV Total', hvTotal)
 
-    ///////////////////////////////////////////////////////
-    //////////////// BMS REGISTER /////////////////////////
-    ///////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////
 
     let gdd = GrandDataDistributor.getInstance();
 
-    ////////////////////////////////////////////////////////////////
-    ///////////////// PROPULSION REGISTER //////////////////////////
     ////////////////////////////////////////////////////////////////
 
     // Prop log 1 MD1 chart for test runs
@@ -193,9 +186,19 @@
 
     gdd.stores.registerStore<number>("TempRangeEnd", 0);
 
-    gdd.stores.registerStore<number>("Loc1", 0);
+    gdd.stores.registerStore<number>("Loc1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Localization")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("Loc2", 0);
+    gdd.stores.registerStore<number>("Loc2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Localization")!.addEntry(2, curr);
+            return curr;
+        }
+    );
 
     gdd.stores.registerStore<number>("Temp0", 0);
 
@@ -441,15 +444,6 @@
     gdd.stores.registerStore<number>("TCASE2", 0, data => {
             const curr = Number(data);
             $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("PropulsionCurrent", 0);
-
-    gdd.stores.registerStore<number>("Localisation", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Localisation")!.addEntry(1, curr);
             return curr;
         }
     );

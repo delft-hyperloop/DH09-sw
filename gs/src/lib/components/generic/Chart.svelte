@@ -49,12 +49,18 @@
         <div class="flex ml-6 mr-10 justify-between">
             <div class="flex flex-row gap-2">
                 <h4 class="text-md text-primary-100">{title}</h4>
-                <button on:click={pinToHomePage}>
-                    <Icon icon="carbon:pin" />
+                <button
+                    on:click={pinToHomePage}
+                    class="active:scale-90 hover:bg-surface-700 transition rounded-lg"
+                >
+                    <Icon icon="carbon:pin"/>
                 </button>
             </div>
             {#if pop_up}
-                <button on:click={() => new ViewWindow(title, `/view/chart/${title}`)}>
+                <button
+                    on:click={() => new ViewWindow(title, `/view/chart/${title}`)}
+                    class="active:scale-90 hover:bg-surface-700 transition rounded-lg"
+                >
                     <Icon icon="carbon:shrink-screen" />
                 </button>
             {/if}

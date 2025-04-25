@@ -1,3 +1,4 @@
+use std::io::{stdout, Write};
 use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -70,7 +71,7 @@ pub fn tauri_main(backend: Backend) {
                 let mut sh = shortcuts.clone();
                 match event {
                     WindowEvent::Focused(true) => {
-                        // Register shortcuts when window is focused
+                        // Register shortcuts when the window is focused
                         let ss = s.clone();
                         sh.register("Space", move || {
                             send_command("EmergencyBrake".into(), 0);
@@ -110,7 +111,7 @@ pub fn tauri_main(backend: Backend) {
                         }
                     },
                     WindowEvent::Focused(false) => {
-                        // Unregister shortcuts when window loses focus
+                        // Unregister shortcuts when the window loses focus
                         sh.unregister_all().expect("Couldn't unregister shortcuts");
                     },
                     _ => {},
@@ -120,9 +121,9 @@ pub fn tauri_main(backend: Backend) {
             // --
 
             tokio::spawn(async move {
-                let capacity = 20;
-                let mut datapoint_dict: DatapointDict = DatapointDict::new(20);
-                print!("{}", "\n".repeat(capacity + 3));
+                // let capacity = 30;
+                // let mut datapoint_dict: DatapointDict = DatapointDict::new(capacity);
+                // print!("{}", "\n".repeat(capacity + 3));
                 loop {
                     match message_rcv.try_recv() {
                         Ok(msg) => {
@@ -132,9 +133,10 @@ pub fn tauri_main(backend: Backend) {
 
                             match msg {
                                 Message::Data(dp) => {
-                                    // println!("Received datapoint: {:?}", dp);
-                                    datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp)); // TODO: change such that it uses f64 instead of u64
-                                    print!("{}", datapoint_dict);
+                                    println!("Received datapoint: {:?}", dp);
+                                    // datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp)); // TODO: change such that it uses f64 instead of u64
+                                    // print!("{}", datapoint_dict);
+                                    // stdout().flush().unwrap();
                                     app_handle
                                         .state::<BackendState>()
                                         .data_buffer

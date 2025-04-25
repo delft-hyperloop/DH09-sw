@@ -6,7 +6,7 @@ const VALUE_HEADER: &str = "Value";
 const TIMESTAMP_HEADER: &str = "Timestamp";
 
 pub struct DatapointDict {
-    datapoints: [Datapoint; 15],
+    datapoints: [Datapoint; 50],
     size: usize,
     capacity: usize,
     max_length_type: usize,
@@ -16,7 +16,7 @@ pub struct DatapointDict {
 impl DatapointDict {
     pub fn new(capacity: usize) -> Self {
         Self {
-            datapoints: [Datapoint::new(Datatype::DefaultDatatype, 0, 0); 15],
+            datapoints: [Datapoint::new(Datatype::DefaultDatatype, 0, 0); 50],
             size: 0,
             capacity,
             max_length_type: DATATYPE_HEADER.len(),

@@ -1,14 +1,13 @@
 <script lang="ts">
-    import {Battery, Table, FSM, TileGrid, Tile, Command, GrandDataDistributor, Store} from "$lib";
+    import {Battery, TileGrid, Tile, Command, GrandDataDistributor} from "$lib";
     import { AppBar, getToastStore } from '@skeletonlabs/skeleton';
     import Icon from "@iconify/svelte";
     import {invoke} from "@tauri-apps/api/tauri";
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
-    import { LOCALISATION_NAME } from '$lib/types';
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
-    import { GreenHVALTurnedOn, RedHVALTurnedOn, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
+    import { showcaseStateCounter, showcasingStates } from '$lib/stores/state';
 
     let width: number;
 
@@ -16,6 +15,8 @@
     const lvBattery = storeManager.getWritable("BMSVoltageLow");
     const hvBattery = storeManager.getWritable("BMSVoltageHigh");
     const fsmState = storeManager.getWritable("FSMState");
+    const location1 = storeManager.getWritable("Loc1");
+    const location2 = storeManager.getWritable("Loc2");
 
     let tableTempsArr: any[][];
     let tableArr2: any[][];
@@ -89,8 +90,8 @@
             </button>
             <span style="writing-mode: vertical-lr" class="font-medium">Vitals Panel</span>
             <div class="flex flex-col gap-4">
-                <!-- <Battery fill="#3b669c" orientation="vertical" height={55} perc={Number($lvBattery.value)}/>
-                <Battery fill="#723f9c" orientation="vertical" height={55} perc={Number($hvBattery.value)}/> -->
+                <Battery fill="#3b669c" orientation="vertical" height={55} perc={Number($lvBattery.value)}/>
+                <Battery fill="#723f9c" orientation="vertical" height={55} perc={Number($hvBattery.value)}/>
             </div>
         </div>
     {:else}
@@ -105,7 +106,7 @@
                             <p>
 <!--                                Velocity: <Store datatype="Velocity" /> m/s-->
                                 <br>
-                                Position: <Store datatype={LOCALISATION_NAME} /> mm
+                                Position: {($location1.value + $location2.value) / 2} mm
                                 <br>
 <!--                                Acceleration: <Store datatype="Acceleration" /> m/s²-->
                             </p>
@@ -132,8 +133,6 @@
                         <div class="flex flex-col gap-4">
                             <span>High Voltage BMS: &ltstatus&gt</span>
                             <span>Emergency Breaking System: &ltstatus&gt</span>
-<!--                            <button on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>Toggle green</button>&ndash;&gt;-->
-<!--                            <button on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>Toggle red</button>-->
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>LV Total Safe: -Insert values- V</span>

@@ -30,20 +30,32 @@
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     // const modalStore = getModalStore();
-    const propInitFault = storeManager.getWritable("PPInitFault");
-    const propEmergency = storeManager.getWritable("PPEmergency");
+    const propInitFault1 = storeManager.getWritable("PPInitFault1");
+    const propEmergency1 = storeManager.getWritable("PPEmergency1");
+    const propInitFault2 = storeManager.getWritable("PPInitFault2");
+    const propEmergency2 = storeManager.getWritable("PPEmergency2");
 
     $: {
-        let faultValue = $propInitFault.value
-        if (faultValue !== 2**7 - 2) {
-            console.error(`PropInitFault not whatever: ${faultValue}`);
-            util.log(`PropInitFault not whatever: ${faultValue}`, EventChannel.ERROR);
+        let faultValue1 = $propInitFault1.value
+        if (faultValue1 !== 2**7 - 2) {
+            console.error(`PropInitFault1 not whatever: ${faultValue1}`);
+            util.log(`PropInitFault1 not whatever: ${faultValue1}`, EventChannel.ERROR);
+        }
+        let faultValue2 = $propInitFault2.value
+        if (faultValue2 !== 2**7 - 2) {
+            console.error(`PropInitFault2 not whatever: ${faultValue2}`);
+            util.log(`PropInitFault2 not whatever: ${faultValue2}`, EventChannel.ERROR);
         }
 
-        let propEmergencyValue = $propEmergency.value;
-        if (propEmergencyValue !== 0) {
-            console.error(`PropEmergency: ${propEmergencyValue}`);
-            util.log(`PropEmergency: ${propEmergencyValue}`, EventChannel.ERROR);
+        let propEmergencyValue1 = $propEmergency1.value;
+        if (propEmergencyValue1 !== 0) {
+            console.error(`PropEmergency1: ${propEmergencyValue1}`);
+            util.log(`PropEmergency1: ${propEmergencyValue1}`, EventChannel.ERROR);
+        }
+        let propEmergencyValue2 = $propEmergency2.value;
+        if (propEmergencyValue2 !== 0) {
+            console.error(`PropEmergency2: ${propEmergencyValue2}`);
+            util.log(`PropEmergency2: ${propEmergencyValue2}`, EventChannel.ERROR);
         }
         // TODO: Modal popup
     }

@@ -1,10 +1,11 @@
 <script lang="ts">
-    import { Command, GrandDataDistributor, TileGrid } from '$lib';
+    import { Chart, Command, GrandDataDistributor, Tile, TileGrid } from '$lib';
     import { NamedCommandValues } from "$lib/types";
-    import BinaryInput from '$lib/components/BinaryInput.svelte';
-    import { propControlWord, propulsionConfigSent } from '$lib/stores/state';
+    import { propControlWord1, propControlWord2, propulsionConfigSent } from '$lib/stores/state';
     import CollapsibleTile from '$lib/components/generic/CollapsibleTile.svelte';
     import Command64Bits from '$lib/components/abstract/Command64Bits.svelte';
+    import BinaryInput1 from '$lib/components/BinaryInput1.svelte';
+    import BinaryInput2 from '$lib/components/BinaryInput2.svelte';
 
     const values: number[] = new Array(NamedCommandValues.length).fill(0);
     const propLabels: string[] = [
@@ -27,13 +28,16 @@
     ].reverse().concat(propLabels);
 
     const storeManager = GrandDataDistributor.getInstance().stores;
-    const ppControlWordStore = storeManager.getWritable("Word");
+    const ppControlWordStore1 = storeManager.getWritable("Word1");
+    const ppControlWordStore2 = storeManager.getWritable("Word2");
 
     // Propulsion debug stuff
     let modulation_factor: number = 0;
     let maximum_velocity: number = 0;
-    let ppControlParams: number = 0;
     let direction: number = 0;
+    let maximumPower: number = 0;
+    let ppControlParams1: number = 0;
+    let ppControlParams2: number = 0;
 
     let kpq: number = 0;
     let kiq: number = 0;
@@ -54,8 +58,8 @@
     let testControlParams2: number = 0;
 
     let calculatePPControlParams = () => {
-        ppControlParams = (modulation_factor * 1000 << 16) | maximum_velocity * 10;
-        console.log(ppControlParams);
+        ppControlParams1 = (modulation_factor * 1000 << 16) | maximum_velocity * 10;
+        ppControlParams2 = (direction << 16) | maximumPower;
     }
 
     let calculatePPDebugParams1 = () => {
@@ -65,12 +69,11 @@
 
     let calculatePPDebugParams2 = () => {
         ppDebugParams2 = (pos_offset * 1000 << 16) | alpha * 1000;
-        console.log(ppDebugParams2);
     }
 
     let calculateTestControlParams = () => {
-        testControlParams1 = (iq_ref << 16) | id_ref;
-        testControlParams2 = (vq_ref << 16) | vd_ref;
+        testControlParams1 = (iq_ref * 10 << 16) | id_ref * 10;
+        testControlParams2 = (vq_ref * 10 << 16) | vd_ref * 10;
     }
 
 </script>
@@ -80,48 +83,83 @@
     <TileGrid className="mb-5" columns="1fr 1fr" rows="">
         <CollapsibleTile title="Propulsion Commands">
             <div slot="content">
-                <div class="grid grid-cols-9 gap-2 items-center mt-2 mb-3 ">
-                    <span class="text-center">Propulsion Control Word:</span>
-                    {#each Array.from({ length: propLabels.length }, (_, i) => propLabels.length - 1 - i) as i}
-                        <BinaryInput index={i} />
-                    {/each}
-                    <Command cmd="SendPropulsionControlWord" val={$propControlWord} text={"Send"}/>
+                <div class="border-surface-600 border-[1px] rounded-lg m-4 p-2">
+                    <div class="grid grid-cols-9 gap-2 items-center mt-2 mb-3 ">
+                        <span class="text-center">Propulsion Control Word 1:</span>
+                        {#each Array.from({ length: propLabels.length }, (_, i) => propLabels.length - 1 - i) as i}
+                            <BinaryInput1 index={i} />
+                        {/each}
+                        <Command cmd="SendPropulsionControlWord1" val={$propControlWord1} text={"Send"}/>
 
-                    <span/>
-                    {#each propLabels as l}
-                        <span class="text-center">{l}</span>
-                    {/each}
-                    <span/>
+                        <span/>
+                        {#each propLabels as l}
+                            <span class="text-center">{l}</span>
+                        {/each}
+                        <span/>
+                    </div>
+                    <div class="grid grid-cols-11 gap-2 items-center mt-2 mb-3 ">
+                        <span class="text-center">Received Control Word 1:</span>
+                        <span class="text-center">{($ppControlWordStore1.value >> 2 & 1) + ($ppControlWordStore1.value >> 3 & 1) * 2}</span>
+                        <span class="text-center">{$ppControlWordStore1.value >> 1 & 1}</span>
+                        <span class="text-center">{$ppControlWordStore1.value & 1}</span>
+
+                        {#each Array.from({ length: 7 }, (_, i) => propReadLabels.length - i) as i}
+                            <span class="text-center">{$ppControlWordStore1.value >> (i + 4) & 1}</span>
+                        {/each}
+
+                        <span/>
+                        {#each propReadLabels as l}
+                            <span class="text-center">{l}</span>
+                        {/each}
+                        <span/>
+                    </div>
                 </div>
-                <div class="grid grid-cols-11 gap-2 items-center mt-2 mb-3 ">
-                    <span class="text-center">Received Control Word:</span>
-                    <span class="text-center">{($ppControlWordStore.value >> 2 & 1) + ($ppControlWordStore.value >> 3 & 1) * 2}</span>
-                    <span class="text-center">{$ppControlWordStore.value >> 1 & 1}</span>
-                    <span class="text-center">{$ppControlWordStore.value & 1}</span>
-                    {#each Array.from({ length: 7 }, (_, i) => propReadLabels.length - i) as i}
-                        <span class="text-center">{$ppControlWordStore.value >> (i + 4) & 1}</span>
-                    {/each}
-                    <span/>
-                    {#each propReadLabels as l}
-                        <span class="text-center">{l}</span>
-                    {/each}
-                    <span/>
+                <div class="border-surface-600 border-[1px] rounded-lg m-4 p-2">
+                    <div class="grid grid-cols-9 gap-2 items-center mt-2 mb-3 ">
+                        <span class="text-center">Propulsion Control Word 2:</span>
+                        {#each Array.from({ length: propLabels.length }, (_, i) => propLabels.length - 1 - i) as i}
+                            <BinaryInput2 index={i} />
+                        {/each}
+                        <Command cmd="SendPropulsionControlWord2" val={$propControlWord2} text={"Send"}/>
+
+                        <span/>
+                        {#each propLabels as l}
+                            <span class="text-center">{l}</span>
+                        {/each}
+                        <span/>
+                    </div>
+                    <div class="grid grid-cols-11 gap-2 items-center mt-2 mb-3 ">
+                        <span class="text-center">Received Control Word 2:</span>
+                        <span class="text-center">{($ppControlWordStore2.value >> 2 & 1) + ($ppControlWordStore2.value >> 3 & 1) * 2}</span>
+                        <span class="text-center">{$ppControlWordStore2.value >> 1 & 1}</span>
+                        <span class="text-center">{$ppControlWordStore2.value & 1}</span>
+                        {#each Array.from({ length: 7 }, (_, i) => propReadLabels.length - i) as i}
+                            <span class="text-center">{$ppControlWordStore2.value >> (i + 4) & 1}</span>
+                        {/each}
+                        <span/>
+                        {#each propReadLabels as l}
+                            <span class="text-center">{l}</span>
+                        {/each}
+                        <span/>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 m-4 items-center ">
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg ">
                         <Command64Bits
                             cmd="PPControlParams"
                             text="Submit PP Control Params"
-                            values={[ppControlParams, direction << 16]}
+                            values={[ppControlParams1, ppControlParams2]}
                             onClickMethod={() => {propulsionConfigSent.set(true)}}
                         />
                         <div class="grid grid-cols-2 gap-2 ">
                             <div class="text-center content-center">Modulation Factor</div>
-                            <input bind:value={modulation_factor} type="number" class="input p-4 rounded-md" on:change={calculatePPControlParams}>
+                            <input bind:value={modulation_factor} type="number" max={1} min={0} class="input p-4 rounded-md" on:change={calculatePPControlParams}>
                             <div class="text-center content-center">Maximum Velocity</div>
                             <input bind:value={maximum_velocity} type="number" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
                             <div class="text-center content-center">Direction</div>
-                            <input bind:value={direction} type="number" class="input p-4 rounded-md ">
+                            <input bind:value={direction} type="number" min="0" max="1" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
+                            <div class="text-center content-center">Maximum power</div>
+                            <input bind:value={maximumPower} type="number" min="0" max="50000" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
                         </div>
                     </div>
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg h-full">
@@ -160,11 +198,26 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </CollapsibleTile>
-        <CollapsibleTile title="Levi Commands">
-            <div slot="content">
-                <h1>To be added...</h1>
+                <TileGrid columns="1fr 1fr" rows="auto" className="mt-2">
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 1 - MD1">
+                        <Chart title="Propulsion Log 1 - MD1" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 1 - MD2">
+                        <Chart title="Propulsion Log 1 - MD2" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 2 - MD1">
+                        <Chart title="Propulsion Log 2 - MD1" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 2 - MD2">
+                        <Chart title="Propulsion Log 2 - MD2" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 3 - MD1">
+                        <Chart title="Propulsion Log 3 - MD1" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Propulsion Log 3 - MD2">
+                        <Chart title="Propulsion Log 3 - MD2" background="bg-surface-900" />
+                    </Tile>
+                </TileGrid>
             </div>
         </CollapsibleTile>
         <CollapsibleTile title="General Commands">

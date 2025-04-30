@@ -4,6 +4,7 @@
     import { writable, type Writable } from 'svelte/store';
     import { getModalStore } from '@skeletonlabs/skeleton';
     import { MODAL_SETTINGS } from '$lib/types';
+    import { modalBody, modalTitle } from '$lib/stores/data';
 
     export let className: string = '';
     export let cmd: NamedCommand;
@@ -19,8 +20,8 @@
 
     let send = async () => {
         if (dependency && !$dependency) {
-            MODAL_SETTINGS.body = dependencyMessage;
-            MODAL_SETTINGS.title = dependencyTitle;
+            modalTitle.set(dependencyTitle);
+            modalBody.set(dependencyMessage);
             modalStore.trigger(MODAL_SETTINGS);
             return;
         }

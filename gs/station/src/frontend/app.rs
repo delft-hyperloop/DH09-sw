@@ -1,8 +1,9 @@
+use std::io::{stdout, Write};
 use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
 
-use gslib::Message;
+use gslib::{Datapoint, Message};
 use gslib::ERROR_CHANNEL;
 use gslib::HEARTBEAT;
 use gslib::INFO_CHANNEL;
@@ -19,13 +20,11 @@ use crate::backend::Backend;
 use crate::frontend::commands::*;
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
+use crate::frontend::datapoint_dict::DatapointDict;
 
 pub static APP_HANDLE: Mutex<Option<AppHandle>> = Mutex::new(None);
 
 pub fn tauri_main(backend: Backend) {
-    println!("Starting tauri application");
-    println!("Starting tauri application");
-    println!("Starting tauri application");
     println!("Starting tauri application");
     tauri::Builder::default()
         .manage(BackendState::default())
@@ -72,7 +71,7 @@ pub fn tauri_main(backend: Backend) {
                 let mut sh = shortcuts.clone();
                 match event {
                     WindowEvent::Focused(true) => {
-                        // Register shortcuts when window is focused
+                        // Register shortcuts when the window is focused
                         let ss = s.clone();
                         sh.register("Space", move || {
                             send_command("EmergencyBrake".into(), 0);
@@ -92,10 +91,10 @@ pub fn tauri_main(backend: Backend) {
                         .expect("Could not register shortcut");
 
                         let ss = s.clone();
-                        sh.register("COMMANDORCTRL+SHIFT+M", move || {
-                            ss.emit_all(SHORTCUT_CHANNEL, "MemeMode").unwrap();
+                        sh.register("L", move || {
+                            ss.emit_all(SHORTCUT_CHANNEL, "ToggleLogs").unwrap();
                         })
-                        .expect("Could not register shortcut bruh");
+                        .expect("Could not register shortcut");
 
                         let ss = s.clone();
                         sh.register("D", move || {
@@ -112,14 +111,8 @@ pub fn tauri_main(backend: Backend) {
                         }
                     },
                     WindowEvent::Focused(false) => {
-                        // Unregister shortcuts when window loses focus
-                        sh.unregister("Esc").expect("Could not unregister shortcut");
-                        sh.unregister("Space").expect("Could not unregister shortcut");
-                        sh.unregister("COMMANDORCTRL+SHIFT+M").expect("Could not unregister shortcut");
-                        sh.unregister("D").expect("Could not unregister shortcut");
-                        for i in 1..10 {
-                            sh.unregister(&format!("SHIFT+{}", i)).expect("Could not unregister shortcut");
-                        }
+                        // Unregister shortcuts when the window loses focus
+                        sh.unregister_all().expect("Couldn't unregister shortcuts");
                     },
                     _ => {},
                 }
@@ -128,6 +121,9 @@ pub fn tauri_main(backend: Backend) {
             // --
 
             tokio::spawn(async move {
+                // let capacity = 30;
+                // let mut datapoint_dict: DatapointDict = DatapointDict::new(capacity);
+                // print!("{}", "\n".repeat(capacity + 3));
                 loop {
                     match message_rcv.try_recv() {
                         Ok(msg) => {
@@ -138,6 +134,9 @@ pub fn tauri_main(backend: Backend) {
                             match msg {
                                 Message::Data(dp) => {
                                     println!("Received datapoint: {:?}", dp);
+                                    // datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp)); // TODO: change such that it uses f64 instead of u64
+                                    // print!("{}", datapoint_dict);
+                                    // stdout().flush().unwrap();
                                     app_handle
                                         .state::<BackendState>()
                                         .data_buffer

@@ -7,11 +7,11 @@
         StrokePresets,
         TitleBar,
     } from "$lib";
-    import {initializeStores, Modal, Toast} from '@skeletonlabs/skeleton';
+    import { initializeStores, Modal, type ModalComponent, Toast } from '@skeletonlabs/skeleton';
     import {
         chartStore,
         debugModeActive,
-        latestTimestamp, memeModeActive,
+        latestTimestamp, logsPanelSize, logsVisible,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
@@ -21,13 +21,25 @@
     import {parseShortCut} from "$lib/util/parsers";
     import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
-    import { LOCALISATION_NAME } from '$lib/types';
+    import AlertModal from '$lib/components/AlertModal.svelte';
 
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
+    const modalRegistry: Record<string, ModalComponent> = {
+        alertModal: { ref: AlertModal },
+    };
+
     initProcedures();
 
-    const unlisten = listen("shortcut_channel", (event: {payload: string}) => parseShortCut(event.payload, $debugModeActive, $memeModeActive));
+    logsVisible.subscribe(() => {
+        if ($logsVisible) {
+            logsPanelSize.set(30);
+        } else {
+            logsPanelSize.set(5);
+        }
+    });
+
+    const unlisten = listen("shortcut_channel", (event: {payload: string}) => parseShortCut(event.payload, $debugModeActive, $logsVisible));
 
     //////////////////////////////
     /////////// CHARTS ///////////
@@ -89,12 +101,10 @@
     let velChart = new PlotBuffer(500, 60000, [0, 100], false)
     $chartStore.set('Velocity', velChart);
 
-    let localisationChart = new PlotBuffer(500, 60000, [0, 13000], false);
-    $chartStore.set(LOCALISATION_NAME, localisationChart);
-
-    let trr = new PlotBuffer(500, 60000, [0, 50], false)
-    trr.addSeries(StrokePresets.theoretical())
-    $chartStore.set('Theoretical vs Real run', trr)
+    let localizationChart = new PlotBuffer(500, 60000, [0, 13000], false);
+    localizationChart.addSeries(StrokePresets.yellow("Localization 1"))
+    localizationChart.addSeries(StrokePresets.blue("Localization 2"))
+    $chartStore.set("Localization", localizationChart);
 
     let lvCurrent = new PlotBuffer(500, 60000, [-15, 15], false)
     $chartStore.set('LV Current', lvCurrent)
@@ -108,36 +118,53 @@
     let hvTotal = new PlotBuffer(500, 2*60000, [-10, 450], false)
     $chartStore.set('HV Total', hvTotal)
 
-    ///////////////////////////////////////////////////////
-    //////////////// BMS REGISTER /////////////////////////
-    ///////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////
 
     let gdd = GrandDataDistributor.getInstance();
 
     ////////////////////////////////////////////////////////////////
-    ///////////////// PROPULSION REGISTER //////////////////////////
-    ////////////////////////////////////////////////////////////////
 
-    // Prop log 1 chart for test runs
-    let propLog1Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Id measured");
-    propLog1Chart.addSeries(StrokePresets.yellow("Id reference"))
-    propLog1Chart.addSeries(StrokePresets.blue("Iq measured"))
-    propLog1Chart.addSeries(StrokePresets.theoretical("Iq reference"))
-    $chartStore.set("Propulsion Log 1", propLog1Chart);
+    // Prop log 1 MD1 chart for test runs
+    let propLog1MD1Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Id measured");
+    propLog1MD1Chart.addSeries(StrokePresets.yellow("Id reference"))
+    propLog1MD1Chart.addSeries(StrokePresets.blue("Iq measured"))
+    propLog1MD1Chart.addSeries(StrokePresets.theoretical("Iq reference"))
+    $chartStore.set("Propulsion Log 1 - MD1", propLog1MD1Chart);
 
-    // Prop log 2 chart for test runs
-    let propLog2Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "VQ");
-    propLog2Chart.addSeries(StrokePresets.yellow("VD"))
-    propLog2Chart.addSeries(StrokePresets.blue("Vbus"))
-    propLog2Chart.addSeries(StrokePresets.theoretical("Ibus"))
-    $chartStore.set("Propulsion Log 2", propLog2Chart);
+    // Prop log 2 MD1 chart for test runs
+    let propLog2MD1Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "VQ");
+    propLog2MD1Chart.addSeries(StrokePresets.yellow("VD"))
+    propLog2MD1Chart.addSeries(StrokePresets.blue("Vbus"))
+    propLog2MD1Chart.addSeries(StrokePresets.theoretical("Ibus"))
+    $chartStore.set("Propulsion Log 2 - MD1", propLog2MD1Chart);
 
-    // Prop log 3 chart for test runs
-    let propLog3Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Ta");
-    propLog3Chart.addSeries(StrokePresets.yellow("Tb"))
-    propLog3Chart.addSeries(StrokePresets.blue("Tc"))
-    propLog3Chart.addSeries(StrokePresets.theoretical("TCASE"))
-    $chartStore.set("Propulsion Log 3", propLog3Chart);
+    // Prop log 3 MD1 chart for test runs
+    let propLog3MD1Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Ta");
+    propLog3MD1Chart.addSeries(StrokePresets.yellow("Tb"))
+    propLog3MD1Chart.addSeries(StrokePresets.blue("Tc"))
+    propLog3MD1Chart.addSeries(StrokePresets.theoretical("TCASE"))
+    $chartStore.set("Propulsion Log 3 - MD1", propLog3MD1Chart);
+
+    // Prop log 1 MD2 chart for test runs
+    let propLog1MD2Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Id measured");
+    propLog1MD2Chart.addSeries(StrokePresets.yellow("Id reference"))
+    propLog1MD2Chart.addSeries(StrokePresets.blue("Iq measured"))
+    propLog1MD2Chart.addSeries(StrokePresets.theoretical("Iq reference"))
+    $chartStore.set("Propulsion Log 1 - MD2", propLog1MD2Chart);
+
+    // Prop log 2 MD2 chart for test runs
+    let propLog2MD2Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "VQ");
+    propLog2MD2Chart.addSeries(StrokePresets.yellow("VD"))
+    propLog2MD2Chart.addSeries(StrokePresets.blue("Vbus"))
+    propLog2MD2Chart.addSeries(StrokePresets.theoretical("Ibus"))
+    $chartStore.set("Propulsion Log 2 - MD2", propLog2MD2Chart);
+
+    // Prop log 3 MD2 chart for test runs
+    let propLog3MD2Chart = new PlotBuffer(500, 3*60000, [0, 20], true, "Ta");
+    propLog3MD2Chart.addSeries(StrokePresets.yellow("Tb"))
+    propLog3MD2Chart.addSeries(StrokePresets.blue("Tc"))
+    propLog3MD2Chart.addSeries(StrokePresets.theoretical("TCASE"))
+    $chartStore.set("Propulsion Log 3 - MD2", propLog3MD2Chart);
 
     // generated
 
@@ -159,9 +186,19 @@
 
     gdd.stores.registerStore<number>("TempRangeEnd", 0);
 
-    gdd.stores.registerStore<number>("Loc1", 0);
+    gdd.stores.registerStore<number>("Loc1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Localization")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("Loc2", 0);
+    gdd.stores.registerStore<number>("Loc2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Localization")!.addEntry(2, curr);
+            return curr;
+        }
+    );
 
     gdd.stores.registerStore<number>("Temp0", 0);
 
@@ -231,81 +268,182 @@
 
     gdd.stores.registerStore<number>("Vd2_C", 0);
 
-    gdd.stores.registerStore<number>("PPInitFault", 0);
+    gdd.stores.registerStore<number>("PPInitFault1", 0);
 
-    gdd.stores.registerStore<number>("PPEmergency", 0);
+    gdd.stores.registerStore<number>("PPInitFault2", 0);
 
-    gdd.stores.registerStore<number>("Word", 0);
+    gdd.stores.registerStore<number>("PPEmergency1", 0);
 
-    gdd.stores.registerStore<number>("IqMeasured", 0, data => {
+    gdd.stores.registerStore<number>("PPEmergency2", 0);
+
+    gdd.stores.registerStore<number>("Word1", 0);
+
+    gdd.stores.registerStore<number>("Word2", 0);
+
+    gdd.stores.registerStore<number>("IqMeasured1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 1")!.addEntry(3, curr);
+            $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(3, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("IqReference", 0, data => {
+    gdd.stores.registerStore<number>("IqReference1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 1")!.addEntry(4, curr);
+            $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(4, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("IdMeasured", 0, data => {
+    gdd.stores.registerStore<number>("IdMeasured1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 1")!.addEntry(1, curr);
+            $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(1, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("IdReference", 0, data => {
+    gdd.stores.registerStore<number>("IdReference1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 1")!.addEntry(2, curr);
+            $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(2, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("Vq_Log", 0);
-
-    gdd.stores.registerStore<number>("Vd_Log", 0);
-
-    gdd.stores.registerStore<number>("Vbus", 0);
-
-    gdd.stores.registerStore<number>("Ibus", 0);
-
-    gdd.stores.registerStore<number>("Ta", 0, data => {
+    gdd.stores.registerStore<number>("IqMeasured2", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 3")!.addEntry(1, curr);
+            $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(3, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("Tb", 0, data => {
+    gdd.stores.registerStore<number>("IqReference2", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 3")!.addEntry(2, curr);
+            $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(4, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("Tc", 0, data => {
+    gdd.stores.registerStore<number>("IdMeasured2", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 3")!.addEntry(3, curr);
+            $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(1, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("TCASE", 0, data => {
+    gdd.stores.registerStore<number>("IdReference2", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Propulsion Log 3")!.addEntry(4, curr);
+            $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(2, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("PropulsionCurrent", 0);
-
-    gdd.stores.registerStore<number>("Localisation", 0, data => {
+    gdd.stores.registerStore<number>("Vq_Log1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Localisation")!.addEntry(1, curr);
+            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Vd_Log1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Vbus1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Ibus1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(4, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Vq_Log2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Vd_Log2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Vbus2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Ibus2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(4, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Ta1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Tb1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Tc1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TCASE1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(4, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Ta2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Tb2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Tc2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TCASE2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(4, curr);
             return curr;
         }
     );
@@ -339,7 +477,7 @@
 
 <div class="flex flex-col w-screen h-screen max-h-screen overflow-hidden">
     <Toast/>
-    <Modal/>
+    <Modal components={modalRegistry}/>
     <TitleBar/>
     <slot/>
     <BottomBar/>

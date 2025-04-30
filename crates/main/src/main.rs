@@ -181,7 +181,7 @@ async fn forward_gs_to_can2(
         trace!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
-        main::config::gs_to_can2(command, |frame| cantx.send(frame)).await;
+        main::config::gs_to_can2(command, |frame| cantx.send(frame)).await; // TODO: what about signed? this is only u64
     }
 }
 

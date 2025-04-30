@@ -1,14 +1,14 @@
 /* AUTO GENERATED USING npm run generate:gs */
 import type { ModalSettings } from '@skeletonlabs/skeleton';
-import Battery from '$lib/components/Battery.svelte';
 
-export type NamedCommand = "FSMUpdate" | "DefaultCommand" | "Heartbeat" | "FrontendHeartbeat" | "EmitEvent" | "StartHV" | "StopHV" | "LevitationOn" | "LevitationOff" | "vertical_0_current" | "vert_0_current_reset" | "PropulsionOn" | "PropulsionOff" | "SendPropulsionControlWord" | "PPControlParams" | "PPDebugParams1" | "PPDebugParams2" | "PPTestControlParams" | "SubmitDirection" | "SubmitSpeed" | "ArmBrakes" | "Shutdown" | "EmergencyBrake" | "SystemReset";
+export type NamedCommand = "DefaultCommand" | "GeneralEmergency" | "FSMUpdate" | "SystemCheck" | "ResetSenseCon" | "ResetPowertrain" | "ResetPropulsion" | "ResetLevitation" | "Heartbeat" | "FrontendHeartbeat" | "EmitEvent" | "StartHV" | "StopHV" | "LevitationOn" | "LevitationOff" | "vertical_0_current" | "vert_0_current_reset" | "PropulsionOn" | "PropulsionOff" | "SendPropulsionControlWord1" | "SendPropulsionControlWord2" | "PPControlParams" | "PPDebugParams1" | "PPDebugParams2" | "PPTestControlParams" | "ArmBrakes" | "Shutdown" | "EmergencyBrake" | "SystemReset";
 export const NamedCommandValues:NamedCommand[] = [
-    "FSMUpdate", "DefaultCommand", "Heartbeat", "FrontendHeartbeat", "EmitEvent", "StartHV", "StopHV", "LevitationOn", "LevitationOff", "vertical_0_current", "vert_0_current_reset", "PropulsionOn", "PropulsionOff", "SendPropulsionControlWord", "PPControlParams", "PPDebugParams1", "PPDebugParams2", "PPTestControlParams", "SubmitDirection", "SubmitSpeed", "ArmBrakes", "Shutdown", "EmergencyBrake", "SystemReset"];
+    "DefaultCommand", "GeneralEmergency", "FSMUpdate", "SystemCheck", "ResetSenseCon", "ResetPowertrain", "ResetPropulsion", "ResetLevitation", "Heartbeat", "FrontendHeartbeat", "EmitEvent", "StartHV", "StopHV", "LevitationOn", "LevitationOff", "vertical_0_current", "vert_0_current_reset", "PropulsionOn", "PropulsionOff", "SendPropulsionControlWord1", "SendPropulsionControlWord2", "PPControlParams", "PPDebugParams1", "PPDebugParams2", "PPTestControlParams", "ArmBrakes", "Shutdown", "EmergencyBrake", "SystemReset"];
 
-export type NamedDatatype = "TempAmbient0" | "TempAmbient1" | "TempAmbient2" | "BMSVoltageHigh" | "BMSVoltageLow" | "BMSTemperatureHigh" | "BMSTemperatureLow" | "TempRangeStart" | "TempRangeEnd" | "Loc1" | "Loc2" | "Temp0" | "Temp1" | "Temp2" | "Temp3" | "Temp4" | "Temp5" | "Temp6" | "Temp7" | "ResetSenseCon" | "ResetPropulsion" | "ModulationFactor1" | "ModulationFactor2" | "MaximumVelocity1" | "MaximumVelocity2" | "Kpq1" | "Kpq2" | "Kiq1" | "Kiq2" | "Kpd1" | "Kpd2" | "Kid1" | "Kid2" | "PositionOffset1" | "PositionOffset2" | "Alpha1" | "Alpha2" | "Iq1" | "Iq2" | "Id1" | "Id2" | "Vq1_C" | "Vq2_C" | "Vd1_C" | "Vd2_C" | "PPInitFault" | "PPEmergency" | "Word" | "IqMeasured" | "IqReference" | "IdMeasured" | "IdReference" | "Vq_Log" | "Vd_Log" | "Vbus" | "Ibus" | "Ta" | "Tb" | "Tc" | "TCASE" | "DefaultDatatype" | "CommandHash" | "EventsHash" | "DataHash" | "ConfigHash" | "ValueError" | "ValueWarning" | "ValueCausedBraking" | "LocalisationHeartbeat" | "SensorHubHeartbeat" | "FrontendHeartbeating" | "PropulsionCurrent" | "Localisation" | "FSMState";
+export type NamedDatatype = "TempAmbient0" | "TempAmbient1" | "TempAmbient2" | "BMSVoltageHigh" | "BMSVoltageLow" | "BMSTemperatureHigh" | "BMSTemperatureLow" | "TempRangeStart" | "TempRangeEnd" | "Loc1" | "Loc2" | "Temp0" | "Temp1" | "Temp2" | "Temp3" | "Temp4" | "Temp5" | "Temp6" | "Temp7" | "ResetSenseCon" | "ResetPropulsion" | "ModulationFactor1" | "ModulationFactor2" | "MaximumVelocity1" | "MaximumVelocity2" | "Kpq1" | "Kpq2" | "Kiq1" | "Kiq2" | "Kpd1" | "Kpd2" | "Kid1" | "Kid2" | "PositionOffset1" | "PositionOffset2" | "Alpha1" | "Alpha2" | "Iq1" | "Iq2" | "Id1" | "Id2" | "Vq1_C" | "Vq2_C" | "Vd1_C" | "Vd2_C" | "PPInitFault1" | "PPInitFault2" | "PPEmergency1" | "PPEmergency2" | "Word1" | "Word2" | "IqMeasured1" | "IqReference1" | "IdMeasured1" | "IdReference1" | "IqMeasured2" | "IqReference2" | "IdMeasured2" | "IdReference2" | "Vq_Log1" | "Vd_Log1" | "Vbus1" | "Ibus1" | "Vq_Log2" | "Vd_Log2" | "Vbus2" | "Ibus2" | "Ta1" | "Tb1" | "Tc1" | "TCASE1" | "Ta2" | "Tb2" | "Tc2" | "TCASE2" | "FSMAckProp1" | "FSMAckProp2" | "DefaultDatatype" | "CommandHash" | "EventsHash" | "DataHash" | "ConfigHash" | "ValueError" | "ValueWarning" | "ValueCausedBraking" | "LocalisationHeartbeat" | "SensorHubHeartbeat" | "FrontendHeartbeating" | "FSMState";
+
 export const NamedDatatypeValues = [
-    "TempAmbient0", "TempAmbient1", "TempAmbient2", "BMSVoltageHigh", "BMSVoltageLow", "BMSTemperatureHigh", "BMSTemperatureLow", "TempRangeStart", "TempRangeEnd", "Loc1", "Loc2", "Temp0", "Temp1", "Temp2", "Temp3", "Temp4", "Temp5", "Temp6", "Temp7", "ResetSenseCon", "ResetPropulsion", "ModulationFactor1", "ModulationFactor2", "MaximumVelocity1", "MaximumVelocity2", "Kpq1", "Kpq2", "Kiq1", "Kiq2", "Kpd1", "Kpd2", "Kid1", "Kid2", "PositionOffset1", "PositionOffset2", "Alpha1", "Alpha2", "Iq1", "Iq2", "Id1", "Id2", "Vq1_C", "Vq2_C", "Vd1_C", "Vd2_C", "PPInitFault", "PPEmergency", "Word", "IqMeasured", "IqReference", "IdMeasured", "IdReference", "Vq_Log", "Vd_Log", "Vbus", "Ibus", "Ta", "Tb", "Tc", "TCASE", "DefaultDatatype", "CommandHash", "EventsHash", "DataHash", "ConfigHash", "ValueError", "ValueWarning", "ValueCausedBraking", "LocalisationHeartbeat", "SensorHubHeartbeat", "FrontendHeartbeating", "PropulsionCurrent", "Localisation", "FSMState"];
+    "TempAmbient0", "TempAmbient1", "TempAmbient2", "BMSVoltageHigh", "BMSVoltageLow", "BMSTemperatureHigh", "BMSTemperatureLow", "TempRangeStart", "TempRangeEnd", "Loc1", "Loc2", "Temp0", "Temp1", "Temp2", "Temp3", "Temp4", "Temp5", "Temp6", "Temp7", "ResetSenseCon", "ResetPropulsion", "ModulationFactor1", "ModulationFactor2", "MaximumVelocity1", "MaximumVelocity2", "Kpq1", "Kpq2", "Kiq1", "Kiq2", "Kpd1", "Kpd2", "Kid1", "Kid2", "PositionOffset1", "PositionOffset2", "Alpha1", "Alpha2", "Iq1", "Iq2", "Id1", "Id2", "Vq1_C", "Vq2_C", "Vd1_C", "Vd2_C", "PPInitFault1", "PPInitFault2", "PPEmergency1", "PPEmergency2", "Word1", "Word2", "IqMeasured1", "IqReference1", "IdMeasured1", "IdReference1", "IqMeasured2", "IqReference2", "IdMeasured2", "IdReference2", "Vq_Log1", "Vd_Log1", "Vbus1", "Ibus1", "Vq_Log2", "Vd_Log2", "Vbus2", "Ibus2", "Ta1", "Tb1", "Tc1", "TCASE1", "Ta2", "Tb2", "Tc2", "TCASE2", "FSMAckProp1", "FSMAckProp2", "DefaultDatatype", "CommandHash", "EventsHash", "DataHash", "ConfigHash", "ValueError", "ValueWarning", "ValueCausedBraking", "LocalisationHeartbeat", "SensorHubHeartbeat", "FrontendHeartbeating", "FSMState"];
 // Not touched by auto-gen
 
 /**
@@ -37,42 +37,42 @@ export const EventChannel = {
  */
 export type dataConvFun<T> = (data: number, old: T) => T;
 
-/**
- * BMS Module Voltage
- * This type is to be used for store type on receiving the
- */
-export type BmsModuleVoltage = {
-    id: bigint;
-    max: bigint;
-    min: bigint;
-    avg: bigint;
-}
-
-/**
- * BMS Diagnostic
- * This interface is to be used as a store type when receiving
- */
-export type BMSDiagnostic = {
-    errors: string[]
-}
-
-/**
- * BMS Module Temperature
- * This type is to be used for store type on receiving bigint with the datatype
- */
-export type BmsModuleTemperature = {
-    id: bigint;
-    max: bigint;
-    min: bigint;
-    avg: bigint;
-}
-
-/**
- * BMS Event with attached string event
- */
-export type BMSEvent = {
-    event: string
-}
+// /**
+//  * BMS Module Voltage
+//  * This type is to be used for store type on receiving the
+//  */
+// export type BmsModuleVoltage = {
+//     id: bigint;
+//     max: bigint;
+//     min: bigint;
+//     avg: bigint;
+// }
+//
+// /**
+//  * BMS Diagnostic
+//  * This interface is to be used as a store type when receiving
+//  */
+// export type BMSDiagnostic = {
+//     errors: string[]
+// }
+//
+// /**
+//  * BMS Module Temperature
+//  * This type is to be used for store type on receiving bigint with the datatype
+//  */
+// export type BmsModuleTemperature = {
+//     id: bigint;
+//     max: bigint;
+//     min: bigint;
+//     avg: bigint;
+// }
+//
+// /**
+//  * BMS Event with attached string event
+//  */
+// export type BMSEvent = {
+//     event: string
+// }
 
 /**
  * Log type to be displayed in the log tab
@@ -90,33 +90,20 @@ export type Procedure = {
     content: string
 }
 
-export enum STATUS {
-    MAIN_PCB,
-    PROPULSION,
-    LEVITATION,
-    SENSOR_HUB,
-    LV_BATTERIES,
-    HV_BATTERIES,
-    BRAKING_PCB,
-    VOLTAGE_OVER
-}
+// export enum STATUS {
+//     MAIN_PCB,
+//     PROPULSION,
+//     LEVITATION,
+//     SENSOR_HUB,
+//     LV_BATTERIES,
+//     HV_BATTERIES,
+//     BRAKING_PCB,
+//     VOLTAGE_OVER
+// }
 
 export type LogType = 'INFO' | 'WARNING' | 'ERROR' | 'STATUS';
 
-export const LOCALISATION_NAME = "Localisation"; // 'levi_location'
-export const GOING_FORWARD = "GoingForward";
-
 export const MODAL_SETTINGS: ModalSettings = {
-    backdropClasses: '',
-    body: '',
-    buttonTextCancel: 'Close',
-    // component: ,
-    // image: '',
-    // meta: undefined,
-    // modalClasses: '',
-    // position: '',
-    // response(r: any): void {
-    // },
-    title: '',
-    type: 'alert',
+    component: 'alertModal',
+    type: 'component',
 }

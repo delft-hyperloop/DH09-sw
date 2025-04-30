@@ -1,14 +1,14 @@
 <script lang="ts">
-    import { propControlWord } from '$lib/stores/state';
+    import { propControlWord2 } from '$lib/stores/state';
 
     export let index: number = 0;
-    let value = $propControlWord >> index & 1;
+    let value = $propControlWord2 >> index & 1;
 
     let changeValue = () => {
-        let old = $propControlWord;
-        $propControlWord = $propControlWord ^ (1 << index);
-        value = $propControlWord >> index & 1;
-        console.log(`Control Word: ${$propControlWord}`);
+        let old = $propControlWord2;
+        $propControlWord2 = $propControlWord2 ^ (1 << index);
+        value = $propControlWord2 >> index & 1;
+        console.log(`Control Word: ${$propControlWord2}`);
     }
 
 </script>

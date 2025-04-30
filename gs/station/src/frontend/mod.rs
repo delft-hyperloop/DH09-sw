@@ -1,5 +1,7 @@
 pub mod app;
 pub mod commands;
+mod datapoint_dict;
+
 use std::fmt::Debug;
 use std::sync::Mutex;
 

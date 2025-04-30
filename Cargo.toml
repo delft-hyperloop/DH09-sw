@@ -48,7 +48,7 @@ goose_utils = { path = "util" }
 
 [workspace.dependencies.embassy-stm32]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 features = [
     "defmt",
     "stm32h753zi",
@@ -61,21 +61,21 @@ features = [
 
 [workspace.dependencies.embassy-boot]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 
 [workspace.dependencies.embassy-boot-stm32]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 
 
 [workspace.dependencies.embassy-sync]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 features = ["defmt"]
 
 [workspace.dependencies.embassy-executor]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 features = [
     # "task-arena-size-32768",
     "arch-cortex-m",
@@ -86,20 +86,20 @@ features = [
 
 [workspace.dependencies.embassy-net]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 features = ["medium-ethernet", "proto-ipv4", "tcp", "dns", "dhcpv4", "defmt", "packet-trace"]
 
 [workspace.dependencies.embassy-net-driver]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 
 [workspace.dependencies.embassy-time]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 
 [workspace.dependencies.embassy-futures]
 git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 
 [workspace.dependencies.smoltcp]
 git = "https://github.com/smoltcp-rs/smoltcp"

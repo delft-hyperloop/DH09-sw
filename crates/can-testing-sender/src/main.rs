@@ -36,7 +36,9 @@ use embassy_stm32::can::config::TimestampPrescaler;
 use embassy_stm32::can::frame::FdEnvelope;
 use embassy_stm32::can::frame::FdFrame;
 use embassy_stm32::can::frame::Header;
-use embassy_stm32::can::frame::Id;
+use embassy_stm32::can::Frame;
+use embedded_can::ExtendedId;
+use embedded_can::Id;
 use embassy_stm32::can::BufferedFdCanSender;
 use embassy_stm32::can::CanConfigurator;
 use embassy_stm32::can::RxFdBuf;
@@ -97,35 +99,55 @@ fn cpu_freq() -> f32 {
 }
 
 fn generate_config() -> Config {
-    let mut config = Config::default();
+    let mut config = embassy_stm32::Config::default();
+    {
+        use embassy_stm32::rcc::*;
+        // config.rcc.hsi = Some(HSIPrescaler::DIV1);
+        // config.rcc.csi = true;
+        // config.rcc.hsi48 = Some(Default::default()); // needed for RNG
+        // config.rcc.pll1 = Some(Pll {
+        //     source: PllSource::HSI,
+        //     prediv: PllPreDiv::DIV4,
+        //     mul: PllMul::MUL50,
+        //     divp: Some(PllDiv::DIV2),
+        //     divq: None,
+        //     divr: None,
+        // });
+        // config.rcc.sys = Sysclk::PLL1_P; // 400 Mhz
+        // config.rcc.ahb_pre = AHBPrescaler::DIV2; // 200 Mhz
+        // config.rcc.apb1_pre = APBPrescaler::DIV2; // 100 Mhz
+        // config.rcc.apb2_pre = APBPrescaler::DIV2; // 100 Mhz
+        // config.rcc.apb3_pre = APBPrescaler::DIV2; // 100 Mhz
+        // config.rcc.apb4_pre = APBPrescaler::DIV2; // 100 Mhz
+        // config.rcc.voltage_scale = VoltageScale::Scale1;
 
-    // Config
-    config.rcc.hsi = Some(rcc::HSIPrescaler::DIV1);
-    config.rcc.pll1 = Some(rcc::Pll {
-        source: rcc::PllSource::HSI,
-        prediv: rcc::PllPreDiv::DIV4,  // 64Mhz -> 16MHz
-        mul: rcc::PllMul::MUL60,       // 16Mhz -> 960MHz,
-        divp: Some(rcc::PllDiv::DIV2), // 960MHz -> 480MHz
-        divq: Some(rcc::PllDiv::DIV8), // 960MHz -> 120MHz
-        divr: None,
-    });
-    config.rcc.sys = rcc::Sysclk::PLL1_P; // 480MHz
-    config.rcc.ahb_pre = rcc::AHBPrescaler::DIV2; // 240MHz to peripherals
+        //// Config can
 
-    // Bump down peripheral clocks to 120MHz, which seems like the typical max
-    // interface frequency and is mandated by Embassy
-    config.rcc.apb1_pre = rcc::APBPrescaler::DIV2;
-    config.rcc.apb2_pre = rcc::APBPrescaler::DIV2;
-    config.rcc.apb3_pre = rcc::APBPrescaler::DIV2;
-    config.rcc.apb4_pre = rcc::APBPrescaler::DIV2;
+        config.rcc.hsi = Some(rcc::HSIPrescaler::DIV1);
+        config.rcc.pll1 = Some(rcc::Pll {
+            source: rcc::PllSource::HSI,
+            prediv: rcc::PllPreDiv::DIV4,  // 64Mhz -> 16MHz
+            mul: rcc::PllMul::MUL60,       // 16Mhz -> 960MHz,
+            divp: Some(rcc::PllDiv::DIV2), // 960MHz -> 480MHz
+            divq: Some(rcc::PllDiv::DIV8), // 960MHz -> 120MHz
+            divr: None,
+        });
+        config.rcc.sys = rcc::Sysclk::PLL1_P; // 480MHz
+        config.rcc.ahb_pre = rcc::AHBPrescaler::DIV2; // 240MHz to peripherals
 
-    // Voltage scaling 0 to support this
-    config.rcc.voltage_scale = rcc::VoltageScale::Scale0;
+        // Bump down peripheral clocks to 120MHz, which seems like the typical max
+        // interface frequency and is mandated by Embassy
+        config.rcc.apb1_pre = rcc::APBPrescaler::DIV2;
+        config.rcc.apb2_pre = rcc::APBPrescaler::DIV2;
+        config.rcc.apb3_pre = rcc::APBPrescaler::DIV2;
+        config.rcc.apb4_pre = rcc::APBPrescaler::DIV2;
 
-    // 120MHz, must be equal to or less than APB1 bus
-    config.rcc.mux.fdcansel = rcc::mux::Fdcansel::PLL1_Q;
-    //
+        // Voltage scaling 0 to support this
+        config.rcc.voltage_scale = rcc::VoltageScale::Scale0;
 
+        // 120MHz, must be equal to or less than APB1 bus
+        config.rcc.mux.fdcansel = rcc::mux::Fdcansel::HSI;
+    }
     config
 }
 
@@ -134,24 +156,19 @@ bind_interrupts!(struct CanOneInterrupts {
     FDCAN1_IT1 => can::IT1InterruptHandler<FDCAN1>;
 });
 
-static mut read_buffer: RxFdBuf<5> = RxFdBuf::new();
-static mut write_buffer: TxFdBuf<1> = TxFdBuf::new();
+// #[embassy_executor::task]
+// async fn blocking_blink(led: AnyPin) {
+//     let mut led = Output::new(led, Level::Low, Speed::Medium);
+//     let mut delay: Delay = Delay;
+//     let mut ticker = Ticker::every(Duration::from_secs(1));
+//     loop {
+//         led.set_high();
+//         delay.delay_us(DELAY as u32);
+//         led.set_low();
 
-const DELAY: u32 = 300_000;
-
-#[embassy_executor::task]
-async fn blocking_blink(led: AnyPin) {
-    let mut led = Output::new(led, Level::Low, Speed::Medium);
-    let mut delay: Delay = Delay;
-    let mut ticker = Ticker::every(Duration::from_secs(1));
-    loop {
-        led.set_high();
-        delay.delay_us(DELAY as u32);
-        led.set_low();
-
-        ticker.next().await;
-    }
-}
+//         ticker.next().await;
+//     }
+// }
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
@@ -168,29 +185,29 @@ async fn main(spawner: Spawner) {
     // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8,
     // seg2: 1, sync_jump_width: 1 }
 
-    // configurator.set_bitrate(250_000);
+    configurator.set_bitrate(1_000_000);
 
-    let config = configurator
-        .config()
-        // Configuration for 1Mb/s
-        .set_nominal_bit_timing(NominalBitTiming {
-            prescaler: NonZeroU16::new(10).unwrap(),
-            seg1: NonZeroU8::new(8).unwrap(),
-            seg2: NonZeroU8::new(3).unwrap(),
-            sync_jump_width: NonZeroU8::new(3).unwrap(),
-        })
-        // Configuration for 2Mb/s
-        .set_data_bit_timing(DataBitTiming {
-            transceiver_delay_compensation: true,
-            prescaler: NonZeroU16::new(5).unwrap(),
-            seg1: NonZeroU8::new(7).unwrap(),
-            seg2: NonZeroU8::new(4).unwrap(),
-            sync_jump_width: NonZeroU8::new(4).unwrap(),
-        })
-        .set_tx_buffer_mode(config::TxBufferMode::Priority)
-        .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+    // let config = configurator
+    //     .config()
+    //     // Configuration for 1Mb/s
+    //     .set_nominal_bit_timing(NominalBitTiming {
+    //         prescaler: NonZeroU16::new(10).unwrap(),
+    //         seg1: NonZeroU8::new(8).unwrap(),
+    //         seg2: NonZeroU8::new(3).unwrap(),
+    //         sync_jump_width: NonZeroU8::new(3).unwrap(),
+    //     })
+    //     // Configuration for 2Mb/s
+    //     .set_data_bit_timing(DataBitTiming {
+    //         transceiver_delay_compensation: true,
+    //         prescaler: NonZeroU16::new(5).unwrap(),
+    //         seg1: NonZeroU8::new(7).unwrap(),
+    //         seg2: NonZeroU8::new(4).unwrap(),
+    //         sync_jump_width: NonZeroU8::new(4).unwrap(),
+    //     })
+    //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
+    //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
 
-    configurator.set_config(config);
+    // configurator.set_config(config);
 
     // hprintln!("Generated config: {:?}", configurator.config());
 
@@ -202,64 +219,14 @@ async fn main(spawner: Spawner) {
 
     // let frame = FdFrame::new_extended(0x0001,
     //     &[0xFF; 64]).expect("Frame build error");
-    let header = Header::new_fd(
-        Id::try_from(0x00000001 as u32).expect("Invalid ID"),
-        64,
-        false,
-        true,
-    );
 
-    let frame = FdFrame::new(header, &[0; 64]).expect("Invalid frame");
-
-    fn encode_temperature(temp: f32) -> u8 {
-        let precision_range_start: f32 = 20.0;
-        let precision_range_end: f32 = 30.0;
-
-        if temp >= precision_range_start && temp <= precision_range_end {
-            0x80 | ((temp - precision_range_start) * 10.0) as u8
-        } else {
-            temp as u8
-        }
-    }
-
-    let mut first_message = true; // Flag to send test values first
+    let frame = Frame::new_standard(1, &[0; 8]).expect("Invalid frame");
 
     loop {
-        let mut encoded_temperatures = [0u8; 5];
-
-        if first_message {
-            // Send precision range values on first message
-            encoded_temperatures[0] = encode_temperature(20.0);
-            encoded_temperatures[1] = encode_temperature(30.0);
-            for i in 2..5 {
-                encoded_temperatures[i] = 0; // Fill remaining bytes with 0
-            }
-            first_message = false; // Prevent sending test values again
-
-            defmt::info!("Sent Initial Precision Values: 20°C & 30°C");
-        } else {
-            // Read actual sensor data and encode it
-            // for i in 0..5 {
-            //     let temp = get_temperature_from_other_board(i);
-            //     encoded_temperatures[i] = encode_temperature(temp);
-            // }
-
-            defmt::info!("Sending Encoded Temperatures: {:?}", encoded_temperatures);
-        }
-
-        // Create and send CAN FD frame
-        let frame = FdFrame::new(
-            Header::new_fd(
-                Id::try_from(0x00000001 as u32).expect("Invalid ID"),
-                64,
-                false,
-                true,
-            ),
-            &encoded_temperatures,
-        )
-        .expect("Invalid frame");
-
-        can.write_fd(&frame).await;
+        defmt::info!("Wrote frame");
+        can.write(&frame).await;
+        Timer::after_millis(100).await;
+        // defmt::info!("{:?}", can.read().await);
     }
 
     // loop {

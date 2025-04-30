@@ -3,6 +3,11 @@ name = "can-testing-listener"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = ["h753"]
+h753 = ["embassy-stm32/stm32h753zi"]
+h743 = ["embassy-stm32/stm32h743zi"]
+
 [dependencies]
 embassy-stm32.workspace = true
 embassy-sync.workspace = true

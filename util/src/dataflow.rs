@@ -123,7 +123,18 @@ pub struct MessageProcessingSpec {
 #[serde(tag = "bus", rename_all = "lowercase")]
 pub enum CanSpec {
     Can1 { id: u32 },
-    Can2 { id: u32 },
+    Can2 {
+        id: u32,
+        #[serde(flatten)]
+        comes_from_levi: Option<Can2ComesFromLevi>,
+    },
+}
+
+/// for auto-generation of the code for the levi Beckhoff pc.
+#[derive(serde::Deserialize, Debug)]
+pub struct Can2ComesFromLevi {
+    /// once how many milliseconds the data is logged
+    pub log_period: u32,
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -141,6 +152,21 @@ pub struct DatapointConversionSpec {
     pub display_units: Option<String>,
     pub limits: Option<LimitsSpec>,
     pub gs: DatapointConversionGsSpec,
+    #[serde(rename = "beckhoff")]
+    pub comes_from_levi_info: Option<DatapointComesFromLeviInfo>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DatapointComesFromLeviInfo {
+    pub name: String,
+    pub input_spec: String,
+    pub levi_type: StructuredTy,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub enum StructuredTy {
+    Integer,
+    Real,
 }
 
 #[derive(serde::Deserialize, Debug)]

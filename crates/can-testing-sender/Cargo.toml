@@ -36,6 +36,7 @@ embedded-hal.workspace = true
 defmt.workspace = true
 defmt-rtt.workspace = true
 panic-probe.workspace = true
+embedded-can.workspace = true
 
 [lints.rust]
 missing_docs = "warn"

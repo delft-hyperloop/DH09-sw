@@ -249,8 +249,8 @@ message-processing:
     can:
       id: 0x4B1
       bus: can2
-    fsm:
-      event: 'ShutDown'
+    # fsm:
+    #   event: 'ShutDown'
     datapoint-conversion:
       - datapoint:
           name: 'BMSVoltageHigh'
@@ -1011,4 +1011,6 @@ commands:
   - name: 'SystemReset'
     id: 0x66
 
-
+sender:
+      id: 'SC-Beckhoff-Task'
+      freq: 1000

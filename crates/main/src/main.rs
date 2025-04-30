@@ -19,6 +19,8 @@ use embassy_stm32::can;
 use embassy_stm32::can::config::DataBitTiming;
 use embassy_stm32::can::config::NominalBitTiming;
 use embassy_stm32::can::config::{self};
+use embassy_stm32::can::frame::FdFrame;
+use embassy_stm32::can::Frame;
 use embassy_stm32::can::RxFdBuf;
 use embassy_stm32::can::TxFdBuf;
 use embassy_stm32::eth::Ethernet;
@@ -417,6 +419,10 @@ async fn main(spawner: Spawner) -> ! {
         //// Config can
 
         config.rcc.hsi = Some(rcc::HSIPrescaler::DIV1);
+        config.rcc.hse = Some(rcc::Hse {
+            freq: embassy_stm32::time::Hertz(25_000_000),
+            mode: rcc::HseMode::Oscillator,
+        });
         config.rcc.pll1 = Some(rcc::Pll {
             source: rcc::PllSource::HSI,
             prediv: rcc::PllPreDiv::DIV4,  // 64Mhz -> 16MHz
@@ -439,7 +445,7 @@ async fn main(spawner: Spawner) -> ! {
         config.rcc.voltage_scale = rcc::VoltageScale::Scale0;
 
         // 120MHz, must be equal to or less than APB1 bus
-        config.rcc.mux.fdcansel = rcc::mux::Fdcansel::PLL1_Q;
+        config.rcc.mux.fdcansel = rcc::mux::Fdcansel::HSE;
         //
     }
     let p = embassy_stm32::init(config);
@@ -463,29 +469,30 @@ async fn main(spawner: Spawner) -> ! {
     info!("Embassy initialized!");
 
     let can1 = {
-        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs);
+        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PB8, p.PB9, Irqs);
 
-        let config = configurator
-            .config()
-            // Configuration for 1Mb/s
-            .set_nominal_bit_timing(NominalBitTiming {
-                prescaler: NonZeroU16::new(10).unwrap(),
-                seg1: NonZeroU8::new(8).unwrap(),
-                seg2: NonZeroU8::new(3).unwrap(),
-                sync_jump_width: NonZeroU8::new(3).unwrap(),
-            })
-            // Configuration for 2Mb/s
-            .set_data_bit_timing(DataBitTiming {
-                transceiver_delay_compensation: true,
-                prescaler: NonZeroU16::new(5).unwrap(),
-                seg1: NonZeroU8::new(7).unwrap(),
-                seg2: NonZeroU8::new(4).unwrap(),
-                sync_jump_width: NonZeroU8::new(4).unwrap(),
-            })
-            .set_tx_buffer_mode(config::TxBufferMode::Priority)
-            .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+        // let config = configurator
+        //     .config()
+        //     // Configuration for 1Mb/s
+        //     .set_nominal_bit_timing(NominalBitTiming {
+        //         prescaler: NonZeroU16::new(10).unwrap(),
+        //         seg1: NonZeroU8::new(8).unwrap(),
+        //         seg2: NonZeroU8::new(3).unwrap(),
+        //         sync_jump_width: NonZeroU8::new(3).unwrap(),
+        //     })
+        //     // Configuration for 2Mb/s
+        //     .set_data_bit_timing(DataBitTiming {
+        //         transceiver_delay_compensation: true,
+        //         prescaler: NonZeroU16::new(5).unwrap(),
+        //         seg1: NonZeroU8::new(7).unwrap(),
+        //         seg2: NonZeroU8::new(4).unwrap(),
+        //         sync_jump_width: NonZeroU8::new(4).unwrap(),
+        //     })
+        //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
+        //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
 
-        configurator.set_config(config);
+        // configurator.set_config(config);
+        configurator.set_bitrate(131_578);
 
         let mut can = configurator.into_normal_mode();
 
@@ -589,14 +596,14 @@ async fn main(spawner: Spawner) -> ! {
         p.PC4, // RX_D0: Received Bit 0
         p.PC5, // RX_D1: Received Bit 1
         // main pcb:
-        // p.PB12, // TX_D0: Transmit Bit 0
+        p.PB12, // TX_D0: Transmit Bit 0
         // nucleo:
-        p.PG13, // TX_D0: Transmit Bit 0
+        // p.PG13, // TX_D0: Transmit Bit 0
         p.PB13, // TX_D1: Transmit Bit 1
         // nucleo:
-        p.PG11, // TX_EN: Transmit Enable
+        // p.PG11, // TX_EN: Transmit Enable
         // main pcb:
-        // p.PB11,
+        p.PB11,
         GenericPhy::new(0),
         mac_addr,
     );

@@ -43,20 +43,8 @@ bind_interrupts!(
         // CAN
         FDCAN1_IT0 => can::IT0InterruptHandler<peripherals::FDCAN1>;
         FDCAN1_IT1 => can::IT1InterruptHandler<peripherals::FDCAN1>;
-
-        FDCAN2_IT0 => can::IT0InterruptHandler<peripherals::FDCAN2>;
-        FDCAN2_IT1 => can::IT1InterruptHandler<peripherals::FDCAN2>;
     }
 );
-
-fn hlt() -> ! {
-    loop {
-        cortex_m::asm::wfe();
-    }
-}
-
-static mut read_buffer: RxFdBuf<5> = RxFdBuf::new();
-static mut write_buffer: TxFdBuf<1> = TxFdBuf::new();
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) -> ! {
@@ -110,13 +98,12 @@ async fn main(spawner: Spawner) -> ! {
 
         // 120MHz, must be equal to or less than APB1 bus
         config.rcc.mux.fdcansel = rcc::mux::Fdcansel::PLL1_Q;
-        //
     }
     let p = embassy_stm32::init(config);
 
     info!("Embassy initialized!");
 
-    let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
+    let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs);
 
     // hprintln!("{:?}", configurator.config().nbtr);
     // hprintln!("{:?}", configurator.config().dbtr);
@@ -156,11 +143,12 @@ async fn main(spawner: Spawner) -> ! {
     // // })
     // .set_tx_buffer_mode(config::TxBufferMode::Priority)
     // .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
-configurator.set_bitrate(1_000_000);
+    configurator.set_bitrate(131_578);
 
     // configurator.set_config(config);
 
     // hprintln!("Generated config: {:?}", configurator.config());
+    info!("CAN Configured [0]");
 
     let mut can = configurator.into_normal_mode();
 
@@ -173,16 +161,6 @@ configurator.set_bitrate(1_000_000);
 
     info!("CAN Configured");
 
-    fn decode_temperature(encoded: u8) -> f32 {
-        let precision_range_start: f32 = 20.0;
-
-        if encoded & 0x80 != 0 {
-            precision_range_start + ((encoded & 0x7F) as f32 / 10.0) // High precision mode
-        } else {
-            encoded as f32 // Integer mode
-        }
-    }
-
     loop {
         info!("Waiting for CAN Frame...");
         let response = can.read().await;
@@ -193,20 +171,10 @@ configurator.set_bitrate(1_000_000);
                 let data = envelope.frame.data(); // Extract received data
 
                 info!("Received CAN Frame: {:?} ({:?})", header, data);
-
-                if data.len() >= 1 {
-                    // Ensure at least 1 byte received
-                    let received_temp = decode_temperature(data[0]);
-                    info!("Decoded Temperature: {} °C", received_temp);
-                } else {
-                    info!("Received frame but no valid temperature data!");
-                }
             }
             Err(ref bus_error) => {
                 error!("Bus error: {:?}", bus_error);
             }
         }
     }
-
-    hlt()
 }

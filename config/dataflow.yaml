@@ -969,6 +969,20 @@ message-processing:
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'CANLog'
+    can:
+      id: 0xfff
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: "CANLog"
+          id: 0xfff
+          store:
+            default: 0
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
   - name: 'Log2MD2'
     can:
       id: 0x503

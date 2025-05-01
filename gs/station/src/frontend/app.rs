@@ -1,9 +1,8 @@
-use std::io::{stdout, Write};
 use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
 
-use gslib::{Datapoint, Message};
+use gslib::{Datatype, Message};
 use gslib::ERROR_CHANNEL;
 use gslib::HEARTBEAT;
 use gslib::INFO_CHANNEL;
@@ -20,7 +19,6 @@ use crate::backend::Backend;
 use crate::frontend::commands::*;
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
-use crate::frontend::datapoint_dict::DatapointDict;
 
 pub static APP_HANDLE: Mutex<Option<AppHandle>> = Mutex::new(None);
 
@@ -65,6 +63,7 @@ pub fn tauri_main(backend: Backend) {
 
             // set up shortcuts
             let s = app_handle.clone();
+            let s2 = app_handle.clone();
             let shortcuts = app_handle.global_shortcut_manager();
 
             window.on_window_event(move |event| {
@@ -124,6 +123,7 @@ pub fn tauri_main(backend: Backend) {
                 // let capacity = 30;
                 // let mut datapoint_dict: DatapointDict = DatapointDict::new(capacity);
                 // print!("{}", "\n".repeat(capacity + 3));
+                let ss = s2.clone();
                 loop {
                     match message_rcv.try_recv() {
                         Ok(msg) => {
@@ -134,6 +134,9 @@ pub fn tauri_main(backend: Backend) {
                             match msg {
                                 Message::Data(dp) => {
                                     println!("Received datapoint: {:?}", dp);
+                                    if dp.datatype == Datatype::CANLog {
+                                        ss.emit_all(INFO_CHANNEL, format!("Received datapoint on the main PCB: {:?}", dp)).expect("Couldn't send message");
+                                    }
                                     // datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp)); // TODO: change such that it uses f64 instead of u64
                                     // print!("{}", datapoint_dict);
                                     // stdout().flush().unwrap();

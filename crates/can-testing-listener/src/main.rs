@@ -118,45 +118,7 @@ async fn main(spawner: Spawner) -> ! {
 
     let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
 
-    // hprintln!("{:?}", configurator.config().nbtr);
-    // hprintln!("{:?}", configurator.config().dbtr);
-    //NominalBitTiming { prescaler: 12, seg1: 8, seg2: 1, sync_jump_width: 1 }
-    // DataBitTiming { transceiver_delay_compensation: true, prescaler: 2, seg1: 8,
-    // seg2: 1, sync_jump_width: 1 }
-
-    
-    // let config = configurator
-    // .config()
-    // // Configuration for 1Mb/s
-    // // .set_nominal_bit_timing(NominalBitTiming {
-    // //     prescaler: NonZeroU16::new(15).unwrap(),
-    // //     seg1: NonZeroU8::new(5).unwrap(),
-    // //     seg2: NonZeroU8::new(2).unwrap(),
-    // //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-    // // })
-    // .set_nominal_bit_timing(NominalBitTiming {
-    //     prescaler: NonZeroU16::new(15).unwrap(),
-    //     seg1: NonZeroU8::new(13).unwrap(),
-    //     seg2: NonZeroU8::new(2).unwrap(),
-    //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-    // })
-    // // .set_nominal_bit_timing(NominalBitTiming {
-    // //     prescaler: NonZeroU16::new(15).unwrap(),
-    // //     seg1: NonZeroU8::new(13).unwrap(),
-    // //     seg2: NonZeroU8::new(2).unwrap(),
-    // //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-    // // })
-    // // Configuration for 2Mb/s
-    // // .set_data_bit_timing(DataBitTiming {
-    // //     transceiver_delay_compensation: true,
-    // //     prescaler: NonZeroU16::new(12).unwrap(),
-    // //     seg1: NonZeroU8::new(13).unwrap(),
-    // //     seg2: NonZeroU8::new(2).unwrap(),
-    // //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-    // // })
-    // .set_tx_buffer_mode(config::TxBufferMode::Priority)
-    // .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
-configurator.set_bitrate(1_000_000);
+    configurator.set_bitrate(500_000);
 
     // configurator.set_config(config);
 

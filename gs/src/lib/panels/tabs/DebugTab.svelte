@@ -220,6 +220,15 @@
                 </TileGrid>
             </div>
         </CollapsibleTile>
+        <CollapsibleTile title="Reset Commands">
+            <div slot="content" class="flex gap-4">
+                <Command cmd="SystemReset"/>
+                <Command cmd="ResetSenseCon"/>
+                <Command cmd="ResetPowertrain"/>
+                <Command cmd="ResetLevitation"/>
+                <Command cmd="ResetPropulsion"/>
+            </div>
+        </CollapsibleTile>
         <CollapsibleTile title="General Commands">
             <div slot="content">
                 <div class="grid grid-cols-4 w-full gap-4">

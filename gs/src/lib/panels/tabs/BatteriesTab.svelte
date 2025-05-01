@@ -9,8 +9,8 @@
         TileGrid, ToggleCommand,
     } from "$lib"
   const storeManager = GrandDataDistributor.getInstance().stores;
-  // const lvBattery = storeManager.getWritable("ChargeStateLow");
-  // const hvBattery = storeManager.getWritable("ChargeStateHigh");
+  const lvBattery = storeManager.getWritable("BMSVoltageLow");
+  const hvBattery = storeManager.getWritable("BMSVoltageHigh");
 
   const avg1Temp = "Module1AvgTemperature", max1Temp = "Module1MaxTemperature", min1Temp = "Module1MinTemperature",
     avg1Vol = "Module1AvgVoltage", max1Vol = "Module1MaxVoltage", min1Vol = "Module1MinVoltage",
@@ -187,11 +187,11 @@
     <TileGrid columns="1fr 1fr 1fr 1fr" rows="auto 1fr auto">
         <Tile insideClass="flex h-full items-center gap-4">
             <div class="flex flex-col items-center">
-<!--                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />-->
+                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />
                 <p>Low voltage</p>
             </div>
             <div class="flex flex-col items-center">
-<!--                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery.value)} />-->
+                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery.value)} />
                 <p>High voltage</p>
             </div>
         </Tile>

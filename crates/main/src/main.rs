@@ -19,12 +19,14 @@ use embassy_stm32::can;
 use embassy_stm32::can::config::DataBitTiming;
 use embassy_stm32::can::config::NominalBitTiming;
 use embassy_stm32::can::config::{self};
+use embassy_stm32::can::frame::Header;
 use embassy_stm32::can::RxFdBuf;
 use embassy_stm32::can::TxFdBuf;
 use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::eth::{self};
+use embassy_stm32::i2s::Standard;
 use embassy_stm32::peripherals;
 use embassy_stm32::peripherals::*;
 use embassy_stm32::rcc;
@@ -34,7 +36,7 @@ use embassy_sync::pubsub::PubSubBehavior;
 use embassy_sync::pubsub::WaitResult;
 use embassy_time::Instant;
 use embassy_time::Timer;
-use embedded_can::Id;
+use embedded_can::{Id, StandardId};
 use embedded_io_async::Write;
 use fsm::utils::types::EventChannel;
 use fsm::utils::types::EventReceiver;
@@ -43,7 +45,7 @@ use fsm::FSM;
 use main::can::can1;
 use main::can::can2;
 use main::gs_master;
-use main::gs_master::Datapoint;
+use main::gs_master::{Datapoint, TxSender};
 use main::gs_master::EthernetGsCommsLayerInitializer;
 use main::gs_master::GsCommsLayer;
 use main::gs_master::GsMaster;
@@ -181,7 +183,7 @@ async fn forward_gs_to_can2(
         trace!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
-        main::config::gs_to_can2(command, |frame| cantx.send(frame)).await; // TODO: what about signed? this is only u64
+        main::config::gs_to_can2(command, |frame| cantx.send(frame)).await;
     }
 }
 
@@ -263,12 +265,10 @@ async fn forward_can1_messages_to_fsm(
 
         let id = match envelope.id() {
             Id::Extended(e) => e.as_raw(),
-            Id::Standard(s) => {
-                warn!("Received standard (non-extended) CAN ID: {}", s.as_raw());
-                continue;
-            }
+            Id::Standard(s) => s.as_raw() as u32,
         };
 
+        info!("Received CAN frame with ID: {}", id);
         let fsm_event = main::config::event_for_can_1_id(id);
 
         if fsm_event != fsm::Event::NoEvent {
@@ -330,14 +330,17 @@ async fn forward_can1_messages_to_gs(
     loop {
         let can_frame = canrx.next_message_pure().await;
         let id = match can_frame.id() {
-            Id::Extended(extended_id) => extended_id.as_raw(),
-            Id::Standard(_) => todo!("Nuh-uh"),
+            Id::Standard(s) => s.as_raw() as u32,
+            Id::Extended(e) => {
+                warn!("Received extended CAN ID on can1->gs: {}", e.as_raw());
+                continue;
+            }
         };
 
         // info!("Received CAN frame with ID: {}", id);
-
+        
         let data = can_frame.payload();
-
+        // id = id as u32;
         main::config::parse_datapoints_can_1(id, data, |dp| async move {
             gstx.send(PodToGsMessage { dp }).await;
         })
@@ -369,6 +372,33 @@ async fn forward_can2_messages_to_gs(
         .await;
 
         Timer::after_micros(10).await;
+    }
+}
+
+/// Forwards all CAN messages to the groundstation for logging
+#[embassy_executor::task]
+async fn log_can2_on_gs(mut gstx: gs_master::TxSender<'static>, mut canrx: can2::CanRxSubscriber<'static>) {
+    loop {
+        let can_frame = canrx.next_message_pure().await;
+        let id = match can_frame.id() {
+            Id::Standard(s) => s.as_raw() as u32,
+            Id::Extended(e) => {
+                warn!("Received extended CAN ID on can1->gs: {}", e.as_raw());
+                continue;
+            }
+        };
+        
+        let data = can_frame.payload();
+        
+        gstx.send(PodToGsMessage {
+            dp: Datapoint::new(
+                main::config::Datatype::CANLog,
+                u64::from(id),
+                embassy_time::Instant::now().as_ticks(),
+            )
+        })
+        .await;
+        Timer::after_millis(50).await;
     }
 }
 
@@ -465,27 +495,27 @@ async fn main(spawner: Spawner) -> ! {
     let can1 = {
         let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
 
-        let config = configurator
-            .config()
-            // Configuration for 1Mb/s
-            .set_nominal_bit_timing(NominalBitTiming {
-                prescaler: NonZeroU16::new(10).unwrap(),
-                seg1: NonZeroU8::new(8).unwrap(),
-                seg2: NonZeroU8::new(3).unwrap(),
-                sync_jump_width: NonZeroU8::new(3).unwrap(),
-            })
-            // Configuration for 2Mb/s
-            .set_data_bit_timing(DataBitTiming {
-                transceiver_delay_compensation: true,
-                prescaler: NonZeroU16::new(5).unwrap(),
-                seg1: NonZeroU8::new(7).unwrap(),
-                seg2: NonZeroU8::new(4).unwrap(),
-                sync_jump_width: NonZeroU8::new(4).unwrap(),
-            })
-            .set_tx_buffer_mode(config::TxBufferMode::Priority)
-            .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+        // let config = configurator
+        //     .config()
+        //     // Configuration for 1Mb/s
+        //     .set_nominal_bit_timing(NominalBitTiming {
+        //         prescaler: NonZeroU16::new(10).unwrap(),
+        //         seg1: NonZeroU8::new(8).unwrap(),
+        //         seg2: NonZeroU8::new(3).unwrap(),
+        //         sync_jump_width: NonZeroU8::new(3).unwrap(),
+        //     })
+        //     // Configuration for 2Mb/s
+        //     .set_data_bit_timing(DataBitTiming {
+        //         transceiver_delay_compensation: true,
+        //         prescaler: NonZeroU16::new(5).unwrap(),
+        //         seg1: NonZeroU8::new(7).unwrap(),
+        //         seg2: NonZeroU8::new(4).unwrap(),
+        //         sync_jump_width: NonZeroU8::new(4).unwrap(),
+        //     })
+        //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
+        //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+        configurator.set_bitrate(1_000_000);
 
-        configurator.set_config(config);
 
         let mut can = configurator.into_normal_mode();
 
@@ -632,6 +662,8 @@ async fn main(spawner: Spawner) -> ! {
     )));
 
     unwrap!(spawner.spawn(gs_heartbeat(gs_master.transmitter())));
+    
+    unwrap!(spawner.spawn(log_can2_on_gs(gs_master.transmitter(), can2.new_subscriber())));
 
     loop {
         Timer::after_millis(100).await;

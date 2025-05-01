@@ -207,29 +207,20 @@ message-processing:
           id: 0x4B0
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
-          store:
-            default: 0
             callback: |
               data => {
                   const curr = Number(data);
                   $chartStore.get("Motor Temperatures Left")!.addEntry(0, curr);
                   return curr;
               }
-      - datapoint:
-          name: 'TempMotorLeft1'
-          id: 0x4B1
-          store:
-            default: 0
-        getter: 'u8[1..2]'
+        getter: 'u8[0..1]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempMotorLeft1'
+          id: 0x4B1
           store:
             default: 0
             callback: |
@@ -238,16 +229,14 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(1, curr);
                   return curr;
               }
-      - datapoint:
-          name: 'TempMotorLeft2'
-          id: 0x4B2
-          store:
-            default: 0
-        getter: 'u8[2..3]'
+        getter: 'u8[1..2]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempMotorLeft2'
+          id: 0x4B2
           store:
             default: 0
             callback: |
@@ -256,17 +245,15 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(2, curr);
                   return curr;
               }
-
-      - datapoint:
-          name: 'TempMotorLeft3'
-          id: 0x4B3
-          store:
-            default: 0
         getter: 'u8[2..3]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+
+      - datapoint:
+          name: 'TempMotorLeft3'
+          id: 0x4B3
           store:
             default: 0
             callback: |
@@ -275,17 +262,15 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(3, curr);
                   return curr;
               }
-
-      - datapoint:
-          name: 'TempMotorLeft4'
-          id: 0x4B4
-          store:
-            default: 0
-        getter: 'u8[4..5]'
+        getter: 'u8[2..3]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+
+      - datapoint:
+          name: 'TempMotorLeft4'
+          id: 0x4B4
           store:
             default: 0
             callback: |
@@ -294,17 +279,15 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(4, curr);
                   return curr;
               }
-
-      - datapoint:
-          name: 'TempMotorLeft5'
-          id: 0x4B5
-          store:
-            default: 0
-        getter: 'u8[5..6]'
+        getter: 'u8[4..5]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+
+      - datapoint:
+          name: 'TempMotorLeft5'
+          id: 0x4B5
           store:
             default: 0
             callback: |
@@ -313,17 +296,15 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(5, curr);
                   return curr;
               }
+        getter: 'u8[5..6]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
 
       # - datapoint:
       #     name: 'TempMotorLeft6'
       #     id: 0x4B6
-      #     store:
-      #       default: 0
-      #   getter: 'u8[6..7]'
-      #   can-conversion: 'decode_temperature:u8->f32'
-      #   display-units: '°C'
-      #   gs:
-      #     conversion: 'gs_2p_float:f32'
       #     store:
       #       default: 0
       #       callback: |
@@ -332,6 +313,11 @@ message-processing:
       #             $chartStore.get("Motor Temperatures Left")!.addEntry(6, curr);
       #             return curr;
       #         }
+      #   getter: 'u8[6..7]'
+      #   can-conversion: 'decode_temperature:u8->f32'
+      #   display-units: '°C'
+      #   gs:
+      #     conversion: 'gs_2p_float:f32'
   - name: 'TempMotorRight'
     can:
       id: 0x33C
@@ -342,29 +328,20 @@ message-processing:
           id: 0x4C0
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
-          store:
-            default: 0
             callback: |
               data => {
                   const curr = Number(data);
                   $chartStore.get("Motor Temperatures Right")!.addEntry(0, curr);
                   return curr;
               }
-      - datapoint:
-          name: 'TempMotorRight1'
-          id: 0x4C1
-          store:
-            default: 0
-        getter: 'u8[1..2]'
+        getter: 'u8[0..1]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempMotorRight1'
+          id: 0x4C1
           store:
             default: 0
             callback: |
@@ -373,16 +350,14 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(1, curr);
                   return curr;
               }
-      - datapoint:
-          name: 'TempMotorRight2'
-          id: 0x4C2
-          store:
-            default: 0
-        getter: 'u8[2..3]'
+        getter: 'u8[1..2]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempMotorRight2'
+          id: 0x4C2
           store:
             default: 0
             callback: |
@@ -391,17 +366,15 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(2, curr);
                   return curr;
               }
-
-      - datapoint:
-          name: 'TempMotorRight3'
-          id: 0x4C3
-          store:
-            default: 0
         getter: 'u8[2..3]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+
+      - datapoint:
+          name: 'TempMotorRight3'
+          id: 0x4C3
           store:
             default: 0
             callback: |
@@ -410,17 +383,15 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(3, curr);
                   return curr;
               }
-
-      - datapoint:
-          name: 'TempMotorRight4'
-          id: 0x4C4
-          store:
-            default: 0
-        getter: 'u8[4..5]'
+        getter: 'u8[2..3]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+
+      - datapoint:
+          name: 'TempMotorRight4'
+          id: 0x4C4
           store:
             default: 0
             callback: |
@@ -429,17 +400,15 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(4, curr);
                   return curr;
               }
-
-      - datapoint:
-          name: 'TempMotorRight5'
-          id: 0x4C5
-          store:
-            default: 0
-        getter: 'u8[5..6]'
+        getter: 'u8[4..5]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+
+      - datapoint:
+          name: 'TempMotorRight5'
+          id: 0x4C5
           store:
             default: 0
             callback: |
@@ -448,17 +417,15 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(5, curr);
                   return curr;
               }
-
-      - datapoint:
-          name: 'TempMotorRight6'
-          id: 0x4C6
-          store:
-            default: 0
-        getter: 'u8[6..7]'
+        getter: 'u8[5..6]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+
+      - datapoint:
+          name: 'TempMotorRight6'
+          id: 0x4C6
           store:
             default: 0
             callback: |
@@ -467,6 +434,11 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(6, curr);
                   return curr;
               }
+        getter: 'u8[6..7]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
   - name: 'BMSLog1'
     can:
       id: 0x4E4
@@ -551,8 +523,8 @@ message-processing:
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Loc1'
-          id: 0x320
+          name: 'Localization'
+          id: 0x321
           store:
             default: 0
             callback: |
@@ -561,43 +533,11 @@ message-processing:
                   $chartStore.get("Localization")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i32[0..4]'
-        can-conversion: 'identity_i32:i32->i32'
-        display-units: 'mm'
-        gs:
-          conversion: 'gs_i32:i32'
-      - datapoint:
-          name: 'Loc2'
-          id: 0x321
-          store:
-            default: 0
-            callback: |
-              data => {
-                  const curr = Number(data);
-                  $chartStore.get("Localization")!.addEntry(2, curr);
-                  return curr;
-              }
         getter: 'i32[4..8]'
         can-conversion: 'identity_i32:i32->i32'
         display-units: 'mm'
         gs:
           conversion: 'gs_i32:i32'
-      # - datapoint:
-      #     name: 'Loc3'
-      #     id: 0x322
-      #   getter: 'i32[8..12]'
-      #   can-conversion: 'identity_i32:i32->i32'
-      #   display-units: 'mm'
-      #   gs:
-      #     conversion: 'gs_i32:i32'
-      # - datapoint:
-      #     name: 'Loc4'
-      #     id: 0x323
-      #   getter: 'i32[12..16]'
-      #   can-conversion: 'identity_i32:i32->i32'
-      #   display-units: 'mm'
-      #   gs:
-      #     conversion: 'gs_i32:i32'
   - name: 'Temperature'
     can:
       id: 0x33B
@@ -1236,6 +1176,20 @@ message-processing:
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'CANLog'
+    can:
+      id: 0xfff
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: "CANLog"
+          id: 0xfff
+          store:
+            default: 0
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
   - name: 'Log2MD2'
     can:
       id: 0x503
@@ -1556,6 +1510,6 @@ commands:
       id: 0x002
       bus: can2
   - name: 'SystemReset'
-    id: 0x66
+    id: 0x192
 
 

@@ -151,6 +151,24 @@
     let hvTotal = new PlotBuffer(500, 2 * 60000, [-10, 450], false);
     $chartStore.set('HV Total', hvTotal);
 
+    let motorLeftTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Left 1');
+    motorLeftTemp.addSeries(StrokePresets.yellow('Motor Left 2'));
+    motorLeftTemp.addSeries(StrokePresets.blue('Motor Left 3'));
+    motorLeftTemp.addSeries(StrokePresets.blueDashed('Motor Left 4'));
+    motorLeftTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Left 5'));
+    motorLeftTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Left 6'));
+    
+    $chartStore.set('Motor Temperatures Left', motorLeftTemp);
+    let motorRightTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Right 1');
+    motorRightTemp.addSeries(StrokePresets.yellow('Motor Right 2'));
+    motorRightTemp.addSeries(StrokePresets.blue('Motor Right 3'));
+    motorRightTemp.addSeries(StrokePresets.blueDashed('Motor Right 4'));
+    motorRightTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Right 5'));
+    motorRightTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Right 6'));
+    motorRightTemp.addSeries(StrokePresets.yellowDashed('Motor Right 7'));
+    $chartStore.set('Motor Temperatures Right', motorRightTemp);
+    
+
     ////////////////////////////////////////////////////////////////
 
     let gdd = GrandDataDistributor.getInstance();

@@ -199,6 +199,12 @@
                     </div>
                 </div>
                 <TileGrid columns="1fr 1fr" rows="auto" className="mt-2">
+                    <Tile containerClass="col-span-1" heading="Motor Temperatures Left">
+                        <Chart title="Motor Temperatures Left" background="bg-surface-900" />
+                    </Tile>
+                    <Tile containerClass="col-span-1" heading="Motor Temperatures Right">
+                        <Chart title="Motor Temperatures Right" background="bg-surface-900" />
+                    </Tile>
                     <Tile containerClass="col-span-1" heading="Propulsion Log 1 - MD1">
                         <Chart title="Propulsion Log 1 - MD1" background="bg-surface-900" />
                     </Tile>

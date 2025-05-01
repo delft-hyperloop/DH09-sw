@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {Battery, TileGrid, Tile, Command, GrandDataDistributor} from "$lib";
+    import { Battery, TileGrid, Tile, Command, GrandDataDistributor, Store, TauriCommand, serverStatus } from '$lib';
     import { AppBar, getToastStore } from '@skeletonlabs/skeleton';
     import Icon from "@iconify/svelte";
     import {invoke} from "@tauri-apps/api/tauri";
@@ -15,8 +15,23 @@
     const lvBattery = storeManager.getWritable("BMSVoltageLow");
     const hvBattery = storeManager.getWritable("BMSVoltageHigh");
     const fsmState = storeManager.getWritable("FSMState");
-    const location1 = storeManager.getWritable("Loc1");
-    const location2 = storeManager.getWritable("Loc2");
+
+    const toastStore = getToastStore();
+    const handleSuccess = () => {
+        toastStore.trigger({
+            message: "Server started successfully",
+            background: "bg-primary-400",
+            timeout: 1500
+        });
+        serverStatus.set(true);
+    };
+
+    const handleFailure = (error:string) => {
+        toastStore.trigger({
+            message: `Server did not start successfully: ${error}`,
+            background: "bg-error-400"
+        });
+    };
 
     let tableTempsArr: any[][];
     let tableArr2: any[][];
@@ -46,8 +61,6 @@
         ["HEMS D1", DE.Alpha1, "[-10,10] A", "HEMS D2", DE.Alpha1, "[-10,10] A"],
         ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
     ]
-
-    const toastStore = getToastStore();
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
@@ -106,7 +119,7 @@
                             <p>
 <!--                                Velocity: <Store datatype="Velocity" /> m/s-->
                                 <br>
-                                Position: {($location1.value + $location2.value) / 2} mm
+                                Position: <Store datatype={"Localization"} /> mm
                                 <br>
 <!--                                Acceleration: <Store datatype="Acceleration" /> m/s²-->
                             </p>
@@ -124,27 +137,42 @@
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2">
                             <span>LV: </span>
                             <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>
-<!--                            <span>Total: <Store datatype="TotalBatteryVoltageLow" /></span>-->
+                            <span>Total: <Store datatype="BMSVoltageLow" /></span>
 
                             <span>HV: </span>
                             <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
-<!--                            <span>Total: <Store datatype="TotalBatteryVoltageHigh" /></span>-->
+                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>High Voltage BMS: &ltstatus&gt</span>
                             <span>Emergency Breaking System: &ltstatus&gt</span>
                         </div>
-                        <div class="flex flex-col gap-4">
-                            <span>LV Total Safe: -Insert values- V</span>
-                            <span>HV Total Safe: -Insert values- V</span>
-                        </div>
                     </div>
                     <div class="flex flex-wrap justify-between mt-4">
                         <div class="flex gap-4 flex-wrap">
-                            <Command cmd="StopHV" className="py-1 text-error-400 border-error-400 border-2" />
-                            <Command cmd="ArmBrakes" className="py-1 bg-primary-500 text-surface-900 " />
-<!--                            <Command cmd="StartRun" className="py-1 bg-primary-500 text-surface-900" />-->
-<!--                            <Command cmd="ContinueRun" className="py-1 bg-primary-500 text-surface-900" />-->
+                            {#if !$serverStatus}
+                                <TauriCommand
+                                    cmd="connect_to_pod"
+                                    successCallback={handleSuccess}
+                                    errorCallback={handleFailure}
+                                />
+                            {:else}
+                                <TauriCommand
+                                    cmd="disconnect"
+                                    on:click={() => serverStatus.set(false)}
+                                    successCallback={() => serverStatus.set(false)}
+                                    errorCallback={(error) => {
+                                        toastStore.trigger({
+                                            message: `Server is not running: ${error}`,
+                                            background: "bg-error-400"
+                                        });
+                                    }}
+                                />
+                            {/if}
+                            <Command cmd="StartHV"/>
+                            <Command cmd="StopHV" className="text-error-400 border-error-400 border-2" />
+                            <Command cmd="ArmBrakes"/>
+                            <Command cmd="SystemReset"/>
                         </div>
                     </div>
                 </Tile>

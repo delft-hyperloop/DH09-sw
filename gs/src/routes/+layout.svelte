@@ -102,8 +102,7 @@
     $chartStore.set('Velocity', velChart);
 
     let localizationChart = new PlotBuffer(500, 60000, [0, 13000], false);
-    localizationChart.addSeries(StrokePresets.yellow("Localization 1"))
-    localizationChart.addSeries(StrokePresets.blue("Localization 2"))
+    localizationChart.addSeries(StrokePresets.yellow("Localization"))
     $chartStore.set("Localization", localizationChart);
 
     let lvCurrent = new PlotBuffer(500, 60000, [-15, 15], false)
@@ -186,16 +185,9 @@
 
     gdd.stores.registerStore<number>("TempRangeEnd", 0);
 
-    gdd.stores.registerStore<number>("Loc1", 0, data => {
+    gdd.stores.registerStore<number>("Localization", 0, data => {
             const curr = Number(data);
             $chartStore.get("Localization")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Loc2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Localization")!.addEntry(2, curr);
             return curr;
         }
     );

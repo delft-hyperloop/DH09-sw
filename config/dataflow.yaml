@@ -316,8 +316,8 @@ message-processing:
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Loc1'
-          id: 0x320
+          name: 'Localization'
+          id: 0x321
           store:
             default: 0
             callback: |
@@ -326,43 +326,11 @@ message-processing:
                   $chartStore.get("Localization")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i32[0..4]'
-        can-conversion: 'identity_i32:i32->i32'
-        display-units: 'mm'
-        gs:
-          conversion: 'gs_i32:i32'
-      - datapoint:
-          name: 'Loc2'
-          id: 0x321
-          store:
-            default: 0
-            callback: |
-              data => {
-                  const curr = Number(data);
-                  $chartStore.get("Localization")!.addEntry(2, curr);
-                  return curr;
-              }
         getter: 'i32[4..8]'
         can-conversion: 'identity_i32:i32->i32'
         display-units: 'mm'
         gs:
           conversion: 'gs_i32:i32'
-      # - datapoint:
-      #     name: 'Loc3'
-      #     id: 0x322
-      #   getter: 'i32[8..12]'
-      #   can-conversion: 'identity_i32:i32->i32'
-      #   display-units: 'mm'
-      #   gs:
-      #     conversion: 'gs_i32:i32'
-      # - datapoint:
-      #     name: 'Loc4'
-      #     id: 0x323
-      #   getter: 'i32[12..16]'
-      #   can-conversion: 'identity_i32:i32->i32'
-      #   display-units: 'mm'
-      #   gs:
-      #     conversion: 'gs_i32:i32'
   - name: 'Temperature'
     can:
       id: 0x33B
@@ -1321,6 +1289,6 @@ commands:
       id: 0x002
       bus: can2
   - name: 'SystemReset'
-    id: 0x66
+    id: 0x192
 
 

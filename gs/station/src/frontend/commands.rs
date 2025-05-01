@@ -115,9 +115,12 @@ pub fn connect_to_pod() -> bool {
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]
-pub fn disconnect() {
+pub fn disconnect() -> bool {
     if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
         backend_mutex.get_mut().unwrap().quit_server();
+        true
+    } else {
+        false
     }
 }
 

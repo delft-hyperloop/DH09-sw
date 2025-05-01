@@ -122,7 +122,9 @@ pub struct MessageProcessingSpec {
 #[derive(serde::Deserialize, Debug)]
 #[serde(tag = "bus", rename_all = "lowercase")]
 pub enum CanSpec {
-    Can1 { id: u32 },
+    Can1 {
+        id: u32,
+    },
     Can2 {
         id: u32,
         #[serde(flatten)]
@@ -159,14 +161,28 @@ pub struct DatapointConversionSpec {
 #[derive(serde::Deserialize, Debug)]
 pub struct DatapointComesFromLeviInfo {
     pub name: String,
+    #[serde(default = "default_input_spec")]
     pub input_spec: String,
     pub levi_type: StructuredTy,
 }
 
+fn default_input_spec() -> String { "%I*".to_string() }
+
 #[derive(serde::Deserialize, Debug)]
 pub enum StructuredTy {
+    Byte,
     Integer,
     Real,
+}
+
+impl StructuredTy {
+    fn make_input(&self, name: &str, addr: &str) -> String {
+        match self {
+            Self::Byte => format!("{name} AT {addr}: BYTE;"),
+            Self::Integer => format!("{name} AT {addr}: INT;"),
+            Self::Real => format!("{name} AT {addr}: REAL;"),
+        }
+    }
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -581,6 +597,135 @@ use core::future::Future;
     code
 }
 
+pub fn make_levi_beckhoff_code(df: &DataflowSpec) -> String {
+r#"
+VAR
+	i: UINT;
+	
+	test_real: LREAL_AND_BYTES;
+	test_Quint: QUINT_Reals;
+	
+	send_messages: BOOL := FALSE;
+END_VAR
+
+IF CAN_INPUTS.RxCounter <> CAN_OUTPUTS.RxCounter THEN
+	FOR i:= 0 TO (CAN_INPUTS.NoOfRxMessages - 1) DO
+		Incoming_messages[i] := CAN_INPUTS.RxMessages[i];
+	END_FOR
+	CAN_OUTPUTS.RxCounter := CAN_INPUTS.RxCounter;
+	
+END_IF
+
+IF send_messages THEN
+
+	//Messages_To_Send[0].length := 1;
+	//Messages_To_Send[0].cobId := 450;
+	//Messages_To_Send[0].txData[0] := 123;
+	
+	test_real.value := 123.0;
+	//Messages_To_Send[1].length := 8;
+	//Messages_To_Send[1].cobId := 460;
+	//Messages_To_Send[1].txData := test_real.bytes;
+	
+	test_Quint.values[0] := 41241.25;
+	test_Quint.values[1] := 0;
+	Messages_To_Send[0].length := 8;
+	Messages_To_Send[0].cobId := 420;
+	Messages_To_Send[0].txData := test_Quint.bytes;
+	
+	No_Messages_Queued := 1;
+END_IF
+
+//Send new messages
+IF (CAN_OUTPUTS.TxCounter = CAN_INPUTS.TxCounter) AND (No_Messages_Queued <> 0) THEN
+	FOR i:= 0 TO (No_Messages_Queued - 1) DO
+		CAN_OUTPUTS.TxMessages[i] := Messages_To_Send[i];
+	END_FOR
+	//Tell interface how many messages to send
+	CAN_Outputs.NoOfTxMessages := No_Messages_Queued;
+	CAN_OUTPUTS.TxCounter := CAN_INPUTS.TxCounter + 1;
+	No_Messages_Queued := 0;
+END_IF
+
+"#;
+
+    let mut ordinary_vars = String::new();
+    let mut in_out_vars = String::from("VAR_IN_OUT\n");
+    
+    let mut code = String::new();
+
+    writeln!(&mut ordinary_vars, r#"
+VAR
+        clock_time: TIME := ...;
+        can_out_msgs: INT := 0;
+        Incoming_messages: ARRAY[0..10] OF EXTCANTXQUEUE;
+        Messages_To_Send: ARRAY[0..10] OF EXTCANTXQUEUE;
+        No_Messages_Queued: UINT := 0;
+        tx_data: ARRAY[0..7] OF BYTE;
+        
+        CAN_INPUTS AT %I*: CANRXQUEUESTRUCT_T_10;
+        CAN_OUTPUTS AT %Q*: CANTXQUEUESTRUCT_X_10;
+"#).unwrap();
+
+    for mp in &df.message_processing {
+        if let CanSpec::Can2 { id, comes_from_levi: Some(l) } = &mp.can {
+            let mut tx_data_create = String::new();
+            for dp in &mp.datapoint_conversion {
+                let Some(levi_info) = &dp.comes_from_levi_info else {
+                    panic!("no");
+                };
+
+                writeln!(&mut ordinary_vars, "        {}", levi_info.levi_type.make_input(&levi_info.name, &levi_info.input_spec)).unwrap();
+                match dp.getter.ty {
+                    Ty::U8 => {
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := {};", dp.getter.can_payload_range.start, levi_info.name).unwrap();
+                    },
+                    Ty::U16 => {
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[0];", dp.getter.can_payload_range.start, levi_info.name).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[1];", dp.getter.can_payload_range.start + 1, levi_info.name).unwrap();
+                    },
+                    Ty::U32 => {
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[0];", dp.getter.can_payload_range.start, levi_info.name).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[1];", dp.getter.can_payload_range.start + 1, levi_info.name).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[2];", dp.getter.can_payload_range.start + 2, levi_info.name).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[3];", dp.getter.can_payload_range.start + 3, levi_info.name).unwrap();
+                    },
+                    _ => panic!("not supported"),
+                }
+            }
+            writeln!(&mut in_out_vars, "    can_{id}_last_log : TIME;").unwrap();
+            writeln!(&mut code, "IF (clock_time - can_{id}_last_log > {} (ms)) THEN", l.log_period).unwrap();
+            writeln!(&mut code, "    can_{id}_last_log := clock_time;").unwrap();
+            writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].length := 8;").unwrap();
+            writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].cobId := {id};").unwrap();
+            writeln!(&mut code, "{}", tx_data_create).unwrap();
+            writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].txData := tx_data;").unwrap();
+            writeln!(&mut code, "    No_Messages_Queued := No_Messages_Queued + 1;").unwrap();
+            writeln!(&mut code, "END IF;").unwrap();
+        }
+    }
+
+    writeln!(&mut ordinary_vars, "END_VAR").unwrap();
+    writeln!(&mut in_out_vars, "END_VAR").unwrap();
+
+    format!("
+{ordinary_vars}
+{in_out_vars}
+
+{code}
+//Send new messages
+IF (CAN_OUTPUTS.TxCounter = CAN_INPUTS.TxCounter) AND (No_Messages_Queued <> 0) THEN
+	FOR i:= 0 TO (No_Messages_Queued - 1) DO
+		CAN_OUTPUTS.TxMessages[i] := Messages_To_Send[i];
+	END_FOR
+	//Tell interface how many messages to send
+	CAN_Outputs.NoOfTxMessages := No_Messages_Queued;
+	CAN_OUTPUTS.TxCounter := CAN_INPUTS.TxCounter + 1;
+	No_Messages_Queued := 0;
+END_IF
+    ")
+}
+
 pub fn make_logging_pcb_code(df: &DataflowSpec) -> String { format!("") }
 
 pub fn make_gs_code(df: &DataflowSpec) -> String {
@@ -689,7 +834,7 @@ export const NamedDatatypeValues = ["#
             write!(
                 &mut code,
                 r#"
-gdd.stores.registerStore<{type}>("{name}", {default}"#,
+            gdd.stores.registerStore<{type}>("{name}", {default}"#,
                 type = store.ty,
                 name = d.name,
                 default = store.default,

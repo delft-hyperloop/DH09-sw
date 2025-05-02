@@ -233,6 +233,7 @@
                 <Command cmd="ResetPowertrain"/>
                 <Command cmd="ResetLevitation"/>
                 <Command cmd="ResetPropulsion"/>
+                <Command cmd="ResetLocalization"/>
             </div>
         </CollapsibleTile>
         <CollapsibleTile title="General Commands">

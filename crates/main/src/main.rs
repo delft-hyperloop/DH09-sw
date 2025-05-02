@@ -294,7 +294,7 @@ async fn forward_can2_messages_to_fsm(
         };
 
         let id = match envelope.id() {
-            Id::Extended(e) => todo!("Nuh-uh"),
+            Id::Extended(_e) => todo!("Nuh-uh"),
             Id::Standard(s) => s.as_raw(),
         };
 
@@ -358,7 +358,7 @@ async fn forward_can2_messages_to_gs(
     loop {
         let can_frame = canrx.next_message_pure().await;
         let id = match can_frame.id() {
-            Id::Extended(extended_id) => todo!("Nuh-uh"),
+            Id::Extended(_extended_id) => todo!("Nuh-uh"),
             Id::Standard(id) => id.as_raw(),
         };
 
@@ -474,24 +474,19 @@ async fn main(spawner: Spawner) -> ! {
     info!("Embassy initialized!");
 
     let can1 = {
-        //choose one:
-        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs); //FOR NUCLEO
-        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB8, p.PB9, Irqs); //FOR MPCB
+        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PB8, p.PB9, Irqs);
 
         configurator.set_bitrate(1_000_000);
-        let mut can = configurator.into_normal_mode();
+        let can = configurator.into_normal_mode();
 
         can1::CanInterface::new(can, spawner)
     };
 
     let can2 = {
-        //choose one:
-        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs); //FOR NUCLEO
-        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PB5, p.PB6, Irqs); //FOR MPCB
-
+        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
 
         configurator.set_bitrate(1_000_000);
-        let mut can = configurator.into_normal_mode();
+        let can = configurator.into_normal_mode();
 
         can2::CanInterface::new(can, spawner)
     };

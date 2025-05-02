@@ -233,7 +233,6 @@
 
     // auto-generated with npm run generate:gs
 
-
     gdd.stores.registerStore<number>("TempMotorLeft0", 0, data => {
             const curr = Number(data);
             $chartStore.get("Motor Temperatures Left")!.addEntry(1, curr);
@@ -369,10 +368,6 @@
     gdd.stores.registerStore<number>("Temp6", 0);
 
     gdd.stores.registerStore<number>("Temp7", 0);
-
-    gdd.stores.registerStore<number>("ResetSenseCon", 0);
-
-    gdd.stores.registerStore<number>("ResetPropulsion", 0);
 
     gdd.stores.registerStore<number>("ModulationFactor1", 0);
 
@@ -605,7 +600,6 @@
     );
 
     gdd.stores.registerStore<number>("FSMState", 0);
-
 
     // End of generated
 

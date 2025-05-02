@@ -231,7 +231,7 @@
 
     // generated
 
-            // auto-generated with npm run generate:gs
+    // auto-generated with npm run generate:gs
 
 
     gdd.stores.registerStore<number>("TempMotorLeft0", 0, data => {
@@ -325,6 +325,10 @@
         }
     );
 
+    gdd.stores.registerStore<number>("PTCState", 0);
+
+    gdd.stores.registerStore<number>("PTCNonCriticalFault", 0);
+
     gdd.stores.registerStore<number>("BMSVoltageHigh", 0);
 
     gdd.stores.registerStore<number>("BMSVoltageLow", 0);
@@ -332,6 +336,12 @@
     gdd.stores.registerStore<number>("BMSTemperatureHigh", 0);
 
     gdd.stores.registerStore<number>("BMSTemperatureLow", 0);
+
+    gdd.stores.registerStore<number>("VPack", 0);
+
+    gdd.stores.registerStore<number>("IPack", 0);
+
+    gdd.stores.registerStore<number>("VDCLink", 0);
 
     gdd.stores.registerStore<number>("TempRangeStart", 0);
 

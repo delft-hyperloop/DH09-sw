@@ -3,7 +3,7 @@
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { pinnedCharts, procedures } from '$lib/stores/data';
     import {parseProcedure} from "$lib/util/parsers";
-    import { debugModeActive, GreenHVALTurnedOn, RedHVALTurnedOn } from '$lib/stores/state';
+    import { debugModeActive, GreenHVALTurnedOn, inStateSystemCheck, RedHVALTurnedOn } from '$lib/stores/state';
     import Icon from '@iconify/svelte';
 
     const toastStore = getToastStore();
@@ -40,8 +40,15 @@
                 <TauriCommand cmd="connect_to_pod" successCallback={handleSuccess} errorCallback={handleFailure} />
                 <TauriCommand cmd="disconnect" successCallback={() => serverStatus.set(false)} />
             {/if}
-            <Command cmd="SystemCheck"/>
-            <TauriCommand cmd="procedures" textOverride="Refresh Procedures" successCallback={parseProcedures} />
+            <Command
+                cmd="SystemCheck"
+                dependency={inStateSystemCheck}
+                dependencyTitle="Not in System Check"
+                dependencyMessage="The pod must be in the System Check state to perform a system check!"
+            />
+            {#if $debugModeActive}
+                <TauriCommand cmd="procedures" textOverride="Refresh Procedures" successCallback={parseProcedures} />
+            {/if}
             <TauriCommand cmd="save_logs"/>
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium

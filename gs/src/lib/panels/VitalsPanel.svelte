@@ -8,6 +8,7 @@
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
     import { showcaseStateCounter, showcasingStates } from '$lib/stores/state';
+    import { acceleration, velocity } from '$lib/stores/data';
 
     let width: number;
 
@@ -15,6 +16,8 @@
     const lvBattery = storeManager.getWritable("BMSVoltageLow");
     const hvBattery = storeManager.getWritable("BMSVoltageHigh");
     const fsmState = storeManager.getWritable("FSMState");
+    const ptcState = storeManager.getWritable("PTCState");
+    const ptcFault = storeManager.getWritable("PTCNonCriticalFault");
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -37,6 +40,14 @@
     let tableArr2: any[][];
 
     let tableBatteryTitles = ["", "HV Voltages", "HV Temp", "LV Voltages", "LV Temp"]
+
+    let ptcStates = [
+        "Idle",
+        "Recharge",
+        "HV On",
+        "Discharge",
+        "Failure",
+    ]
 
     $: tableBatteryVitals = [
         ["Min", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
@@ -73,7 +84,6 @@
         </svelte:fragment>
 
         <div class="flex gap-5 items-center justify-center">
-            <span>IMD: &ltstatus&gt</span>
             <div class="flex flex-row gap-2 items-center">
                 <span>HVAL:</span>
                 <Light isGreen={true}/>
@@ -115,37 +125,24 @@
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
                     <div class="flex flex-wrap justify-between gap-4">
-                        <div class="flex gap-4">
-                            <p>
-<!--                                Velocity: <Store datatype="Velocity" /> m/s-->
-                                <br>
-                                Position: <Store datatype={"Localization"} /> mm
-                                <br>
-<!--                                Acceleration: <Store datatype="Acceleration" /> m/s²-->
-                            </p>
-<!--                            <p>-->
-<!--                                HV Current: <Store datatype="BatteryCurrentHigh" /> - [0, 25] A-->
-<!--                                <br>-->
-<!--                                LV Current: <Store datatype="BatteryCurrentLow" /> - [0, 10] A-->
-<!--                            </p>-->
-<!--                            <p>-->
-<!--                                Low Pressure: <Store datatype="LowPressureSensor" /> - [40, 52] bar-->
-<!--                                <br>-->
-<!--                                High Pressure: <Store datatype="HighPressureSensor" /> - [80, 180] bar-->
-<!--                            </p>-->
+                        <div class="flex justify-between flex-col">
+                            <p>Velocity: {$velocity} m/s</p>
+                            <p>Acceleration: {$acceleration} m/s²</p>
+                            <p>Position: <Store datatype={"Localization"} /> mm</p>
                         </div>
-                        <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2">
-                            <span>LV: </span>
+                        <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
+                            <span>LV:</span>
                             <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>
                             <span>Total: <Store datatype="BMSVoltageLow" /></span>
 
-                            <span>HV: </span>
+                            <span>HV:</span>
                             <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
                             <span>Total: <Store datatype="BMSVoltageHigh" /></span>
                         </div>
                         <div class="flex flex-col gap-4">
-                            <span>High Voltage BMS: &ltstatus&gt</span>
-                            <span>Emergency Breaking System: &ltstatus&gt</span>
+                            <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
+                            <span>PT Controller Fault: {$ptcFault.value}</span>
+                            <span>IMD: &ltstatus&gt</span>
                         </div>
                     </div>
                     <div class="flex flex-wrap justify-between mt-4">

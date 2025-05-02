@@ -6,7 +6,7 @@
         TileGrid,
         Chart, util, EventChannel,
     } from '$lib';
-    import { podSpeed, propMaxPower, propModulationFactor } from '$lib/stores/data';
+    import { podTargetSpeed, propMaxPower, propModulationFactor } from '$lib/stores/data';
     import { debugModeActive, goingForward, propulsionConfigSent } from '$lib/stores/state';
     import RangeSlider from 'svelte-range-slider-pips';
     import { invoke } from '@tauri-apps/api/tauri';
@@ -27,7 +27,7 @@
     // ]
 
     let currentDirectionForward: boolean = $goingForward;
-    let currentSpeed: number = $podSpeed;
+    let currentSpeed: number = $podTargetSpeed;
     let currentMaxPower: number = $propMaxPower;
 
     // Value bound to the modulation factor slider.
@@ -36,7 +36,7 @@
 
     async function submitRun() {
         goingForward.set(currentDirectionForward);
-        podSpeed.set(currentSpeed);
+        podTargetSpeed.set(currentSpeed);
         propModulationFactor.set(values[0]);
         propMaxPower.set(currentMaxPower);
 
@@ -45,7 +45,7 @@
             direction = 0;
         }
 
-        const value1 = ($propModulationFactor * 1000 << 16) | $podSpeed * 10;
+        const value1 = ($propModulationFactor * 1000 << 16) | $podTargetSpeed * 10;
         const value2 = (direction << 16) | $propMaxPower;
 
         await invoke('send_command_64_bits', {cmdName: "PPControlParams", vals: [value1, value2]}).then(() => {
@@ -149,7 +149,7 @@
                 {/if}
                 <p>Desired Speed:</p>
                 {#if $propulsionConfigSent}
-                    <p>{$podSpeed} m/s</p>
+                    <p>{$podTargetSpeed} m/s</p>
                 {:else}
                     <p>Not set</p>
                 {/if}

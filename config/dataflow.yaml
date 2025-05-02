@@ -439,6 +439,29 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'PTCLogs'
+    can:
+      id: 0x4E3
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'PTCState'
+          id: 0x3A3
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+      - datapoint:
+          name: 'PTCNonCriticalFault'
+          id: 0x3A4
+          store:
+            default: 0
+        getter: 'u8[1..2]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
   - name: 'BMSLog1'
     can:
       id: 0x4E4
@@ -490,6 +513,47 @@ message-processing:
         getter: 'u16[6..8]'
         can-conversion: 'decode_bms_temperature:u16->f32'
         display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'BMSLog2'
+    can:
+      id: 0x4E5
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'VPack'
+          id: 0x3A5
+          store:
+            default: 0
+        getter: 'u16[0..2]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+        display-units: 'V'
+        limits:
+          upper: { warn: 360, err: 420 }
+          lower: { warn: 280, err: 270 }
+      - datapoint:
+          name: 'IPack'
+          id: 0x3A6
+          store:
+            default: 0
+        getter: 'u16[2..4]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        gs:
+          conversion: 'gs_2p_float:f32'
+        display-units: 'A'
+        limits:
+          upper: { warn: 360, err: 420 }
+          lower: { warn: 280, err: 270 }
+      - datapoint:
+          name: 'VDCLink'
+          id: 0x3A7
+          store:
+            default: 0
+        getter: 'u16[4..6]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        display-units: 'V'
         gs:
           conversion: 'gs_2p_float:f32'
   - name: 'TemperaturePrecisionRange'

@@ -210,7 +210,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Left")!.addEntry(0, curr);
+                  $chartStore.get("Motor Temperatures Left")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'u8[0..1]'
@@ -226,7 +226,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Left")!.addEntry(1, curr);
+                  $chartStore.get("Motor Temperatures Left")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'u8[1..2]'
@@ -242,7 +242,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Left")!.addEntry(2, curr);
+                  $chartStore.get("Motor Temperatures Left")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'u8[2..3]'
@@ -259,7 +259,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Left")!.addEntry(3, curr);
+                  $chartStore.get("Motor Temperatures Left")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'u8[2..3]'
@@ -276,7 +276,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Left")!.addEntry(4, curr);
+                  $chartStore.get("Motor Temperatures Left")!.addEntry(5, curr);
                   return curr;
               }
         getter: 'u8[4..5]'
@@ -293,7 +293,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Left")!.addEntry(5, curr);
+                  $chartStore.get("Motor Temperatures Left")!.addEntry(6, curr);
                   return curr;
               }
         getter: 'u8[5..6]'
@@ -331,7 +331,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Right")!.addEntry(0, curr);
+                  $chartStore.get("Motor Temperatures Right")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'u8[0..1]'
@@ -347,7 +347,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Right")!.addEntry(1, curr);
+                  $chartStore.get("Motor Temperatures Right")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'u8[1..2]'
@@ -363,7 +363,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Right")!.addEntry(2, curr);
+                  $chartStore.get("Motor Temperatures Right")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'u8[2..3]'
@@ -380,7 +380,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Right")!.addEntry(3, curr);
+                  $chartStore.get("Motor Temperatures Right")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'u8[2..3]'
@@ -397,7 +397,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Right")!.addEntry(4, curr);
+                  $chartStore.get("Motor Temperatures Right")!.addEntry(5, curr);
                   return curr;
               }
         getter: 'u8[4..5]'
@@ -414,7 +414,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Right")!.addEntry(5, curr);
+                  $chartStore.get("Motor Temperatures Right")!.addEntry(6, curr);
                   return curr;
               }
         getter: 'u8[5..6]'
@@ -431,7 +431,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Motor Temperatures Right")!.addEntry(6, curr);
+                  $chartStore.get("Motor Temperatures Right")!.addEntry(7, curr);
                   return curr;
               }
         getter: 'u8[6..7]'

@@ -1214,12 +1214,12 @@ message-processing:
           conversion: 'gs_2p_float:f32'
   - name: 'CANLog'
     can:
-      id: 0xfff
+      id: 0xFFE
       bus: can2
     datapoint-conversion:
       - datapoint:
           name: "CANLog"
-          id: 0xfff
+          id: 0xFFE
           store:
             default: 0
         getter: 'u16[0..2]'
@@ -1541,8 +1541,6 @@ commands:
     can:
       id: 0x1B3
       bus: can2
-  - name: 'ArmBrakes'
-    id: 0x69
   - name: 'Shutdown'
     id: 0x5f
   - name: 'EmergencyBrake'
@@ -1552,5 +1550,7 @@ commands:
       bus: can2
   - name: 'SystemReset'
     id: 0x192
+  - name: 'RearmSDC'
+    id: 0x1B6
 
 

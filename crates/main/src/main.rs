@@ -26,6 +26,7 @@ use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::eth::{self};
+use embassy_stm32::gpio::{Level, Output, Speed};
 use embassy_stm32::i2s::Standard;
 use embassy_stm32::peripherals;
 use embassy_stm32::peripherals::*;
@@ -98,7 +99,7 @@ async fn run_fsm(
 }
 
 #[embassy_executor::task]
-async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sender: EventSender) {
+async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sender: EventSender, mut rearm_output: Output<'static>) {
     loop {
         let msg = gsrx.next_message_pure().await;
         trace!("Received message from GS: {:?}", msg);
@@ -147,13 +148,20 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sen
             }
 
             // Control commands
-            main::config::Command::ArmBrakes(_) => {
-                event_sender.send(fsm::utils::Event::EnterDemo).await
-            }
             main::config::Command::Shutdown(_) => {
                 event_sender.send(fsm::utils::Event::ShutDown).await
             }
             main::config::Command::SystemReset(_) => todo!(),
+            main::config::Command::RearmSDC(_) => {
+                // Pull pin high
+                rearm_output.set_high();
+
+                embassy_time::Timer::after_millis(100).await;
+                event_sender.send(fsm::utils::Event::EnterDemo).await;
+                
+                // Pull pin low
+                rearm_output.set_low();
+            }
             _ => {}
         }
     }
@@ -561,10 +569,13 @@ async fn main(spawner: Spawner) -> ! {
         spawner,
     )
     .await;
+    
+    let rearm_sdc = Output::new(p.PA10, Level::Low, Speed::Medium);
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(
         gs_master.subscribe(),
         event_sender_gs_to_fsm,
+        rearm_sdc,
     )));
 
     unwrap!(spawner.spawn(forward_gs_to_can2(gs_master.subscribe(), can2.new_sender())));

@@ -168,7 +168,7 @@
                             {/if}
                             <Command cmd="StartHV"/>
                             <Command cmd="StopHV" className="text-error-400 border-error-400 border-2" />
-                            <Command cmd="ArmBrakes"/>
+                            <Command cmd="RearmSDC" text="Rearm SDC"/>
                             <Command cmd="SystemReset"/>
                         </div>
                     </div>

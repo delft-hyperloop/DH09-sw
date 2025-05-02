@@ -425,27 +425,8 @@ async fn main(spawner: Spawner) -> ! {
     let mut config = embassy_stm32::Config::default();
     {
         use embassy_stm32::rcc::*;
-        // config.rcc.hsi = Some(HSIPrescaler::DIV1);
-        // config.rcc.csi = true;
-        // config.rcc.hsi48 = Some(Default::default()); // needed for RNG
-        // config.rcc.pll1 = Some(Pll {
-        //     source: PllSource::HSI,
-        //     prediv: PllPreDiv::DIV4,
-        //     mul: PllMul::MUL50,
-        //     divp: Some(PllDiv::DIV2),
-        //     divq: None,
-        //     divr: None,
-        // });
-        // config.rcc.sys = Sysclk::PLL1_P; // 400 Mhz
-        // config.rcc.ahb_pre = AHBPrescaler::DIV2; // 200 Mhz
-        // config.rcc.apb1_pre = APBPrescaler::DIV2; // 100 Mhz
-        // config.rcc.apb2_pre = APBPrescaler::DIV2; // 100 Mhz
-        // config.rcc.apb3_pre = APBPrescaler::DIV2; // 100 Mhz
-        // config.rcc.apb4_pre = APBPrescaler::DIV2; // 100 Mhz
-        // config.rcc.voltage_scale = VoltageScale::Scale1;
 
-        //// Config can
-
+        // Config can
         config.rcc.hsi = Some(rcc::HSIPrescaler::DIV1);
         config.rcc.pll1 = Some(rcc::Pll {
             source: rcc::PllSource::HSI,
@@ -493,73 +474,23 @@ async fn main(spawner: Spawner) -> ! {
     info!("Embassy initialized!");
 
     let can1 = {
-        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
+        //choose one:
+        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs); //FOR NUCLEO
+        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB8, p.PB9, Irqs); //FOR MPCB
 
-        // let config = configurator
-        //     .config()
-        //     // Configuration for 1Mb/s
-        //     .set_nominal_bit_timing(NominalBitTiming {
-        //         prescaler: NonZeroU16::new(10).unwrap(),
-        //         seg1: NonZeroU8::new(8).unwrap(),
-        //         seg2: NonZeroU8::new(3).unwrap(),
-        //         sync_jump_width: NonZeroU8::new(3).unwrap(),
-        //     })
-        //     // Configuration for 2Mb/s
-        //     .set_data_bit_timing(DataBitTiming {
-        //         transceiver_delay_compensation: true,
-        //         prescaler: NonZeroU16::new(5).unwrap(),
-        //         seg1: NonZeroU8::new(7).unwrap(),
-        //         seg2: NonZeroU8::new(4).unwrap(),
-        //         sync_jump_width: NonZeroU8::new(4).unwrap(),
-        //     })
-        //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
-        //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
         configurator.set_bitrate(1_000_000);
-
-
         let mut can = configurator.into_normal_mode();
 
         can1::CanInterface::new(can, spawner)
     };
 
     let can2 = {
-        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs);
+        //choose one:
+        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PD0, p.PD1, Irqs); //FOR NUCLEO
+        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PB5, p.PB6, Irqs); //FOR MPCB
 
-        // let config = configurator
-        //     .config()
-        //     // Configuration for 1Mb/s
-        //     // .set_nominal_bit_timing(NominalBitTiming {
-        //     //     prescaler: NonZeroU16::new(15).unwrap(),
-        //     //     seg1: NonZeroU8::new(5).unwrap(),
-        //     //     seg2: NonZeroU8::new(2).unwrap(),
-        //     //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-        //     // })
-        //     .set_nominal_bit_timing(NominalBitTiming {
-        //         prescaler: NonZeroU16::new(15).unwrap(),
-        //         seg1: NonZeroU8::new(13).unwrap(),
-        //         seg2: NonZeroU8::new(2).unwrap(),
-        //         sync_jump_width: NonZeroU8::new(1).unwrap(),
-        //     })
-        //     // .set_nominal_bit_timing(NominalBitTiming {
-        //     //     prescaler: NonZeroU16::new(15).unwrap(),
-        //     //     seg1: NonZeroU8::new(13).unwrap(),
-        //     //     seg2: NonZeroU8::new(2).unwrap(),
-        //     //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-        //     // })
-        //     // Configuration for 2Mb/s
-        //     // .set_data_bit_timing(DataBitTiming {
-        //     //     transceiver_delay_compensation: true,
-        //     //     prescaler: NonZeroU16::new(12).unwrap(),
-        //     //     seg1: NonZeroU8::new(13).unwrap(),
-        //     //     seg2: NonZeroU8::new(2).unwrap(),
-        //     //     sync_jump_width: NonZeroU8::new(1).unwrap(),
-        //     // })
-        //     .set_tx_buffer_mode(config::TxBufferMode::Priority)
-        //     .set_frame_transmit(config::FrameTransmissionConfig::AllowFdCanAndBRS);
+
         configurator.set_bitrate(1_000_000);
-
-        // configurator.set_config(config);
-
         let mut can = configurator.into_normal_mode();
 
         can2::CanInterface::new(can, spawner)
@@ -597,10 +528,6 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("FSM started!");
 
-    // Generate random seed.
-    // let mut rng = Rng::new(p.RNG, Irqs);
-    // let mut seed = [0; 8];
-    // rng.fill_bytes(&mut seed);
     let seed = 0x123456789ABCDEF_u64;
 
     let mac_addr = main::config::POD_MAC_ADDRESS;
@@ -618,25 +545,21 @@ async fn main(spawner: Spawner) -> ! {
         p.PA7, // CRS_DV: Carrier Sense
         p.PC4, // RX_D0: Received Bit 0
         p.PC5, // RX_D1: Received Bit 1
-        // main pcb:
-        // p.PB12, // TX_D0: Transmit Bit 0
-        // nucleo:
-        p.PG13, // TX_D0: Transmit Bit 0
+
+        //choose one:
+        p.PB12, // FOR MPCB (TX_D0: Transmit Bit 0)
+        // p.PG13, // FOR NUCLEO (TX_D0: Transmit Bit 0)
+
         p.PB13, // TX_D1: Transmit Bit 1
-        // nucleo:
-        p.PG11, // TX_EN: Transmit Enable
-        // main pcb:
-        // p.PB11,
+
+        //choose one:
+        p.PB11,//FOR MPCB (TX_EN: Transmit Enable)
+        // p.PG11, // FOR NUCLEO (TX_EN: Transmit Enable)
         GenericPhy::new(0),
         mac_addr,
     );
 
     let config = embassy_net::Config::dhcpv4(Default::default());
-    // let config = embassy_net::Config::ipv4_static(embassy_net::StaticConfigV4 {
-    //     address: embassy_net::Ipv4Cidr::new(Ipv4Address::new(192, 168, 1, 25), 24),
-    //     dns_servers: heapless::Vec::new(),
-    //     gateway: Some(Ipv4Address::new(192, 168, 1, 1)),
-    // });
 
     let gs_master = GsMaster::new(
         EthernetGsCommsLayerInitializer::new(device, config),
@@ -668,39 +591,6 @@ async fn main(spawner: Spawner) -> ! {
     loop {
         Timer::after_millis(100).await;
     }
-
-    // loop {
-    //     info!("Trying!");
-
-    //     let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
-    //     socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
-
-    //     // You need to start a server on the host machine, for example: `nc -l
-    // 8000`     let remote_endpoint = (Ipv4Address::new(192, 168, 1, 17),
-    // 8000);     let r = socket.connect(remote_endpoint).await;
-    //     if let Err(e) = r {
-    //         error!("{}", e);
-    //         // hprintln!("connect error: {:?}", e);
-    //         Timer::after_secs(1).await;
-    //         continue;
-    //     }
-    //     // hprintln!("connected!");
-
-    //     let start_instant = embassy_time::Instant::now();
-
-    //     unwrap!(socket.write_all(&to_write).await);
-    //     unwrap!(socket.flush().await);
-
-    //     let end_instant = embassy_time::Instant::now();
-
-    //     let diff = end_instant - start_instant;
-
-    //     info!("Wrote {} bytes in {}us", to_write.len(), diff.as_micros());
-
-    //     socket.close();
-    // }
-
-    // let canrx = can.new_subscriber();
 
     hlt()
 }

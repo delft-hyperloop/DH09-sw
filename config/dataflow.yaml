@@ -325,7 +325,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'TempMotorRight0'
-          id: 0x4C0
+          id: 0x520
           store:
             default: 0
             callback: |
@@ -341,7 +341,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'TempMotorRight1'
-          id: 0x4C1
+          id: 0x50A
           store:
             default: 0
             callback: |
@@ -357,7 +357,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'TempMotorRight2'
-          id: 0x4C2
+          id: 0x50B
           store:
             default: 0
             callback: |
@@ -374,7 +374,7 @@ message-processing:
 
       - datapoint:
           name: 'TempMotorRight3'
-          id: 0x4C3
+          id: 0x50C
           store:
             default: 0
             callback: |
@@ -391,7 +391,7 @@ message-processing:
 
       - datapoint:
           name: 'TempMotorRight4'
-          id: 0x4C4
+          id: 0x50D
           store:
             default: 0
             callback: |
@@ -408,7 +408,7 @@ message-processing:
 
       - datapoint:
           name: 'TempMotorRight5'
-          id: 0x4C5
+          id: 0x50E
           store:
             default: 0
             callback: |
@@ -425,7 +425,7 @@ message-processing:
 
       - datapoint:
           name: 'TempMotorRight6'
-          id: 0x4C6
+          id: 0x50F
           store:
             default: 0
             callback: |
@@ -563,7 +563,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'TempRangeStart'
-          id: 0x1AA
+          id: 0x510
           store:
             default: 0
         getter: 'i16[0..2]'
@@ -573,7 +573,7 @@ message-processing:
           conversion: 'gs_i16:i16'
       - datapoint:
           name: 'TempRangeEnd'
-          id: 0x1AB
+          id: 0x511
           store:
             default: 0
         getter: 'i16[2..4]'
@@ -602,91 +602,91 @@ message-processing:
         display-units: 'mm'
         gs:
           conversion: 'gs_i32:i32'
-  - name: 'Temperature'
-    can:
-      id: 0x33B
-      bus: can1
-    datapoint-conversion:
-      - datapoint:
-          name: 'Temp0'
-          id: 0x33A
-          store:
-            default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Temp1'
-          id: 0x33B
-          store:
-            default: 0
-        getter: 'u8[1..2]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Temp2'
-          id: 0x33C
-          store:
-            default: 0
-        getter: 'u8[2..3]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Temp3'
-          id: 0x33D
-          store:
-            default: 0
-        getter: 'u8[3..4]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Temp4'
-          id: 0x33E
-          store:
-            default: 0
-        getter: 'u8[4..5]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Temp5'
-          id: 0x33F
-          store:
-            default: 0
-        getter: 'u8[5..6]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Temp6'
-          id: 0x340
-          store:
-            default: 0
-        getter: 'u8[6..7]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Temp7'
-          id: 0x341
-          store:
-            default: 0
-        getter: 'u8[7..8]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
-        gs:
-          conversion: 'gs_2p_float:f32'
+#  - name: 'Temperature'
+#    can:
+#      id: 0x33B
+#      bus: can1
+#    datapoint-conversion:
+#      - datapoint:
+#          name: 'Temp0'
+#          id: 0x512
+#          store:
+#            default: 0
+#        getter: 'u8[0..1]'
+#        can-conversion: 'decode_temperature:u8->f32'
+#        display-units: '°C'
+#        gs:
+#          conversion: 'gs_2p_float:f32'
+#      - datapoint:
+#          name: 'Temp1'
+#          id: 0x513
+#          store:
+#            default: 0
+#        getter: 'u8[1..2]'
+#        can-conversion: 'decode_temperature:u8->f32'
+#        display-units: '°C'
+#        gs:
+#          conversion: 'gs_2p_float:f32'
+#      - datapoint:
+#          name: 'Temp2'
+#          id: 0x509
+#          store:
+#            default: 0
+#        getter: 'u8[2..3]'
+#        can-conversion: 'decode_temperature:u8->f32'
+#        display-units: '°C'
+#        gs:
+#          conversion: 'gs_2p_float:f32'
+#      - datapoint:
+#          name: 'Temp3'
+#          id: 0x33D
+#          store:
+#            default: 0
+#        getter: 'u8[3..4]'
+#        can-conversion: 'decode_temperature:u8->f32'
+#        display-units: '°C'
+#        gs:
+#          conversion: 'gs_2p_float:f32'
+#      - datapoint:
+#          name: 'Temp4'
+#          id: 0x33E
+#          store:
+#            default: 0
+#        getter: 'u8[4..5]'
+#        can-conversion: 'decode_temperature:u8->f32'
+#        display-units: '°C'
+#        gs:
+#          conversion: 'gs_2p_float:f32'
+#      - datapoint:
+#          name: 'Temp5'
+#          id: 0x33F
+#          store:
+#            default: 0
+#        getter: 'u8[5..6]'
+#        can-conversion: 'decode_temperature:u8->f32'
+#        display-units: '°C'
+#        gs:
+#          conversion: 'gs_2p_float:f32'
+#      - datapoint:
+#          name: 'Temp6'
+#          id: 0x514
+#          store:
+#            default: 0
+#        getter: 'u8[6..7]'
+#        can-conversion: 'decode_temperature:u8->f32'
+#        display-units: '°C'
+#        gs:
+#          conversion: 'gs_2p_float:f32'
+#      - datapoint:
+#          name: 'Temp7'
+#          id: 0x515
+#          store:
+#            default: 0
+#        getter: 'u8[7..8]'
+#        can-conversion: 'decode_temperature:u8->f32'
+#        display-units: '°C'
+#        gs:
+#          conversion: 'gs_2p_float:f32'
   - name: 'PPControlParameters'
     can:
       id: 0x1B0
@@ -940,7 +940,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'PPInitFault1'
-          id: 0x4B3
+          id: 0x507
           store:
             default: 0
         getter: 'u8[0..1]'
@@ -954,7 +954,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'PPInitFault2'
-          id: 0x4B4
+          id: 0x508
           store:
             default: 0
         getter: 'u8[0..1]'
@@ -968,7 +968,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'PPEmergency1'
-          id: 0x002
+          id: 0x04
           store:
             default: 0
         getter: 'u8[0..1]'
@@ -1169,7 +1169,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
       - datapoint:
           name: 'Vd_Log1'
-          id: 0x4C
+          id: 0x521
           store:
             default: 0
             callback: |
@@ -1219,7 +1219,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: "CANLog"
-          id: 0xFFE
+          id: 0xFFD
           store:
             default: 0
         getter: 'u16[0..2]'
@@ -1428,7 +1428,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'FSMAckProp1'
-          id: 0x36C
+          id: 0x525
         getter: 'u16[0..2]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
@@ -1440,7 +1440,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'FSMAckProp2'
-          id: 0x36D
+          id: 0x526
         getter: 'u16[0..2]'
         can-conversion: 'identity_u16:u16->u16'
         gs:

@@ -426,19 +426,21 @@ async fn gs_heartbeat(mut gstx: gs_master::TxSender<'static>) {
     }
 }
 
+/// Only used for testing, should not be run in the final version
 #[embassy_executor::task]
 async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
     loop {
         let header = Header::new(
             Id::try_from(StandardId::new(8u16).unwrap()).expect("Invalid header"),
-            64,
+            8,
             false
         );
 
-        let frame = can::frame::Frame::new(header, &[1; 64]).expect("Invalid frame");
+        let frame = can::frame::Frame::new(header, &[1u8; 8]).expect("Invalid frame");
 
         can_tx.send(can2::CanEnvelope::new_from_frame(frame)).await;
-        
+        info!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SENDING");
+
         Timer::after_millis(100).await;
     }
 }
@@ -499,7 +501,7 @@ async fn main(spawner: Spawner) -> ! {
     info!("Embassy initialized!");
 
     let can1 = {
-        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PB8, p.PB9, Irqs);
+        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
 
         configurator.set_bitrate(1_000_000);
         let can = configurator.into_normal_mode();
@@ -508,7 +510,7 @@ async fn main(spawner: Spawner) -> ! {
     };
 
     let can2 = {
-        let mut configurator = can::CanConfigurator::new(p.FDCAN2, p.PB5, p.PB6, Irqs);
+        let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PB8, p.PB9, Irqs);
 
         configurator.set_bitrate(1_000_000);
         let can = configurator.into_normal_mode();
@@ -611,7 +613,7 @@ async fn main(spawner: Spawner) -> ! {
     
     unwrap!(spawner.spawn(log_can2_on_gs(gs_master.transmitter(), can2.new_subscriber())));
 
-    unwrap!(spawner.spawn(send_random_msg_continuously(can2.new_sender())));
+    // unwrap!(spawner.spawn(send_random_msg_continuously(can2.new_sender())));
 
     loop {
         Timer::after_millis(100).await;

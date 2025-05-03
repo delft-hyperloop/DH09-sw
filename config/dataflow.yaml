@@ -996,7 +996,7 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'Word1'
-          id: 0x4B5
+          id: 0x5B8
           store:
             default: 0
         getter: 'u16[0..2]'

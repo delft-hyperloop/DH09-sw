@@ -30,6 +30,8 @@
     const storeManager = GrandDataDistributor.getInstance().stores;
     const ppControlWordStore1 = storeManager.getWritable("Word1");
     const ppControlWordStore2 = storeManager.getWritable("Word2");
+    const propInitFault1 = storeManager.getWritable("PPInitFault1");
+    const propInitFault2 = storeManager.getWritable("PPInitFault2");
 
     // Propulsion debug stuff
     let modulation_factor: number = 0;
@@ -113,6 +115,9 @@
                         {/each}
                         <span/>
                     </div>
+                    <div>
+                        <span>Init fault 1: {$propInitFault1.value}</span>
+                    </div>
                 </div>
                 <div class="border-surface-600 border-[1px] rounded-lg m-4 p-2">
                     <div class="grid grid-cols-9 gap-2 items-center mt-2 mb-3 ">
@@ -141,6 +146,9 @@
                             <span class="text-center">{l}</span>
                         {/each}
                         <span/>
+                    </div>
+                    <div>
+                        <span>Init fault 2: {$propInitFault2.value}</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 m-4 items-center ">

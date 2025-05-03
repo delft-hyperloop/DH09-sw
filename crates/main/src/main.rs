@@ -426,6 +426,23 @@ async fn gs_heartbeat(mut gstx: gs_master::TxSender<'static>) {
     }
 }
 
+#[embassy_executor::task]
+async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
+    loop {
+        let header = Header::new(
+            Id::try_from(StandardId::new(8u16).unwrap()).expect("Invalid header"),
+            64,
+            false
+        );
+
+        let frame = can::frame::Frame::new(header, &[1; 64]).expect("Invalid frame");
+
+        can_tx.send(can2::CanEnvelope::new_from_frame(frame)).await;
+        
+        Timer::after_millis(100).await;
+    }
+}
+
 #[embassy_executor::main]
 async fn main(spawner: Spawner) -> ! {
     defmt::println!("Hello, world!");
@@ -593,6 +610,8 @@ async fn main(spawner: Spawner) -> ! {
     unwrap!(spawner.spawn(gs_heartbeat(gs_master.transmitter())));
     
     unwrap!(spawner.spawn(log_can2_on_gs(gs_master.transmitter(), can2.new_subscriber())));
+
+    unwrap!(spawner.spawn(send_random_msg_continuously(can2.new_sender())));
 
     loop {
         Timer::after_millis(100).await;

@@ -69,6 +69,7 @@ pub fn check_config(ep: &str, conf: &str) -> Result<String> {
     }
 
     let cs = read_to_string(conf)?;
+    let cs = cs.lines().collect::<Vec<_>>();
     let mut hasher = DefaultHasher::new();
     cs.hash(&mut hasher);
     let hash = hasher.finish();

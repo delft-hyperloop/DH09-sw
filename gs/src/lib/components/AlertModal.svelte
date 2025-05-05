@@ -12,7 +12,6 @@
 </script>
 
 <div class="bg-surface-800 rounded-lg border-surface-600 border-2 max-w-xl">
-    {#if }
     <div class="flex justify-end">
         <div class="relative inline-block">
             <button disabled on:mouseenter={() => {helpComponentVisible = true}} on:mouseleave={() => {helpComponentVisible = false}}>
@@ -30,7 +29,6 @@
             {/if}
         </div>
     </div>
-    {/if}
     <div class="flex flex-col items-center px-16">
         <svg
             viewBox="6 4 36 32"

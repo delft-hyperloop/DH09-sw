@@ -37,6 +37,7 @@ pub struct CanEnvelope {
 }
 
 impl CanEnvelope {
+    /// Makes a new `CanEnvelope` object from an `FdFrame`
     pub fn new_from_frame(frame: FdFrame) -> Self {
         Self {
             envelope: embassy_stm32::can::frame::FdEnvelope {
@@ -46,14 +47,17 @@ impl CanEnvelope {
         }
     }
 
+    /// Returns the ID of the envelope
     pub fn id(&self) -> &Id {
         self.envelope.frame.id()
     }
 
+    /// Returns the payload of the envelope
     pub fn payload(&self) -> &[u8] {
         self.envelope.frame.data()
     }
 
+    /// Returns the timestamp of the envelope
     pub fn timestamp(&self) -> Instant {
         self.envelope.ts
     }

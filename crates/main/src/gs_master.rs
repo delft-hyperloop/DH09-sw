@@ -21,9 +21,7 @@
 
 use defmt::*;
 use embassy_executor::Spawner;
-use embassy_net::tcp::TcpReader;
 use embassy_net::tcp::TcpSocket;
-use embassy_net::tcp::TcpWriter;
 use embassy_net::Ipv4Address;
 use embassy_net::Stack;
 use embassy_net::StackResources;
@@ -52,6 +50,7 @@ pub struct GsMaster<C: GsCommsLayer> {
 }
 
 impl GsMaster<GsCommsLayerImpl> {
+    /// Constructor for the `GsMaster`
     pub async fn new<I>(comms: I, spawner: Spawner) -> &'static GsMaster<GsCommsLayerImpl>
     where
         I: GsCommsLayerInitializable<CommsLayer = GsCommsLayerImpl>,
@@ -64,15 +63,19 @@ impl GsMaster<GsCommsLayerImpl> {
 }
 
 impl<C: GsCommsLayer> GsMaster<C> {
+    /// Returns a subscriber object for communicating with the ground station
     pub fn subscribe(&self) -> RxSubscriber<'_> {
         self.comms.subscribe()
     }
 
+    /// Returns a sender object for communicating with the ground station
     pub fn transmitter(&self) -> TxSender<'_> {
         self.comms.transmitter()
     }
 }
 
+/// Struct used to represent a message from the groundstation to the pod
+/// - `command`: The command sent
 #[derive(Clone, Debug, defmt::Format)]
 pub struct GsToPodMessage {
     pub command: Command,
@@ -81,6 +84,8 @@ pub struct GsToPodMessage {
 impl GsToPodMessage {
     const SIZE: usize = 20;
 
+    /// Reads from the buffer
+    /// - `buf`: the buffer
     pub fn read_from_buf(buf: &[u8; Self::SIZE]) -> Self {
         let command = Command::from_bytes(buf);
 
@@ -100,14 +105,22 @@ use crate::config::CONFIG_HASH;
 use crate::config::DATA_HASH;
 use crate::config::EVENTS_HASH;
 
+/// Datapoint used to send data to the ground station 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Datapoint {
+    /// The datatype being sent
     pub datatype: Datatype,
+    /// The value being sent
     pub value: u64,
+    /// The timestamp being sent
     pub timestamp: u64,
 }
 
 impl Datapoint {
+    /// Constructor for the Datapoint struct
+    /// - `datatype`: the datatype
+    /// - `value`: the value
+    /// - `timestamp`: the timestamp
     pub fn new(datatype: Datatype, value: u64, timestamp: u64) -> Self {
         Self {
             datatype,
@@ -181,6 +194,7 @@ impl Ord for Datapoint {
     }
 }
 
+/// Struct for the datapoints sent from the pod to the ground station
 #[derive(Clone, Debug)]
 pub struct PodToGsMessage {
     pub dp: Datapoint,
@@ -233,6 +247,7 @@ pub struct EthernetGsCommsLayerInitializer {
 }
 
 impl EthernetGsCommsLayerInitializer {
+    /// Constructor for the `EthernetGsCommsLayerInitializer` struct
     pub fn new(device: EthDevice, config: embassy_net::Config) -> Self {
         Self {
             seed: 0x1234567890ABCDEF,
@@ -245,6 +260,7 @@ impl EthernetGsCommsLayerInitializer {
 const TX_CAP: usize = 1024;
 type TxChannel = Channel<NoopRawMutex, PodToGsMessage, TX_CAP>;
 type TxReceiver<'a> = embassy_sync::channel::Receiver<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
+/// TxSender
 pub type TxSender<'a> = embassy_sync::channel::Sender<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
 
 const RX_CAP: usize = 8;
@@ -252,6 +268,7 @@ const RX_SUBS: usize = 4;
 const RX_PUBS: usize = 1;
 type RxChannel = PubSubChannel<NoopRawMutex, GsToPodMessage, RX_CAP, RX_SUBS, RX_PUBS>;
 type RxPublisher<'a> = Publisher<'a, NoopRawMutex, GsToPodMessage, RX_CAP, RX_SUBS, RX_PUBS>;
+/// RxSubscriber
 pub type RxSubscriber<'a> = Subscriber<'a, NoopRawMutex, GsToPodMessage, RX_CAP, RX_SUBS, RX_PUBS>;
 
 type ReconnectSignal = Signal<CriticalSectionRawMutex, ()>;

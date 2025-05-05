@@ -16,7 +16,6 @@
 
 use defmt::*;
 use embassy_executor::Spawner;
-use embassy_stm32::can::frame::FdFrame;
 use embassy_stm32::can::Can;
 use embassy_stm32::can::CanRx;
 use embassy_stm32::can::CanTx;
@@ -32,6 +31,7 @@ use embassy_time::Timer;
 use embedded_can::Id;
 use static_cell::StaticCell;
 
+/// Envelope for CAN messages
 #[derive(Debug, Clone)]
 pub struct CanEnvelope {
     envelope: embassy_stm32::can::frame::Envelope,
@@ -44,6 +44,7 @@ impl defmt::Format for CanEnvelope {
 }
 
 impl CanEnvelope {
+    /// Makes a `CanEnvelope` from a `Frame`
     pub fn new_from_frame(frame: Frame) -> Self {
         Self {
             envelope: embassy_stm32::can::frame::Envelope {
@@ -52,15 +53,23 @@ impl CanEnvelope {
             },
         }
     }
+    
+    /// Makes a `CanEnvelope` from an ID with the provided payload
+    pub fn new_with_id(id: u16, payload: &[u8]) -> Self {
+        Self::new_from_frame(Frame::new_standard(id, payload).unwrap())
+    }
 
+    /// Returns the ID of the envelope
     pub fn id(&self) -> &Id {
         self.envelope.frame.id()
     }
 
+    /// Returns the payload of the envelope
     pub fn payload(&self) -> &[u8] {
         self.envelope.frame.data()
     }
 
+    /// Returns the timestamp of the envelope
     pub fn timestamp(&self) -> Instant {
         self.envelope.ts
     }

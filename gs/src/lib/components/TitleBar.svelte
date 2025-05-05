@@ -4,8 +4,8 @@
 </script>
 
 <div data-tauri-drag-region class="bg-surface-900 flex justify-between items-center p-1 px-2">
-    <div class="flex items-center gap-1">
-        <enhanced:img src="/static/images/logo-green.png?w=16" alt="Delft logo" />
+    <div class="flex items-center gap-2">
+        <img src="/images/logo-green-new.png" alt="Delft logo" class="w-7"/>
         <span class="text-primary-500 font-medium text-xs">DELFT HYPERLOOP</span>
     </div>
     <div class="text-surface-300">

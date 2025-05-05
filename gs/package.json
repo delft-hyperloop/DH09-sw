@@ -45,6 +45,7 @@
   "dependencies": {
     "@floating-ui/dom": "^1.6.7",
     "@tauri-apps/api": "^1.6.0",
+    "carbon-icons-svelte": "^13.3.0",
     "svelte-dnd-list": "^0.1.8",
     "svelte-splitpanes": "^8.0.0",
     "uplot": "^1.6.30",

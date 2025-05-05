@@ -616,7 +616,7 @@
             if ($showcasingStates) {
                 showcaseStateCounter.set(($showcaseStateCounter + 1) % 14);
             }
-        }, 1000);
+        }, 500);
     });
 
     onDestroy(async () => {

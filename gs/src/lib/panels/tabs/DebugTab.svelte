@@ -1,15 +1,16 @@
 <script lang="ts">
     import { Chart, Command, GrandDataDistributor, Tile, TileGrid } from '$lib';
     import { NamedCommandValues } from "$lib/types";
-    import { propControlWord1, propControlWord2, propulsionConfigSent } from '$lib/stores/state';
+    import { overrideDependencies, propControlWord1, propControlWord2, propulsionConfigSent, showcasingStates, RedHVALTurnedOn, GreenHVALTurnedOn } from '$lib/stores/state';
     import CollapsibleTile from '$lib/components/generic/CollapsibleTile.svelte';
     import Command64Bits from '$lib/components/abstract/Command64Bits.svelte';
     import BinaryInput1 from '$lib/components/BinaryInput1.svelte';
     import BinaryInput2 from '$lib/components/BinaryInput2.svelte';
+    import PropulsionHeartbeat from '$lib/components/PropulsionHeartbeat.svelte';
+    import PropulsionInitFault from '$lib/components/PropulsionInitFault.svelte';
 
     const values: number[] = new Array(NamedCommandValues.length).fill(0);
     const propLabels: string[] = [
-        // "Motor On",
         "Reset",
         "Phase Enable 1",
         "Phase Enable 2",
@@ -17,8 +18,6 @@
         "Logic Enable 1",
         "Logic Enable 2",
         "Logic Enable 3",
-        // "Direction",
-        // "General Fault"
     ].reverse();
 
     const propReadLabels: string[] = [
@@ -27,11 +26,9 @@
         "State",
     ].reverse().concat(propLabels);
 
-    const storeManager = GrandDataDistributor.getInstance().stores;
-    const ppControlWordStore1 = storeManager.getWritable("Word1");
-    const ppControlWordStore2 = storeManager.getWritable("Word2");
-    const propInitFault1 = storeManager.getWritable("PPInitFault1");
-    const propInitFault2 = storeManager.getWritable("PPInitFault2");
+    // const storeManager = GrandDataDistributor.getInstance().stores;
+    // const propInitFault1 = storeManager.getWritable("PPInitFault1");
+    // const propInitFault2 = storeManager.getWritable("PPInitFault2");
 
     // Propulsion debug stuff
     let modulation_factor: number = 0;
@@ -86,7 +83,10 @@
         <CollapsibleTile title="Propulsion Commands">
             <div slot="content">
                 <div class="border-surface-600 border-[1px] rounded-lg m-4 p-2">
-                    <div class="grid grid-cols-9 gap-2 items-center mt-2 mb-3 ">
+                    <div class="m-4">
+                        <PropulsionHeartbeat storeName="Word1" labels={propReadLabels}/>
+                    </div>
+                    <div class="grid grid-cols-9 gap-2 items-center m-4">
                         <span class="text-center">Propulsion Control Word 1:</span>
                         {#each Array.from({ length: propLabels.length }, (_, i) => propLabels.length - 1 - i) as i}
                             <BinaryInput1 index={i} />
@@ -99,28 +99,18 @@
                         {/each}
                         <span/>
                     </div>
-                    <div class="grid grid-cols-11 gap-2 items-center mt-2 mb-3 ">
-                        <span class="text-center">Received Control Word 1:</span>
-                        <span class="text-center">{($ppControlWordStore1.value >> 2 & 1) + ($ppControlWordStore1.value >> 3 & 1) * 2}</span>
-                        <span class="text-center">{$ppControlWordStore1.value >> 1 & 1}</span>
-                        <span class="text-center">{$ppControlWordStore1.value & 1}</span>
-
-                        {#each Array.from({ length: 7 }, (_, i) => propReadLabels.length - i) as i}
-                            <span class="text-center">{$ppControlWordStore1.value >> (i + 4) & 1}</span>
-                        {/each}
-
-                        <span/>
-                        {#each propReadLabels as l}
-                            <span class="text-center">{l}</span>
-                        {/each}
-                        <span/>
+                    <div class="m-4">
+                        <PropulsionInitFault storeName="PPInitFault1"/>
                     </div>
-                    <div>
-                        <span>Init fault 1: {$propInitFault1.value}</span>
-                    </div>
+<!--                    <div class="m-4">-->
+<!--                        <span>Init fault 1: {$propInitFault1.value}</span>-->
+<!--                    </div>-->
                 </div>
                 <div class="border-surface-600 border-[1px] rounded-lg m-4 p-2">
-                    <div class="grid grid-cols-9 gap-2 items-center mt-2 mb-3 ">
+                    <div class="m-4 mt-8">
+                        <PropulsionHeartbeat storeName="Word2" labels={propReadLabels}/>
+                    </div>
+                    <div class="grid grid-cols-9 gap-2 items-center m-4">
                         <span class="text-center">Propulsion Control Word 2:</span>
                         {#each Array.from({ length: propLabels.length }, (_, i) => propLabels.length - 1 - i) as i}
                             <BinaryInput2 index={i} />
@@ -133,25 +123,14 @@
                         {/each}
                         <span/>
                     </div>
-                    <div class="grid grid-cols-11 gap-2 items-center mt-2 mb-3 ">
-                        <span class="text-center">Received Control Word 2:</span>
-                        <span class="text-center">{($ppControlWordStore2.value >> 2 & 1) + ($ppControlWordStore2.value >> 3 & 1) * 2}</span>
-                        <span class="text-center">{$ppControlWordStore2.value >> 1 & 1}</span>
-                        <span class="text-center">{$ppControlWordStore2.value & 1}</span>
-                        {#each Array.from({ length: 7 }, (_, i) => propReadLabels.length - i) as i}
-                            <span class="text-center">{$ppControlWordStore2.value >> (i + 4) & 1}</span>
-                        {/each}
-                        <span/>
-                        {#each propReadLabels as l}
-                            <span class="text-center">{l}</span>
-                        {/each}
-                        <span/>
+                    <div class="m-4 mt-8">
+                        <PropulsionInitFault storeName="PPInitFault2"/>
                     </div>
-                    <div>
-                        <span>Init fault 2: {$propInitFault2.value}</span>
-                    </div>
+<!--                    <div class="m-4 mt-8">-->
+<!--                        <span>Init fault 2: {$propInitFault2.value}</span>-->
+<!--                    </div>-->
                 </div>
-                <div class="grid grid-cols-2 gap-4 m-4 items-center ">
+                <div class="grid grid-cols-2 gap-4 m-4 items-center">
                     <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg ">
                         <Command64Bits
                             cmd="PPControlParams"
@@ -252,6 +231,40 @@
                         <input bind:value={values[i]} type="number" class="input p-4 rounded-md">
                     {/each}
                 </div>
+            </div>
+        </CollapsibleTile>
+        <CollapsibleTile title="Override commands">
+            <div slot="content" class="flex gap-4">
+                {#if $overrideDependencies}
+                    <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                            on:click={() => {overrideDependencies.set(false)}}>
+                        Enable Command Guards
+                    </button>
+                {:else}
+                    <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                            on:click={() => {overrideDependencies.set(true)}}>
+                        Disable Command Guards
+                    </button>
+                {/if}
+                <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                        on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>
+                    Toggle Green HVAL
+                </button>
+                <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                        on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>
+                    Toggle Red HVAL
+                </button>
+                {#if !$showcasingStates}
+                    <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                            on:click={() => {showcasingStates.set(true)}}>
+                        Showcase FSM States
+                    </button>
+                {:else}
+                    <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                            on:click={() => {showcasingStates.set(false)}}>
+                        Stop Showcasing States
+                    </button>
+                {/if}
             </div>
         </CollapsibleTile>
     </TileGrid>

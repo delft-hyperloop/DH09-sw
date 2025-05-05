@@ -5,6 +5,7 @@
     import { getModalStore } from '@skeletonlabs/skeleton';
     import { MODAL_SETTINGS } from '$lib/types';
     import { modalBody, modalTitle } from '$lib/stores/data';
+    import { overrideDependencies } from '$lib/stores/state';
 
     export let className: string = '';
     export let cmd: NamedCommand;
@@ -19,7 +20,7 @@
     let modalStore = getModalStore();
 
     let send = async () => {
-        if (dependency && !$dependency) {
+        if (!$overrideDependencies && dependency && !$dependency) {
             modalTitle.set(dependencyTitle);
             modalBody.set(dependencyMessage);
             modalStore.trigger(MODAL_SETTINGS);

@@ -3,7 +3,7 @@
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { pinnedCharts, procedures } from '$lib/stores/data';
     import {parseProcedure} from "$lib/util/parsers";
-    import { debugModeActive, GreenHVALTurnedOn, inStateSystemCheck, RedHVALTurnedOn } from '$lib/stores/state';
+    import { debugModeActive, inStateSystemCheck } from '$lib/stores/state';
     import Icon from '@iconify/svelte';
 
     const toastStore = getToastStore();
@@ -34,7 +34,6 @@
         <img src="/images/logo-green-new.png" alt="Delft Hyperloop logo" class="w-40" />
         <h1 class="text-4xl text-primary-500">Delft Hyperloop Ground Station</h1>
     </div>
-<!--    <TileGrid rows="" columns="1fr 1fr">-->
         <div class="flex gap-3 flex-wrap">
             {#if $debugModeActive}
                 <TauriCommand cmd="connect_to_pod" successCallback={handleSuccess} errorCallback={handleFailure} />
@@ -56,14 +55,6 @@
                     <Icon icon="mdi:bug-outline" class="mr-2 w-6 h-6"/>
                     Disable Debug Mode
                 </button>
-<!--                <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium-->
-<!--                   py-2 bg-primary-500 text-surface-900" on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>-->
-<!--                    Toggle Green HVAL-->
-<!--                </button>-->
-<!--                <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium-->
-<!--                   py-2 bg-primary-500 text-surface-900" on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>-->
-<!--                    Toggle Red HVAL-->
-<!--                </button>-->
             {:else}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>
@@ -71,10 +62,7 @@
                     Enable Debug Mode
                 </button>
             {/if}
-<!--        </Tile>-->
-<!--        <Tile containerClass="col-span-1" insideClass="flex gap-3 flex-wrap justify-center" heading="Reset Commands">-->
         </div>
-<!--    </TileGrid>-->
     <p>
         Press <kbd class="kbd">Esc</kbd> or <kbd class="kbd">Space</kbd> to trigger Emergency Braking or
         <kbd class="kbd">D</kbd> to toggle Debug Mode. Use <kbd class="kbd">Shift+Number</kbd> to navigate through tabs.

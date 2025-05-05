@@ -1,6 +1,7 @@
 <script lang="ts">
     import { getModalStore } from '@skeletonlabs/skeleton';
     import { modalBody, modalTitle } from '$lib/stores/data';
+    import { Help } from 'carbon-icons-svelte';
 
     let modalStore = getModalStore();
 
@@ -10,6 +11,9 @@
 </script>
 
 <div class="bg-surface-800 rounded-lg border-surface-600 border-2 max-w-xl">
+    <div class="flex w-max">
+        <Help size={20} class="m-3"/>
+    </div>
     <div class="flex flex-col items-center px-16">
         <svg
             viewBox="6 4 36 32"

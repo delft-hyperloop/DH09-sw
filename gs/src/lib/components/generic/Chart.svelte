@@ -4,8 +4,9 @@
     import {PlotBuffer} from "$lib";
     import {chartStore} from "$lib/stores/state";
     import { ViewWindow } from "$lib/util/WindowControl"
-    import Icon from "@iconify/svelte"
     import { pinnedCharts } from '$lib/stores/data';
+    import Pin from 'carbon-icons-svelte/lib/Pin.svelte';
+    import { ShrinkScreen } from 'carbon-icons-svelte';
 
     export let title: string;
     export let background: string = "bg-surface-800";
@@ -53,7 +54,7 @@
                     on:click={pinToHomePage}
                     class="active:scale-90 hover:bg-surface-700 transition rounded-lg"
                 >
-                    <Icon icon="carbon:pin"/>
+                    <Pin size={16}/>
                 </button>
             </div>
             {#if pop_up}
@@ -61,7 +62,7 @@
                     on:click={() => new ViewWindow(title, `/view/chart/${title}`)}
                     class="active:scale-90 hover:bg-surface-700 transition rounded-lg"
                 >
-                    <Icon icon="carbon:shrink-screen" />
+                    <ShrinkScreen size={16}/>
                 </button>
             {/if}
         </div>

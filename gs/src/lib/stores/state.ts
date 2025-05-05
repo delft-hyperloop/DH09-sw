@@ -37,3 +37,5 @@ export const propulsionConfigSent: Writable<boolean> = writable(false);
 export const inStateSystemCheck: Writable<boolean> = writable(false);
 export const inIdleState: Writable<boolean> = writable(false);
 export const hvOn: Writable<boolean> = writable(false);
+
+export const overrideDependencies: Writable<boolean> = writable(false);

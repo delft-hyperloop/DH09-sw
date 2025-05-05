@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Tile } from '$lib';
-    import Icon from '@iconify/svelte';
     import { slide } from 'svelte/transition';
+    import { ArrowUp } from 'carbon-icons-svelte';
 
     export let title: string;
 
@@ -21,7 +21,7 @@
         </h3>
         <div class="transition-transform duration-300 flex items-center text-center " class:rotate-180={!visible}>
             <button on:click={toggleVisibility}>
-                <Icon icon="carbon:arrow-up"/>
+                <ArrowUp size={16}/>
             </button>
         </div>
     </div>

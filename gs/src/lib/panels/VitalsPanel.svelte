@@ -1,7 +1,6 @@
 <script lang="ts">
     import { Battery, TileGrid, Tile, Command, GrandDataDistributor, Store, TauriCommand, serverStatus } from '$lib';
     import { AppBar, getToastStore } from '@skeletonlabs/skeleton';
-    import Icon from "@iconify/svelte";
     import {invoke} from "@tauri-apps/api/tauri";
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
     import Localization from '$lib/components/Localization.svelte';
@@ -9,6 +8,7 @@
     import MainFSM from '$lib/components/MainFSM.svelte';
     import { showcaseStateCounter, showcasingStates } from '$lib/stores/state';
     import { acceleration, velocity } from '$lib/stores/data';
+    import { Analytics } from 'carbon-icons-svelte';
 
     let width: number;
 
@@ -75,10 +75,10 @@
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
-    <AppBar padding="pl-8 pr-8 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDefault="place-self-center">
+    <AppBar padding="px-5 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDefault="place-self-center">
         <svelte:fragment slot="lead">
             <div class="gap-2 flex flex-row items-center">
-                <Icon icon="codicon:graph-line"/>
+                <Analytics size={16}/>
                 <span>Vitals</span>
             </div>
         </svelte:fragment>
@@ -166,8 +166,8 @@
                                     }}
                                 />
                             {/if}
-                            <Command cmd="StartHV"/>
-                            <Command cmd="StopHV" className="text-error-400 border-error-400 border-2" />
+                            <Command cmd="StartHV" text="Start HV"/>
+                            <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" />
                             <Command cmd="RearmSDC" text="Rearm SDC"/>
                             <Command cmd="SystemReset"/>
                         </div>

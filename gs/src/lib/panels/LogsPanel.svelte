@@ -1,11 +1,11 @@
 <script lang="ts">
     import {AppBar} from "@skeletonlabs/skeleton";
-    import Icon from "@iconify/svelte";
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
     import { bigErrorStatus, ErrorStatus, logsVisible } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
+    import { View, ViewOff } from 'carbon-icons-svelte';
 
     let unlistens: UnlistenFn[] = [];
     let logContainer: HTMLElement;
@@ -104,13 +104,17 @@
     <AppBar padding="p-3" background="bg-surface-700 text-surface-50">
         <svelte:fragment slot="lead">
             <button class="text-sm" on:click={toggleLogsVisibility}>
-                <Icon icon="codicon:{$logsVisible ? 'eye-closed' : 'eye'}" />
+                {#if $logsVisible}
+                    <ViewOff size={16}/>
+                {:else}
+                    <View size={16}/>
+                {/if}
             </button>
         </svelte:fragment>
         Logs
         <svelte:fragment slot="trail">
             <button class="btn rounded-lg text-sm" on:click={clearLogs}>
-                Clear logs
+                Clear Logs
             </button>
             <button class="line-through" class:active={filters['STATUS']} on:click={() => toggleFilter('STATUS')}>
                 STATUS

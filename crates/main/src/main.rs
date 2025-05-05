@@ -56,6 +56,7 @@ fn hlt() -> ! {
     }
 }
 
+#[allow(dead_code)]
 type Device = Ethernet<'static, ETH, GenericPhy>;
 
 #[embassy_executor::task]
@@ -356,8 +357,6 @@ async fn log_can2_on_gs(gstx: gs_master::TxSender<'static>, mut canrx: can2::Can
                 continue;
             }
         };
-        
-        let data = can_frame.payload();
         
         gstx.send(PodToGsMessage {
             dp: Datapoint::new(

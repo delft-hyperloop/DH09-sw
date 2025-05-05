@@ -19,6 +19,9 @@
 //! as most of the logging happens through the logging PCB in order to let the
 //! main PCB run the FSM.
 
+#![allow(missing_copy_implementations)]
+#![allow(missing_debug_implementations)]
+
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_net::tcp::TcpSocket;
@@ -45,6 +48,7 @@ use static_cell::StaticCell;
 
 type GsCommsLayerImpl = EthernetGsCommsLayer;
 
+///
 pub struct GsMaster<C: GsCommsLayer> {
     comms: C,
 }
@@ -74,10 +78,10 @@ impl<C: GsCommsLayer> GsMaster<C> {
     }
 }
 
-/// Struct used to represent a message from the groundstation to the pod
-/// - `command`: The command sent
+/// Struct used to represent a message from the ground station to the pod
 #[derive(Clone, Debug, defmt::Format)]
 pub struct GsToPodMessage {
+    /// The command sent
     pub command: Command,
 }
 
@@ -105,7 +109,7 @@ use crate::config::CONFIG_HASH;
 use crate::config::DATA_HASH;
 use crate::config::EVENTS_HASH;
 
-/// Datapoint used to send data to the ground station 
+/// Datapoint used to send data to the ground station
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Datapoint {
     /// The datatype being sent
@@ -197,17 +201,24 @@ impl Ord for Datapoint {
 /// Struct for the datapoints sent from the pod to the ground station
 #[derive(Clone, Debug)]
 pub struct PodToGsMessage {
+    /// The datapoint being sent
     pub dp: Datapoint,
 }
 
+/// Trait for a struct that communicates with the ground station 
 pub trait GsCommsLayer {
+    /// Subscriber
     fn subscribe(&self) -> RxSubscriber<'_>;
+    /// Transmitter
     fn transmitter(&self) -> TxSender<'_>;
 }
 
+///
 pub trait GsCommsLayerInitializable {
+    ///
     type CommsLayer: GsCommsLayer;
 
+    /// Initializes the comms with the GS
     async fn init(self, spawner: Spawner) -> Self::CommsLayer;
 }
 
@@ -224,6 +235,7 @@ struct CommsCore {
     tx_channel: TxChannel,
 }
 
+///
 pub struct EthernetGsCommsLayer {
     cc: &'static CommsCore,
 }
@@ -240,6 +252,7 @@ impl GsCommsLayer for EthernetGsCommsLayer {
 
 type EthDevice = Ethernet<'static, ETH, GenericPhy>;
 
+///
 pub struct EthernetGsCommsLayerInitializer {
     seed: u64,
     device: EthDevice,

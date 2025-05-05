@@ -109,6 +109,7 @@ type CanRxChannel = PubSubChannel<
     CAN_RX_SUBSCRIBERS,
     CAN_RX_PUBLISHERS,
 >;
+/// Subscriber object for receiving messages over the CAN bus
 pub type CanRxSubscriber<'a> = Subscriber<
     'a,
     NoopRawMutex,
@@ -165,6 +166,7 @@ const CAN_TX_CAPACITY: usize = 32;
 type CanTxChannelKind = heapless::binary_heap::Min;
 type CanTxChannel =
     PriorityChannel<NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
+/// Sender object for the priority channel used for transmitting messages over the CAN bus.
 pub type CanTxSender<'a> =
     priority_channel::Sender<'a, NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
 type CanTxReceiver<'a> = priority_channel::Receiver<
@@ -198,6 +200,8 @@ async fn can_tx_task(
     }
 }
 
+/// Interface for communicating over CAN
+#[allow(missing_debug_implementations)]
 pub struct CanInterface {
     rx_channel: CanRxChannel,
     tx_channel: CanTxChannel,

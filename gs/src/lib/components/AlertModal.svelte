@@ -4,6 +4,7 @@
     import { Help } from 'carbon-icons-svelte';
 
     let modalStore = getModalStore();
+    let helpComponentVisible: boolean = false;
 
     let closeModal = () => {
         modalStore.close();
@@ -11,8 +12,22 @@
 </script>
 
 <div class="bg-surface-800 rounded-lg border-surface-600 border-2 max-w-xl">
-    <div class="flex w-max">
-        <Help size={20} class="m-3"/>
+    <div class="flex justify-end">
+        <div class="relative inline-block">
+            <button disabled on:mouseenter={() => {helpComponentVisible = true}} on:mouseleave={() => {helpComponentVisible = false}}>
+                <Help size={20} class="m-3 fill-primary-500"/>
+            </button>
+            {#if helpComponentVisible}
+                <div
+                    class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 rounded shadow-lg border border-surface-600 z-50 text-center bg-surface-700"
+                >
+                    <span>
+                        This safety check can be disabled from the Debug Tab.
+                        Scroll down to the Reset Commands and find the <kbd class="kbd">Disable Command Guards</kbd> button.
+                    </span>
+                </div>
+            {/if}
+        </div>
     </div>
     <div class="flex flex-col items-center px-16">
         <svg

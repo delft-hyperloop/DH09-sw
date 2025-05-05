@@ -79,17 +79,17 @@ pub fn send_command(cmd_name: String, val: u64) -> bool {
     }
 }
 
-fn f32_to_u64(x: [f32; 2]) -> u64 {
-    let a = f32::to_be_bytes(x[0]);
-    let b = f32::to_be_bytes(x[1]);
+fn i32_to_u64(x: [i32; 2]) -> u64 {
+    let a = i32::to_be_bytes(x[0]);
+    let b = i32::to_be_bytes(x[1]);
     u64::from_be_bytes([a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3]])
 }
 
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]
-pub fn send_command_64_bits(cmd_name: String, vals: [f32; 2]) -> bool {
-    let value = f32_to_u64(vals);
+pub fn send_command_64_bits(cmd_name: String, vals: [i32; 2]) -> bool {
+    let value = i32_to_u64(vals);
     if cmd_name != "FrontendHeartbeat" {
         eprintln!("[frontend] Sending command {}({}) [{}]", cmd_name, value, Local::now());
     }

@@ -26,7 +26,9 @@
         "State",
     ].reverse().concat(propLabels);
 
-    // const storeManager = GrandDataDistributor.getInstance().stores;
+    const storeManager = GrandDataDistributor.getInstance().stores;
+    const ppEmergency1 = storeManager.getWritable("PPEmergency1");
+    const ppEmergency2 = storeManager.getWritable("PPEmergency2");
     // const propInitFault1 = storeManager.getWritable("PPInitFault1");
     // const propInitFault2 = storeManager.getWritable("PPInitFault2");
 
@@ -99,8 +101,11 @@
                         {/each}
                         <span/>
                     </div>
-                    <div class="m-4">
+                    <div class="m-4 mt-8">
                         <PropulsionInitFault storeName="PPInitFault1"/>
+                    </div>
+                    <div class="m-4 text-center">
+                        <span>Emergency 1: {$ppEmergency1.value}</span>
                     </div>
 <!--                    <div class="m-4">-->
 <!--                        <span>Init fault 1: {$propInitFault1.value}</span>-->
@@ -125,6 +130,9 @@
                     </div>
                     <div class="m-4 mt-8">
                         <PropulsionInitFault storeName="PPInitFault2"/>
+                    </div>
+                    <div class="m-4 text-center">
+                        <span>Emergency 2: {$ppEmergency2.value}</span>
                     </div>
 <!--                    <div class="m-4 mt-8">-->
 <!--                        <span>Init fault 2: {$propInitFault2.value}</span>-->

@@ -59,22 +59,22 @@
     let testControlParams2: number = 0;
 
     let calculatePPControlParams = () => {
-        ppControlParams1 = (modulation_factor * 1000 << 16) | maximum_velocity * 10;
-        ppControlParams2 = (direction << 16) | maximumPower;
+        ppControlParams1 = (((modulation_factor * 1000) & 0xFFFF) << 16) | ((maximum_velocity * 10) & 0xFFFF);
+        ppControlParams2 = ((direction & 0xFFFF) << 16) | (maximumPower & 0xFFFF);
     }
 
     let calculatePPDebugParams1 = () => {
-        ppDebugParams11 = (kpq << 16) | kiq;
-        ppDebugParams12 = (kpd << 16) | kid;
+        ppDebugParams11 = ((kpq & 0xFFFF) << 16) | (kiq & 0xFFFF);
+        ppDebugParams12 = ((kpd & 0xFFFF) << 16) | (kid & 0xFFFF);
     }
 
     let calculatePPDebugParams2 = () => {
-        ppDebugParams2 = (pos_offset * 1000 << 16) | alpha * 1000;
+        ppDebugParams2 = (((pos_offset * 1000) & 0xFFFF) << 16) | ((alpha * 1000) & 0xFFFF);
     }
 
     let calculateTestControlParams = () => {
-        testControlParams1 = (iq_ref * 10 << 16) | id_ref * 10;
-        testControlParams2 = (vq_ref * 10 << 16) | vd_ref * 10;
+        testControlParams1 = (((iq_ref * 10) & 0xFFFF) << 16) | ((id_ref * 10) & 0xFFFF);
+        testControlParams2 = (((vq_ref * 10) & 0xFFFF) << 16) | ((vd_ref * 10) & 0xFFFF);
     }
 
 </script>

@@ -56,6 +56,8 @@ pub enum Event {
     FaultFixed,
     ///
     HighVoltageOnCanRelay,
+    /// Event sent when transitioning. Used to send the `FSMUpdate` CAN message.
+    FSMTransition(u8),
 
     /// Event used when testing to stop the FSM
     #[cfg(test)]

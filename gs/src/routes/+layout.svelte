@@ -417,9 +417,9 @@
 
     gdd.stores.registerStore<number>("Vd2_C", 0);
 
-    gdd.stores.registerStore<number>("PPInitFault1", 0);
+    gdd.stores.registerStore<number>("PPInitFault1", 256);
 
-    gdd.stores.registerStore<number>("PPInitFault2", 0);
+    gdd.stores.registerStore<number>("PPInitFault2", 256);
 
     gdd.stores.registerStore<number>("PPEmergency1", 0);
 

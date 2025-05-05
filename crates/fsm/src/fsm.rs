@@ -19,7 +19,7 @@ use crate::utils::types::EventSender;
 #[allow(dead_code)]
 pub enum States {
     /// Initial state of the FSM
-    Boot,
+    Boot = 0,
     /// Pretty self-explanatory :)
     ConnectedToGS,
     /// State for checking each subsystem
@@ -54,6 +54,8 @@ pub enum States {
 /// # Fields:
 /// - `state`: The state in which the pod is in
 /// - `event_receiver`: Object used for receive access to the event channel
+/// - `event_sender1`: Object used to send message over the first CAN bus
+/// - `event_sender2`: Object used to send message over the second CAN bus
 #[derive(Debug, Copy, Clone)]
 pub struct FSM {
     #[cfg(test)]
@@ -176,6 +178,8 @@ impl FSM {
         {
             **self.state_mutex.lock().await = new_state;
         }
+        
+        self.event_sender2.send(Event::FSMTransition(new_state as u8)).await;
 
         self.call_entry_method(self.state).await;
         defmt::info!("Transitioned to state {}", self.state);

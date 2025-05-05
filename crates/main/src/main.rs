@@ -227,6 +227,20 @@ async fn forward_fsm_relay_events_to_can1(
     }
 }
 
+fn make_can2_envelope(id: u16, data: &[u8]) -> can2::CanEnvelope {
+    let header = can::frame::Header::new_fd(
+        embedded_can::Id::from(
+            embedded_can::StandardId::new(id).expect("Invalid ID"),
+        ),
+        64,
+        false,
+        true,
+    );
+
+    let frame = can::frame::Frame::new(header, data).expect("Invalid frame");
+    can2::CanEnvelope::new_from_frame(frame)
+}
+
 #[embassy_executor::task]
 async fn forward_fsm_relay_events_to_can2(
     cantx: can2::CanTxSender<'static>,
@@ -248,8 +262,8 @@ async fn forward_fsm_relay_events_to_can2(
                 let frame = can::frame::Frame::new(header, &[0; 64]).expect("Invalid frame");
 
                 cantx.send(can2::CanEnvelope::new_from_frame(frame)).await;
-            }
-
+            },
+            // fsm::Event::FSMTransition(state_number) => cantx.send(make_can2_envelope(, state_number)).await,
             _ => {}
         }
     }

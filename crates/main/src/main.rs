@@ -316,7 +316,7 @@ async fn forward_can1_messages_to_gs(
         })
         .await;
 
-        Timer::after_micros(10).await;
+        // Timer::after_micros(10).await;
     }
 }
 
@@ -341,7 +341,7 @@ async fn forward_can2_messages_to_gs(
         })
         .await;
 
-        Timer::after_micros(10).await;
+        // Timer::after_micros(10).await;
     }
 }
 
@@ -366,7 +366,7 @@ async fn log_can2_on_gs(gstx: gs_master::TxSender<'static>, mut canrx: can2::Can
             )
         })
         .await;
-        Timer::after_millis(50).await;
+        // Timer::after_millis(50).await;
     }
 }
 
@@ -478,7 +478,7 @@ async fn main(spawner: Spawner) -> ! {
     };
 
     info!("CAN Configured");
-
+    defmt::println!("CAN Configured");
     spawner
         .spawn(run_fsm(
             event_receiver_fsm,

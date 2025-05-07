@@ -77,7 +77,7 @@
                 />
                 <Command text="Disable Propulsion" cmd="PropulsionOff" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
                 <Command cmd="SystemReset" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
-                <Command cmd="ArmBrakes" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
+                <Command cmd="RearmSDC" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
                 <p class="col-span-2">
                     Choose Direction:
                 </p>
@@ -196,22 +196,25 @@
     </TileGrid>
     <TileGrid columns="1fr 1fr" rows="auto" className="mt-2">
         <Tile containerClass="col-span-1">
-            <Chart title="Propulsion Log 1 - MD1" background="bg-surface-900" />
+            <Chart title="Propulsion Log 1 - Right Motor" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
-            <Chart title="Propulsion Log 1 - MD2" background="bg-surface-900" />
+            <Chart title="Propulsion Log 1 - Left Motor" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
-            <Chart title="Propulsion Log 2 - MD1" background="bg-surface-900" />
+            <Chart title="Propulsion Log 2 - Right Motor" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
-            <Chart title="Propulsion Log 2 - MD2" background="bg-surface-900" />
+            <Chart title="Propulsion Log 2 - Left Motor" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
-            <Chart title="Propulsion Log 3 - MD1" background="bg-surface-900" />
+            <Chart title="Propulsion Log 3 - Right Motor" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
-            <Chart title="Propulsion Log 3 - MD2" background="bg-surface-900" />
+            <Chart title="Propulsion Log 3 - Left Motor" background="bg-surface-900" />
+        </Tile>
+        <Tile containerClass="col-span-2">
+            <Chart title="Offset" background="bg-surface-900"/>
         </Tile>
     </TileGrid>
 </div>

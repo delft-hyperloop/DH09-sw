@@ -35,18 +35,6 @@
     const propEmergency1 = storeManager.getWritable("PPEmergency1");
     const propInitFault2 = storeManager.getWritable("PPInitFault2");
     const propEmergency2 = storeManager.getWritable("PPEmergency2");
-    const propAck1 = storeManager.getWritable("FSMAckProp1");
-    const propAck2 = storeManager.getWritable("FSMAckProp2");
-
-    $: {
-        let ppack1 = $propAck1.value;
-        console.log(`Prop ack 1 received: ${ppack1}`);
-    }
-
-    $: {
-        let ppack2 = $propAck2.value;
-        console.log(`Prop ack 2 received: ${ppack2}`);
-    }
 
     $: {
         let faultValue1 = $propInitFault1.value
@@ -65,19 +53,18 @@
             console.error(`PropEmergency1: ${propEmergencyValue1}`);
             util.log(`PropEmergency1: ${propEmergencyValue1}`, EventChannel.ERROR);
 
-            // MODAL_SETTINGS.body = `Propulsion motor drive 1 sent an emergency message: ${propEmergencyValue1}`;
-            // MODAL_SETTINGS.title = "Propulsion Fault!";
-            // modalStore.trigger(MODAL_SETTINGS);
+            MODAL_SETTINGS.body = `Propulsion motor drive 1 sent an emergency message: ${propEmergencyValue1}`;
+            MODAL_SETTINGS.title = "Propulsion Fault!";
+            modalStore.trigger(MODAL_SETTINGS);
         }
         let propEmergencyValue2 = $propEmergency2.value;
         if (propEmergencyValue2 !== 0) {
             console.error(`PropEmergency2: ${propEmergencyValue2}`);
             util.log(`PropEmergency2: ${propEmergencyValue2}`, EventChannel.ERROR);
 
-            // MODAL_SETTINGS.body = `Propulsion motor drive 2 sent an emergency message: ${propEmergencyValue2}`;
-            // MODAL_SETTINGS.title = "Propulsion Fault!";
-            // modalStore.trigger(MODAL_SETTINGS);
-
+            MODAL_SETTINGS.body = `Propulsion motor drive 2 sent an emergency message: ${propEmergencyValue2}`;
+            MODAL_SETTINGS.title = "Propulsion Fault!";
+            modalStore.trigger(MODAL_SETTINGS);
         }
     }
 </script>

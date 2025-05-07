@@ -13,6 +13,7 @@
     export let height: number = 200;
     export let chart: PlotBuffer|undefined = $chartStore.get(title);
     export let pop_up: boolean = true;
+    export let display_title: boolean = true;
 
     let width: number;
     let resize = (width:number, height:number) => {
@@ -49,13 +50,15 @@
     <div bind:clientWidth={width} class="flex flex-col {background} rounded-md pt-2 {width < 550 ? 'text-sm' : ''}">
         <div class="flex ml-6 mr-10 justify-between">
             <div class="flex flex-row gap-2">
-                <h4 class="text-md text-primary-100">{title}</h4>
-                <button
-                    on:click={pinToHomePage}
-                    class="active:scale-90 hover:bg-surface-700 transition rounded-lg"
-                >
-                    <Pin size={16}/>
-                </button>
+                {#if display_title}
+                    <h4 class="text-md text-primary-100">{title}</h4>
+                    <button
+                        on:click={pinToHomePage}
+                        class="active:scale-90 hover:bg-surface-700 transition rounded-lg"
+                    >
+                        <Pin size={16}/>
+                    </button>
+                {/if}
             </div>
             {#if pop_up}
                 <button

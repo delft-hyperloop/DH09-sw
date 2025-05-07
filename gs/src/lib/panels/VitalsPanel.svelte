@@ -18,7 +18,6 @@
     const fsmState = storeManager.getWritable("FSMState");
     const ptcState = storeManager.getWritable("PTCState");
     const ptcFault = storeManager.getWritable("PTCNonCriticalFault");
-    const localization = storeManager.getWritable("Localization");
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -73,10 +72,6 @@
         ["HEMS D1", DE.Alpha1, "[-10,10] A", "HEMS D2", DE.Alpha1, "[-10,10] A"],
         ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
     ]
-
-    $: {
-        console.log(`Localization: ${$localization.value}`);
-    }
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">

@@ -12,7 +12,7 @@
     let userHasScrolled = false;
     let logs: Log[] = [];
 
-    let logsCountUpperLimit: number = 1000;
+    let logsCountUpperLimit: number = 500;
     let logsCutAmount: number = 250;
 
     let colours = new Map([

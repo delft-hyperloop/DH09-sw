@@ -2,6 +2,10 @@
 
 procedures:
   # ====== Decode =======
+  decode_offset:
+    input: 'u16'
+    output: 'f32'
+    formula: 'x as f32'
   decode_temperature:
     input: 'u8'
     output: 'f32'
@@ -687,6 +691,75 @@ message-processing:
 #        display-units: '°C'
 #        gs:
 #          conversion: 'gs_2p_float:f32'
+  - name: 'Offset'
+    can:
+      id: 0x33D
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'Offset1'
+          id: 0x848
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Offset")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'decode_offset:u16->f32'
+        display-units: 'mm'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Offset2'
+          id: 0x849
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Offset")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u16[2..4]'
+        can-conversion: 'decode_offset:u16->f32'
+        display-units: 'mm'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Offset3'
+          id: 0x84A
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Offset")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'u16[4..6]'
+        can-conversion: 'decode_offset:u16->f32'
+        display-units: 'mm'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Offset4'
+          id: 0x84B
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Offset")!.addEntry(4, curr);
+                  return curr;
+              }
+        getter: 'u16[6..8]'
+        can-conversion: 'decode_offset:u16->f32'
+        display-units: 'mm'
+        gs:
+          conversion: 'gs_2p_float:f32'
   - name: 'PPControlParameters'
     can:
       id: 0x1B0
@@ -1017,7 +1090,7 @@ message-processing:
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
-  - name: 'Log1MD1'
+  - name: 'Log1RightMotor'
     can:
       id: 0x4FD
       bus: can2
@@ -1030,7 +1103,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -1045,7 +1118,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -1060,7 +1133,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
@@ -1075,14 +1148,14 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1 - MD1")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
-  - name: 'Log1MD2'
+  - name: 'Log1LeftMotor'
     can:
       id: 0x502
       bus: can2
@@ -1095,7 +1168,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -1110,7 +1183,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -1125,7 +1198,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
@@ -1140,14 +1213,14 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 1 - MD2")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
-  - name: 'Log2MD1'
+  - name: 'Log2RightMotor'
     can:
       id: 0x4FE
       bus: can2
@@ -1160,7 +1233,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -1175,7 +1248,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -1190,7 +1263,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
@@ -1205,7 +1278,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD1")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[6..8]'
@@ -1226,7 +1299,7 @@ message-processing:
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
-  - name: 'Log2MD2'
+  - name: 'Log2LeftMotor'
     can:
       id: 0x503
       bus: can2
@@ -1239,7 +1312,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -1254,7 +1327,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -1269,7 +1342,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
@@ -1284,14 +1357,14 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 2 - MD2")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
-  - name: 'Log3MD1'
+  - name: 'Log3RightMotor'
     can:
       id: 0x4FF
       bus: can2
@@ -1304,7 +1377,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -1319,7 +1392,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -1334,7 +1407,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
@@ -1349,14 +1422,14 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3 - MD1")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[6..8]'
         can-conversion: 'scale_10:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
-  - name: 'Log3MD2'
+  - name: 'Log3LeftMotor'
     can:
       id: 0x504
       bus: can2
@@ -1369,7 +1442,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(1, curr);
+                  $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'i16[0..2]'
@@ -1384,7 +1457,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(2, curr);
+                  $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'i16[2..4]'
@@ -1399,7 +1472,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(3, curr);
+                  $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'i16[4..6]'
@@ -1414,7 +1487,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Propulsion Log 3 - MD2")!.addEntry(4, curr);
+                  $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(4, curr);
                   return curr;
               }
         getter: 'i16[6..8]'

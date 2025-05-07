@@ -18,6 +18,7 @@
     const fsmState = storeManager.getWritable("FSMState");
     const ptcState = storeManager.getWritable("PTCState");
     const ptcFault = storeManager.getWritable("PTCNonCriticalFault");
+    const localization = storeManager.getWritable("Localization");
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -72,6 +73,10 @@
         ["HEMS D1", DE.Alpha1, "[-10,10] A", "HEMS D2", DE.Alpha1, "[-10,10] A"],
         ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
     ]
+
+    $: {
+        console.log(`Localization: ${$localization.value}`);
+    }
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
@@ -128,7 +133,7 @@
                         <div class="flex justify-between flex-col">
                             <p>Velocity: {$velocity} m/s</p>
                             <p>Acceleration: {$acceleration} m/s²</p>
-                            <p>Position: <Store datatype={"Localization"} /> mm</p>
+                            <p>Position: <Store datatype={"Localization"} /></p>
                         </div>
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
                             <span>LV:</span>

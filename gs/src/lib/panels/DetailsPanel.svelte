@@ -35,6 +35,18 @@
     const propEmergency1 = storeManager.getWritable("PPEmergency1");
     const propInitFault2 = storeManager.getWritable("PPInitFault2");
     const propEmergency2 = storeManager.getWritable("PPEmergency2");
+    const propAck1 = storeManager.getWritable("FSMAckProp1");
+    const propAck2 = storeManager.getWritable("FSMAckProp2");
+
+    $: {
+        let ppack1 = $propAck1.value;
+        console.log(`Prop ack 1 received: ${ppack1}`);
+    }
+
+    $: {
+        let ppack2 = $propAck2.value;
+        console.log(`Prop ack 2 received: ${ppack2}`);
+    }
 
     $: {
         let faultValue1 = $propInitFault1.value

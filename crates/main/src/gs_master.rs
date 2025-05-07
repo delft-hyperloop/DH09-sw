@@ -198,7 +198,7 @@ pub trait GsCommsLayerInitializable {
 }
 
 const RX_BUFFER_SIZE: usize = 8192;
-const TX_BUFFER_SIZE: usize = 8192;
+const TX_BUFFER_SIZE: usize = 32768;
 
 struct CommsBuffers {
     rx: [u8; RX_BUFFER_SIZE],

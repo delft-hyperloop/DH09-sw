@@ -597,7 +597,7 @@ message-processing:
                   $chartStore.get("Localization")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i32[4..8]'
+        getter: 'i32[0..4]'
         can-conversion: 'identity_i32:i32->i32'
         display-units: 'mm'
         gs:
@@ -1429,6 +1429,8 @@ message-processing:
       - datapoint:
           name: 'FSMAckProp1'
           id: 0x525
+          store:
+            default: 0
         getter: 'u16[0..2]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
@@ -1441,6 +1443,8 @@ message-processing:
       - datapoint:
           name: 'FSMAckProp2'
           id: 0x526
+          store:
+            default: 0
         getter: 'u16[0..2]'
         can-conversion: 'identity_u16:u16->u16'
         gs:

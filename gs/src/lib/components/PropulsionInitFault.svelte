@@ -15,7 +15,7 @@
         "Control Data",
         "Gate Drivers",
         "Fault Cleared",
-    ].toReversed();
+    ];
 
 </script>
 

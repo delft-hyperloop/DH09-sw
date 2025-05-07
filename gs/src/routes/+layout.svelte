@@ -401,6 +401,10 @@
 
     gdd.stores.registerStore<number>("Alpha2", 0);
 
+    gdd.stores.registerStore<number>("FSMAckProp1", 0);
+    
+    gdd.stores.registerStore<number>("FSMAckProp2", 0);
+
     gdd.stores.registerStore<number>("Iq1", 0);
 
     gdd.stores.registerStore<number>("Iq2", 0);

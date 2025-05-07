@@ -31,12 +31,14 @@ use embassy_time::Timer;
 use embedded_can::Id;
 use static_cell::StaticCell;
 
+/// CanEvnelope used for making CAN messages
 #[derive(Debug, Clone)]
 pub struct CanEnvelope {
     envelope: embassy_stm32::can::frame::FdEnvelope,
 }
 
 impl CanEnvelope {
+    /// Makes a new `CanEnvelope` object from an `FdFrame`
     pub fn new_from_frame(frame: FdFrame) -> Self {
         Self {
             envelope: embassy_stm32::can::frame::FdEnvelope {
@@ -46,14 +48,17 @@ impl CanEnvelope {
         }
     }
 
+    /// Returns the ID of the envelope
     pub fn id(&self) -> &Id {
         self.envelope.frame.id()
     }
 
+    /// Returns the payload of the envelope
     pub fn payload(&self) -> &[u8] {
         self.envelope.frame.data()
     }
 
+    /// Returns the timestamp of the envelope
     pub fn timestamp(&self) -> Instant {
         self.envelope.ts
     }
@@ -93,6 +98,7 @@ type CanRxChannel = PubSubChannel<
     CAN_RX_SUBSCRIBERS,
     CAN_RX_PUBLISHERS,
 >;
+/// CAN receive subscriber
 pub type CanRxSubscriber<'a> = Subscriber<
     'a,
     NoopRawMutex,
@@ -142,6 +148,7 @@ const CAN_TX_CAPACITY: usize = 32;
 type CanTxChannelKind = heapless::binary_heap::Min;
 type CanTxChannel =
     PriorityChannel<NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
+/// Sender object for the priority channel used to transmit messages over the CAN bus
 pub type CanTxSender<'a> =
     priority_channel::Sender<'a, NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
 type CanTxReceiver<'a> = priority_channel::Receiver<
@@ -174,6 +181,8 @@ async fn can_tx_task(
     }
 }
 
+/// Interface for communicating over CAN
+#[allow(missing_debug_implementations)]
 pub struct CanInterface {
     rx_channel: CanRxChannel,
     tx_channel: CanTxChannel,

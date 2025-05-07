@@ -42,6 +42,8 @@ pub enum Event {
     Charge,
     /// Pod should stop charging
     StopCharge,
+    /// Resets the FSM to the `Boot` state
+    ResetFSM,
     /// Stops the FSM
     StopFSM,
     /// Fault happened

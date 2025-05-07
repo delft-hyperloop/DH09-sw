@@ -54,7 +54,6 @@ pub enum States {
 /// # Fields:
 /// - `state`: The state in which the pod is in
 /// - `event_receiver`: Object used for receive access to the event channel
-/// - `event_sender1`: Object used to send message over the first CAN bus
 /// - `event_sender2`: Object used to send message over the second CAN bus
 #[derive(Debug, Copy, Clone)]
 pub struct FSM {
@@ -62,7 +61,6 @@ pub struct FSM {
     state_mutex: &'static Mutex<NoopRawMutex, States>,
     state: States,
     event_receiver: EventReceiver,
-    event_sender1: EventSender,
     event_sender2: EventSender,
 }
 
@@ -77,16 +75,13 @@ impl FSM {
     /// # Returns:
     /// - A future for an instance of the `FSM` struct
     pub async fn new(
-        // peripherals: // TODO: add peripherals
         event_receiver: EventReceiver,
-        event_sender1: EventSender,
         event_sender2: EventSender,
         #[cfg(test)] state_mutex: &'static Mutex<NoopRawMutex, States>,
     ) -> Self {
         Self {
             state: Boot,
             event_receiver,
-            event_sender1,
             event_sender2,
             #[cfg(test)]
             state_mutex,
@@ -132,6 +127,8 @@ impl FSM {
         match (self.state, event) {
             (_, Event::Emergency { emergency_type: _ }) => self.transition(States::Fault).await,
             (_, Event::Fault) => self.transition(States::Fault).await,
+
+            (_, Event::ResetFSM) => self.transition(States::Boot).await,
 
             (States::Fault, Event::FaultFixed) => self.transition(SystemCheck).await,
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,

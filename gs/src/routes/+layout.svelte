@@ -385,54 +385,6 @@
         }
     );
 
-    gdd.stores.registerStore<number>("ModulationFactor1", 0);
-
-    gdd.stores.registerStore<number>("ModulationFactor2", 0);
-
-    gdd.stores.registerStore<number>("MaximumVelocity1", 0);
-
-    gdd.stores.registerStore<number>("MaximumVelocity2", 0);
-
-    gdd.stores.registerStore<number>("Kpq1", 0);
-
-    gdd.stores.registerStore<number>("Kpq2", 0);
-
-    gdd.stores.registerStore<number>("Kiq1", 0);
-
-    gdd.stores.registerStore<number>("Kiq2", 0);
-
-    gdd.stores.registerStore<number>("Kpd1", 0);
-
-    gdd.stores.registerStore<number>("Kpd2", 0);
-
-    gdd.stores.registerStore<number>("Kid1", 0);
-
-    gdd.stores.registerStore<number>("Kid2", 0);
-
-    gdd.stores.registerStore<number>("PositionOffset1", 0);
-
-    gdd.stores.registerStore<number>("PositionOffset2", 0);
-
-    gdd.stores.registerStore<number>("Alpha1", 0);
-
-    gdd.stores.registerStore<number>("Alpha2", 0);
-
-    gdd.stores.registerStore<number>("Iq1", 0);
-
-    gdd.stores.registerStore<number>("Iq2", 0);
-
-    gdd.stores.registerStore<number>("Id1", 0);
-
-    gdd.stores.registerStore<number>("Id2", 0);
-
-    gdd.stores.registerStore<number>("Vq1_C", 0);
-
-    gdd.stores.registerStore<number>("Vq2_C", 0);
-
-    gdd.stores.registerStore<number>("Vd1_C", 0);
-
-    gdd.stores.registerStore<number>("Vd2_C", 0);
-
     gdd.stores.registerStore<number>("PPInitFault1", 256);
 
     gdd.stores.registerStore<number>("PPInitFault2", 256);
@@ -618,6 +570,13 @@
     gdd.stores.registerStore<number>("FSMAckProp1", 0);
 
     gdd.stores.registerStore<number>("FSMAckProp2", 0);
+
+    gdd.stores.registerStore<number>("Velocity", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Velocity")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
     gdd.stores.registerStore<number>("FSMState", 0);
 

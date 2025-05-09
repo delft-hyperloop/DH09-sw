@@ -6,9 +6,9 @@
         TileGrid,
         Chart, util, EventChannel,
     } from '$lib';
-    import { podTargetSpeed, propMaxPower, propModulationFactor } from '$lib/stores/data';
+    import { podTargetSpeed, propMaxPower } from '$lib/stores/data';
     import { goingForward, propulsionConfigSent } from '$lib/stores/state';
-    import RangeSlider from 'svelte-range-slider-pips';
+    // import RangeSlider from 'svelte-range-slider-pips';
     import { invoke } from '@tauri-apps/api/tauri';
 
     // const storeManager = GrandDataDistributor.getInstance().stores;
@@ -32,12 +32,11 @@
 
     // Value bound to the modulation factor slider.
     // Didn't work with a different name for some reason.
-    let values = [1];
+    // let values = [1];
 
     async function submitRun() {
         goingForward.set(currentDirectionForward);
         podTargetSpeed.set(currentSpeed);
-        propModulationFactor.set(values[0]);
         propMaxPower.set(currentMaxPower);
 
         let direction: number = 1;
@@ -45,7 +44,7 @@
             direction = 0;
         }
 
-        const value1 = ($propModulationFactor * 1000 << 16) | $podTargetSpeed * 10;
+        const value1 = $podTargetSpeed * 10;
         const value2 = (direction << 16) | $propMaxPower;
 
         await invoke('send_command_64_bits', {cmdName: "PPControlParams", vals: [value1, value2]}).then(() => {
@@ -101,7 +100,7 @@
                        bind:value={currentSpeed}
                 />
                 <p class="col-span-full">
-                    Maximum power:
+                    Maximum power per motor:
                 </p>
                 <input class="input rounded-lg px-1 col-span-2 min-h-10"
                        type="number"
@@ -109,28 +108,28 @@
                        min="0"
                        bind:value={currentMaxPower}
                 />
-                <p class="col-span-full">
-                    Modulation factor:
-                </p>
-                <input class="input rounded-lg px-1 col-span-2 min-h-10"
-                       type="number"
-                       max="1"
-                       min="0"
-                       bind:value={values[0]}
-                       step="0.01"
-                />
-                <div class="col-span-full mb-4">
-                    <RangeSlider
-                        value={1}
-                        bind:values
-                        min={0}
-                        max={1}
-                        pips
-                        all="label"
-                        step={0.01}
-                        pipstep={25}
-                    />
-                </div>
+<!--                <p class="col-span-full">-->
+<!--                    Modulation factor:-->
+<!--                </p>-->
+<!--                <input class="input rounded-lg px-1 col-span-2 min-h-10"-->
+<!--                       type="number"-->
+<!--                       max="1"-->
+<!--                       min="0"-->
+<!--                       bind:value={values[0]}-->
+<!--                       step="0.01"-->
+<!--                />-->
+<!--                <div class="col-span-full mb-4">-->
+<!--                    <RangeSlider-->
+<!--                        value={1}-->
+<!--                        bind:values-->
+<!--                        min={0}-->
+<!--                        max={1}-->
+<!--                        pips-->
+<!--                        all="label"-->
+<!--                        step={0.01}-->
+<!--                        pipstep={25}-->
+<!--                    />-->
+<!--                </div>-->
                 <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow overflow-auto font-medium"
                         on:click={submitRun} disabled={false}>
                     Submit New Run Parameters
@@ -159,12 +158,12 @@
                 {:else}
                     <p>Not set</p>
                 {/if}
-                <p>Modulation Factor:</p>
-                {#if $propulsionConfigSent}
-                    <p>{$propModulationFactor}</p>
-                {:else}
-                    <p>Not set</p>
-                {/if}
+<!--                <p>Modulation Factor:</p>-->
+<!--                {#if $propulsionConfigSent}-->
+<!--                    <p>{$propModulationFactor}</p>-->
+<!--                {:else}-->
+<!--                    <p>Not set</p>-->
+<!--                {/if}-->
             </div>
         </Tile>
         <Tile insideClass="grid grid-cols-2 gap-y-2 auto-rows-min" heading="Statuses" >

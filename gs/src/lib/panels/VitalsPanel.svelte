@@ -6,7 +6,7 @@
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
-    import { showcaseStateCounter, showcasingStates } from '$lib/stores/state';
+    import { debugModeActive, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
     import { acceleration, velocity } from '$lib/stores/data';
     import { Analytics } from 'carbon-icons-svelte';
 
@@ -18,6 +18,7 @@
     const fsmState = storeManager.getWritable("FSMState");
     const ptcState = storeManager.getWritable("PTCState");
     const ptcFault = storeManager.getWritable("PTCNonCriticalFault");
+    const localization = storeManager.getWritable("Localization");
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -128,7 +129,7 @@
                         <div class="flex justify-between flex-col">
                             <p>Velocity: {$velocity} m/s</p>
                             <p>Acceleration: {$acceleration} m/s²</p>
-                            <p>Position: <Store datatype={"Localization"} /></p>
+                            <p>Position: {$localization.value / 100} mm</p>
                         </div>
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
                             <span>LV:</span>
@@ -145,32 +146,30 @@
                             <span>IMD: &ltstatus&gt</span>
                         </div>
                     </div>
-                    <div class="flex flex-wrap justify-between mt-4">
-                        <div class="flex gap-4 flex-wrap">
-                            {#if !$serverStatus}
-                                <TauriCommand
-                                    cmd="connect_to_pod"
-                                    successCallback={handleSuccess}
-                                    errorCallback={handleFailure}
-                                />
-                            {:else}
-                                <TauriCommand
-                                    cmd="disconnect"
-                                    on:click={() => serverStatus.set(false)}
-                                    successCallback={() => serverStatus.set(false)}
-                                    errorCallback={(error) => {
-                                        toastStore.trigger({
-                                            message: `Server is not running: ${error}`,
-                                            background: "bg-error-400"
-                                        });
-                                    }}
-                                />
-                            {/if}
-                            <Command cmd="StartHV" text="Start HV"/>
-                            <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" />
-                            <Command cmd="RearmSDC" text="Rearm SDC"/>
-                            <Command cmd="SystemReset"/>
-                        </div>
+                    <div class="flex gap-4 flex-wrap mt-4">
+                        {#if !$serverStatus}
+                            <TauriCommand
+                                cmd="connect_to_pod"
+                                successCallback={handleSuccess}
+                                errorCallback={handleFailure}
+                            />
+                        {:else}
+                            <TauriCommand
+                                cmd="disconnect"
+                                on:click={() => serverStatus.set(false)}
+                                successCallback={() => serverStatus.set(false)}
+                                errorCallback={(error) => {
+                                    toastStore.trigger({
+                                        message: `Server is not running: ${error}`,
+                                        background: "bg-error-400"
+                                    });
+                                }}
+                            />
+                        {/if}
+                        <Command cmd="StartHV" text="Start HV"/>
+                        <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" />
+                        <Command cmd="RearmSDC" text="Rearm SDC"/>
+                        <Command cmd="SystemReset"/>
                     </div>
                 </Tile>
 <!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
@@ -187,6 +186,16 @@
                     containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
                     <MainFSM/>
                 </Tile>
+                {#if $debugModeActive}
+                    <Tile bgToken={700} containerClass="col-span-2">
+                        <div class="flex gap-4 flex-wrap">
+                            <Command cmd="FSMUpdate" text="Initialization" val={200} className="py-3 bg-primary-500 text-surface-900"/>
+                            <Command cmd="FSMUpdate" text="Idle" val={201}/>
+                            <Command cmd="FSMUpdate" text="Running" val={202}/>
+                            <Command cmd="FSMUpdate" text="Braking" val={203}/>
+                        </div>
+                    </Tile>
+                {/if}
             </TileGrid>
         </div>
     {/if}

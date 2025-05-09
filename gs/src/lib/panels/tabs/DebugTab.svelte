@@ -33,7 +33,6 @@
     // const propInitFault2 = storeManager.getWritable("PPInitFault2");
 
     // Propulsion debug stuff
-    let modulation_factor: number = 0;
     let maximum_velocity: number = 0;
     let direction: number = 0;
     let maximumPower: number = 0;
@@ -59,7 +58,7 @@
     let testControlParams2: number = 0;
 
     let calculatePPControlParams = () => {
-        ppControlParams1 = (((modulation_factor * 1000) & 0xFFFF) << 16) | ((maximum_velocity * 10) & 0xFFFF);
+        ppControlParams1 = (maximum_velocity * 10) & 0xFFFF;
         ppControlParams2 = ((direction & 0xFFFF) << 16) | (maximumPower & 0xFFFF);
     }
 
@@ -147,13 +146,13 @@
                             onClickMethod={() => {propulsionConfigSent.set(true)}}
                         />
                         <div class="grid grid-cols-2 gap-2 ">
-                            <div class="text-center content-center">Modulation Factor</div>
-                            <input bind:value={modulation_factor} type="number" max={1} min={0} class="input p-4 rounded-md" on:change={calculatePPControlParams}>
+<!--                            <div class="text-center content-center">Modulation Factor</div>-->
+<!--                            <input bind:value={modulation_factor} type="number" max={1} min={0} class="input p-4 rounded-md" on:change={calculatePPControlParams}>-->
                             <div class="text-center content-center">Maximum Velocity</div>
                             <input bind:value={maximum_velocity} type="number" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
                             <div class="text-center content-center">Direction</div>
                             <input bind:value={direction} type="number" min="0" max="1" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
-                            <div class="text-center content-center">Maximum power</div>
+                            <div class="text-center content-center">Maximum power per motor</div>
                             <input bind:value={maximumPower} type="number" min="0" max="50000" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
                         </div>
                     </div>

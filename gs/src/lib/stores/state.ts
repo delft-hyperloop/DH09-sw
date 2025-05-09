@@ -27,6 +27,7 @@ export const GreenHVALTurnedOn: Writable<boolean> = writable(false);
 
 export const showcaseStateCounter: Writable<number> = writable(0);
 export const showcasingStates: Writable<boolean> = writable(false);
+export const showcasingLocalization: Writable<boolean> = writable(false);
 
 export const debugModeActive: Writable<boolean> = writable(false);
 
@@ -39,3 +40,4 @@ export const inIdleState: Writable<boolean> = writable(false);
 export const hvOn: Writable<boolean> = writable(false);
 
 export const overrideDependencies: Writable<boolean> = writable(false);
+export const usingTestTrack: Writable<boolean> = writable(true);

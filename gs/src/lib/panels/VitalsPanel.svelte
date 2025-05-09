@@ -7,7 +7,6 @@
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
     import { debugModeActive, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
-    import { acceleration, velocity } from '$lib/stores/data';
     import { Analytics } from 'carbon-icons-svelte';
 
     let width: number;
@@ -19,6 +18,7 @@
     const ptcState = storeManager.getWritable("PTCState");
     const ptcFault = storeManager.getWritable("PTCNonCriticalFault");
     const localization = storeManager.getWritable("Localization");
+    const velocity = storeManager.getWritable("Velocity");
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -127,8 +127,8 @@
                 <Tile bgToken={700} containerClass="col-span-2">
                     <div class="flex flex-wrap justify-between gap-4">
                         <div class="flex justify-between flex-col">
-                            <p>Velocity: {$velocity} m/s</p>
-                            <p>Acceleration: {$acceleration} m/s²</p>
+                            <p>Velocity: {$velocity.value} m/s</p>
+                            <p>Acceleration: // m/s²</p>
                             <p>Position: {$localization.value / 100} mm</p>
                         </div>
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">

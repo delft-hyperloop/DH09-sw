@@ -976,20 +976,32 @@ message-processing:
           conversion: 'gs_u8:u8'
   - name: 'Airgaps'
     can:
-      id: 0x125
+      id: 0x515
       bus: can2
       log_period: 100
     datapoint-conversion:
       - datapoint:
-          name: 'Airgap01'
+          name: 'VAirgap'
           id: 0x195
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
         gs:
-          conversion: 'gs_u8:u8'
+          conversion: 'gs_u16:u16'
         beckhoff:
-          name: 'Airgap01'
-          levi_type: 'Byte'
+          name: 'VAirgap'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 100)'
+      - datapoint:
+          name: 'HAirgap'
+          id: 0x196
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'HAirgap'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 100)'
   - name: 'PPEmergency'
     can:
       id: 0x002
@@ -1263,3 +1275,6 @@ commands:
       bus: can2
   - name: 'SystemReset'
     id: 0x66
+
+beckhoff:
+  task-period: 10 # period in ms

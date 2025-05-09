@@ -15,6 +15,13 @@ pub struct DataflowSpec {
     pub standard_datapoints: Vec<StandardDatapointSpec>,
     pub message_processing: Vec<MessageProcessingSpec>,
     pub commands: Vec<CommandSpec>,
+    pub beckhoff: BeckhoffTaskSpec,
+}
+
+#[derive(serde::Deserialize, Debug)]
+#[serde(rename_all = "kebab-case")]
+pub struct BeckhoffTaskSpec {
+    pub task_period: u32,
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -28,8 +35,11 @@ pub struct StandardDatapointSpec {
 #[serde(try_from = "String")]
 pub enum Ty {
     U8,
+    U8LE,
     U16,
+    U16LE,
     U32,
+    U32LE,
     U64,
     I8,
     I16,
@@ -44,9 +54,9 @@ pub enum Ty {
 impl Ty {
     pub fn ty_size(self) -> usize {
         match self {
-            Self::U8 | Self::I8 => 1,
-            Self::U16 | Self::I16 | Self::F16 => 2,
-            Self::U32 | Self::I32 | Self::F32 => 4,
+            Self::U8 | Self::U8LE | Self::I8 => 1,
+            Self::U16 | Self::U16LE | Self::I16 | Self::F16 => 2,
+            Self::U32 | Self::U32LE | Self::I32 | Self::F32 => 4,
             Self::U64 | Self::I64 | Self::F64 => 8,
             Self::U8Arr(n) => n,
         }
@@ -59,8 +69,11 @@ impl FromStr for Ty {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "u8" => Ok(Self::U8),
+            "u8le" => Ok(Self::U8LE),
             "u16" => Ok(Self::U16),
+            "u16le" => Ok(Self::U16LE),
             "u32" => Ok(Self::U32),
+            "u32le" => Ok(Self::U32LE),
             "u64" => Ok(Self::U64),
             "i8" => Ok(Self::I8),
             "i16" => Ok(Self::I16),
@@ -88,8 +101,11 @@ impl Display for Ty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::U8 => write!(f, "u8"),
+            Self::U8LE => write!(f, "u8le"),
             Self::U16 => write!(f, "u16"),
+            Self::U16LE => write!(f, "u16le"),
             Self::U32 => write!(f, "u32"),
+            Self::U32LE => write!(f, "u32le"),
             Self::U64 => write!(f, "u64"),
             Self::I8 => write!(f, "i8"),
             Self::I16 => write!(f, "i16"),
@@ -161,26 +177,25 @@ pub struct DatapointConversionSpec {
 #[derive(serde::Deserialize, Debug)]
 pub struct DatapointComesFromLeviInfo {
     pub name: String,
-    #[serde(default = "default_input_spec")]
-    pub input_spec: String,
     pub levi_type: StructuredTy,
+    pub formula: String,
 }
-
-fn default_input_spec() -> String { "%I*".to_string() }
 
 #[derive(serde::Deserialize, Debug)]
 pub enum StructuredTy {
     Byte,
     Integer,
     Real,
+    LReal,
 }
 
 impl StructuredTy {
-    fn make_input(&self, name: &str, addr: &str) -> String {
+    fn make_input(&self, name: &str) -> String {
         match self {
-            Self::Byte => format!("{name} AT {addr}: BYTE;"),
-            Self::Integer => format!("{name} AT {addr}: INT;"),
-            Self::Real => format!("{name} AT {addr}: REAL;"),
+            Self::Byte => format!("{name}: BYTE;"),
+            Self::Integer => format!("{name}: INT;"),
+            Self::Real => format!("{name}: REAL;"),
+            Self::LReal => format!("{name}: LREAL;"),
         }
     }
 }
@@ -307,11 +322,15 @@ impl GetterSpec {
         }
 
         match self.ty {
-            Ty::U8 => format!("{data_slice}[{start}]"),
+            Ty::U8 | Ty::U8LE => format!("{data_slice}[{start}]"),
             Ty::U16 => {
                 format!("u16::from_be_bytes({})", size_2_bytes(data_slice, start))
             },
+            Ty::U16LE => {
+                format!("u16::from_le_bytes({})", size_2_bytes(data_slice, start))
+            },
             Ty::U32 => format!("u32::from_be_bytes({})", size_4_bytes(data_slice, start)),
+            Ty::U32LE => format!("u32::from_le_bytes({})", size_4_bytes(data_slice, start)),
             Ty::U64 => format!("u64::from_be_bytes({})", size_8_bytes(data_slice, start)),
             Ty::I8 => todo!(),
             Ty::I16 => format!("i16::from_be_bytes({})", size_2_bytes(data_slice, start)),
@@ -602,7 +621,7 @@ r#"
 VAR
 	i: UINT;
 	
-	test_real: LREAL_AND_BYTES;
+	test_real: LUINT_AND_BYTES;
 	test_Quint: QUINT_Reals;
 	
 	send_messages: BOOL := FALSE;
@@ -649,23 +668,28 @@ END_IF
 
 "#;
 
-    let mut ordinary_vars = String::new();
-    let mut in_out_vars = String::from("VAR_IN_OUT\n");
+    let mut vars = String::new();
+    let mut input_vars = String::new();
     
     let mut code = String::new();
 
-    writeln!(&mut ordinary_vars, r#"
+    writeln!(&mut vars, r#"
 VAR
-        clock_time: TIME := ...;
+        i: UINT := 0;
         can_out_msgs: INT := 0;
         Incoming_messages: ARRAY[0..10] OF EXTCANTXQUEUE;
         Messages_To_Send: ARRAY[0..10] OF EXTCANTXQUEUE;
         No_Messages_Queued: UINT := 0;
-        tx_data: ARRAY[0..7] OF BYTE;
-        
-        CAN_INPUTS AT %I*: CANRXQUEUESTRUCT_T_10;
-        CAN_OUTPUTS AT %Q*: CANTXQUEUESTRUCT_X_10;
+        tx_data: ARRAY[0..7] OF USINT;
+
+        local_u16: UINT_AND_BYTES;
+        local_u32: UDINT_AND_BYTES;
+
 "#).unwrap();
+    writeln!(&mut input_vars, r#"
+    VAR_INPUT
+        
+    "#).unwrap();
 
     for mp in &df.message_processing {
         if let CanSpec::Can2 { id, comes_from_levi: Some(l) } = &mp.can {
@@ -675,42 +699,49 @@ VAR
                     panic!("no");
                 };
 
-                writeln!(&mut ordinary_vars, "        {}", levi_info.levi_type.make_input(&levi_info.name, &levi_info.input_spec)).unwrap();
+                writeln!(&mut input_vars, "        {}", levi_info.levi_type.make_input(&levi_info.name)).unwrap();
                 match dp.getter.ty {
                     Ty::U8 => {
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := {};", dp.getter.can_payload_range.start, levi_info.name).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := {};", dp.getter.can_payload_range.start, levi_info.formula.replace("$", &levi_info.name)).unwrap();
                     },
                     Ty::U16 => {
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[0];", dp.getter.can_payload_range.start, levi_info.name).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[1];", dp.getter.can_payload_range.start + 1, levi_info.name).unwrap();
+                        writeln!(&mut tx_data_create, "    local_u16.value := {};", levi_info.formula.replace("$", &levi_info.name)).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u16.bytes[1];", dp.getter.can_payload_range.start).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u16.bytes[0];", dp.getter.can_payload_range.start + 1).unwrap();
                     },
                     Ty::U32 => {
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[0];", dp.getter.can_payload_range.start, levi_info.name).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[1];", dp.getter.can_payload_range.start + 1, levi_info.name).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[2];", dp.getter.can_payload_range.start + 2, levi_info.name).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := {}.bytes[3];", dp.getter.can_payload_range.start + 3, levi_info.name).unwrap();
+                        writeln!(&mut tx_data_create, "    local_u32.value := {};", levi_info.formula.replace("$", &levi_info.name)).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u32.bytes[3];", dp.getter.can_payload_range.start).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u32.bytes[2];", dp.getter.can_payload_range.start + 1).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u32.bytes[1];", dp.getter.can_payload_range.start + 2).unwrap();
+                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u32.bytes[0];", dp.getter.can_payload_range.start + 3).unwrap();
                     },
                     _ => panic!("not supported"),
                 }
             }
-            writeln!(&mut in_out_vars, "    can_{id}_last_log : TIME;").unwrap();
-            writeln!(&mut code, "IF (clock_time - can_{id}_last_log > {} (ms)) THEN", l.log_period).unwrap();
-            writeln!(&mut code, "    can_{id}_last_log := clock_time;").unwrap();
+            writeln!(&mut vars, "    can_{id}_periods_since_last_log : INT := 1000;").unwrap();
+            writeln!(&mut code, "IF ({} * can_{id}_periods_since_last_log >= {} AND No_Messages_Queued < 32) THEN", df.beckhoff.task_period, l.log_period).unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].length := 8;").unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].cobId := {id};").unwrap();
             writeln!(&mut code, "{}", tx_data_create).unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].txData := tx_data;").unwrap();
             writeln!(&mut code, "    No_Messages_Queued := No_Messages_Queued + 1;").unwrap();
-            writeln!(&mut code, "END IF;").unwrap();
+            writeln!(&mut code, "    can_{id}_periods_since_last_log := 0;").unwrap();
+            writeln!(&mut code, "ELSE\n    can_{id}_periods_since_last_log := can_{id}_periods_since_last_log + 1;").unwrap();
+            writeln!(&mut code, "END_IF;").unwrap();
         }
     }
 
-    writeln!(&mut ordinary_vars, "END_VAR").unwrap();
-    writeln!(&mut in_out_vars, "END_VAR").unwrap();
+    writeln!(&mut vars, "END_VAR").unwrap();
+    writeln!(&mut input_vars, "END_VAR").unwrap();
 
     format!("
-{ordinary_vars}
-{in_out_vars}
+{vars}
+{input_vars}
+VAR_IN_OUT
+    CAN_INPUTS: CANRXQUEUESTRUCT_T_32;
+    CAN_OUTPUTS: CANTXQUEUESTRUCT_X_32;
+END_VAR
 
 {code}
 //Send new messages

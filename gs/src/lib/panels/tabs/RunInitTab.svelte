@@ -7,7 +7,7 @@
         Chart, util, EventChannel,
     } from '$lib';
     import { podTargetSpeed, propMaxPower } from '$lib/stores/data';
-    import { goingForward, propulsionConfigSent } from '$lib/stores/state';
+    import { goingForward, propulsionConfigSent, usingTestTrack } from '$lib/stores/state';
     // import RangeSlider from 'svelte-range-slider-pips';
     import { invoke } from '@tauri-apps/api/tauri';
 
@@ -89,6 +89,19 @@
                         on:click={() => {currentDirectionForward = false}}
                         disabled={!currentDirectionForward}>
                     Backward
+                </button>
+                <p class="col-span-2">
+                    Choose Track:
+                </p>
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                        on:click={() => {usingTestTrack.set(true)}}
+                        disabled={$usingTestTrack}>
+                    Test Track
+                </button>
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                        on:click={() => {usingTestTrack.set(false)}}
+                        disabled={!$usingTestTrack}>
+                    EHC Track
                 </button>
                 <p class="col-span-full">
                     Target Speed:

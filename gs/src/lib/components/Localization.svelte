@@ -1,14 +1,13 @@
 <script lang="ts">
-
-    import { goingForward } from '$lib/stores/state';
+    import { goingForward, usingTestTrack } from '$lib/stores/state';
     import { GrandDataDistributor } from '$lib';
-    import { trackLength } from '$lib/stores/data';
     
     export let showLabels: boolean = true;
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     // 100_000 received from the localization sensor is 1 meter
     const location = storeManager.getWritable("Localization");
+    let trackLength = 15000;
 
     // SVG elements
     let progress_container: SVGGElement;
@@ -35,19 +34,29 @@
         let path_length: number = progress.getTotalLength();
 
         path.style.strokeDasharray = path_length.toString();
-        point_half.style.fill = ($location.value / 100) >  $trackLength / 2 ? color_active : color_off;
-        progress.style.strokeDashoffset = (path_length - path_length * (($location.value / 100) /  $trackLength)).toString();
+        point_half.style.fill = ($location.value / 100) >  trackLength / 2 ? color_active : color_off;
+        progress.style.strokeDashoffset = (path_length - path_length * (($location.value / 100) /  trackLength)).toString();
 
         if ($goingForward) {
             point_start.style.fill = ($location.value / 100) > 0 ? color_active : color_off;
-            point_quarter.style.fill = ($location.value / 100) >  $trackLength / 4 ? color_active : color_off;
-            point_three_quarters.style.fill = ($location.value / 100) >  $trackLength / 4 * 3 ? color_active : color_off;
-            point_end.style.fill = ($location.value / 100) >=  $trackLength ? color_active : color_off;
+            point_quarter.style.fill = ($location.value / 100) >  trackLength / 4 ? color_active : color_off;
+            point_three_quarters.style.fill = ($location.value / 100) >  trackLength / 4 * 3 ? color_active : color_off;
+            point_end.style.fill = ($location.value / 100) >=  trackLength ? color_active : color_off;
         } else {
             point_end.style.fill = ($location.value / 100) > 0 ? color_active : color_off;
-            point_three_quarters.style.fill = ($location.value / 100) >  $trackLength / 4 ? color_active : color_off;
-            point_quarter.style.fill = ($location.value / 100) >  $trackLength / 4 * 3 ? color_active : color_off;
-            point_start.style.fill = ($location.value / 100) >=  $trackLength ? color_active : color_off;
+            point_three_quarters.style.fill = ($location.value / 100) >  trackLength / 4 ? color_active : color_off;
+            point_quarter.style.fill = ($location.value / 100) >  trackLength / 4 * 3 ? color_active : color_off;
+            point_start.style.fill = ($location.value / 100) >=  trackLength ? color_active : color_off;
+        }
+    }
+
+    $: {
+        if ($usingTestTrack) {
+            trackLength = 15000;
+            console.log(`track length: ${trackLength}`);
+        } else {
+            trackLength = 100000;
+            console.log(`track length: ${trackLength}`);
         }
     }
 

@@ -62,7 +62,7 @@
             </div>
             {#if pop_up}
                 <button
-                    on:click={() => new ViewWindow(title, `/view/chart/${title}`)}
+                    on:click={() => new ViewWindow(title.replaceAll(/[^a-zA-Z0-9]/g, ""), `/view/chart/${title}`)}
                     class="active:scale-90 hover:bg-surface-700 transition rounded-lg"
                 >
                     <ShrinkScreen size={16}/>

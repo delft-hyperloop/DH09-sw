@@ -28,11 +28,5 @@ export const pinnedCharts: Writable<Array<string>> = writable([]);
 export const podTargetSpeed: Writable<number> = writable(0);
 export const propMaxPower: Writable<number> = writable(0);
 
-export const velocity: Writable<number> = writable(0);
-export const acceleration: Writable<number> = writable(0);
-
 export const modalTitle: Writable<string> = writable("");
 export const modalBody: Writable<string> = writable("");
-
-// 15000 mm = 15 meters
-export const trackLength: Writable<number> = writable(15000);

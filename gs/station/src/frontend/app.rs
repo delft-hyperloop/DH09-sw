@@ -1,8 +1,9 @@
 use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
+use std::io::{stdout, Write};
 
-use gslib::{Datatype, Message};
+use gslib::{Datatype, Message, Datapoint};
 use gslib::ERROR_CHANNEL;
 use gslib::HEARTBEAT;
 use gslib::INFO_CHANNEL;
@@ -19,6 +20,7 @@ use crate::backend::Backend;
 use crate::frontend::commands::*;
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
+use crate::frontend::datapoint_dict::DatapointDict;
 
 pub static APP_HANDLE: Mutex<Option<AppHandle>> = Mutex::new(None);
 
@@ -120,9 +122,9 @@ pub fn tauri_main(backend: Backend) {
             // --
 
             tokio::spawn(async move {
-                // let capacity = 30;
-                // let mut datapoint_dict: DatapointDict = DatapointDict::new(capacity);
-                // print!("{}", "\n".repeat(capacity + 3));
+                let capacity = 50;
+                let mut datapoint_dict: DatapointDict = DatapointDict::new(capacity);
+                print!("{}", "\n".repeat(capacity + 10));
                 let ss = s2.clone();
                 loop {
                     match message_rcv.try_recv() {
@@ -133,13 +135,13 @@ pub fn tauri_main(backend: Backend) {
 
                             match msg {
                                 Message::Data(dp) => {
-                                    println!("Received datapoint: {:?}", dp);
+                                    // println!("Received datapoint: {:?}", dp);
                                     if dp.datatype == Datatype::CANLog {
                                         ss.emit_all(INFO_CHANNEL, format!("Received datapoint on the main PCB: {:?}", dp)).expect("Couldn't send message");
                                     }
-                                    // datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp)); // TODO: change such that it uses f64 instead of u64
-                                    // print!("{}", datapoint_dict);
-                                    // stdout().flush().unwrap();
+                                    datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp)); // TODO: change such that it uses f64 instead of u64
+                                    print!("{}", datapoint_dict);
+                                    stdout().flush().unwrap();
                                     app_handle
                                         .state::<BackendState>()
                                         .data_buffer

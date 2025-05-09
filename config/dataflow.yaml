@@ -589,6 +589,22 @@ message-processing:
         display-units: 'mm'
         gs:
           conversion: 'gs_i32:i32'
+      - datapoint:
+          name: 'Velocity'
+          id: 0x527
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Velocity")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'i16[4..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'mm'
+        gs:
+          conversion: 'gs_i16:i16'
   - name: 'Offset'
     can:
       id: 0x33D
@@ -1174,26 +1190,26 @@ message-processing:
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
-  - name: 'Velocity'
-    can:
-      id: 0x33E
-      bus: can2
-    datapoint-conversion:
-      - datapoint:
-          name: 'Velocity'
-          id: 0x527
-          store:
-            default: 0
-            callback: |
-              data => {
-                  const curr = Number(data);
-                  $chartStore.get("Velocity")!.addEntry(1, curr);
-                  return curr;
-              }
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
-        gs:
-          conversion: 'gs_u16:u16'
+  # - name: 'Velocity'
+  #   can:
+  #     id: 0x33E
+  #     bus: can2
+  #   datapoint-conversion:
+  #     - datapoint:
+  #         name: 'Velocity'
+  #         id: 0x527
+  #         store:
+  #           default: 0
+  #           callback: |
+  #             data => {
+  #                 const curr = Number(data);
+  #                 $chartStore.get("Velocity")!.addEntry(1, curr);
+  #                 return curr;
+  #             }
+  #       getter: 'u16[0..2]'
+  #       can-conversion: 'identity_u16:u16->u16'
+  #       gs:
+  #         conversion: 'gs_u16:u16'
 
 commands:
   - name: 'DefaultCommand'

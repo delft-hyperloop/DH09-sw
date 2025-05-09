@@ -28,9 +28,9 @@ impl DatapointDict {
         let mut result = format!(
             "{}{}|{}{}|{}\n{}",
             DATATYPE_HEADER,
-            " ".repeat(self.max_length_type - DATATYPE_HEADER.len()),
+            " ".repeat(self.max_length_type.saturating_sub(DATATYPE_HEADER.len())),
             VALUE_HEADER,
-            " ".repeat(self.max_length_value - VALUE_HEADER.len()),
+            " ".repeat(self.max_length_value.saturating_sub(VALUE_HEADER.len())),
             TIMESTAMP_HEADER,
             "-".repeat(self.max_length_value + self.max_length_type + TIMESTAMP_HEADER.len() + 2)
         );
@@ -38,9 +38,9 @@ impl DatapointDict {
             let dp = self.datapoints[i];
             result.push_str(&format!("\n{:?}{}|{}{}|{}",
                                      dp.datatype,
-                                     " ".repeat(self.max_length_type - format!("{}", dp.datatype.to_id()).len()), //TODO: change to_id to to_str
+                                     " ".repeat(self.max_length_type.saturating_sub(format!("{:?}", dp.datatype).len())), 
                                      dp.value,
-                                     " ".repeat(self.max_length_value - dp.value.to_string().len()),
+                                     " ".repeat(self.max_length_value.saturating_sub(format!("{:?}", dp.value).len())),
                                      dp.timestamp,
             ));
         }
@@ -49,16 +49,18 @@ impl DatapointDict {
     }
 
     pub fn add_datapoint(&mut self, datapoint: Datapoint) {
-        for i in 0..self.capacity {
-            if self.datapoints[i].datatype == Datatype::DefaultDatatype {
-                self.max_length_value = std::cmp::max(self.max_length_value, datapoint.value.to_string().len());
-                self.max_length_type = std::cmp::max(self.max_length_type, format!("{}", datapoint.datatype.to_id()).len());  //TODO: change to_id to to_str
-                self.datapoints[i] = datapoint;
-                self.size += 1;
-                return;
-            } else if datapoint.datatype == self.datapoints[i].datatype {
-                self.datapoints[i] = datapoint;
-                return;
+        if datapoint.datatype != Datatype::CommandHash && datapoint.datatype != Datatype::EventsHash && datapoint.datatype != Datatype::DataHash && datapoint.datatype != Datatype::ConfigHash && datapoint.datatype != Datatype::DefaultDatatype {
+            for i in 0..self.capacity {
+                if self.datapoints[i].datatype == Datatype::DefaultDatatype {
+                    self.max_length_value = std::cmp::max(self.max_length_value, format!("{:?}", datapoint.value).len());
+                    self.max_length_type = std::cmp::max(self.max_length_type, format!("{:?}", datapoint.datatype).len()); 
+                    self.datapoints[i] = datapoint;
+                    self.size += 1;
+                    return;
+                } else if datapoint.datatype == self.datapoints[i].datatype {
+                    self.datapoints[i] = datapoint;
+                    return;
+                }
             }
         }
         // TODO: replace oldest?

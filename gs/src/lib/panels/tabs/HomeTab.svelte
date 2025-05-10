@@ -54,7 +54,7 @@
             <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    py-2 bg-primary-500 text-surface-900" on:click={() => new ViewWindow("Charts", `/view/charts`)}>
                 <!--                <Icon icon="" class="mr-2 w-6 h-6"/>-->
-                Graph list
+                Graph List
             </button>
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium

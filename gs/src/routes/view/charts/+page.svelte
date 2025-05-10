@@ -39,6 +39,7 @@
 <div class="h-full flex flex-row">
     <div class="bg-surface-600 overflow-y-auto flex flex-col gap-2 items-center" style="height: {$height}px;">
         <span>Charts:</span>
+        <br class="w-full py-1"/>
         {#each chartList as title}
             <button on:click={() => {updateChartList(title)}}>
                 {title}

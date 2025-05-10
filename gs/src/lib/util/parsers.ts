@@ -1,8 +1,8 @@
 import {type dataConvFun, type Procedure} from "$lib/types";
 import {PlotBuffer} from "$lib/util/PlotBuffer";
-import {detailTabSet} from "$lib";
+import { detailTabSet, VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
 import {invoke} from "@tauri-apps/api/tauri";
-import { debugModeActive, logsPanelSize, logsVisible } from '$lib/stores/state';
+import { debugModeActive, logsPanelSize, logsScrollAreaSize, logsVisible } from '$lib/stores/state';
 const MAX_VALUE = 4_294_967_295;
 
 const tempParse: dataConvFun<number> = (data: number) => {
@@ -61,8 +61,10 @@ const parseShortCut = async (shortcut:string, debugMode: boolean, logsAreVisible
         logsVisible.set(!logsAreVisible);
         if (!logsAreVisible) {
             logsPanelSize.set(30);
+            logsScrollAreaSize.set(30 - (30 * 0.05 + 4.5) + window.innerHeight / VIEWPORT_HEIGHT_NORMALIZING_VALUE * 10 - 10);
         } else {
             logsPanelSize.set(5);
+            logsScrollAreaSize.set(5 - (5 * 0.05 + 4.5) + window.innerHeight / VIEWPORT_HEIGHT_NORMALIZING_VALUE * 10 - 10);
         }
     } else if (tabMatch) {
         const tab = Math.min(Number(tabMatch[1]), 7 + (debugMode ? 1 : 0));

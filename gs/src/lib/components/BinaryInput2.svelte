@@ -5,10 +5,8 @@
     let value = $propControlWord2 >> index & 1;
 
     let changeValue = () => {
-        let old = $propControlWord2;
         $propControlWord2 = $propControlWord2 ^ (1 << index);
         value = $propControlWord2 >> index & 1;
-        console.log(`Control Word: ${$propControlWord2}`);
     }
 
 </script>

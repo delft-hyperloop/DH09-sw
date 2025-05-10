@@ -3,9 +3,11 @@
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
-    import { bigErrorStatus, ErrorStatus, logsPanelSize, logsVisible } from '$lib/stores/state';
+    import { bigErrorStatus, ErrorStatus, logsPanelSize, logsScrollAreaSize, logsVisible } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { View, ViewOff } from 'carbon-icons-svelte';
+    import { writable } from 'svelte/store';
+    import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
 
     let unlistens: UnlistenFn[] = [];
     let logContainer: HTMLElement;
@@ -26,22 +28,6 @@
     const toastStore = getToastStore();
 
     $: filteredLogs = logs.filter(log => filters[log.log_type]);
-
-    // let filteredLogs = [
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "a",
-    //     "X",
-    // ]
 
     function toggleFilter(type: string) {
         filters[type] = !filters[type];
@@ -69,8 +55,6 @@
             logsPanelSize.set(5);
         }
     }
-
-    $: console.log(`logs size: ${$logsPanelSize}`);
 
     onMount(async () => {
         unlistens[0] = await registerChannel(EventChannel.INFO, 'INFO');
@@ -121,6 +105,19 @@
     afterUpdate(() => {
         if (!userHasScrolled) logContainer.scrollTop = logContainer.scrollHeight;
     });
+
+    function updateLogsPanelHeight() {
+        logsScrollAreaSize.set($logsPanelSize - ($logsPanelSize * 0.05 + 4.5) + window.innerHeight / VIEWPORT_HEIGHT_NORMALIZING_VALUE * 10 - 10);
+    }
+
+    onMount(() => {
+        updateLogsPanelHeight();
+        window.addEventListener('resize', updateLogsPanelHeight);
+    });
+
+    onDestroy(() => {
+        window.removeEventListener('resize', updateLogsPanelHeight);
+    });
 </script>
 
 <div class="h-full">
@@ -154,10 +151,9 @@
         </svelte:fragment>
     </AppBar>
 
-    <div class="p-1 overflow-y-auto" bind:this={logContainer} style="height: {$logsPanelSize - ($logsPanelSize * 0.05 + 4.5)}vh;">
+    <div class="p-1 overflow-y-auto" bind:this={logContainer} style="height: {$logsScrollAreaSize}vh;">
         {#each filteredLogs as log}
             <div class="flex items-center">
-<!--                <p>{log}</p>-->
                 <p class="{colours.get(log.log_type)}"><span class="font-mono font-light">[{log.timestamp}]</span>{log.message}</p>
             </div>
         {/each}

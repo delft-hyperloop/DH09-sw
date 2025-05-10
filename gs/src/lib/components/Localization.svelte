@@ -53,10 +53,8 @@
     $: {
         if ($usingTestTrack) {
             trackLength = 15000;
-            console.log(`track length: ${trackLength}`);
         } else {
             trackLength = 100000;
-            console.log(`track length: ${trackLength}`);
         }
     }
 

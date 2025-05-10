@@ -11,6 +11,7 @@ export const detailTabSet: Writable<number> = writable(0);
 export const inputEmerg: Writable<number> = writable(-1);
 
 export const logsPanelSize: Writable<number> = writable(5);
+export const logsScrollAreaSize: Writable<number> = writable(0);
 export const logsVisible: Writable<boolean> = writable(false);
 
 export const chartStore = writable(new Map<string, PlotBuffer>());

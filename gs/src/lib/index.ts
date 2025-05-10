@@ -45,6 +45,7 @@ import {detailTabSet, serverStatus} from "$lib/stores/state";
 import uPlot from "uplot";
 
 export const chartDataStore = new Map<string, uPlot.AlignedData>();
+export const VIEWPORT_HEIGHT_NORMALIZING_VALUE = 1068;
 
 // Export all
 export {

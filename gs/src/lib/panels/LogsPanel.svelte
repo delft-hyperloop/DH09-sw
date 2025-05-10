@@ -3,7 +3,7 @@
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
-    import { bigErrorStatus, ErrorStatus, logsVisible } from '$lib/stores/state';
+    import { bigErrorStatus, ErrorStatus, logsPanelSize, logsVisible } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { View, ViewOff } from 'carbon-icons-svelte';
 
@@ -27,6 +27,22 @@
 
     $: filteredLogs = logs.filter(log => filters[log.log_type]);
 
+    // let filteredLogs = [
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "a",
+    //     "X",
+    // ]
+
     function toggleFilter(type: string) {
         filters[type] = !filters[type];
     }
@@ -47,7 +63,14 @@
 
     function toggleLogsVisibility() {
         logsVisible.set(!$logsVisible);
+        if ($logsVisible) {
+            logsPanelSize.set(30);
+        } else {
+            logsPanelSize.set(5);
+        }
     }
+
+    $: console.log(`logs size: ${$logsPanelSize}`);
 
     onMount(async () => {
         unlistens[0] = await registerChannel(EventChannel.INFO, 'INFO');
@@ -87,7 +110,7 @@
         unlistens[4] = await listen("clear_logs", () => clearLogs());
 
         logContainer.addEventListener('scroll', () => {
-            userHasScrolled = logContainer.scrollTop < logContainer.scrollHeight - logContainer.clientHeight; // TODO: Scroll problem could be here???
+            userHasScrolled = logContainer.scrollTop < logContainer.scrollHeight - logContainer.clientHeight;
         });
     });
 
@@ -96,12 +119,12 @@
     );
 
     afterUpdate(() => {
-        if (!userHasScrolled) logContainer.scrollTop = logContainer.scrollHeight; // TODO: Scroll problem could be here???
+        if (!userHasScrolled) logContainer.scrollTop = logContainer.scrollHeight;
     });
 </script>
 
 <div class="h-full">
-    <AppBar padding="p-3" background="bg-surface-700 text-surface-50">
+    <AppBar padding="p-3" background="bg-surface-700 text-surface-50 ">
         <svelte:fragment slot="lead">
             <button class="text-sm" on:click={toggleLogsVisibility}>
                 {#if $logsVisible}
@@ -131,9 +154,10 @@
         </svelte:fragment>
     </AppBar>
 
-    <div class="h-full p-1 overflow-y-auto" bind:this={logContainer}>
+    <div class="p-1 overflow-y-auto" bind:this={logContainer} style="height: {$logsPanelSize - ($logsPanelSize * 0.05 + 4.5)}vh;">
         {#each filteredLogs as log}
             <div class="flex items-center">
+<!--                <p>{log}</p>-->
                 <p class="{colours.get(log.log_type)}"><span class="font-mono font-light">[{log.timestamp}]</span>{log.message}</p>
             </div>
         {/each}

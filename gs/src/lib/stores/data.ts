@@ -24,6 +24,7 @@ export const initProcedures = async () => {
 }
 
 export const pinnedCharts: Writable<Array<string>> = writable([]);
+export const displayedCharts: Writable<Array<string>> = writable([]);
 
 export const podTargetSpeed: Writable<number> = writable(0);
 export const propMaxPower: Writable<number> = writable(0);

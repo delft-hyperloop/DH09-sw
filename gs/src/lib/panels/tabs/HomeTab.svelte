@@ -5,6 +5,7 @@
     import {parseProcedure} from "$lib/util/parsers";
     import { debugModeActive, inStateSystemCheck } from '$lib/stores/state';
     import Icon from '@iconify/svelte';
+    import { ViewWindow } from '$lib/util/WindowControl';
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -49,6 +50,12 @@
                 <TauriCommand cmd="procedures" textOverride="Refresh Procedures" successCallback={parseProcedures} />
             {/if}
             <TauriCommand cmd="save_logs"/>
+
+            <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+                   py-2 bg-primary-500 text-surface-900" on:click={() => new ViewWindow("Charts", `/view/charts`)}>
+                <!--                <Icon icon="" class="mr-2 w-6 h-6"/>-->
+                Graph list
+            </button>
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(false)}}>

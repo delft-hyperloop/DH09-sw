@@ -2,7 +2,7 @@ import {type dataConvFun, type Procedure} from "$lib/types";
 import {PlotBuffer} from "$lib/util/PlotBuffer";
 import {detailTabSet} from "$lib";
 import {invoke} from "@tauri-apps/api/tauri";
-import { debugModeActive, logsVisible } from '$lib/stores/state';
+import { debugModeActive, logsPanelSize, logsVisible } from '$lib/stores/state';
 const MAX_VALUE = 4_294_967_295;
 
 const tempParse: dataConvFun<number> = (data: number) => {
@@ -58,11 +58,14 @@ const parseProcedure = (data: string[]):Procedure => {
 const parseShortCut = async (shortcut:string, debugMode: boolean, logsAreVisible: boolean):Promise<void> => {
     const tabMatch = shortcut.match(/^tab_(\d)$/);
     if (shortcut === "ToggleLogs") {
-        console.log("Toggling logs visibility");
         logsVisible.set(!logsAreVisible);
+        if (!logsAreVisible) {
+            logsPanelSize.set(30);
+        } else {
+            logsPanelSize.set(5);
+        }
     } else if (tabMatch) {
         const tab = Math.min(Number(tabMatch[1]), 7 + (debugMode ? 1 : 0));
-        console.log(`Switching to tab ${tab}`);
         detailTabSet.set(Number(tab) - 1);
     } else if (shortcut === "emergency_brake") {
         console.log("Emergency brake");

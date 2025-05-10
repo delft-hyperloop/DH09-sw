@@ -139,7 +139,7 @@ pub fn tauri_main(backend: Backend) {
                                     if dp.datatype == Datatype::CANLog {
                                         ss.emit_all(INFO_CHANNEL, format!("Received datapoint on the main PCB: {:?}", dp)).expect("Couldn't send message");
                                     }
-                                    datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp)); // TODO: change such that it uses f64 instead of u64
+                                    datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp));
                                     print!("{}", datapoint_dict);
                                     stdout().flush().unwrap();
                                     app_handle

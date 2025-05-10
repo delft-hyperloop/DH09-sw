@@ -6,7 +6,6 @@
     import { bigErrorStatus, ErrorStatus, logsPanelSize, logsScrollAreaSize, logsVisible } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { View, ViewOff } from 'carbon-icons-svelte';
-    import { writable } from 'svelte/store';
     import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
 
     let unlistens: UnlistenFn[] = [];

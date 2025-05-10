@@ -62,7 +62,7 @@
         <div class="flex ml-6 mr-10 justify-between">
             <div class="flex flex-row gap-2">
                 {#if display_title}
-                    <h4 class="text-md text-primary-100">{title}</h4>
+                    <h3 class="text-lg text-primary-100">{title}</h3>
                 {/if}
                 {#if pinnable}
                     <button

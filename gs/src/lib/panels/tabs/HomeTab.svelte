@@ -6,6 +6,7 @@
     import { debugModeActive, inStateSystemCheck } from '$lib/stores/state';
     import Icon from '@iconify/svelte';
     import { ViewWindow } from '$lib/util/WindowControl';
+    import { ChartLineSmooth, SettingsCheck, Wifi, WifiOff } from 'carbon-icons-svelte';
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -37,35 +38,36 @@
     </div>
         <div class="flex gap-3 flex-wrap">
             {#if $debugModeActive}
-                <TauriCommand cmd="connect_to_pod" successCallback={handleSuccess} errorCallback={handleFailure} />
-                <TauriCommand cmd="disconnect" successCallback={() => serverStatus.set(false)} />
+                <TauriCommand cmd="connect_to_pod" successCallback={handleSuccess} errorCallback={handleFailure} icon={Wifi}/>
+                <TauriCommand cmd="disconnect" successCallback={() => serverStatus.set(false)} icon={WifiOff}/>
             {/if}
             <Command
                 cmd="SystemCheck"
                 dependency={inStateSystemCheck}
                 dependencyTitle="Not in System Check"
                 dependencyMessage="The pod must be in the System Check state to perform a system check!"
+                icon={SettingsCheck}
             />
-            {#if $debugModeActive}
-                <TauriCommand cmd="procedures" textOverride="Refresh Procedures" successCallback={parseProcedures} />
-            {/if}
-            <TauriCommand cmd="save_logs"/>
+            <!--{#if $debugModeActive}-->
+            <!--    <TauriCommand cmd="procedures" textOverride="Refresh Procedures" successCallback={parseProcedures} />-->
+            <!--{/if}-->
+<!--            <TauriCommand cmd="save_logs"/>-->
 
             <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    py-2 bg-primary-500 text-surface-900" on:click={() => new ViewWindow("Charts", `/view/charts`)}>
-                <!--                <Icon icon="" class="mr-2 w-6 h-6"/>-->
-                Graph List
+                <ChartLineSmooth size={20} class="mr-1"/>
+                Graph Visualizer
             </button>
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(false)}}>
-                    <Icon icon="mdi:bug-outline" class="mr-2 w-6 h-6"/>
+                    <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Disable Debug Mode
                 </button>
             {:else}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>
-                    <Icon icon="mdi:bug-outline" class="mr-2 w-6 h-6"/>
+                    <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Enable Debug Mode
                 </button>
             {/if}

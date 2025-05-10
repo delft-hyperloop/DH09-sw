@@ -10,7 +10,7 @@
     export let errorCallback: (error:string) => void = () => {};
     export let textOverride: string = '';
     export let hoverContent: string = '';
-
+    export let icon: typeof import("svelte").SvelteComponent | null = null;
 
     export let send = async () => {
         console.log(`Sending command: ${cmd}`);
@@ -43,5 +43,8 @@
                {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
         on:click={send}
         use:popup={popupHover}>
+    {#if icon}
+        <svelte:component this={icon} size={20} class="mr-1 items-center"/>
+    {/if}
     {textOverride === '' ? util.snakeToCamel(cmd) : textOverride}
 </button>

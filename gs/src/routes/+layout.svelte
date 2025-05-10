@@ -53,6 +53,83 @@
     /////////// CHARTS ///////////
     //////////////////////////////
 
+    let offsetChart = new PlotBuffer(500, 60000, [0, 30], true, 'Offset 1');
+    offsetChart.addSeries(StrokePresets.hyperLoopGreen('Offset 2'));
+    offsetChart.addSeries(StrokePresets.yellow('Offset 3'));
+    offsetChart.addSeries(StrokePresets.blue('Offset 4'));
+    $chartStore.set('Offset', offsetChart);
+
+    // Prop log 1 Right Motor chart for test runs
+    let propLog1RightMotorChart = new PlotBuffer(
+        500,
+        3 * 60000,
+        [0, 20],
+        true,
+        'Id measured'
+    );
+    propLog1RightMotorChart.addSeries(StrokePresets.yellow('Id reference'));
+    propLog1RightMotorChart.addSeries(StrokePresets.blue('Iq measured'));
+    propLog1RightMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
+    $chartStore.set('Propulsion Log 1 - Right Motor', propLog1RightMotorChart);
+
+    // Prop log 2 Right Motor chart for test runs
+    let propLog2RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
+    propLog2RightMotorChart.addSeries(StrokePresets.yellow('VD'));
+    propLog2RightMotorChart.addSeries(StrokePresets.blue('Vbus'));
+    propLog2RightMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
+    $chartStore.set('Propulsion Log 2 - Right Motor', propLog2RightMotorChart);
+
+    // Prop log 3 Right Motor chart for test runs
+    let propLog3RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
+    propLog3RightMotorChart.addSeries(StrokePresets.yellow('Tb'));
+    propLog3RightMotorChart.addSeries(StrokePresets.blue('Tc'));
+    propLog3RightMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
+    $chartStore.set('Propulsion Log 3 - Right Motor', propLog3RightMotorChart);
+
+    // Prop log 1 Left Motor chart for test runs
+    let propLog1LeftMotorChart = new PlotBuffer(
+        500,
+        3 * 60000,
+        [0, 20],
+        true,
+        'Id measured'
+    );
+    propLog1LeftMotorChart.addSeries(StrokePresets.yellow('Id reference'));
+    propLog1LeftMotorChart.addSeries(StrokePresets.blue('Iq measured'));
+    propLog1LeftMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
+    $chartStore.set('Propulsion Log 1 - Left Motor', propLog1LeftMotorChart);
+
+    // Prop log 2 Left Motor chart for test runs
+    let propLog2LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
+    propLog2LeftMotorChart.addSeries(StrokePresets.yellow('VD'));
+    propLog2LeftMotorChart.addSeries(StrokePresets.blue('Vbus'));
+    propLog2LeftMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
+    $chartStore.set('Propulsion Log 2 - Left Motor', propLog2LeftMotorChart);
+
+    // Prop log 3 Left Motor chart for test runs
+    let propLog3LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
+    propLog3LeftMotorChart.addSeries(StrokePresets.yellow('Tb'));
+    propLog3LeftMotorChart.addSeries(StrokePresets.blue('Tc'));
+    propLog3LeftMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
+    $chartStore.set('Propulsion Log 3 - Left Motor', propLog3LeftMotorChart);
+
+    let motorLeftTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Left 1');
+    motorLeftTemp.addSeries(StrokePresets.yellow('Motor Left 2'));
+    motorLeftTemp.addSeries(StrokePresets.blue('Motor Left 3'));
+    motorLeftTemp.addSeries(StrokePresets.blueDashed('Motor Left 4'));
+    motorLeftTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Left 5'));
+    motorLeftTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Left 6'));
+    $chartStore.set('Motor Temperatures Left', motorLeftTemp);
+
+    let motorRightTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Right 1');
+    motorRightTemp.addSeries(StrokePresets.yellow('Motor Right 2'));
+    motorRightTemp.addSeries(StrokePresets.blue('Motor Right 3'));
+    motorRightTemp.addSeries(StrokePresets.blueDashed('Motor Right 4'));
+    motorRightTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Right 5'));
+    motorRightTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Right 6'));
+    motorRightTemp.addSeries(StrokePresets.yellowDashed('Motor Right 7'));
+    $chartStore.set('Motor Temperatures Right', motorRightTemp);
+
     let breakingCommsChart = new PlotBuffer(
         500,
         60000,
@@ -142,83 +219,6 @@
 
     let hvTotal = new PlotBuffer(500, 2 * 60000, [-10, 450], false);
     $chartStore.set('HV Total', hvTotal);
-
-    let motorLeftTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Left 1');
-    motorLeftTemp.addSeries(StrokePresets.yellow('Motor Left 2'));
-    motorLeftTemp.addSeries(StrokePresets.blue('Motor Left 3'));
-    motorLeftTemp.addSeries(StrokePresets.blueDashed('Motor Left 4'));
-    motorLeftTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Left 5'));
-    motorLeftTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Left 6'));
-    $chartStore.set('Motor Temperatures Left', motorLeftTemp);
-
-    let motorRightTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Right 1');
-    motorRightTemp.addSeries(StrokePresets.yellow('Motor Right 2'));
-    motorRightTemp.addSeries(StrokePresets.blue('Motor Right 3'));
-    motorRightTemp.addSeries(StrokePresets.blueDashed('Motor Right 4'));
-    motorRightTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Right 5'));
-    motorRightTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Right 6'));
-    motorRightTemp.addSeries(StrokePresets.yellowDashed('Motor Right 7'));
-    $chartStore.set('Motor Temperatures Right', motorRightTemp);
-
-    let offsetChart = new PlotBuffer(500, 60000, [0, 30], true, 'Offset 1');
-    offsetChart.addSeries(StrokePresets.hyperLoopGreen('Offset 2'));
-    offsetChart.addSeries(StrokePresets.yellow('Offset 3'));
-    offsetChart.addSeries(StrokePresets.blue('Offset 4'));
-    $chartStore.set('Offset', offsetChart);
-
-    // Prop log 1 Right Motor chart for test runs
-    let propLog1RightMotorChart = new PlotBuffer(
-        500,
-        3 * 60000,
-        [0, 20],
-        true,
-        'Id measured'
-    );
-    propLog1RightMotorChart.addSeries(StrokePresets.yellow('Id reference'));
-    propLog1RightMotorChart.addSeries(StrokePresets.blue('Iq measured'));
-    propLog1RightMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
-    $chartStore.set('Propulsion Log 1 - Right Motor', propLog1RightMotorChart);
-
-    // Prop log 2 Right Motor chart for test runs
-    let propLog2RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
-    propLog2RightMotorChart.addSeries(StrokePresets.yellow('VD'));
-    propLog2RightMotorChart.addSeries(StrokePresets.blue('Vbus'));
-    propLog2RightMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
-    $chartStore.set('Propulsion Log 2 - Right Motor', propLog2RightMotorChart);
-
-    // Prop log 3 Right Motor chart for test runs
-    let propLog3RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
-    propLog3RightMotorChart.addSeries(StrokePresets.yellow('Tb'));
-    propLog3RightMotorChart.addSeries(StrokePresets.blue('Tc'));
-    propLog3RightMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
-    $chartStore.set('Propulsion Log 3 - Right Motor', propLog3RightMotorChart);
-
-    // Prop log 1 Left Motor chart for test runs
-    let propLog1LeftMotorChart = new PlotBuffer(
-        500,
-        3 * 60000,
-        [0, 20],
-        true,
-        'Id measured'
-    );
-    propLog1LeftMotorChart.addSeries(StrokePresets.yellow('Id reference'));
-    propLog1LeftMotorChart.addSeries(StrokePresets.blue('Iq measured'));
-    propLog1LeftMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
-    $chartStore.set('Propulsion Log 1 - Left Motor', propLog1LeftMotorChart);
-
-    // Prop log 2 Left Motor chart for test runs
-    let propLog2LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
-    propLog2LeftMotorChart.addSeries(StrokePresets.yellow('VD'));
-    propLog2LeftMotorChart.addSeries(StrokePresets.blue('Vbus'));
-    propLog2LeftMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
-    $chartStore.set('Propulsion Log 2 - Left Motor', propLog2LeftMotorChart);
-
-    // Prop log 3 Left Motor chart for test runs
-    let propLog3LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
-    propLog3LeftMotorChart.addSeries(StrokePresets.yellow('Tb'));
-    propLog3LeftMotorChart.addSeries(StrokePresets.blue('Tc'));
-    propLog3LeftMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
-    $chartStore.set('Propulsion Log 3 - Left Motor', propLog3LeftMotorChart);
 
     ////////////////////////////////////////////////////////////////
 

@@ -7,7 +7,7 @@
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
     import { debugModeActive, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
-    import { Analytics } from 'carbon-icons-svelte';
+    import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset } from 'carbon-icons-svelte';
 
     let width: number;
 
@@ -79,7 +79,7 @@
     <AppBar padding="px-5 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDefault="place-self-center">
         <svelte:fragment slot="lead">
             <div class="gap-2 flex flex-row items-center">
-                <Analytics size={16}/>
+                <Activity size={16}/>
                 <span>Vitals</span>
             </div>
         </svelte:fragment>
@@ -152,6 +152,7 @@
                                 cmd="connect_to_pod"
                                 successCallback={handleSuccess}
                                 errorCallback={handleFailure}
+                                icon={Wifi}
                             />
                         {:else}
                             <TauriCommand
@@ -164,12 +165,13 @@
                                         background: "bg-error-400"
                                     });
                                 }}
+                                icon={WifiOff}
                             />
                         {/if}
-                        <Command cmd="StartHV" text="Start HV"/>
-                        <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" />
-                        <Command cmd="RearmSDC" text="Rearm SDC"/>
-                        <Command cmd="SystemReset"/>
+                        <Command cmd="StartHV" text="Start HV" icon={Flash}/>
+                        <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
+                        <Command cmd="RearmSDC" text="Rearm SDC" icon={QComposerEdit}/>
+                        <Command cmd="SystemReset" icon={Reset}/>
                     </div>
                 </Tile>
 <!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->

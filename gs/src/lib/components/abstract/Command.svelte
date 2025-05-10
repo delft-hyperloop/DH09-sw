@@ -16,6 +16,7 @@
     export let dependency: Writable<boolean> = writable<boolean>(true);
     export let dependencyMessage: string = '';
     export let dependencyTitle: string = '';
+    export let icon: typeof import("svelte").SvelteComponent | null = null;
 
     let modalStore = getModalStore();
 
@@ -42,5 +43,8 @@
 
 <button class="btn rounded-md font-number font-medium text-wrap overflow-auto {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
         on:click={send}>
+    {#if icon}
+        <svelte:component this={icon} size={20} class="mr-1"/>
+    {/if}
     {text ? text : util.snakeToCamel(cmd)}
 </button>

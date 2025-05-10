@@ -23,5 +23,5 @@
 </script>
 
 <div class="h-full">
-    <Chart title={data.title} height={$height} background="bg-surface-900" pop_up={false} />
+    <Chart title={data.title} height={$height} background="bg-surface-900" pop_up={false} pinnable={false}/>
 </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { appWindow } from '@tauri-apps/api/window'
-    import Icon from '@iconify/svelte'
+    import { Close, SubtractLarge, Maximize } from 'carbon-icons-svelte';
 </script>
 
 <div data-tauri-drag-region class="bg-surface-900 flex justify-between items-center p-1 px-2">
@@ -10,13 +10,13 @@
     </div>
     <div class="text-surface-300">
         <button on:click={appWindow.minimize} class="rounded-full bg-surface-800 hover:bg-surface-700 p-1">
-            <Icon icon="mdi:window-minimize" />
+            <SubtractLarge size={16} />
         </button>
         <button on:click={appWindow.maximize} class="rounded-full bg-surface-800 hover:bg-surface-700 p-1" >
-            <Icon icon="mdi:window-maximize" />
+            <Maximize size={16} />
         </button>
         <button on:click={appWindow.close} class="rounded-full bg-surface-800 hover:bg-surface-700 p-1">
-            <Icon icon="mdi:window-close" />
+            <Close size={16} />
         </button>
     </div>
 </div>

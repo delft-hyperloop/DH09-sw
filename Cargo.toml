@@ -51,7 +51,7 @@ git = "https://github.com/delft-hyperloop/embassy"
 rev = "e56a1d0e457bee087a4094206b277fbf595a8f17"
 features = [
     "defmt",
-    "stm32h753zi",
+    # "stm32h753zi",
     "time-driver-any",
     "exti",
     # "memory-x",

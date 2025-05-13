@@ -279,10 +279,9 @@ async fn rx_task(
         if !sock_lock.can_recv() {
             if sock_lock.state() == State::Closed {
                 rs.signal(());
-                Timer::after_millis(100).await;
                 continue;
             }
-            Timer::after_millis(10).await;
+            Timer::after_millis(1).await;
             continue;
         }
         let read_result = sock_lock.read_exact(&mut buf).await;
@@ -302,7 +301,6 @@ async fn rx_task(
             ) => {
                 defmt::error!("{}", e);
                 rs.signal(());
-                Timer::after_millis(100).await;
                 continue;
             }
         };

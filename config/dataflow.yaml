@@ -1211,6 +1211,7 @@ commands:
     can:
       id: 0x190
       bus: can2
+      trim: 7
   - name: 'DefaultCommand'
     id: 0x01
   - name: 'Heartbeat'

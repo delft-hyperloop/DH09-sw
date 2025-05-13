@@ -298,6 +298,26 @@ pub struct CanCommandSpec {
     #[serde(flatten)]
     pub can: CanSpec,
     pub conversion: Option<String>,
+    #[serde(default = "zero_trim")]
+    pub trim: Trim,
+}
+
+fn zero_trim() -> Trim { Trim(0) }
+
+#[derive(serde::Deserialize, Debug)]
+#[serde(try_from = "usize")]
+pub struct Trim(usize);
+
+impl TryFrom<usize> for Trim {
+    type Error = &'static str;
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
+        if value > 8 {
+            Err("trim value must be between 0 and 8")
+        } else {
+            Ok(Trim(value))
+        }
+    }
 }
 
 impl GetterSpec {
@@ -388,7 +408,109 @@ impl TryFrom<String> for GetterSpec {
 }
 
 fn make_procedures(df: &DataflowSpec) -> String {
-    let mut code = String::new();
+    let mut code = String::from(
+        r#"
+#[inline(always)]
+fn apply_trim_0(data: [u8; 8], ctxt: &str) -> [u8; 8] {
+    data
+}
+
+#[inline(always)]
+fn apply_trim_1(data: [u8; 8], ctxt: &str) -> [u8; 7] {
+    let mut trimmed = [0; 7];
+    trimmed.copy_from_slice(&data[1..]);
+    for i in 0..1 {
+        if data[i] != 0 {
+            defmt::warn!("trimming non-zero byte at index {} ({})", i, ctxt);
+        }
+    }
+    trimmed
+}
+
+#[inline(always)]
+fn apply_trim_2(data: [u8; 8], ctxt: &str) -> [u8; 6] {
+    let mut trimmed = [0; 6];
+    trimmed.copy_from_slice(&data[2..]);
+    for i in 0..2 {
+        if data[i] != 0 {
+            defmt::warn!("trimming non-zero byte at index {} ({})", i, ctxt);
+        }
+    }
+    trimmed
+}
+
+#[inline(always)]
+fn apply_trim_3(data: [u8; 8], ctxt: &str) -> [u8; 5] {
+    let mut trimmed = [0; 5];
+    trimmed.copy_from_slice(&data[3..]);
+    for i in 0..3 {
+        if data[i] != 0 {
+            defmt::warn!("trimming non-zero byte at index {} ({})", i, ctxt);
+        }
+    }
+    trimmed
+}
+
+#[inline(always)]
+fn apply_trim_4(data: [u8; 8], ctxt: &str) -> [u8; 4] {
+    let mut trimmed = [0; 4];
+    trimmed.copy_from_slice(&data[4..]);
+    for i in 0..4 {
+        if data[i] != 0 {
+            defmt::warn!("trimming non-zero byte at index {} ({})", i, ctxt);
+        }
+    }
+    trimmed
+}
+
+#[inline(always)]
+fn apply_trim_5(data: [u8; 8], ctxt: &str) -> [u8; 3] {
+    let mut trimmed = [0; 3];
+    trimmed.copy_from_slice(&data[5..]);
+    for i in 0..5 {
+        if data[i] != 0 {
+            defmt::warn!("trimming non-zero byte at index {} ({})", i, ctxt);
+        }
+    }
+    trimmed
+}
+
+#[inline(always)]
+fn apply_trim_6(data: [u8; 8], ctxt: &str) -> [u8; 2] {
+    let mut trimmed = [0; 2];
+    trimmed.copy_from_slice(&data[6..]);
+    for i in 0..6 {
+        if data[i] != 0 {
+            defmt::warn!("trimming non-zero byte at index {} ({})", i, ctxt);
+        }
+    }
+    trimmed
+}
+
+#[inline(always)]
+fn apply_trim_7(data: [u8; 8], ctxt: &str) -> [u8; 1] {
+    let mut trimmed = [0; 1];
+    trimmed.copy_from_slice(&data[7..]);
+    for i in 0..7 {
+        if data[i] != 0 {
+            defmt::warn!("trimming non-zero byte at index {} ({})", i, ctxt);
+        }
+    }
+    trimmed
+}
+
+#[inline(always)]
+fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
+    let mut trimmed = [0; 0];
+    for i in 0..8 {
+        if data[i] != 0 {
+            defmt::warn!("trimming non-zero byte at index {} ({})", i, ctxt);
+        }
+    }
+    trimmed
+}
+"#,
+    );
 
     for (name, spec) in &df.procedures {
         code.push_str(&format!(
@@ -576,38 +698,42 @@ use core::future::Future;
     let mut can2commands = vec![];
 
     for command in &df.commands {
-        if let Some(CanCommandSpec { can: CanSpec::Can1 { id, .. }, conversion }) = &command.can {
-            can1commands.push((&command.name, *id, conversion));
-        } else if let Some(CanCommandSpec { can: CanSpec::Can2 { id, .. }, conversion }) =
+        if let Some(CanCommandSpec { can: CanSpec::Can1 { id, .. }, conversion, trim }) =
             &command.can
         {
-            can2commands.push((&command.name, *id, conversion));
+            can1commands.push((&command.name, *id, conversion, trim));
+        } else if let Some(CanCommandSpec { can: CanSpec::Can2 { id, .. }, conversion, trim }) =
+            &command.can
+        {
+            can2commands.push((&command.name, *id, conversion, trim));
         }
     }
 
     writeln!(&mut code, "pub async fn gs_to_can1<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::can1::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
-    for (command_name, id, conversion) in &can1commands {
+    for (command_name, id, conversion, trim) in &can1commands {
         writeln!(
             &mut code,
             r#"Command::{command_name}(v) => {{
-                let data = {conversion}(v);
+                let data = {apply_trim}({conversion}(v), "{command_name}");
                 f(crate::can::can1::CanEnvelope::new_from_frame(embassy_stm32::can::frame::FdFrame::new_extended({id}, &data).expect("Invalid frame!"))).await;
             }}"#,
             conversion = conversion.as_deref().unwrap_or("default_command_process"),
+            apply_trim = format_args!("apply_trim_{trim}", trim = trim.0),
         )
         .unwrap();
     }
     writeln!(&mut code, "_ => {{}}}}}}").unwrap();
 
     writeln!(&mut code, "pub async fn gs_to_can2<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::can2::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
-    for (command_name, id, conversion) in &can2commands {
+    for (command_name, id, conversion, trim) in &can2commands {
         writeln!(
             &mut code,
             r#"Command::{command_name}(v) => {{
-                let data = {conversion}(v);
+                let data = {apply_trim}({conversion}(v), "{command_name}");
                 f(crate::can::can2::CanEnvelope::new_from_frame(embassy_stm32::can::frame::Frame::new_standard({id}, &data).expect("Invalid frame!"))).await;
             }}"#,
             conversion = conversion.as_deref().unwrap_or("default_command_process"),
+            apply_trim = format_args!("apply_trim_{trim}", trim = trim.0),
         )
         .unwrap();
     }
@@ -617,7 +743,7 @@ use core::future::Future;
 }
 
 pub fn make_levi_beckhoff_code(df: &DataflowSpec) -> String {
-r#"
+    r#"
 VAR
 	i: UINT;
 	
@@ -670,10 +796,12 @@ END_IF
 
     let mut vars = String::new();
     let mut input_vars = String::new();
-    
+
     let mut code = String::new();
 
-    writeln!(&mut vars, r#"
+    writeln!(
+        &mut vars,
+        r#"
 VAR
         i: UINT := 0;
         can_out_msgs: INT := 0;
@@ -685,11 +813,17 @@ VAR
         local_u16: UINT_AND_BYTES;
         local_u32: UDINT_AND_BYTES;
 
-"#).unwrap();
-    writeln!(&mut input_vars, r#"
+"#
+    )
+    .unwrap();
+    writeln!(
+        &mut input_vars,
+        r#"
     VAR_INPUT
         
-    "#).unwrap();
+    "#
+    )
+    .unwrap();
 
     for mp in &df.message_processing {
         if let CanSpec::Can2 { id, comes_from_levi: Some(l) } = &mp.can {
@@ -699,35 +833,96 @@ VAR
                     panic!("no");
                 };
 
-                writeln!(&mut input_vars, "        {}", levi_info.levi_type.make_input(&levi_info.name)).unwrap();
+                writeln!(
+                    &mut input_vars,
+                    "        {}",
+                    levi_info.levi_type.make_input(&levi_info.name)
+                )
+                .unwrap();
                 match dp.getter.ty {
                     Ty::U8 => {
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := {};", dp.getter.can_payload_range.start, levi_info.formula.replace("$", &levi_info.name)).unwrap();
+                        writeln!(
+                            &mut tx_data_create,
+                            "    tx_data[{}] := {};",
+                            dp.getter.can_payload_range.start,
+                            levi_info.formula.replace("$", &levi_info.name)
+                        )
+                        .unwrap();
                     },
                     Ty::U16 => {
-                        writeln!(&mut tx_data_create, "    local_u16.value := {};", levi_info.formula.replace("$", &levi_info.name)).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u16.bytes[1];", dp.getter.can_payload_range.start).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u16.bytes[0];", dp.getter.can_payload_range.start + 1).unwrap();
+                        writeln!(
+                            &mut tx_data_create,
+                            "    local_u16.value := {};",
+                            levi_info.formula.replace("$", &levi_info.name)
+                        )
+                        .unwrap();
+                        writeln!(
+                            &mut tx_data_create,
+                            "    tx_data[{}] := local_u16.bytes[1];",
+                            dp.getter.can_payload_range.start
+                        )
+                        .unwrap();
+                        writeln!(
+                            &mut tx_data_create,
+                            "    tx_data[{}] := local_u16.bytes[0];",
+                            dp.getter.can_payload_range.start + 1
+                        )
+                        .unwrap();
                     },
                     Ty::U32 => {
-                        writeln!(&mut tx_data_create, "    local_u32.value := {};", levi_info.formula.replace("$", &levi_info.name)).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u32.bytes[3];", dp.getter.can_payload_range.start).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u32.bytes[2];", dp.getter.can_payload_range.start + 1).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u32.bytes[1];", dp.getter.can_payload_range.start + 2).unwrap();
-                        writeln!(&mut tx_data_create, "    tx_data[{}] := local_u32.bytes[0];", dp.getter.can_payload_range.start + 3).unwrap();
+                        writeln!(
+                            &mut tx_data_create,
+                            "    local_u32.value := {};",
+                            levi_info.formula.replace("$", &levi_info.name)
+                        )
+                        .unwrap();
+                        writeln!(
+                            &mut tx_data_create,
+                            "    tx_data[{}] := local_u32.bytes[3];",
+                            dp.getter.can_payload_range.start
+                        )
+                        .unwrap();
+                        writeln!(
+                            &mut tx_data_create,
+                            "    tx_data[{}] := local_u32.bytes[2];",
+                            dp.getter.can_payload_range.start + 1
+                        )
+                        .unwrap();
+                        writeln!(
+                            &mut tx_data_create,
+                            "    tx_data[{}] := local_u32.bytes[1];",
+                            dp.getter.can_payload_range.start + 2
+                        )
+                        .unwrap();
+                        writeln!(
+                            &mut tx_data_create,
+                            "    tx_data[{}] := local_u32.bytes[0];",
+                            dp.getter.can_payload_range.start + 3
+                        )
+                        .unwrap();
                     },
                     _ => panic!("not supported"),
                 }
             }
             writeln!(&mut vars, "    can_{id}_periods_since_last_log : INT := 1000;").unwrap();
-            writeln!(&mut code, "IF ({} * can_{id}_periods_since_last_log >= {} AND No_Messages_Queued < 32) THEN", df.beckhoff.task_period, l.log_period).unwrap();
+            writeln!(
+                &mut code,
+                "IF ({} * can_{id}_periods_since_last_log >= {} AND No_Messages_Queued < 32) THEN",
+                df.beckhoff.task_period, l.log_period
+            )
+            .unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].length := 8;").unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].cobId := {id};").unwrap();
             writeln!(&mut code, "{}", tx_data_create).unwrap();
-            writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].txData := tx_data;").unwrap();
+            writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].txData := tx_data;")
+                .unwrap();
             writeln!(&mut code, "    No_Messages_Queued := No_Messages_Queued + 1;").unwrap();
             writeln!(&mut code, "    can_{id}_periods_since_last_log := 0;").unwrap();
-            writeln!(&mut code, "ELSE\n    can_{id}_periods_since_last_log := can_{id}_periods_since_last_log + 1;").unwrap();
+            writeln!(
+                &mut code,
+                "ELSE\n    can_{id}_periods_since_last_log := can_{id}_periods_since_last_log + 1;"
+            )
+            .unwrap();
             writeln!(&mut code, "END_IF;").unwrap();
         }
     }
@@ -735,7 +930,8 @@ VAR
     writeln!(&mut vars, "END_VAR").unwrap();
     writeln!(&mut input_vars, "END_VAR").unwrap();
 
-    format!("
+    format!(
+        "
 {vars}
 {input_vars}
 VAR_IN_OUT
@@ -754,7 +950,8 @@ IF (CAN_OUTPUTS.TxCounter = CAN_INPUTS.TxCounter) AND (No_Messages_Queued <> 0) 
 	CAN_OUTPUTS.TxCounter := CAN_INPUTS.TxCounter + 1;
 	No_Messages_Queued := 0;
 END_IF
-    ")
+    "
+    )
 }
 
 pub fn make_logging_pcb_code(df: &DataflowSpec) -> String { format!("") }

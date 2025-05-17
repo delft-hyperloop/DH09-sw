@@ -6,8 +6,14 @@
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
-    import { debugModeActive, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
-    import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset } from 'carbon-icons-svelte';
+    import {
+        debugModeActive,
+        hvOn,
+        inStateSystemCheck,
+        showcaseStateCounter,
+        showcasingStates,
+    } from '$lib/stores/state';
+    import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck } from 'carbon-icons-svelte';
 
     let width: number;
 
@@ -168,8 +174,18 @@
                                 icon={WifiOff}
                             />
                         {/if}
-                        <Command cmd="StartHV" text="Start HV" icon={Flash}/>
-                        <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
+                        <Command
+                            cmd="SystemCheck"
+                            dependency={inStateSystemCheck}
+                            dependencyTitle="Not in System Check"
+                            dependencyMessage="The pod must be in the System Check state to perform a system check!"
+                            icon={SettingsCheck}
+                        />
+                        {#if !$hvOn}
+                            <Command cmd="StartHV" text="Start HV" icon={Flash}/>
+                        {:else}
+                            <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
+                        {/if}
                         <Command cmd="RearmSDC" text="Rearm SDC" icon={QComposerEdit}/>
                         <Command cmd="SystemReset" icon={Reset}/>
                     </div>

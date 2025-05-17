@@ -305,6 +305,38 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempMotorLeft6'
+          id: 0x556
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Motor Temperatures Left")!.addEntry(7, curr);
+                  return curr;
+              }
+        getter: 'u8[6..7]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempMotorLeft7'
+          id: 0x557
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Motor Temperatures Left")!.addEntry(8, curr);
+                  return curr;
+              }
+        getter: 'u8[7..8]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
   - name: 'TempMotorRight'
     can:
       id: 0x33C
@@ -422,6 +454,22 @@ message-processing:
                   return curr;
               }
         getter: 'u8[6..7]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempMotorRight7'
+          id: 0x555
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Motor Temperatures Right")!.addEntry(8, curr);
+                  return curr;
+              }
+        getter: 'u8[7..8]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
@@ -605,75 +653,6 @@ message-processing:
         display-units: 'mm'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'Offset'
-    can:
-      id: 0x385
-      bus: can2
-    datapoint-conversion:
-      - datapoint:
-          name: 'Offset1'
-          id: 0x848
-          store:
-            default: 0
-            callback: |
-              data => {
-                  const curr = Number(data);
-                  $chartStore.get("Offset")!.addEntry(1, curr);
-                  return curr;
-              }
-        getter: 'u16[0..2]'
-        can-conversion: 'decode_offset:u16->f32'
-        display-units: 'mm'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Offset2'
-          id: 0x849
-          store:
-            default: 0
-            callback: |
-              data => {
-                  const curr = Number(data);
-                  $chartStore.get("Offset")!.addEntry(2, curr);
-                  return curr;
-              }
-        getter: 'u16[2..4]'
-        can-conversion: 'decode_offset:u16->f32'
-        display-units: 'mm'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Offset3'
-          id: 0x84A
-          store:
-            default: 0
-            callback: |
-              data => {
-                  const curr = Number(data);
-                  $chartStore.get("Offset")!.addEntry(3, curr);
-                  return curr;
-              }
-        getter: 'u16[4..6]'
-        can-conversion: 'decode_offset:u16->f32'
-        display-units: 'mm'
-        gs:
-          conversion: 'gs_2p_float:f32'
-      - datapoint:
-          name: 'Offset4'
-          id: 0x84B
-          store:
-            default: 0
-            callback: |
-              data => {
-                  const curr = Number(data);
-                  $chartStore.get("Offset")!.addEntry(4, curr);
-                  return curr;
-              }
-        getter: 'u16[6..8]'
-        can-conversion: 'decode_offset:u16->f32'
-        display-units: 'mm'
-        gs:
-          conversion: 'gs_2p_float:f32'
   - name: 'PPInitFault1'
     can:
       id: 0x505
@@ -1190,6 +1169,662 @@ message-processing:
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
+  - name: 'FSMAckLevi'
+    can:
+      id: 0x385
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'FSMAckLevi'
+          id: 0x52A
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'ClearFaultAckLevi'
+    can:
+      id: 0x386
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'ClearFaultAckLevi'
+          id: 0x52B
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'Offset'
+    can:
+      id: 0x387
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'Offset1'
+          id: 0x848
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Offset")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'decode_offset:u16->f32'
+        display-units: 'mm'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Offset2'
+          id: 0x849
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Offset")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u16[2..4]'
+        can-conversion: 'decode_offset:u16->f32'
+        display-units: 'mm'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Offset3'
+          id: 0x84A
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Offset")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'u16[4..6]'
+        can-conversion: 'decode_offset:u16->f32'
+        display-units: 'mm'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'Offset4'
+          id: 0x84B
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Offset")!.addEntry(4, curr);
+                  return curr;
+              }
+        getter: 'u16[6..8]'
+        can-conversion: 'decode_offset:u16->f32'
+        display-units: 'mm'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'LevitationState'
+    can:
+      id: 0x515
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LevitationState'
+          id: 0x528
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+      - datapoint:
+          name: 'NonCriticalLeviError'
+          id: 0x529
+          store:
+            default: 0
+        getter: 'u8[1..2]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+#  - name: 'AirGaps'
+#    can:
+#      id: 0x516
+#      bus: can2
+#    datapoint-conversion:
+#      - datapoint:
+#          name: 'Vertical'
+#          id: 0x52C
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Air Gaps")!.addEntry(1, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[0..2]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'Lateral'
+#          id: 0x52D
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Air Gaps")!.addEntry(2, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[2..4]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#  - name: 'Angles'
+#    can:
+#      id: 0x517
+#      bus: can2
+#    datapoint-conversion:
+#      - datapoint:
+#          name: 'Roll'
+#          id: 0x52E
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Angles")!.addEntry(1, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[0..2]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'Pitch'
+#          id: 0x52F
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Angles")!.addEntry(2, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[2..4]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'Yaw'
+#          id: 0x530
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Angles")!.addEntry(3, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[4..6]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#  - name: 'CurrentHEMS'
+#    can:
+#      id: 0x518
+#      bus: can2
+#    datapoint-conversion:
+#      - datapoint:
+#          name: 'VFL'
+#          id: 0x531
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("HEMS Current")!.addEntry(1, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[0..2]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'VFR'
+#          id: 0x532
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("HEMS Current")!.addEntry(2, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[2..4]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'VBL'
+#          id: 0x533
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("HEMS Current")!.addEntry(3, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[4..6]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'VBR'
+#          id: 0x534
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("HEMS Current")!.addEntry(4, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[6..8]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#  - name: 'CurrentEMS'
+#    can:
+#      id: 0x519
+#      bus: can2
+#    datapoint-conversion:
+#      - datapoint:
+#          name: 'LF'
+#          id: 0x535
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("EMS Current")!.addEntry(1, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[0..2]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'LB'
+#          id: 0x536
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("EMS Current")!.addEntry(2, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[2..4]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#  - name: 'RequestedForce1Levi'
+#    can:
+#      id: 0x51A
+#      bus: can2
+#    datapoint-conversion:
+#      - datapoint:
+#          name: 'Z'
+#          id: 0x537
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Requested Force 1")!.addEntry(1, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[0..2]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'Roll'
+#          id: 0x538
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Requested Force 1")!.addEntry(2, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[2..4]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'Pitch'
+#          id: 0x539
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Requested Force 1")!.addEntry(3, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[4..6]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#  - name: 'RequestedForce2Levi'
+#    can:
+#      id: 0x51B
+#      bus: can2
+#    datapoint-conversion:
+#      - datapoint:
+#          name: 'Y'
+#          id: 0x53A
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Requested Force 2")!.addEntry(1, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[0..2]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+#      - datapoint:
+#          name: 'Yaw'
+#          id: 0x53B
+#          store:
+#            default: 0
+#            callback: |
+#              data => {
+#                  const curr = Number(data);
+#                  $chartStore.get("Requested Force 2")!.addEntry(2, curr);
+#                  return curr;
+#              }
+#        getter: 'u16[2..4]'
+#        can-conversion: ''
+#        gs:
+#          conversion: ''
+  - name: 'TempHEMS'
+    can:
+      id: 0x33D
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'TempHEMS1'
+          id: 0x53C
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures HEMS")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u8[0..1]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempHEMS2'
+          id: 0x53D
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures HEMS")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u8[1..2]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempHEMS3'
+          id: 0x53E
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures HEMS")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'u8[2..3]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempHEMS4'
+          id: 0x53F
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures HEMS")!.addEntry(4, curr);
+                  return curr;
+              }
+        getter: 'u8[3..4]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempHEMS5'
+          id: 0x540
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures HEMS")!.addEntry(5, curr);
+                  return curr;
+              }
+        getter: 'u8[4..5]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempHEMS6'
+          id: 0x541
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures HEMS")!.addEntry(6, curr);
+                  return curr;
+              }
+        getter: 'u8[5..6]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempHEMS7'
+          id: 0x542
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures HEMS")!.addEntry(7, curr);
+                  return curr;
+              }
+        getter: 'u8[6..7]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempHEMS8'
+          id: 0x543
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures HEMS")!.addEntry(8, curr);
+                  return curr;
+              }
+        getter: 'u8[7..8]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'TempEMS'
+    can:
+      id: 0x33E
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'TempEMS1'
+          id: 0x544
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures EMS")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u8[0..1]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempEMS2'
+          id: 0x545
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures EMS")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u8[1..2]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempEMS3'
+          id: 0x546
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures EMS")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'u8[2..3]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempEMS4'
+          id: 0x547
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures EMS")!.addEntry(4, curr);
+                  return curr;
+              }
+        getter: 'u8[3..4]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempEMS5'
+          id: 0x548
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures EMS")!.addEntry(5, curr);
+                  return curr;
+              }
+        getter: 'u8[4..5]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempEMS6'
+          id: 0x549
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures EMS")!.addEntry(6, curr);
+                  return curr;
+              }
+        getter: 'u8[5..6]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempEMS7'
+          id: 0x54A
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures EMS")!.addEntry(7, curr);
+                  return curr;
+              }
+        getter: 'u8[6..7]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'TempEMS8'
+          id: 0x54B
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Temperatures EMS")!.addEntry(8, curr);
+                  return curr;
+              }
+        getter: 'u8[7..8]'
+        can-conversion: 'decode_temperature:u8->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
 
 commands:
   - name: 'DefaultCommand'

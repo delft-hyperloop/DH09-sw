@@ -44,7 +44,9 @@
 <button class="btn rounded-md font-number font-medium text-wrap overflow-auto {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
         on:click={send}>
     {#if icon}
-        <svelte:component this={icon} size={20} class="mr-1"/>
+        <div class="mr-1">
+            <svelte:component this={icon} size={20}/>
+        </div>
     {/if}
     {text ? text : util.snakeToCamel(cmd)}
 </button>

@@ -30,6 +30,7 @@ export const showcasingStates: Writable<boolean> = writable(false);
 export const showcasingLocalization: Writable<boolean> = writable(false); // TODO
 
 export const debugModeActive: Writable<boolean> = writable(false);
+export const threeDModeActive: Writable<boolean> = writable(false);
 
 export const propControlWord1: Writable<number> = writable<number>(0);
 export const propControlWord2: Writable<number> = writable<number>(0);

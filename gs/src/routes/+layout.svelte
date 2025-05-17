@@ -17,7 +17,6 @@
         chartStore,
         debugModeActive,
         latestTimestamp,
-        logsPanelSize,
         logsVisible,
         showcaseStateCounter,
         showcasingStates,
@@ -119,6 +118,8 @@
     motorLeftTemp.addSeries(StrokePresets.blueDashed('Motor Left 4'));
     motorLeftTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Left 5'));
     motorLeftTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Left 6'));
+    motorLeftTemp.addSeries(StrokePresets.yellowDashed('Motor Left 7'));
+    motorLeftTemp.addSeries(StrokePresets.theoretical('Motor Left 8'))
     $chartStore.set('Motor Temperatures Left', motorLeftTemp);
 
     let motorRightTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Right 1');
@@ -128,20 +129,8 @@
     motorRightTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Right 5'));
     motorRightTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Right 6'));
     motorRightTemp.addSeries(StrokePresets.yellowDashed('Motor Right 7'));
+    motorRightTemp.addSeries(StrokePresets.theoretical('Motor Right 8'));
     $chartStore.set('Motor Temperatures Right', motorRightTemp);
-
-    let breakingCommsChart = new PlotBuffer(
-        500,
-        60000,
-        [0, 120],
-        true,
-        'Breaking Comms'
-    );
-    $chartStore.set('Breaking Comms', breakingCommsChart);
-
-    let emsTempChart = new PlotBuffer(500, 60000, [0, 120], true, 'EMS 1');
-    emsTempChart.addSeries(StrokePresets.theoretical('EMS 2'));
-    $chartStore.set('EMS Temperatures', emsTempChart);
 
     let airGapChart = new PlotBuffer(
         500,
@@ -152,54 +141,30 @@
     );
     airGapChart.addSeries(StrokePresets.theoretical('Lateral Air Gap'));
     $chartStore.set('Air Gaps', airGapChart);
-    // max vertical: 27.5
-    // max lateral: 16
 
-    let rotationChart = new PlotBuffer(500, 60000, [0, 120], true, 'Pitch');
-    rotationChart.addSeries(StrokePresets.theoretical('Roll'));
-    $chartStore.set('Rotations', rotationChart);
-    // TODO: max rotations?
-
-    let hemsTempChart = new PlotBuffer(500, 60000, [0, 120], true, 'HEMS 1');
-
-    hemsTempChart.addSeries(StrokePresets.theoretical('HEMS 2'));
-    hemsTempChart.addSeries(StrokePresets.yellow('HEMS 3'));
-    hemsTempChart.addSeries(StrokePresets.blue('HEMS 4'));
-    $chartStore.set('HEMS Temperatures', hemsTempChart);
+    let anglesChart = new PlotBuffer(500, 60000, [0, 120], true, 'Roll');
+    anglesChart.addSeries(StrokePresets.theoretical('Pitch'));
+    anglesChart.addSeries(StrokePresets.blue('Yaw'));
+    $chartStore.set('Angles', anglesChart);
 
     let hemsCurrentChart = new PlotBuffer(
         500,
         3 * 60000,
         [-11.3, 11.3],
         true,
-        'a1'
+        'VFL'
     );
-    hemsCurrentChart.addSeries(StrokePresets.hyperloopGreenDashed('a2'));
-    hemsCurrentChart.addSeries(StrokePresets.theoretical('b1'));
-    hemsCurrentChart.addSeries(StrokePresets.theoreticalDashed('b2'));
-    hemsCurrentChart.addSeries(StrokePresets.yellow('c1'));
-    hemsCurrentChart.addSeries(StrokePresets.yellowDashed('c2'));
-    hemsCurrentChart.addSeries(StrokePresets.blue('d1'));
-    hemsCurrentChart.addSeries(StrokePresets.blueDashed('d2'));
+    hemsCurrentChart.addSeries(StrokePresets.blue('VFR'));
+    hemsCurrentChart.addSeries(StrokePresets.theoretical('VBL'));
+    hemsCurrentChart.addSeries(StrokePresets.yellow('VBR'));
     $chartStore.set('HEMS Current', hemsCurrentChart);
 
-    let emsCurrentChart = new PlotBuffer(500, 3 * 60000, [-11.3, 11.3], true);
-    emsCurrentChart.addSeries(StrokePresets.theoretical('cd'));
+    let emsCurrentChart = new PlotBuffer(500, 3 * 60000, [-11.3, 11.3], true, 'LF');
+    emsCurrentChart.addSeries(StrokePresets.theoretical('LB'));
     $chartStore.set('EMS Current', emsCurrentChart);
-
-    let voffChart = new PlotBuffer(500, 60000, [8, 25], false);
-    $chartStore.set('Offset Vertical', voffChart);
 
     let accelChart = new PlotBuffer(500, 60000, [0, 25], false);
     $chartStore.set('Acceleration', accelChart);
-
-    let rolPitchChart = new PlotBuffer(500, 60000, [-0.8, 0.8], true, 'roll');
-    rolPitchChart.addSeries(StrokePresets.theoretical('pitch'));
-    $chartStore.set('Roll Pitch', rolPitchChart);
-
-    let hoffChart = new PlotBuffer(500, 60000, [-8, 8], true, 'ab');
-    hoffChart.addSeries(StrokePresets.theoretical('cd'));
-    $chartStore.set('Offset Horizontal', hoffChart);
 
     let velChart = new PlotBuffer(500, 60000, [0, 100], false);
     $chartStore.set('Velocity', velChart);
@@ -208,17 +173,16 @@
     localizationChart.addSeries(StrokePresets.yellow("Localization"))
     $chartStore.set("Localization", localizationChart);
 
-    let lvCurrent = new PlotBuffer(500, 60000, [-15, 15], false);
-    $chartStore.set('LV Current', lvCurrent);
+    let leviRequestForce1Chart = new PlotBuffer(500, 60000, [0, 100], true, 'Z');
+    leviRequestForce1Chart.addSeries(StrokePresets.yellow('Roll'));
+    leviRequestForce1Chart.addSeries(StrokePresets.theoretical('Pitch'));
+    $chartStore.set('Requested Force 1', leviRequestForce1Chart);
 
-    let hvCurrent = new PlotBuffer(500, 60000, [-15, 15], false);
-    $chartStore.set('HV Current', hvCurrent);
+    let leviRequestForce2Chart = new PlotBuffer(500, 60000, [0, 100], true, 'Y');
+    leviRequestForce2Chart.addSeries(StrokePresets.yellow('Yaw'));
+    $chartStore.set('Requested Force 2', leviRequestForce2Chart);
 
-    let lvTotal = new PlotBuffer(500, 2 * 60000, [-1, 30], false);
-    $chartStore.set('LV Total', lvTotal);
 
-    let hvTotal = new PlotBuffer(500, 2 * 60000, [-10, 450], false);
-    $chartStore.set('HV Total', hvTotal);
 
     ////////////////////////////////////////////////////////////////
 

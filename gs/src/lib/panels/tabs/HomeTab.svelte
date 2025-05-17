@@ -1,12 +1,12 @@
 <script lang="ts">
     import { Chart, Command, serverStatus, TauriCommand, Tile, TileGrid } from '$lib';
-    import {getToastStore} from "@skeletonlabs/skeleton";
+    import { getToastStore } from "@skeletonlabs/skeleton";
     import { pinnedCharts, procedures } from '$lib/stores/data';
-    import {parseProcedure} from "$lib/util/parsers";
-    import { debugModeActive } from '$lib/stores/state';
+    import { parseProcedure } from "$lib/util/parsers";
+    import { debugModeActive, threeDModeActive } from '$lib/stores/state';
     import Icon from '@iconify/svelte';
     import { ViewWindow } from '$lib/util/WindowControl';
-    import { ChartLineSmooth, Flash, FlashOff, Wifi, WifiOff } from 'carbon-icons-svelte';
+    import { ChartLineSmooth, Flash, FlashOff, Wifi, WifiOff, WatsonHealth3DMprToggle } from 'carbon-icons-svelte';
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -64,6 +64,22 @@
                    py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Enable Debug Mode
+                </button>
+            {/if}
+            {#if $threeDModeActive}
+                <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+                   py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => {threeDModeActive.set(false)}}>
+                    <WatsonHealth3DMprToggle  class="mr-1" size={20}/>
+                    Disable 3D Mode
+                </button>
+            {:else}
+                <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+                   py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => {
+                       // threeDModeActive.set(true);
+                       new ViewWindow("pod", `/view/pod`)
+                   }}>
+                    <WatsonHealth3DMprToggle  class="mr-1" size={20}/>
+                    3D Pod
                 </button>
             {/if}
         </div>

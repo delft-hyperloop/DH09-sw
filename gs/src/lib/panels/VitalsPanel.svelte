@@ -8,7 +8,7 @@
     import MainFSM from '$lib/components/MainFSM.svelte';
     import {
         debugModeActive,
-        hvOn,
+        inStateHVOn,
         inStateSystemCheck,
         showcaseStateCounter,
         showcasingStates,
@@ -181,7 +181,7 @@
                             dependencyMessage="The pod must be in the System Check state to perform a system check!"
                             icon={SettingsCheck}
                         />
-                        {#if !$hvOn}
+                        {#if !$inStateHVOn}
                             <Command cmd="StartHV" text="Start HV" icon={Flash}/>
                         {:else}
                             <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>

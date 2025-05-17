@@ -1,13 +1,23 @@
 <script lang="ts">
     import { Chart, Command, GrandDataDistributor, Tile, TileGrid } from '$lib';
     import { NamedCommandValues } from "$lib/types";
-    import { overrideDependencies, propControlWord1, propControlWord2, propulsionConfigSent, showcasingStates, RedHVALTurnedOn, GreenHVALTurnedOn } from '$lib/stores/state';
+    import {
+        overrideDependencies,
+        propControlWord1,
+        propControlWord2,
+        propulsionConfigSent,
+        showcasingStates,
+        RedHVALTurnedOn,
+        GreenHVALTurnedOn,
+    } from '$lib/stores/state';
     import CollapsibleTile from '$lib/components/generic/CollapsibleTile.svelte';
     import Command64Bits from '$lib/components/abstract/Command64Bits.svelte';
     import BinaryInput1 from '$lib/components/BinaryInput1.svelte';
     import BinaryInput2 from '$lib/components/BinaryInput2.svelte';
     import PropulsionHeartbeat from '$lib/components/PropulsionHeartbeat.svelte';
     import PropulsionInitFault from '$lib/components/PropulsionInitFault.svelte';
+
+    // let fsmStateInput: number = $FSMState;
 
     const values: number[] = new Array(NamedCommandValues.length).fill(0);
     const propLabels: string[] = [
@@ -244,37 +254,48 @@
             </div>
         </CollapsibleTile>
         <CollapsibleTile title="Override commands">
-            <div slot="content" class="flex gap-4">
-                {#if $overrideDependencies}
+            <div slot="content" class="flex gap-4 flex-col">
+                <div class="flex flex-row gap-4">
+                    {#if $overrideDependencies}
+                        <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                                on:click={() => {overrideDependencies.set(false)}}>
+                            Enable Command Guards
+                        </button>
+                    {:else}
+                        <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                                on:click={() => {overrideDependencies.set(true)}}>
+                            Disable Command Guards
+                        </button>
+                    {/if}
                     <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
-                            on:click={() => {overrideDependencies.set(false)}}>
-                        Enable Command Guards
+                            on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>
+                        Toggle Green HVAL
                     </button>
-                {:else}
                     <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
-                            on:click={() => {overrideDependencies.set(true)}}>
-                        Disable Command Guards
+                            on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>
+                        Toggle Red HVAL
                     </button>
-                {/if}
-                <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
-                        on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>
-                    Toggle Green HVAL
-                </button>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
-                        on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>
-                    Toggle Red HVAL
-                </button>
-                {#if !$showcasingStates}
-                    <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
-                            on:click={() => {showcasingStates.set(true)}}>
-                        Showcase FSM States
-                    </button>
-                {:else}
-                    <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
-                            on:click={() => {showcasingStates.set(false)}}>
-                        Stop Showcasing States
-                    </button>
-                {/if}
+                    {#if !$showcasingStates}
+                        <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                                on:click={() => {showcasingStates.set(true)}}>
+                            Showcase FSM States
+                        </button>
+                    {:else}
+                        <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                                on:click={() => {showcasingStates.set(false)}}>
+                            Stop Showcasing States
+                        </button>
+                    {/if}
+                </div>
+<!--                <div class="grid grid-cols-4 w-full gap-4">-->
+<!--&lt;!&ndash;                    <Command cmd="SetFSMState" val={fsmStateInput} text="Set FSM State"/>&ndash;&gt;-->
+<!--                    <button on:click={() => {-->
+<!--                        FSMState.set(fsmStateInput);-->
+<!--                    }}-->
+<!--                            class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"-->
+<!--                    >Set State</button>-->
+<!--                    <input type="number" class="input p-4 rounded-md" bind:value={fsmStateInput}>-->
+<!--                </div>-->
             </div>
         </CollapsibleTile>
     </TileGrid>

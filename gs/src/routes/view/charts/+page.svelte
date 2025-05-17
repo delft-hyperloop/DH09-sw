@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Chart, Tile, TileGrid } from '$lib';
-    import { bigErrorStatus, chartStore } from '$lib/stores/state';
+    import { chartStore } from '$lib/stores/state';
     import { displayedCharts } from '$lib/stores/data';
     import { writable } from 'svelte/store';
     import { onDestroy, onMount } from 'svelte';

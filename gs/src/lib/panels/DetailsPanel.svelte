@@ -37,6 +37,7 @@
     const propEmergency2 = storeManager.getWritable("PPEmergency2");
 
     $: {
+        // TODO: Replace all with subscribers
         let faultValue1 = $propInitFault1.value
         if (faultValue1 !== 256) {
             console.error(`PropInitFault1: ${faultValue1}`);

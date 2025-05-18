@@ -37,8 +37,8 @@ export const propControlWord2: Writable<number> = writable<number>(0);
 
 export const propulsionConfigSent: Writable<boolean> = writable(false);
 export const inStateSystemCheck: Writable<boolean> = writable(false);
-export const inIdleState: Writable<boolean> = writable(false); // TODO: for warnings outside of intended state
-export const hvOn: Writable<boolean> = writable(false); // TODO: for warnings outside of intended state
+export const inStateIdle: Writable<boolean> = writable(false); // TODO: for warnings outside of intended state
+export const inStateHVOn: Writable<boolean> = writable(false); // TODO: for warnings outside of intended state
 
 export const overrideDependencies: Writable<boolean> = writable(false);
 export const usingTestTrack: Writable<boolean> = writable(true);

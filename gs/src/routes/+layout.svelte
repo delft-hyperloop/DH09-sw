@@ -17,9 +17,9 @@
         chartStore,
         debugModeActive,
         latestTimestamp,
-        logsVisible,
+        logsVisible, menuOpen,
         showcaseStateCounter,
-        showcasingStates,
+        showcasingStates, threeDModeActive,
     } from '$lib/stores/state';
     import { initProcedures } from '$lib/stores/data';
     import { onDestroy, onMount } from 'svelte';
@@ -45,7 +45,7 @@
     initProcedures();
 
     const unlisten = listen('shortcut_channel', (event: { payload: string }) =>
-        parseShortCut(event.payload, $debugModeActive, $logsVisible)
+        parseShortCut(event.payload, $debugModeActive, $logsVisible, $threeDModeActive, $menuOpen)
     );
 
     //////////////////////////////

@@ -3,6 +3,7 @@
     import { fade } from 'svelte/transition';
     import { invoke } from '@tauri-apps/api/tauri';
     import { EventChannel, util } from '$lib';
+    import { Circle } from 'svelte-loading-spinners';
 
     let transitionDuration: number = 1000;
     let waitingForPod: boolean = false;
@@ -18,9 +19,6 @@
         await invoke("connect_to_pod").then(r => {
             console.log(`Command connect_to_pod sent with response: ` + r);
             util.log(`Command connect_to_pod sent`, EventChannel.INFO);
-            if (r) {
-                rendering.set(true)
-            }
         }).catch((e) => {
             console.error(`Error sending command connect_to_pod: ${e}`);
             util.log(`Command connect_to_pod ERROR sending`, EventChannel.WARNING);
@@ -45,11 +43,12 @@
             Delft Hyperloop
         </span>
     </div>
-    <button on:click={connectToPod} class="btn">
+    <button on:click={connectToPod} class="btn mb-5 text-2xl">
         Start
     </button>
-    <div class={waitingForPod ? 'visible' : 'invisible'}>
-        <span>
+    <div class="{waitingForPod ? 'visible' : 'invisible'} flex flex-row gap-4 items-center">
+        <Circle color="#008564" size={30}/>
+        <span class="text-xl">
             Connecting to pod...
         </span>
     </div>

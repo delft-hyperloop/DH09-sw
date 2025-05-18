@@ -101,7 +101,13 @@ pub fn tauri_main(backend: Backend) {
                         sh.register("D", move || {
                             ss.emit_all(SHORTCUT_CHANNEL, "DebugMode").unwrap();
                         })
-                            .expect("Could not register shortcut bruh");
+                            .expect("Could not register shortcut");
+
+                        let ss = s.clone();
+                        sh.register("M", move || {
+                            ss.emit_all(SHORTCUT_CHANNEL, "OpenMenu").unwrap();
+                        })
+                            .expect("Could not register shortcut");
 
                         for i in 1..10 {
                             let ss = s.clone();

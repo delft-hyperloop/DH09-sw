@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Canvas } from '@threlte/core';
-    import Scene from '$lib/panels3d/Scene.svelte';
+    import Scene from '$lib/panels3d/components/Scene.svelte';
     import { EventChannel, util } from '$lib';
     import { invoke } from '@tauri-apps/api/tauri';
     import { fade } from 'svelte/transition';

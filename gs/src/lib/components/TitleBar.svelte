@@ -9,13 +9,13 @@
         <span class="text-primary-500 font-medium text-xs">DELFT HYPERLOOP</span>
     </div>
     <div class="text-surface-300">
-        <button on:click={appWindow.minimize} class="rounded-full bg-surface-800 hover:bg-surface-700 p-1">
+        <button on:click={appWindow.minimize} class="rounded-full bg-surface-800 text-primary-500 hover:bg-surface-700 p-1">
             <SubtractLarge size={16} />
         </button>
-        <button on:click={appWindow.maximize} class="rounded-full bg-surface-800 hover:bg-surface-700 p-1" >
+        <button on:click={appWindow.maximize} class="rounded-full bg-surface-800 text-primary-500 hover:bg-surface-700 p-1" >
             <Maximize size={16} />
         </button>
-        <button on:click={appWindow.close} class="rounded-full bg-surface-800 hover:bg-surface-700 p-1">
+        <button on:click={appWindow.close} class="rounded-full bg-surface-800 text-primary-500 hover:bg-surface-700 p-1">
             <Close size={16} />
         </button>
     </div>

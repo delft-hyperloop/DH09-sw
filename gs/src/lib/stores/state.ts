@@ -50,3 +50,4 @@ export const usingTestTrack: Writable<boolean> = writable(true);
 export const enteringScene: Writable<boolean> = writable(false);
 export const inScene: Writable<boolean> = writable(false);
 export const rendering: Writable<boolean> = writable(false);
+export const menuOpen: Writable<boolean> = writable(false);

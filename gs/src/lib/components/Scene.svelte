@@ -12,14 +12,15 @@
 
     let levitating: boolean = false;
     let levitatingPositionUp: boolean = true;
-    let levitationLimit: number = 0.05;
+    let levitationLimit: number = 0.025;
     const y = tweened(START_Y_COORD, {
         duration: 3000,
         easing: cubicInOut
     });
 
     const yLevitating = tweened(GROUND_Y_COORD, {
-        duration: 1000,
+        duration: 1100,
+        easing: cubicInOut
     });
 
     onMount(() => {

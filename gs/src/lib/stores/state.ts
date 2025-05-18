@@ -2,9 +2,9 @@ import { writable, type Writable } from 'svelte/store';
 import {PlotBuffer} from "$lib";
 
 export enum ErrorStatus {
-  SAFE,
-  WARNING,
-  UNSAFE,
+    SAFE,
+    WARNING,
+    UNSAFE,
 }
 
 export const detailTabSet: Writable<number> = writable(0);

@@ -3,12 +3,8 @@
     import { onMount } from 'svelte';
     import { cubicInOut } from 'svelte/easing';
     import { tweened } from 'svelte/motion';
-    import {
-        enteringScene,
-        GROUND_Y_COORD,
-        START_Y_COORD,
-    } from '../../routes/view/pod/PodState';
-    import { inScene } from '../../routes/view/pod/PodState.js';
+    import { GROUND_Y_COORD, START_Y_COORD } from '$lib';
+    import { enteringScene, inScene } from '$lib/stores/state';
 
     let levitating: boolean = false;
     let levitatingPositionUp: boolean = true;

@@ -75,8 +75,8 @@
             {:else}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => {
-                       // threeDModeActive.set(true);
-                       new ViewWindow("pod", `/view/pod`)
+                       threeDModeActive.set(true);
+                       // new ViewWindow("pod", `/view/pod`)
                    }}>
                     <WatsonHealth3DMprToggle  class="mr-1" size={20}/>
                     3D Pod

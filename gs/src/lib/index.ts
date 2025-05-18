@@ -46,6 +46,9 @@ import uPlot from "uplot";
 
 export const chartDataStore = new Map<string, uPlot.AlignedData>();
 export const VIEWPORT_HEIGHT_NORMALIZING_VALUE = 1068;
+export const LEVITATING_Y_COORD_BASIS: number = 0;
+export const GROUND_Y_COORD: number = -1;
+export const START_Y_COORD: number = -10;
 
 // Export all
 export {

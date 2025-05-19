@@ -18,17 +18,22 @@
         </div>
     {/if}
 </div>
-<div class="justify-center h-full w-full {$rendering ? 'visible' : 'invisible'}">
+<div class="justify-center h-full w-full {$rendering ? 'visible' : 'invisible'} bg-black">
     {#if !$menuOpen}
         <button
             on:click={() => {menuOpen.set(true)}}
-            class="rounded-xl bg-surface-800 p-2 m-5 absolute"
+            class="rounded-xl bg-surface-800 p-2 m-5 absolute hover:bg-surface-900"
             in:fade={{ duration: 100, delay: 200 }}
             out:fade={{ duration: 100 }}
         >
             <Menu size={20}/>
         </button>
     {/if}
+<!--    <div class="absolute top-10 right-0 bg-surface-800 p-1" class:rotate-90={true}>-->
+<!--        <button on:click={toggleLogs} class:rotate-180={true}>-->
+<!--            Logs-->
+<!--        </button>-->
+<!--    </div>-->
     <Canvas>
         <Scene/>
     </Canvas>

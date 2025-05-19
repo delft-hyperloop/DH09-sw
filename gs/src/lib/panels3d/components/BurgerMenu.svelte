@@ -7,7 +7,7 @@
     let btnClass: string = "w-full p-2 flex flex-row gap-2 items-center hover:bg-surface-800"
 </script>
 
-<div class="flex flex-col gap-4 p-5 h-[95vh] flex-grow">
+<div class="flex flex-col gap-4 p-5 h-[95.5vh] flex-grow">
     <div class="flex flex-row w-full justify-end">
         <button
             on:click={() => {menuOpen.set(false)}}
@@ -19,7 +19,7 @@
     <span class="text-primary-500 text-3xl mt-5 p-2 mr-16">
         Delft Hyperloop
     </span>
-    <div class="w-full border-primary-500 mx-2" style="border-width: 0.5px;"/>
+    <div class="w-full border-primary-500" style="border-width: 0.5px;"/>
 
     {#if !$debugModeActive}
         <button

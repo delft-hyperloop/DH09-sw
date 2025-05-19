@@ -14,8 +14,9 @@
         easing: cubicInOut
     });
 
+    // TODO: Change this to a sine wave instead
     const yLevitating = tweened(GROUND_Y_COORD, {
-        duration: 1100,
+        duration: 1000,
         easing: cubicInOut
     });
 

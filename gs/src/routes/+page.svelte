@@ -19,7 +19,7 @@
                 <Pane>
                     <MainPanel3D/>
                 </Pane>
-                <Pane maxSize={30} minSize={5} size={2.5} class="bg-surface-900">
+                <Pane maxSize={30} minSize={2.5} size={2.5} class="bg-surface-900">
                     <LogsPanel3D/>
                 </Pane>
             </Splitpanes>

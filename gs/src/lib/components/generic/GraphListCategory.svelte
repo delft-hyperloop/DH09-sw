@@ -1,45 +1,54 @@
 <script lang="ts">
     import GraphListButton from '$lib/components/generic/GraphListButton.svelte';
     import { displayedCharts } from '$lib/stores/data';
+    import { ArrowUp } from 'carbon-icons-svelte';
+    import { slide } from 'svelte/transition';
 
     export let title: string = '';
     export let chartList: string[] = [];
 
-    let showingItems: boolean = true;
-    // TODO: Localization not showing in others
+    let showingItems: boolean = false;
 
     function displayAllGraphs() {
         let temp = $displayedCharts;
 
-        for (const title of temp) {
-            if (chartList.includes(title)) {
-                let index = temp.indexOf(title);
-                // let temp2 = temp;
-                // temp2.splice(index, 1);
-                // temp = temp2;
-                temp.splice(index, 1);
+        for (const title of chartList) {
+            if (!temp.includes(title)) {
+                temp = temp.filter((title) => !chartList.includes(title));
+                temp = chartList.concat((temp));
+                displayedCharts.set(temp);
+                return;
             }
         }
 
-        if (showingItems) {
-            temp = chartList.concat(temp);
-        }
-        showingItems = !showingItems;
+        temp = temp.filter((title) => !chartList.includes(title));
         displayedCharts.set(temp);
     }
 </script>
 
 <div>
-    <button
-        class="mt-2 text-lg text-left font-light rounded-md font-number w-full
+    <div class="flex flex-row mb-2">
+        <div class="transition-transform duration-300 flex items-center text-center py-2" class:rotate-180={!showingItems}>
+            <button on:click={() => {showingItems = !showingItems}}>
+                <ArrowUp size={16}/>
+            </button>
+        </div>
+        <button
+            class="text-lg text-left font-light rounded-l-md font-number w-full text-primary-500
             p-2 hover:bg-surface-700 active:bg-surface-800 active:scale-95 transition"
-        on:click={displayAllGraphs}
-    >
-        {title}
-    </button>
-    <div class="flex flex-col ml-5">
-        {#each chartList as title}
-            <GraphListButton title={title}/>
-        {/each}
+            on:click={displayAllGraphs}
+        >
+            {title}
+        </button>
     </div>
+    {#if showingItems}
+        <div
+            class="flex flex-col ml-6 gap-2"
+            transition:slide={{ duration: 250 }}
+        >
+            {#each chartList as title}
+                <GraphListButton title={title}/>
+            {/each}
+        </div>
+    {/if}
 </div>

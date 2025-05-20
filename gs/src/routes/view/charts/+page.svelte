@@ -1,12 +1,21 @@
 <script lang="ts">
     import { Chart, Tile, TileGrid } from '$lib';
-    import { chartStore } from '$lib/stores/state';
+    import { chartStore, leviChartStore, powertrainChartStore, propChartStore } from '$lib/stores/state';
     import { displayedCharts } from '$lib/stores/data';
     import { writable } from 'svelte/store';
     import { onDestroy, onMount } from 'svelte';
-    import GraphListButton from '$lib/components/generic/GraphListButton.svelte';
+    import GraphListCategory from '$lib/components/generic/GraphListCategory.svelte';
 
     let chartList = $chartStore.keys();
+    let others: string[] = [];
+
+    onMount(() => {
+        for (const title of chartList) {
+            if (!$propChartStore.includes(title) && !$leviChartStore.includes(title) && !$powertrainChartStore.includes(title)) {
+                others.push(title);
+            }
+        }
+    });
 
     let height = writable<number>(window.innerHeight-100);
 
@@ -22,18 +31,6 @@
     onDestroy(() => {
         window.removeEventListener('resize', updateHeight);
     });
-
-    let time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-
-    onMount(() => {
-        const interval = setInterval(() => {
-            time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-        }, 1000);
-
-        return () => {
-            clearInterval(interval);
-        };
-    });
 </script>
 
 <div class="flex flex-row w-full overflow-y-hidden">
@@ -41,9 +38,10 @@
         <span class="my-4 text-xl font-semibold px-7">Select Charts:</span>
         <hr class="w-full border-0 h-px"/>
         <div class="px-5 w-full flex flex-col mb-10">
-            {#each chartList as title}
-                    <GraphListButton title={title}/>
-            {/each}
+            <GraphListCategory title="Propulsion" chartList={$propChartStore}/>
+            <GraphListCategory title="Levitation" chartList={$leviChartStore}/>
+            <GraphListCategory title="Powertrain" chartList={$powertrainChartStore}/>
+            <GraphListCategory title="Others" chartList={others}/>
         </div>
     </div>
     <TileGrid columns="1fr {$displayedCharts.length > 1 ? '1fr' : ''}" rows=""

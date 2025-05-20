@@ -15,6 +15,9 @@ export const logsScrollAreaSize: Writable<number> = writable(0);
 export const logsVisible: Writable<boolean> = writable(false);
 
 export const chartStore = writable(new Map<string, PlotBuffer>());
+export const propChartStore: Writable<string[]> = writable([]);
+export const leviChartStore: Writable<string[]> = writable([]);
+export const powertrainChartStore: Writable<string[]> = writable([]);
 
 export const serverStatus: Writable<boolean> = writable(false);
 export const bigErrorStatus: Writable<ErrorStatus> = writable(ErrorStatus.SAFE);

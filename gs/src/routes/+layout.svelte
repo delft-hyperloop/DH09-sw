@@ -16,8 +16,9 @@
     import {
         chartStore,
         debugModeActive,
-        latestTimestamp,
         logsVisible, menuOpen,
+        latestTimestamp, leviChartStore,
+        powertrainChartStore, propChartStore,
         showcaseStateCounter,
         showcasingStates, threeDModeActive,
     } from '$lib/stores/state';
@@ -38,6 +39,10 @@
 
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
+    let propCharts: string[] = [];
+    let leviCharts: string[] = [];
+    let powertrainCharts: string[] = [];
+
     const modalRegistry: Record<string, ModalComponent> = {
         alertModal: { ref: AlertModal },
     };
@@ -52,11 +57,19 @@
     /////////// CHARTS ///////////
     //////////////////////////////
 
-    let offsetChart = new PlotBuffer(500, 60000, [0, 30], true, 'Offset 1');
-    offsetChart.addSeries(StrokePresets.hyperLoopGreen('Offset 2'));
-    offsetChart.addSeries(StrokePresets.yellow('Offset 3'));
-    offsetChart.addSeries(StrokePresets.blue('Offset 4'));
-    $chartStore.set('Offset', offsetChart);
+    // Prop log 1 Left Motor chart for test runs
+    let propLog1LeftMotorChart = new PlotBuffer(
+        500,
+        3 * 60000,
+        [0, 20],
+        true,
+        'Id measured'
+    );
+    propLog1LeftMotorChart.addSeries(StrokePresets.yellow('Id reference'));
+    propLog1LeftMotorChart.addSeries(StrokePresets.blue('Iq measured'));
+    propLog1LeftMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
+    $chartStore.set('Propulsion Log 1 - Left Motor', propLog1LeftMotorChart);
+    propCharts.push('Propulsion Log 1 - Left Motor');
 
     // Prop log 1 Right Motor chart for test runs
     let propLog1RightMotorChart = new PlotBuffer(
@@ -70,33 +83,7 @@
     propLog1RightMotorChart.addSeries(StrokePresets.blue('Iq measured'));
     propLog1RightMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
     $chartStore.set('Propulsion Log 1 - Right Motor', propLog1RightMotorChart);
-
-    // Prop log 2 Right Motor chart for test runs
-    let propLog2RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
-    propLog2RightMotorChart.addSeries(StrokePresets.yellow('VD'));
-    propLog2RightMotorChart.addSeries(StrokePresets.blue('Vbus'));
-    propLog2RightMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
-    $chartStore.set('Propulsion Log 2 - Right Motor', propLog2RightMotorChart);
-
-    // Prop log 3 Right Motor chart for test runs
-    let propLog3RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
-    propLog3RightMotorChart.addSeries(StrokePresets.yellow('Tb'));
-    propLog3RightMotorChart.addSeries(StrokePresets.blue('Tc'));
-    propLog3RightMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
-    $chartStore.set('Propulsion Log 3 - Right Motor', propLog3RightMotorChart);
-
-    // Prop log 1 Left Motor chart for test runs
-    let propLog1LeftMotorChart = new PlotBuffer(
-        500,
-        3 * 60000,
-        [0, 20],
-        true,
-        'Id measured'
-    );
-    propLog1LeftMotorChart.addSeries(StrokePresets.yellow('Id reference'));
-    propLog1LeftMotorChart.addSeries(StrokePresets.blue('Iq measured'));
-    propLog1LeftMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
-    $chartStore.set('Propulsion Log 1 - Left Motor', propLog1LeftMotorChart);
+    propCharts.push('Propulsion Log 1 - Right Motor');
 
     // Prop log 2 Left Motor chart for test runs
     let propLog2LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
@@ -104,6 +91,15 @@
     propLog2LeftMotorChart.addSeries(StrokePresets.blue('Vbus'));
     propLog2LeftMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
     $chartStore.set('Propulsion Log 2 - Left Motor', propLog2LeftMotorChart);
+    propCharts.push('Propulsion Log 2 - Left Motor');
+
+    // Prop log 2 Right Motor chart for test runs
+    let propLog2RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
+    propLog2RightMotorChart.addSeries(StrokePresets.yellow('VD'));
+    propLog2RightMotorChart.addSeries(StrokePresets.blue('Vbus'));
+    propLog2RightMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
+    $chartStore.set('Propulsion Log 2 - Right Motor', propLog2RightMotorChart);
+    propCharts.push('Propulsion Log 2 - Right Motor');
 
     // Prop log 3 Left Motor chart for test runs
     let propLog3LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
@@ -111,6 +107,15 @@
     propLog3LeftMotorChart.addSeries(StrokePresets.blue('Tc'));
     propLog3LeftMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
     $chartStore.set('Propulsion Log 3 - Left Motor', propLog3LeftMotorChart);
+    propCharts.push('Propulsion Log 3 - Left Motor');
+
+    // Prop log 3 Right Motor chart for test runs
+    let propLog3RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
+    propLog3RightMotorChart.addSeries(StrokePresets.yellow('Tb'));
+    propLog3RightMotorChart.addSeries(StrokePresets.blue('Tc'));
+    propLog3RightMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
+    $chartStore.set('Propulsion Log 3 - Right Motor', propLog3RightMotorChart);
+    propCharts.push('Propulsion Log 3 - Right Motor');
 
     let motorLeftTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Left 1');
     motorLeftTemp.addSeries(StrokePresets.yellow('Motor Left 2'));
@@ -121,6 +126,7 @@
     motorLeftTemp.addSeries(StrokePresets.yellowDashed('Motor Left 7'));
     motorLeftTemp.addSeries(StrokePresets.theoretical('Motor Left 8'))
     $chartStore.set('Motor Temperatures Left', motorLeftTemp);
+    propCharts.push('Motor Temperatures Left');
 
     let motorRightTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Right 1');
     motorRightTemp.addSeries(StrokePresets.yellow('Motor Right 2'));
@@ -131,6 +137,14 @@
     motorRightTemp.addSeries(StrokePresets.yellowDashed('Motor Right 7'));
     motorRightTemp.addSeries(StrokePresets.theoretical('Motor Right 8'));
     $chartStore.set('Motor Temperatures Right', motorRightTemp);
+    propCharts.push('Motor Temperatures Right');
+
+    let offsetChart = new PlotBuffer(500, 60000, [0, 30], true, 'Offset 1');
+    offsetChart.addSeries(StrokePresets.hyperLoopGreen('Offset 2'));
+    offsetChart.addSeries(StrokePresets.yellow('Offset 3'));
+    offsetChart.addSeries(StrokePresets.blue('Offset 4'));
+    $chartStore.set('Offset', offsetChart);
+    propCharts.push('Offset');
 
     let airGapChart = new PlotBuffer(
         500,
@@ -141,11 +155,13 @@
     );
     airGapChart.addSeries(StrokePresets.theoretical('Lateral Air Gap'));
     $chartStore.set('Air Gaps', airGapChart);
+    leviCharts.push('Air Gaps');
 
     let anglesChart = new PlotBuffer(500, 60000, [0, 120], true, 'Roll');
     anglesChart.addSeries(StrokePresets.theoretical('Pitch'));
     anglesChart.addSeries(StrokePresets.blue('Yaw'));
     $chartStore.set('Angles', anglesChart);
+    leviCharts.push('Angles');
 
     let hemsCurrentChart = new PlotBuffer(
         500,
@@ -158,16 +174,20 @@
     hemsCurrentChart.addSeries(StrokePresets.theoretical('VBL'));
     hemsCurrentChart.addSeries(StrokePresets.yellow('VBR'));
     $chartStore.set('HEMS Current', hemsCurrentChart);
+    leviCharts.push('HEMS Current');
 
     let emsCurrentChart = new PlotBuffer(500, 3 * 60000, [-11.3, 11.3], true, 'LF');
     emsCurrentChart.addSeries(StrokePresets.theoretical('LB'));
     $chartStore.set('EMS Current', emsCurrentChart);
+    leviCharts.push('EMS Current');
 
     let accelChart = new PlotBuffer(500, 60000, [0, 25], false);
     $chartStore.set('Acceleration', accelChart);
+    propCharts.push('Acceleration');
 
     let velChart = new PlotBuffer(500, 60000, [0, 100], false);
     $chartStore.set('Velocity', velChart);
+    propCharts.push('Velocity');
 
     let localizationChart = new PlotBuffer(500, 60000, [0, 13000], false);
     localizationChart.addSeries(StrokePresets.yellow("Localization"))
@@ -177,12 +197,17 @@
     leviRequestForce1Chart.addSeries(StrokePresets.yellow('Roll'));
     leviRequestForce1Chart.addSeries(StrokePresets.theoretical('Pitch'));
     $chartStore.set('Requested Force 1', leviRequestForce1Chart);
+    leviCharts.push('Requested Force 1');
 
     let leviRequestForce2Chart = new PlotBuffer(500, 60000, [0, 100], true, 'Y');
     leviRequestForce2Chart.addSeries(StrokePresets.yellow('Yaw'));
     $chartStore.set('Requested Force 2', leviRequestForce2Chart);
+    leviCharts.push('Requested Force 2');
 
 
+    leviChartStore.set(leviCharts);
+    propChartStore.set(propCharts);
+    powertrainChartStore.set(powertrainCharts);
 
     ////////////////////////////////////////////////////////////////
 

@@ -29,6 +29,8 @@
         procedures.set(rawProcedures.map(parseProcedure));
     };
 
+    let graphVisualizerCount = 0;
+
 </script>
 
 <div class="h-full w-full p-5 flex flex-col gap-8">
@@ -49,7 +51,7 @@
             {/if}
 
             <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-                   py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => new ViewWindow("Charts", `/view/charts`)}>
+                   py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => new ViewWindow(`Charts_${graphVisualizerCount++}`, `/view/charts`)}>
                 <ChartLineSmooth size={20} class="mr-1"/>
                 Graph Visualizer
             </button>

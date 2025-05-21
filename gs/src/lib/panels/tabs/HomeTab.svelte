@@ -68,17 +68,17 @@
                     Enable Debug Mode
                 </button>
             {/if}
-            <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-               py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => {
-                   threeDModeActive.set(true);
-                   logsVisible.set(false);
+<!--            <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium-->
+<!--               py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => {-->
+<!--                   threeDModeActive.set(true);-->
+<!--                   logsVisible.set(false);-->
 
-                   // Making a new window didn't work because you can't share stores between windows
-                   // new ViewWindow("pod", `/view/pod`)
-               }}>
-                <WatsonHealth3DMprToggle  class="mr-1" size={20}/>
-                3D Mode
-            </button>
+<!--                   // Making a new window didn't work because you can't share stores between windows-->
+<!--                   // new ViewWindow("pod", `/view/pod`)-->
+<!--               }}>-->
+<!--                <WatsonHealth3DMprToggle  class="mr-1" size={20}/>-->
+<!--                3D Mode-->
+<!--            </button>-->
         </div>
     <p>
         Press <kbd class="kbd">Esc</kbd> or <kbd class="kbd">Space</kbd> to trigger Emergency Braking or

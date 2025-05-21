@@ -49,7 +49,7 @@ export const overrideDependencies: Writable<boolean> = writable(false);
 export const usingTestTrack: Writable<boolean> = writable(true);
 
 // 3D mode states
-export const threeDModeActive: Writable<boolean> = writable(true);
+export const threeDModeActive: Writable<boolean> = writable(false);
 export const enteringScene: Writable<boolean> = writable(false);
 export const inScene: Writable<boolean> = writable(false);
 export const rendering: Writable<boolean> = writable(false);

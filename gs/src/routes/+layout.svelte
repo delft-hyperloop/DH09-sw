@@ -16,9 +16,8 @@
     import {
         chartStore,
         debugModeActive,
-        logsVisible, menuOpen,
         latestTimestamp, leviChartStore,
-        powertrainChartStore, propChartStore,
+        logsVisible, menuOpen, powertrainChartStore, propChartStore,
         showcaseStateCounter,
         showcasingStates, threeDModeActive,
     } from '$lib/stores/state';

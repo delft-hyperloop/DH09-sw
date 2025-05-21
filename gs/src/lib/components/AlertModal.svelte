@@ -1,12 +1,13 @@
 <script lang="ts">
     import { modalBody, modalTitle } from '$lib/stores/data';
     import { Help } from 'carbon-icons-svelte';
+    import { Modal } from '$lib/util/Modal';
 
-    let modalStore = getModalStore();
-    let helpComponentVisible: boolean = $state(false);
+    let helpComponentVisible: boolean = $state(false); // TODO: export this
+    let modal = Modal.getModal();
 
     let closeModal = () => {
-        modalStore.close();
+        modal.close();
     }
 </script>
 

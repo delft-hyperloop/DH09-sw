@@ -2,9 +2,8 @@
     import { invoke } from '@tauri-apps/api/tauri';
     import { EventChannel, type NamedCommand, util } from "$lib";
     import { writable, type Writable } from 'svelte/store';
-    import { MODAL_SETTINGS } from '$lib/types';
-    import { modalBody, modalTitle } from '$lib/stores/data';
     import { overrideDependencies } from '$lib/stores/state';
+    import { Modal } from '$lib/util/Modal';
 
     interface Props {
         className?: string;
@@ -32,13 +31,11 @@
         icon = null
     }: Props = $props();
 
-    let modalStore = getModalStore();
+    let modal = Modal.getModal();
 
     let send = async () => {
         if (!$overrideDependencies && dependency && !$dependency) {
-            modalTitle.set(dependencyTitle);
-            modalBody.set(dependencyMessage);
-            modalStore.trigger(MODAL_SETTINGS);
+            modal.trigger(dependencyTitle, dependencyMessage);
             return;
         }
 

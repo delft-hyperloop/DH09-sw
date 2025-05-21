@@ -1,8 +1,8 @@
 <script lang="ts">
-    import {invoke} from '@tauri-apps/api/tauri';
-    import {EventChannel, type NamedCommand, util} from "$lib";
+    import { invoke } from '@tauri-apps/api/tauri';
+    import { EventChannel, type NamedCommand, util } from "$lib";
     import { writable, type Writable } from 'svelte/store';
-    import { MODAL_SETTINGS } from '$lib/types';
+    import { Modal } from '$lib/util/Modal';
 
     interface Props {
         className?: string;
@@ -28,13 +28,11 @@
         dependencyTitle = ''
     }: Props = $props();
 
-    let modalStore = getModalStore();
+    let modal = Modal.getModal();
 
     let send = async () => {
         if (dependency && !$dependency) {
-            MODAL_SETTINGS.body = dependencyMessage;
-            MODAL_SETTINGS.title = dependencyTitle;
-            modalStore.trigger(MODAL_SETTINGS);
+            modal.trigger(dependencyTitle, dependencyMessage);
             return;
         }
 

@@ -1,6 +1,6 @@
 import {type dataConvFun, type Procedure} from "$lib/types";
 import {PlotBuffer} from "$lib/util/PlotBuffer";
-import { detailTabSet, VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
+import { detailsPanelTab, VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
 import {invoke} from "@tauri-apps/api/tauri";
 import { debugModeActive, logsPanelSize, logsScrollAreaSize, logsVisible, menuOpen } from '$lib/stores/state';
 const MAX_VALUE = 4_294_967_295;
@@ -71,7 +71,7 @@ const parseShortCut = async (shortcut:string, debugMode: boolean, logsAreVisible
         }
     } else if (tabMatch) {
         const tab = Math.min(Number(tabMatch[1]), 7 + (debugMode ? 1 : 0));
-        detailTabSet.set(Number(tab) - 1);
+        detailsPanelTab.set(Number(tab) - 1);
     } else if (shortcut === "emergency_brake") {
         console.log("Emergency brake");
         await invoke('send_command', {cmdName: "EmergencyBrake", val: 0});

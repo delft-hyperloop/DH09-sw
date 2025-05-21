@@ -2,7 +2,6 @@
     import {invoke} from '@tauri-apps/api/tauri';
     import {EventChannel, type NamedCommand, util} from "$lib";
     import { writable, type Writable } from 'svelte/store';
-    import { getModalStore } from '@skeletonlabs/skeleton';
     import { MODAL_SETTINGS } from '$lib/types';
 
     interface Props {

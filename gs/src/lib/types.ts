@@ -1,4 +1,4 @@
-import type { ModalSettings } from '@skeletonlabs/skeleton';
+import type { ModalSettings } from '@skeletonlabs/skeleton-svelte';
 
 /* AUTO GENERATED USING npm run generate:gs */
 export type NamedCommand = "DefaultCommand" | "GeneralEmergency" | "FSMUpdate" | "SystemCheck" | "ResetSenseCon" | "ResetPowertrain" | "ResetPropulsion" | "ResetLevitation" | "ResetLocalization" | "Heartbeat" | "FrontendHeartbeat" | "EmitEvent" | "StartHV" | "StopHV" | "LevitationOn" | "LevitationOff" | "vertical_0_current" | "vert_0_current_reset" | "PropulsionOn" | "PropulsionOff" | "SendPropulsionControlWord1" | "SendPropulsionControlWord2" | "PPControlParams" | "PPDebugParams1" | "PPDebugParams2" | "PPTestControlParams" | "Shutdown" | "EmergencyBrake" | "SystemReset" | "RearmSDC";

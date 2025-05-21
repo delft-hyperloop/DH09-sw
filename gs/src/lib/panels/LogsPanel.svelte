@@ -1,11 +1,10 @@
 <!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script lang="ts">
-    import {AppBar} from "@skeletonlabs/skeleton";
+    import {AppBar} from "@skeletonlabs/skeleton-svelte";
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
     import { bigErrorStatus, ErrorStatus, logsPanelSize, logsScrollAreaSize, logsVisible } from '$lib/stores/state';
-    import {getToastStore} from "@skeletonlabs/skeleton";
     import { View, ViewOff } from 'carbon-icons-svelte';
     import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
 

@@ -1,9 +1,7 @@
 <script lang="ts">
     import {invoke} from '@tauri-apps/api/tauri';
     import {EventChannel, util} from "$lib";
-    import {popup} from '@skeletonlabs/skeleton';
-    import type {PopupSettings} from "@skeletonlabs/skeleton";
-
+    import type {PopupSettings} from "@skeletonlabs/skeleton-svelte";
 
     interface Props {
         className?: string;
@@ -46,9 +44,9 @@
 </script>
 
 {#if hoverContent !== ''}
-    <div class="card p-4 variant-filled-secondary" data-popup="popupHover">
+    <div class="card p-4 preset-filled-secondary-500" data-popup="popupHover">
         <p>{hoverContent}</p>
-        <div class="arrow variant-filled-secondary"></div>
+        <div class="arrow preset-filled-secondary-500"></div>
     </div>
 {/if}
 

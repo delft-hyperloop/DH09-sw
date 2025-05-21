@@ -1,8 +1,7 @@
 <script lang="ts">
-    import {invoke} from '@tauri-apps/api/tauri';
-    import {EventChannel, type NamedCommand, util} from "$lib";
+    import { invoke } from '@tauri-apps/api/tauri';
+    import { EventChannel, type NamedCommand, util } from "$lib";
     import { writable, type Writable } from 'svelte/store';
-    import { getModalStore } from '@skeletonlabs/skeleton';
     import { MODAL_SETTINGS } from '$lib/types';
     import { modalBody, modalTitle } from '$lib/stores/data';
     import { overrideDependencies } from '$lib/stores/state';

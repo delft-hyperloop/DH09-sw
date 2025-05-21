@@ -1,5 +1,12 @@
 @import 'tailwindcss';
 
+@import "@skeletonlabs/skeleton";
+
+@import "@skeletonlabs/skeleton/optional/presets";
+/* Add your theme import for your theme: "delft_hyperloop_dark" here */
+
+@source "../node_modules/@skeletonlabs/skeleton-svelte/dist";
+
 @font-face {
 	font-family: 'Exo2';
 	src: url('/fonts/Exo2-VariableFont_wght.ttf');

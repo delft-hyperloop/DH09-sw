@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { getModalStore } from '@skeletonlabs/skeleton';
     import { modalBody, modalTitle } from '$lib/stores/data';
     import { Help } from 'carbon-icons-svelte';
 

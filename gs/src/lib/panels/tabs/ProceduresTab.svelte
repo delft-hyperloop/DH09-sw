@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {AppRail, AppRailTile} from "@skeletonlabs/skeleton";
+    import {Navigation } from "@skeletonlabs/skeleton-svelte";
     import {procedures} from "$lib/stores/data";
     import { ViewWindow } from "$lib/util/WindowControl"
     import Icon from "@iconify/svelte"
@@ -11,13 +11,13 @@
 
 <div class="h-full flex items-stretch">
     <div>
-        <AppRail background="bg-surface-900" aspectRatio="aspect-auto" width="w-50">
+        <Navigation background="bg-surface-900" aspectRatio="aspect-auto" width="w-50">
             {#each $procedures as procedure, i}
-                <AppRailTile regionLabel="text-left px-4" bind:group={currentTile} name={procedure?.name || 'NONE LOADED'} value={i} title={procedure?.title || 'NONE LOADED'}>
+                <Navigation.Tile regionLabel="text-left px-4" bind:group={currentTile} name={procedure?.name || 'NONE LOADED'} value={i} title={procedure?.title || 'NONE LOADED'}>
                     <p class="py-2 text-base font-medium">{procedure?.name || 'NONE LOADED'}</p>
-                </AppRailTile>
+                </Navigation.Tile>
             {/each}
-        </AppRail>
+        </Navigation>
     </div>
     <div class="p-8 w-10/12 grow flex flex-col gap-4">
         <div class="flex gap-x-2 items-start">

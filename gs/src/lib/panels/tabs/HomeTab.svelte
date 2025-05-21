@@ -1,6 +1,5 @@
 <script lang="ts">
     import { Chart, Command, serverStatus, TauriCommand, Tile, TileGrid } from '$lib';
-    import { getToastStore } from "@skeletonlabs/skeleton";
     import { pinnedCharts, procedures } from '$lib/stores/data';
     import { parseProcedure } from "$lib/util/parsers";
     import { debugModeActive, threeDModeActive, logsVisible } from '$lib/stores/state';

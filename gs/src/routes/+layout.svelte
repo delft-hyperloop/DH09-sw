@@ -8,11 +8,7 @@
         TitleBar,
     } from '$lib';
     import {
-        initializeStores,
-        Modal,
-        type ModalComponent,
-        Toast,
-    } from '@skeletonlabs/skeleton';
+        type ModalComponent, ToastProvider } from '@skeletonlabs/skeleton-svelte';
     import {
         chartStore,
         debugModeActive,
@@ -33,7 +29,6 @@
         flip,
         arrow,
     } from '@floating-ui/dom';
-    import { storePopup } from '@skeletonlabs/skeleton';
     import AlertModal from '$lib/components/AlertModal.svelte';
     interface Props {
         children?: import('svelte').Snippet;
@@ -591,7 +586,7 @@
 </script>
 
 <div class="flex flex-col w-screen h-screen max-h-screen overflow-hidden">
-    <Toast />
+    <ToastProvider />
     <Modal components={modalRegistry} />
     <TitleBar />
     {@render children?.()}

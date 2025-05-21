@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Battery, TileGrid, Tile, Command, GrandDataDistributor, Store, TauriCommand, serverStatus } from '$lib';
-    import { AppBar, getToastStore } from '@skeletonlabs/skeleton';
+    import { AppBar } from '@skeletonlabs/skeleton-svelte';
     import {invoke} from "@tauri-apps/api/tauri";
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
     import Localization from '$lib/components/Localization.svelte';
@@ -106,7 +106,7 @@
                     toastStore.trigger({
                         //@ts-ignore
                         message: "Emergency Brake triggered!",
-                        background: 'variant-filled-error'
+                        background: 'preset-filled-error-500'
                     });
                 }} className="bg-error-500 text-surface-100 btn py-0 border border-error-500 rounded-sm" cmd="EmergencyBrake"/>
             
@@ -153,7 +153,7 @@
                         <div class="flex flex-col gap-4">
                             <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
                             <span>PT Controller Fault: {$ptcFault.value}</span>
-                            <span>IMD: &ltstatus&gt</span>
+                            <span>IMD: <status></span>
                         </div>
                     </div>
                     <div class="flex gap-4 flex-wrap mt-4">

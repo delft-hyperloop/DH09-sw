@@ -173,8 +173,8 @@
   //       ["Module 7", hv78, hv79, hv80, hv81, hv82, hv83, hv84, hv85, hv86, hv87, hv88, hv89, hv90, hv109],
   //       ["Module 8", hv91, hv92, hv93, hv94, hv95, hv96, hv97, hv98, hv99, hv100, hv101, hv102, hv103, hv111],]
 
-    let dcStatus:boolean = false;
-    let connectorStatus:boolean = false;
+    let dcStatus:boolean = $state(false);
+    let connectorStatus:boolean = $state(false);
 
     // const lvTotalStore = storeManager.getWritable("TotalBatteryVoltageLow");
     export const pop_up: boolean = true;

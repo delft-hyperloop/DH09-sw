@@ -1,21 +1,33 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import {util} from "$lib";
 
-    export let pressure_left:number;
-    export let pressure_right:number;
-    export let max_pressure_left:number;
-    export let max_pressure_right:number;
 
-    let colour_left: string;
-    let colour_right: string;
+    let colour_left: string = $state();
+    let colour_right: string = $state();
 
-    $: {
-        colour_left = util.colourCode(pressure_left, max_pressure_left);
-        colour_right = util.colourCode(pressure_right, max_pressure_right);
+
+    interface Props {
+        pressure_left: number;
+        pressure_right: number;
+        max_pressure_left: number;
+        max_pressure_right: number;
+        background?: string;
     }
 
-    export let background = "bg-surface-900"
+    let {
+        pressure_left,
+        pressure_right,
+        max_pressure_left,
+        max_pressure_right,
+        background = "bg-surface-900"
+    }: Props = $props();
     
+    run(() => {
+        colour_left = util.colourCode(pressure_left, max_pressure_left);
+        colour_right = util.colourCode(pressure_right, max_pressure_right);
+    });
 </script>
 
 <div class="{background} p-4 rounded-lg flex justify-center">

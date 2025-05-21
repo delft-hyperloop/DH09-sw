@@ -35,6 +35,11 @@
     } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
     import AlertModal from '$lib/components/AlertModal.svelte';
+    interface Props {
+        children?: import('svelte').Snippet;
+    }
+
+    let { children }: Props = $props();
 
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -589,6 +594,6 @@
     <Toast />
     <Modal components={modalRegistry} />
     <TitleBar />
-    <slot />
+    {@render children?.()}
     <BottomBar />
 </div>

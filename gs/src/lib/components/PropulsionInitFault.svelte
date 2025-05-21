@@ -2,7 +2,11 @@
     import type { NamedDatatype } from '$lib/types';
     import { GrandDataDistributor } from '$lib';
 
-    export let storeName: NamedDatatype;
+    interface Props {
+        storeName: NamedDatatype;
+    }
+
+    let { storeName }: Props = $props();
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const faultStore = storeManager.getWritable(storeName);
@@ -26,9 +30,9 @@
         <span class="text-center">{($faultStore.value >> i) & 1}</span>
     {/each}
 
-    <span/>
+    <span></span>
     {#each labels as l}
         <span class="text-center">{l}</span>
     {/each}
-    <span/>
+    <span></span>
 </div>

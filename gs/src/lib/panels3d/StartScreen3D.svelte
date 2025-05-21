@@ -6,7 +6,7 @@
     import { Circle } from 'svelte-loading-spinners';
 
     let transitionDuration: number = 1000;
-    let waitingForPod: boolean = false;
+    let waitingForPod: boolean = $state(false);
 
     const connectToPod = async () => {
         waitingForPod = true;
@@ -29,7 +29,7 @@
 <div
     class="w-full flex flex-col items-center justify-center absolute h-full bg-black"
     transition:fade={{ duration: transitionDuration }}
-    on:outroend={() => {enteringScene.set(true)}}
+    onoutroend={() => {enteringScene.set(true)}}
 >
     <div
         class="justify-center items-center flex flex-col transition-all"
@@ -43,7 +43,7 @@
             Delft Hyperloop
         </span>
     </div>
-    <button on:click={connectToPod} class="btn mb-5 text-2xl">
+    <button onclick={connectToPod} class="btn mb-5 text-2xl">
         Start
     </button>
     <div class="{waitingForPod ? 'visible' : 'invisible'} flex flex-row gap-4 items-center">

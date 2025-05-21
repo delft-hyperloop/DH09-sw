@@ -4,7 +4,7 @@
     import { ViewWindow } from "$lib/util/WindowControl"
     import Icon from "@iconify/svelte"
 
-    let currentTile: number = 0;
+    let currentTile: number = $state(0);
 
     export const pop_up: boolean = true;
 </script>
@@ -23,7 +23,7 @@
         <div class="flex gap-x-2 items-start">
             <h2 class="text-xl font-semibold mb-4">{$procedures[currentTile]?.title || 'NONE LOADED'}</h2>
             {#if pop_up}
-                <button on:click={() => new ViewWindow("Procedures", `/view/tab/6`)}>
+                <button onclick={() => new ViewWindow("Procedures", `/view/tab/6`)}>
                     <Icon icon="carbon:popup" />
                 </button>
             {/if}

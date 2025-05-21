@@ -7,16 +7,31 @@
     import { modalBody, modalTitle } from '$lib/stores/data';
     import { overrideDependencies } from '$lib/stores/state';
 
-    export let className: string = '';
-    export let cmd: NamedCommand;
-    export let val: number = 0;
-    export let callback: (val:number) => void = () => {};
-    export let text: string = '';
-    export let onClickMethod: () => void = () => {};
-    export let dependency: Writable<boolean> = writable<boolean>(true);
-    export let dependencyMessage: string = '';
-    export let dependencyTitle: string = '';
-    export let icon: typeof import("svelte").SvelteComponent | null = null;
+    interface Props {
+        className?: string;
+        cmd: NamedCommand;
+        val?: number;
+        callback?: (val:number) => void;
+        text?: string;
+        onClickMethod?: () => void;
+        dependency?: Writable<boolean>;
+        dependencyMessage?: string;
+        dependencyTitle?: string;
+        icon?: typeof import("svelte").SvelteComponent | null;
+    }
+
+    let {
+        className = '',
+        cmd,
+        val = 0,
+        callback = () => {},
+        text = '',
+        onClickMethod = () => {},
+        dependency = writable<boolean>(true),
+        dependencyMessage = '',
+        dependencyTitle = '',
+        icon = null
+    }: Props = $props();
 
     let modalStore = getModalStore();
 
@@ -42,10 +57,11 @@
 </script>
 
 <button class="btn rounded-md font-number font-medium text-wrap overflow-auto {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
-        on:click={send}>
+        onclick={send}>
     {#if icon}
+        {@const SvelteComponent = icon}
         <div class="mr-1">
-            <svelte:component this={icon} size={20}/>
+            <SvelteComponent size={20}/>
         </div>
     {/if}
     {text ? text : util.snakeToCamel(cmd)}

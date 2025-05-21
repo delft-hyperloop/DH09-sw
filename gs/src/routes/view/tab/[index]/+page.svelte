@@ -5,7 +5,11 @@
     import type { PageData } from './$types';
 
 
-    export let data: PageData;
+    interface Props {
+        data: PageData;
+    }
+
+    let { data }: Props = $props();
 </script>
 
 <div class="h-full snap-x scroll-px-4 snap-mandatory scroll-smooth overflow-x-auto">

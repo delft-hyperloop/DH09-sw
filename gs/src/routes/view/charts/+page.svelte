@@ -9,7 +9,7 @@
     let chartList = $chartStore.keys();
     let others: string[] = [];
 
-    let tileGridColumnCount = 2;
+    let tileGridColumnCount = $state(2);
 
     onMount(() => {
         for (const title of chartList) {
@@ -34,7 +34,7 @@
         window.removeEventListener('resize', updateHeight);
     });
 
-    $: tilegridStyle = $displayedCharts.length >= tileGridColumnCount ? "1fr ".repeat(tileGridColumnCount) : "1fr ".repeat($displayedCharts.length);
+    let tilegridStyle = $derived($displayedCharts.length >= tileGridColumnCount ? "1fr ".repeat(tileGridColumnCount) : "1fr ".repeat($displayedCharts.length));
 </script>
 
 <div class="flex flex-row w-full overflow-y-hidden">

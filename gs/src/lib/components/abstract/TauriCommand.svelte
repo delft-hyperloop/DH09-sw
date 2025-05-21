@@ -4,15 +4,27 @@
     import {popup} from '@skeletonlabs/skeleton';
     import type {PopupSettings} from "@skeletonlabs/skeleton";
 
-    export let className: string = '';
-    export let cmd: 'connect_to_pod' | 'disconnect' | 'procedures' | 'save_logs';
-    export let successCallback: (r:any) => void = () => {};
-    export let errorCallback: (error:string) => void = () => {};
-    export let textOverride: string = '';
-    export let hoverContent: string = '';
-    export let icon: typeof import("svelte").SvelteComponent | null = null;
 
-    export let send = async () => {
+    interface Props {
+        className?: string;
+        cmd: 'connect_to_pod' | 'disconnect' | 'procedures' | 'save_logs';
+        successCallback?: (r:any) => void;
+        errorCallback?: (error:string) => void;
+        textOverride?: string;
+        hoverContent?: string;
+        icon?: typeof import("svelte").SvelteComponent | null;
+        send?: any;
+    }
+
+    let {
+        className = '',
+        cmd,
+        successCallback = () => {},
+        errorCallback = () => {},
+        textOverride = '',
+        hoverContent = '',
+        icon = null,
+        send = async () => {
         console.log(`Sending command: ${cmd}`);
         await invoke(cmd).then(r => {
             console.log(`Command ${cmd} sent with response: ` + r);
@@ -23,7 +35,8 @@
             util.log(`Command ${cmd} ERROR sending`, EventChannel.WARNING);
             errorCallback(`Error Sending Command: ${e}`);
         });
-    };
+    }
+    }: Props = $props();
 
     const popupHover: PopupSettings = {
       event: 'hover',
@@ -35,16 +48,17 @@
 {#if hoverContent !== ''}
     <div class="card p-4 variant-filled-secondary" data-popup="popupHover">
         <p>{hoverContent}</p>
-        <div class="arrow variant-filled-secondary" />
+        <div class="arrow variant-filled-secondary"></div>
     </div>
 {/if}
 
 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
-        on:click={send}
+        onclick={send}
         use:popup={popupHover}>
     {#if icon}
-        <svelte:component this={icon} size={20} class="mr-1 items-center"/>
+        {@const SvelteComponent = icon}
+        <SvelteComponent size={20} class="mr-1 items-center"/>
     {/if}
     {textOverride === '' ? util.snakeToCamel(cmd) : textOverride}
 </button>

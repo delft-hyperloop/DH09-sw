@@ -1,10 +1,21 @@
 <script lang="ts">
-    export let status: boolean;
-    export let on: string = "Connected";
-    export let off: string = "Disconnected";
-    export let label: string = '';
-    export let onColor: string = 'text-primary-400';
-    export let offColor: string = 'text-error-400';
+    interface Props {
+        status: boolean;
+        on?: string;
+        off?: string;
+        label?: string;
+        onColor?: string;
+        offColor?: string;
+    }
+
+    let {
+        status,
+        on = "Connected",
+        off = "Disconnected",
+        label = '',
+        onColor = 'text-primary-400',
+        offColor = 'text-error-400'
+    }: Props = $props();
 </script>
 
 <div class="flex gap-2 text-sm">

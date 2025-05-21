@@ -5,15 +5,29 @@
     import { getModalStore } from '@skeletonlabs/skeleton';
     import { MODAL_SETTINGS } from '$lib/types';
 
-    export let className: string = '';
-    export let cmd: NamedCommand;
-    export let values: number[] = [0];
-    export let callback: (val:number[]) => void = () => {};
-    export let text: string = '';
-    export let onClickMethod: () => void = () => {};
-    export let dependency: Writable<boolean> = writable<boolean>(true);
-    export let dependencyMessage: string = '';
-    export let dependencyTitle: string = '';
+    interface Props {
+        className?: string;
+        cmd: NamedCommand;
+        values?: number[];
+        callback?: (val:number[]) => void;
+        text?: string;
+        onClickMethod?: () => void;
+        dependency?: Writable<boolean>;
+        dependencyMessage?: string;
+        dependencyTitle?: string;
+    }
+
+    let {
+        className = '',
+        cmd,
+        values = [0],
+        callback = () => {},
+        text = '',
+        onClickMethod = () => {},
+        dependency = writable<boolean>(true),
+        dependencyMessage = '',
+        dependencyTitle = ''
+    }: Props = $props();
 
     let modalStore = getModalStore();
 
@@ -39,6 +53,6 @@
 </script>
 
 <button class="btn rounded-md font-number font-medium text-wrap overflow-auto {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
-        on:click={send}>
+        onclick={send}>
     {text ? text : util.snakeToCamel(cmd)}
 </button>

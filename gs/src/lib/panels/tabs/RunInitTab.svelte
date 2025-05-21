@@ -26,9 +26,9 @@
     //     ["Gyroscope Z", DatatypeEnum.GYROSCOPEZ],
     // ]
 
-    let currentDirectionForward: boolean = $goingForward;
-    let currentSpeed: number = $podTargetSpeed;
-    let currentMaxPower: number = $propMaxPower;
+    let currentDirectionForward: boolean = $state($goingForward);
+    let currentSpeed: number = $state($podTargetSpeed);
+    let currentMaxPower: number = $state($propMaxPower);
 
     // Value bound to the modulation factor slider.
     // Didn't work with a different name for some reason.
@@ -81,12 +81,12 @@
                     Choose Direction:
                 </p>
                 <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
-                        on:click={() => {currentDirectionForward = true}}
+                        onclick={() => {currentDirectionForward = true}}
                         disabled={currentDirectionForward}>
                     Forward
                 </button>
                 <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
-                        on:click={() => {currentDirectionForward = false}}
+                        onclick={() => {currentDirectionForward = false}}
                         disabled={!currentDirectionForward}>
                     Backward
                 </button>
@@ -94,12 +94,12 @@
                     Choose Track:
                 </p>
                 <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
-                        on:click={() => {usingTestTrack.set(true)}}
+                        onclick={() => {usingTestTrack.set(true)}}
                         disabled={$usingTestTrack}>
                     Test Track
                 </button>
                 <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
-                        on:click={() => {usingTestTrack.set(false)}}
+                        onclick={() => {usingTestTrack.set(false)}}
                         disabled={!$usingTestTrack}>
                     EHC Track
                 </button>
@@ -144,7 +144,7 @@
 <!--                    />-->
 <!--                </div>-->
                 <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow overflow-auto font-medium"
-                        on:click={submitRun} disabled={false}>
+                        onclick={submitRun} disabled={false}>
                     Submit New Run Parameters
                 </button>
                 <hr class="col-span-full">

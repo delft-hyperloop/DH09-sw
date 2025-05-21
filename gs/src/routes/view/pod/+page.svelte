@@ -6,8 +6,8 @@
     import { fade } from 'svelte/transition';
     import { enteringScene } from './PodState';
 
-    let waitingForPod: boolean = false;
-    let rendering: boolean = false;
+    let waitingForPod: boolean = $state(false);
+    let rendering: boolean = $state(false);
     let transitionDuration: number = 1000;
 
     // let stores = GrandDataDistributor.getInstance().stores;
@@ -44,7 +44,7 @@
     <div
         class="w-full flex flex-col h-full items-center justify-center absolute my-10"
         transition:fade={{ duration: transitionDuration }}
-        on:outroend={() => {enteringScene.set(true)}}
+        onoutroend={() => {enteringScene.set(true)}}
     >
         <div
             class="justify-center items-center flex flex-col transition-all duration-1000 ease-in-out
@@ -59,7 +59,7 @@
                 Delft Hyperloop
             </span>
         </div>
-        <button on:click={connectToPod} class="btn">
+        <button onclick={connectToPod} class="btn">
             Start
         </button>
         <div class={waitingForPod ? 'visible' : 'invisible'}>

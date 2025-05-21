@@ -3,20 +3,20 @@
     import { GrandDataDistributor } from '$lib';
     import { showcaseStateCounter, showcasingStates } from '$lib/stores/state';
 
-    let boot: SVGGElement;              // 0
-    let connectedToGS: SVGGElement;     // 1
-    let system_check: SVGGElement;      // 2
-    let idle: SVGGElement;              // 3
-    let pre_charge: SVGGElement;        // 4
-    let active: SVGGElement;            // 5
-    let demo: SVGGElement;              // 6
-    let levitating: SVGGElement;        // 7
-    let accelerating: SVGGElement;      // 8
-    let cruising: SVGGElement;          // 9
-    let braking: SVGGElement;           // 10
-    let discharge: SVGGElement;         // 11
-    let charging: SVGGElement;          // 12
-    let fault: SVGGElement;             // 13
+    let boot: SVGGElement = $state();              // 0
+    let connectedToGS: SVGGElement = $state();     // 1
+    let system_check: SVGGElement = $state();      // 2
+    let idle: SVGGElement = $state();              // 3
+    let pre_charge: SVGGElement = $state();        // 4
+    let active: SVGGElement = $state();            // 5
+    let demo: SVGGElement = $state();              // 6
+    let levitating: SVGGElement = $state();        // 7
+    let accelerating: SVGGElement = $state();      // 8
+    let cruising: SVGGElement = $state();          // 9
+    let braking: SVGGElement = $state();           // 10
+    let discharge: SVGGElement = $state();         // 11
+    let charging: SVGGElement = $state();          // 12
+    let fault: SVGGElement = $state();             // 13
     let allStates: SVGGElement[];
 
     const storeManager = GrandDataDistributor.getInstance().stores;

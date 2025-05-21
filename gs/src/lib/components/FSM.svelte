@@ -2,20 +2,20 @@
     import {onDestroy, onMount} from "svelte";
     import {GrandDataDistributor} from "$lib";
 
-    let boot_state:SVGGElement;
-    let est_con_state:SVGGElement;
-    let run_conf_state:SVGGElement;
-    let idle_state:SVGGElement;
-    let exit_state:SVGGElement;
-    let hv_on_state:SVGGElement;
-    let precharge_state:SVGGElement;
-    let emerg_brake_state:SVGGElement;
-    let levi_state:SVGGElement;
-    let moving_st:SVGGElement;
-    let moving_ls_cv:SVGGElement;
-    let moving_ls_end:SVGGElement;
-    let moving_st_end:SVGGElement;
-    let moving_ls_st: SVGGElement;
+    let boot_state:SVGGElement = $state();
+    let est_con_state:SVGGElement = $state();
+    let run_conf_state:SVGGElement = $state();
+    let idle_state:SVGGElement = $state();
+    let exit_state:SVGGElement = $state();
+    let hv_on_state:SVGGElement = $state();
+    let precharge_state:SVGGElement = $state();
+    let emerg_brake_state:SVGGElement = $state();
+    let levi_state:SVGGElement = $state();
+    let moving_st:SVGGElement = $state();
+    let moving_ls_cv:SVGGElement = $state();
+    let moving_ls_end:SVGGElement = $state();
+    let moving_st_end:SVGGElement = $state();
+    let moving_ls_st: SVGGElement = $state();
     let all_states: SVGGElement[];
 
 

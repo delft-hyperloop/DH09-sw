@@ -21,7 +21,7 @@
 <div class="justify-center h-full w-full {$rendering ? 'visible' : 'invisible'} bg-black">
     {#if !$menuOpen}
         <button
-            on:click={() => {menuOpen.set(true)}}
+            onclick={() => {menuOpen.set(true)}}
             class="rounded-xl bg-surface-800 p-2 m-5 absolute hover:bg-surface-900"
             in:fade={{ duration: 100, delay: 200 }}
             out:fade={{ duration: 100 }}

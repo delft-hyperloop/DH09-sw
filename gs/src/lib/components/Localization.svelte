@@ -1,25 +1,31 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import { goingForward, usingTestTrack } from '$lib/stores/state';
     import { GrandDataDistributor } from '$lib';
     
-    export let showLabels: boolean = true;
+    interface Props {
+        showLabels?: boolean;
+    }
+
+    let { showLabels = true }: Props = $props();
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     // 100_000 received from the localization sensor is 1 meter
     const location = storeManager.getWritable("Localization");
-    let trackLength = 15000;
+    let trackLength = $state(15000);
 
     // SVG elements
-    let progress_container: SVGGElement;
-    let progress: SVGPathElement;
-    let path: SVGGElement;
+    let progress_container: SVGGElement = $state();
+    let progress: SVGPathElement = $state();
+    let path: SVGGElement = $state();
 
     // points
-    let point_start: SVGCircleElement;
-    let point_quarter: SVGCircleElement;
-    let point_half: SVGCircleElement;
-    let point_three_quarters: SVGCircleElement;
-    let point_end: SVGCircleElement;
+    let point_start: SVGCircleElement = $state();
+    let point_quarter: SVGCircleElement = $state();
+    let point_half: SVGCircleElement = $state();
+    let point_three_quarters: SVGCircleElement = $state();
+    let point_end: SVGCircleElement = $state();
 
     // screen coords for points
     const x_coord_start = 15;
@@ -30,33 +36,35 @@
     const color_active = "#4D9C89";
     const color_off = "#525B5B";
 
-    $: if (progress) {
-        let path_length: number = progress.getTotalLength();
+    run(() => {
+        if (progress) {
+            let path_length: number = progress.getTotalLength();
 
-        path.style.strokeDasharray = path_length.toString();
-        point_half.style.fill = ($location.value / 100) >  trackLength / 2 ? color_active : color_off;
-        progress.style.strokeDashoffset = (path_length - path_length * (($location.value / 100) /  trackLength)).toString();
+            path.style.strokeDasharray = path_length.toString();
+            point_half.style.fill = ($location.value / 100) >  trackLength / 2 ? color_active : color_off;
+            progress.style.strokeDashoffset = (path_length - path_length * (($location.value / 100) /  trackLength)).toString();
 
-        if ($goingForward) {
-            point_start.style.fill = ($location.value / 100) > 0 ? color_active : color_off;
-            point_quarter.style.fill = ($location.value / 100) >  trackLength / 4 ? color_active : color_off;
-            point_three_quarters.style.fill = ($location.value / 100) >  trackLength / 4 * 3 ? color_active : color_off;
-            point_end.style.fill = ($location.value / 100) >=  trackLength ? color_active : color_off;
-        } else {
-            point_end.style.fill = ($location.value / 100) > 0 ? color_active : color_off;
-            point_three_quarters.style.fill = ($location.value / 100) >  trackLength / 4 ? color_active : color_off;
-            point_quarter.style.fill = ($location.value / 100) >  trackLength / 4 * 3 ? color_active : color_off;
-            point_start.style.fill = ($location.value / 100) >=  trackLength ? color_active : color_off;
+            if ($goingForward) {
+                point_start.style.fill = ($location.value / 100) > 0 ? color_active : color_off;
+                point_quarter.style.fill = ($location.value / 100) >  trackLength / 4 ? color_active : color_off;
+                point_three_quarters.style.fill = ($location.value / 100) >  trackLength / 4 * 3 ? color_active : color_off;
+                point_end.style.fill = ($location.value / 100) >=  trackLength ? color_active : color_off;
+            } else {
+                point_end.style.fill = ($location.value / 100) > 0 ? color_active : color_off;
+                point_three_quarters.style.fill = ($location.value / 100) >  trackLength / 4 ? color_active : color_off;
+                point_quarter.style.fill = ($location.value / 100) >  trackLength / 4 * 3 ? color_active : color_off;
+                point_start.style.fill = ($location.value / 100) >=  trackLength ? color_active : color_off;
+            }
         }
-    }
+    });
 
-    $: {
+    run(() => {
         if ($usingTestTrack) {
             trackLength = 15000;
         } else {
             trackLength = 100000;
         }
-    }
+    });
 
 </script>
 <div class="w-full">

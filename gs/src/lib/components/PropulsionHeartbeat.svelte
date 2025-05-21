@@ -2,8 +2,12 @@
     import { GrandDataDistributor } from '$lib';
     import type { NamedDatatype } from '$lib/types';
 
-    export let storeName: NamedDatatype;
-    export let labels: string[] = [""];
+    interface Props {
+        storeName: NamedDatatype;
+        labels?: string[];
+    }
+
+    let { storeName, labels = [""] }: Props = $props();
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const ppControlWordStore = storeManager.getWritable(storeName);
@@ -19,9 +23,9 @@
         <span class="text-center">{$ppControlWordStore.value >> (i + 4) & 1}</span>
     {/each}
 
-    <span/>
+    <span></span>
     {#each labels as l}
         <span class="text-center">{l}</span>
     {/each}
-    <span/>
+    <span></span>
 </div>

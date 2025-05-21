@@ -29,7 +29,7 @@
         procedures.set(rawProcedures.map(parseProcedure));
     };
 
-    let graphVisualizerCount = 0;
+    let graphVisualizerCount = $state(0);
 
 </script>
 
@@ -51,19 +51,19 @@
             {/if}
 
             <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-                   py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => new ViewWindow(`Charts_${graphVisualizerCount++}`, `/view/charts`)}>
+                   py-2 bg-primary-500 text-surface-900 h-[35px]" onclick={() => new ViewWindow(`Charts_${graphVisualizerCount++}`, `/view/charts`)}>
                 <ChartLineSmooth size={20} class="mr-1"/>
                 Graph Visualizer
             </button>
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-                   py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => {debugModeActive.set(false)}}>
+                   py-2 bg-primary-500 text-surface-900 h-[35px]" onclick={() => {debugModeActive.set(false)}}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Disable Debug Mode
                 </button>
             {:else}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-                   py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>
+                   py-2 bg-primary-500 text-surface-900" onclick={() => {debugModeActive.set(true)}}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Enable Debug Mode
                 </button>

@@ -6,7 +6,7 @@
     import { GROUND_Y_COORD, START_Y_COORD } from '$lib';
     import { enteringScene, inScene } from '$lib/stores/state';
 
-    let levitating: boolean = false;
+    let levitating: boolean = $state(false);
     let levitatingPositionUp: boolean = true;
     let levitationLimit: number = 0.025;
 

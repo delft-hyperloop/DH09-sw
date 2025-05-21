@@ -15,7 +15,7 @@
     } from '$lib/stores/state';
     import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck } from 'carbon-icons-svelte';
 
-    let width: number;
+    let width: number = $state();
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const lvBattery = storeManager.getWritable("BMSVoltageLow");
@@ -43,8 +43,21 @@
         });
     };
 
-    let tableTempsArr: any[][];
-    let tableArr2: any[][];
+    let tableTempsArr: any[][] = $derived([
+        ["Up VB", DE.Alpha1, "[0,70] °C", "HEMS 1", DE.Alpha1, "[0,80] °C"],
+        ["Low VB", DE.Alpha1, "[0,70] °C", "HEMS 2", DE.Alpha1, "[0,80] °C"],
+        ["Ambient", DE.Temp0, "[0,50] °C", "HEMS 3", DE.Alpha1, "[0,80] °C"],
+        ["Motor Front", "Temp_Motor_1", "[0,80] °C", "HEMS 4", DE.Alpha1, "[0,80] °C"],
+        ["Motor Back", "Temp_Motor_2", "[0,80] °C", "EMS 1", DE.Alpha1, "[0,80] °C"],
+        ["", "", "", "EMS 2", DE.Alpha1, "[0,80] °C"],
+    ]);
+    let tableArr2: any[][] = $derived([
+        ["HEMS A1", DE.Alpha1, "[-10,10] A", "HEMS A2", DE.Alpha1, "[-10,10] A"],
+        ["HEMS B1", DE.Alpha1, "[-10,10] A", "HEMS B2", DE.Alpha1, "[-10,10] A"],
+        ["HEMS C1", DE.Alpha1, "[-10,10] A", "HEMS C2", DE.Alpha1, "[-10,10] A"],
+        ["HEMS D1", DE.Alpha1, "[-10,10] A", "HEMS D2", DE.Alpha1, "[-10,10] A"],
+        ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
+    ]);
 
     let tableBatteryTitles = ["", "HV Voltages", "HV Temp", "LV Voltages", "LV Temp"]
 
@@ -56,39 +69,28 @@
         "Failure",
     ]
 
-    $: tableBatteryVitals = [
+    let tableBatteryVitals = $derived([
         ["Min", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
         ["Max", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
         ["Avg", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
         ["Safe Range", "[360, 420] V", "[15,50] °C", "[280,360] V", "[15,50] °C"]
-    ]
+    ])
 
-    $: tableTempsArr = [
-        ["Up VB", DE.Alpha1, "[0,70] °C", "HEMS 1", DE.Alpha1, "[0,80] °C"],
-        ["Low VB", DE.Alpha1, "[0,70] °C", "HEMS 2", DE.Alpha1, "[0,80] °C"],
-        ["Ambient", DE.Temp0, "[0,50] °C", "HEMS 3", DE.Alpha1, "[0,80] °C"],
-        ["Motor Front", "Temp_Motor_1", "[0,80] °C", "HEMS 4", DE.Alpha1, "[0,80] °C"],
-        ["Motor Back", "Temp_Motor_2", "[0,80] °C", "EMS 1", DE.Alpha1, "[0,80] °C"],
-        ["", "", "", "EMS 2", DE.Alpha1, "[0,80] °C"],
-    ]
+    
 
-    $: tableArr2 = [
-        ["HEMS A1", DE.Alpha1, "[-10,10] A", "HEMS A2", DE.Alpha1, "[-10,10] A"],
-        ["HEMS B1", DE.Alpha1, "[-10,10] A", "HEMS B2", DE.Alpha1, "[-10,10] A"],
-        ["HEMS C1", DE.Alpha1, "[-10,10] A", "HEMS C2", DE.Alpha1, "[-10,10] A"],
-        ["HEMS D1", DE.Alpha1, "[-10,10] A", "HEMS D2", DE.Alpha1, "[-10,10] A"],
-        ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
-    ]
+    
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
     <AppBar padding="px-5 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDefault="place-self-center">
-        <svelte:fragment slot="lead">
-            <div class="gap-2 flex flex-row items-center">
-                <Activity size={16}/>
-                <span>Vitals</span>
-            </div>
-        </svelte:fragment>
+        {#snippet lead()}
+            
+                <div class="gap-2 flex flex-row items-center">
+                    <Activity size={16}/>
+                    <span>Vitals</span>
+                </div>
+            
+            {/snippet}
 
         <div class="flex gap-5 items-center justify-center">
             <div class="flex flex-row gap-2 items-center">
@@ -98,20 +100,22 @@
             </div>
         </div>
 
-        <svelte:fragment slot="trail">
-            <Command callback={() => {
-                toastStore.trigger({
-                    //@ts-ignore
-                    message: "Emergency Brake triggered!",
-                    background: 'variant-filled-error'
-                });
-            }} className="bg-error-500 text-surface-100 btn py-0 border border-error-500 rounded-sm" cmd="EmergencyBrake"/>
-        </svelte:fragment>
+        {#snippet trail()}
+            
+                <Command callback={() => {
+                    toastStore.trigger({
+                        //@ts-ignore
+                        message: "Emergency Brake triggered!",
+                        background: 'variant-filled-error'
+                    });
+                }} className="bg-error-500 text-surface-100 btn py-0 border border-error-500 rounded-sm" cmd="EmergencyBrake"/>
+            
+            {/snippet}
     </AppBar>
 
     {#if width < 200}
         <div class="flex flex-col h-full pb-20 justify-between items-center">
-            <button on:click={() => {
+            <button onclick={() => {
                 invoke('send_command', {cmdName: "EmergencyBrake", val: 0}).then(() => {
                     console.log(`Triggered EmergencyBrake!!`);
                 })

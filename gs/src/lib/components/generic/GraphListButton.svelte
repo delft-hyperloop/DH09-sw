@@ -1,7 +1,11 @@
 <script lang="ts">
     import { displayedCharts } from '$lib/stores/data';
 
-    export let title: string = ""
+    interface Props {
+        title?: string;
+    }
+
+    let { title = "" }: Props = $props();
 
     function updateChartList(title: string) {
         if ($displayedCharts.includes(title)) {
@@ -18,7 +22,7 @@
 </script>
 
 <button
-    on:click={() => {updateChartList(title)}}
+    onclick={() => {updateChartList(title)}}
     class="text-lg text-left font-light rounded-l-md font-number
            p-2 hover:bg-surface-700 active:bg-surface-800 active:scale-95 transition
            {$displayedCharts.includes(title) ? 'bg-surface-800' : 'bg-surface-900'}"

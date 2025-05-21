@@ -2,9 +2,13 @@
     import {Store} from "$lib";
     import {NamedDatatypeValues} from "$lib/types";
 
-    export let tableArr: any[][] = [];
-    export let titles = ["Module", "Temp C°"];
-    export let background = "bg-surface-800";
+    interface Props {
+        tableArr?: any[][];
+        titles?: any;
+        background?: string;
+    }
+
+    let { tableArr = [], titles = ["Module", "Temp C°"], background = "bg-surface-800" }: Props = $props();
 </script>
 
 

@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { bigErrorStatus, threeDModeActive } from '$lib/stores/state';
 
-    let time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    let time = $state(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
 
     onMount(() => {
         const interval = setInterval(() => {

@@ -4,10 +4,14 @@
     import { ArrowUp } from 'carbon-icons-svelte';
     import { slide } from 'svelte/transition';
 
-    export let title: string = '';
-    export let chartList: string[] = [];
+    interface Props {
+        title?: string;
+        chartList?: string[];
+    }
 
-    let showingItems: boolean = false;
+    let { title = '', chartList = [] }: Props = $props();
+
+    let showingItems: boolean = $state(false);
 
     function displayAllGraphs() {
         let temp = $displayedCharts;
@@ -29,14 +33,14 @@
 <div>
     <div class="flex flex-row mb-2">
         <div class="transition-transform duration-300 flex items-center text-center py-2" class:rotate-180={!showingItems}>
-            <button on:click={() => {showingItems = !showingItems}}>
+            <button onclick={() => {showingItems = !showingItems}}>
                 <ArrowUp size={16}/>
             </button>
         </div>
         <button
             class="text-lg text-left font-light rounded-l-md font-number w-full text-primary-500
             p-2 hover:bg-surface-700 active:bg-surface-800 active:scale-95 transition"
-            on:click={displayAllGraphs}
+            onclick={displayAllGraphs}
         >
             {title}
         </button>

@@ -1,8 +1,17 @@
 <script lang="ts">
-    export let orientation:'horizontal'|'vertical' = 'vertical';
-    export let perc:number;
-    export let height:number = 27;
-    export let fill:string = '#4D9C89';
+    interface Props {
+        orientation?: 'horizontal'|'vertical';
+        perc: number;
+        height?: number;
+        fill?: string;
+    }
+
+    let {
+        orientation = 'vertical',
+        perc,
+        height = 27,
+        fill = '#4D9C89'
+    }: Props = $props();
 </script>
 
 <div>

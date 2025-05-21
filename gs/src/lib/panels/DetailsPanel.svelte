@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import { getModalStore, Tab, TabGroup } from '@skeletonlabs/skeleton';
     import {
         HomeTab,
@@ -26,8 +28,8 @@
         {name: "Debug", value: i++}
     ];
 
-    let style: string;
-    $: style = `height: ${100 - ($logsPanelSize + 8.2 - 0.04 * $logsPanelSize)}vh`;
+    let style: string = $derived(`height: ${100 - ($logsPanelSize + 8.2 - 0.04 * $logsPanelSize)}vh`);
+    
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const modalStore = getModalStore();
@@ -36,7 +38,7 @@
     const propInitFault2 = storeManager.getWritable("PPInitFault2");
     const propEmergency2 = storeManager.getWritable("PPEmergency2");
 
-    $: {
+    run(() => {
         // TODO: Replace all with subscribers
         let faultValue1 = $propInitFault1.value
         if (faultValue1 !== 256) {
@@ -67,7 +69,7 @@
             MODAL_SETTINGS.title = "Propulsion Fault!";
             modalStore.trigger(MODAL_SETTINGS);
         }
-    }
+    });
 </script>
 
 <TabGroup regionPanel="m-0 !mt-0" padding="px-3 py-3" regionList="bg-surface-700" border="border-b border-surface-900" >
@@ -78,27 +80,29 @@
             </Tab>
         {/if}
     {/each}
-    <svelte:fragment slot="panel">
-        <div style={style} class="overflow-y-scroll scroll-smooth">
-            <div class="h-full">
-                {#if $detailTabSet === 0}
-                    <HomeTab />
-                {:else if $detailTabSet === 1}
-                    <RunInitTab />
-                {:else if $detailTabSet === 2}
-                    <LocationTab />
-                {:else if $detailTabSet === 3}
-                    <BatteriesTab />
-                {:else if $detailTabSet === 4}
-                    <LeviTab />
-                {:else if $detailTabSet === 5}
-                    <PneumaticsTab />
-                {:else if $detailTabSet === 6}
-                    <ProceduresTab />
-                {:else if $detailTabSet === 7}
-                    <DebugTab />
-                {/if}
+    {#snippet panel()}
+    
+            <div style={style} class="overflow-y-scroll scroll-smooth">
+                <div class="h-full">
+                    {#if $detailTabSet === 0}
+                        <HomeTab />
+                    {:else if $detailTabSet === 1}
+                        <RunInitTab />
+                    {:else if $detailTabSet === 2}
+                        <LocationTab />
+                    {:else if $detailTabSet === 3}
+                        <BatteriesTab />
+                    {:else if $detailTabSet === 4}
+                        <LeviTab />
+                    {:else if $detailTabSet === 5}
+                        <PneumaticsTab />
+                    {:else if $detailTabSet === 6}
+                        <ProceduresTab />
+                    {:else if $detailTabSet === 7}
+                        <DebugTab />
+                    {/if}
+                </div>
             </div>
-        </div>
-    </svelte:fragment>
+        
+    {/snippet}
 </TabGroup>

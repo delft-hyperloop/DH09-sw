@@ -1,29 +1,40 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import {onMount} from "svelte";
     import util from "$lib/util/util";
     import {inputEmerg} from "$lib/stores/state";
 
-    export let max:number = 13000;
-    export let loc:number = 1000; /* should be < 16000 */
-    export let turning:boolean;
-    export let showLabels:boolean = true;
+    interface Props {
+        max?: number;
+        loc?: number; /* should be < 16000 */
+        turning: boolean;
+        showLabels?: boolean;
+    }
+
+    let {
+        max = 13000,
+        loc = 1000,
+        turning,
+        showLabels = true
+    }: Props = $props();
 
     // SVG elements
-    let progress_container:SVGGElement;
-    let path_straight:SVGGElement;
-    let path_turn:SVGGElement;
-    let progress_straight:SVGPathElement;
-    let progress_turn:SVGPathElement;
+    let progress_container:SVGGElement = $state();
+    let path_straight:SVGGElement = $state();
+    let path_turn:SVGGElement = $state();
+    let progress_straight:SVGPathElement = $state();
+    let progress_turn:SVGPathElement = $state();
 
     // points
-    let point_start:SVGCircleElement;
-    let point_divergence:SVGCircleElement;
-    let point_choice_straight:SVGCircleElement;
-    let point_end_straight:SVGCircleElement;
-    let point_choice_turn:SVGCircleElement;
-    let point_end_turn:SVGCircleElement;
+    let point_start:SVGCircleElement = $state();
+    let point_divergence:SVGCircleElement = $state();
+    let point_choice_straight:SVGCircleElement = $state();
+    let point_end_straight:SVGCircleElement = $state();
+    let point_choice_turn:SVGCircleElement = $state();
+    let point_end_turn:SVGCircleElement = $state();
 
-    let pathLength: number;
+    let pathLength: number = $state();
 
     const color_disabled = "#2C3030";
     const color_active = "#4D9C89";
@@ -67,29 +78,32 @@
         }
     });
 
-    $: emergPosition = (pathLength * (util.normalize($inputEmerg, max) / 100))
-    $: emergYPosition = 26;
+    let emergPosition = ($derived(pathLength * (util.normalize($inputEmerg, max) / 100)))
+    let emergYPosition = $state(26);
+    
 
-    $: if(progress_straight || progress_turn) {
-        let normalized_loc = util.normalize(loc, max)
-        let offset = pathLength - (pathLength * (normalized_loc / 100));
+    run(() => {
+        if(progress_straight || progress_turn) {
+            let normalized_loc = util.normalize(loc, max)
+            let offset = pathLength - (pathLength * (normalized_loc / 100));
 
-        point_start.style.fill = normalized_loc > 0 ? color_active : color_off;
+            point_start.style.fill = normalized_loc > 0 ? color_active : color_off;
 
-        if (turning) {
-            progress_turn.style.strokeDashoffset = offset.toString();
-            point_divergence.style.fill = normalized_loc > 40 ? color_active : color_off;
-            point_choice_turn.style.fill = normalized_loc > 73 ? color_active : color_off;
-            point_end_turn.style.fill = normalized_loc >= 100 ? color_active : color_off;
-            emergYPosition = progress_turn.getPointAtLength(emergPosition).y;
-        } else {
-            progress_straight.style.strokeDashoffset = offset.toString();
-            point_divergence.style.fill = normalized_loc > 38 ? color_active : color_off;
-            point_choice_straight.style.fill = normalized_loc > 62 ? color_active : color_off;
-            point_end_straight.style.fill = normalized_loc >= 100 ? color_active : color_off;
-            emergYPosition = progress_straight.getPointAtLength(emergPosition).y;
+            if (turning) {
+                progress_turn.style.strokeDashoffset = offset.toString();
+                point_divergence.style.fill = normalized_loc > 40 ? color_active : color_off;
+                point_choice_turn.style.fill = normalized_loc > 73 ? color_active : color_off;
+                point_end_turn.style.fill = normalized_loc >= 100 ? color_active : color_off;
+                emergYPosition = progress_turn.getPointAtLength(emergPosition).y;
+            } else {
+                progress_straight.style.strokeDashoffset = offset.toString();
+                point_divergence.style.fill = normalized_loc > 38 ? color_active : color_off;
+                point_choice_straight.style.fill = normalized_loc > 62 ? color_active : color_off;
+                point_end_straight.style.fill = normalized_loc >= 100 ? color_active : color_off;
+                emergYPosition = progress_straight.getPointAtLength(emergPosition).y;
+            }
         }
-    }
+    });
 </script>
 
 <div class="w-full">

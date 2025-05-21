@@ -4,7 +4,7 @@
     import { Help } from 'carbon-icons-svelte';
 
     let modalStore = getModalStore();
-    let helpComponentVisible: boolean = false;
+    let helpComponentVisible: boolean = $state(false);
 
     let closeModal = () => {
         modalStore.close();
@@ -14,7 +14,7 @@
 <div class="bg-surface-800 rounded-lg border-surface-600 border-2 max-w-xl">
     <div class="flex justify-end">
         <div class="relative inline-block">
-            <button disabled on:mouseenter={() => {helpComponentVisible = true}} on:mouseleave={() => {helpComponentVisible = false}}>
+            <button disabled onmouseenter={() => {helpComponentVisible = true}} onmouseleave={() => {helpComponentVisible = false}}>
                 <Help size={20} class="m-3 fill-primary-500"/>
             </button>
             {#if helpComponentVisible}
@@ -48,7 +48,7 @@
         </span>
         <button
             class="btn w-full rounded-md font-number font-medium text-wrap overflow-auto bg-primary-500 text-surface-900 my-7"
-            on:click={closeModal}
+            onclick={closeModal}
         >
             Cancel
         </button>

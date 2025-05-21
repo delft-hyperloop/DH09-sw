@@ -1,8 +1,19 @@
 <script lang="ts">
-    export let bgToken:number = 900;
-    export let insideClass:string = '';
-    export let heading:string = '';
-    export let containerClass:string = '';
+    interface Props {
+        bgToken?: number;
+        insideClass?: string;
+        heading?: string;
+        containerClass?: string;
+        children?: import('svelte').Snippet;
+    }
+
+    let {
+        bgToken = 900,
+        insideClass = '',
+        heading = '',
+        containerClass = '',
+        children
+    }: Props = $props();
 </script>
 <div class="bg-surface-{bgToken} p-4 {containerClass} rounded-lg">
     {#if heading !== ''}
@@ -10,6 +21,6 @@
         <hr class="col-span-full mb-2">
     {/if}
     <div class="{insideClass}">
-        <slot />
+        {@render children?.()}
     </div>
 </div>

@@ -10,7 +10,7 @@
     } from '../../routes/view/pod/PodState';
     import { inScene } from '../../routes/view/pod/PodState.js';
 
-    let levitating: boolean = false;
+    let levitating: boolean = $state(false);
     let levitatingPositionUp: boolean = true;
     let levitationLimit: number = 0.025;
     const y = tweened(START_Y_COORD, {

@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import {onDestroy, onMount} from 'svelte';
     import 'uplot/dist/uPlot.min.css';
     import {PlotBuffer} from "$lib";
@@ -8,24 +10,39 @@
     import Pin from 'carbon-icons-svelte/lib/Pin.svelte';
     import { ShrinkScreen, TrashCan } from 'carbon-icons-svelte';
 
-    export let title: string;
-    export let background: string = "bg-surface-800";
-    export let height: number = 200;
-    export let chart: PlotBuffer|undefined = $chartStore.get(title);
-    export let pop_up: boolean = true;
-    export let pinnable: boolean = true;
-    export let removable: boolean = false;
-    export let display_title: boolean = true;
+    interface Props {
+        title: string;
+        background?: string;
+        height?: number;
+        chart?: PlotBuffer|undefined;
+        pop_up?: boolean;
+        pinnable?: boolean;
+        removable?: boolean;
+        display_title?: boolean;
+    }
+
+    let {
+        title,
+        background = "bg-surface-800",
+        height = 200,
+        chart = $chartStore.get(title),
+        pop_up = true,
+        pinnable = true,
+        removable = false,
+        display_title = true
+    }: Props = $props();
 
     let iconClass: string = "active:scale-90 hover:bg-surface-700 transition rounded-lg";
 
-    let width: number;
+    let width: number = $state();
     let resize = (width:number, height:number) => {
         chart?.setSize(plotContainer, width-15, height);
     }
 
-    $: resize(width, height);
-    let plotContainer: HTMLDivElement;
+    run(() => {
+        resize(width, height);
+    });
+    let plotContainer: HTMLDivElement = $state();
 
     onMount(async () => {
         chart?.draw(plotContainer);
@@ -66,7 +83,7 @@
                 {/if}
                 {#if pinnable}
                     <button
-                        on:click={pinToHomePage}
+                        onclick={pinToHomePage}
                         class={iconClass}
                     >
                         <Pin size={16}/>
@@ -75,7 +92,7 @@
             </div>
             {#if pop_up}
                 <button
-                    on:click={() => new ViewWindow(title.replaceAll(/[^a-zA-Z0-9]/g, ""), `/view/chart/${title}`)}
+                    onclick={() => new ViewWindow(title.replaceAll(/[^a-zA-Z0-9]/g, ""), `/view/chart/${title}`)}
                     class={iconClass}
                 >
                     <ShrinkScreen size={16}/>
@@ -83,7 +100,7 @@
             {/if}
             {#if removable}
                 <button
-                    on:click={removeFromGraphList}
+                    onclick={removeFromGraphList}
                     class={iconClass}
                 >
                         <TrashCan size={16}/>
@@ -91,7 +108,7 @@
             {/if}
         </div>
         <div class="flex flex-col justify-center items-center w-full">
-            <div class="rounded-md" bind:this={plotContainer} />
+            <div class="rounded-md" bind:this={plotContainer}></div>
         </div>
     </div>
 {:else}

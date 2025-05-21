@@ -94,7 +94,7 @@
         <CollapsibleTile title="Propulsion Commands">
             {#snippet content()}
                         <div >
-                    <div class="border-surface-600 border-[1px] rounded-lg m-4 p-2">
+                    <div class="border-surface-600 border rounded-lg m-4 p-2">
                         <div class="m-4">
                             <PropulsionHeartbeat storeName="Word1" labels={propReadLabels}/>
                         </div>
@@ -121,7 +121,7 @@
     <!--                        <span>Init fault 1: {$propInitFault1.value}</span>-->
     <!--                    </div>-->
                     </div>
-                    <div class="border-surface-600 border-[1px] rounded-lg m-4 p-2">
+                    <div class="border-surface-600 border rounded-lg m-4 p-2">
                         <div class="m-4 mt-8">
                             <PropulsionHeartbeat storeName="Word2" labels={propReadLabels}/>
                         </div>
@@ -149,7 +149,7 @@
     <!--                    </div>-->
                     </div>
                     <div class="grid grid-cols-2 gap-4 m-4 items-center">
-                        <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg ">
+                        <div class="border-surface-600 border flex flex-row gap-4 items-center p-4 rounded-lg ">
                             <Command64Bits
                                 cmd="PPControlParams"
                                 text="Submit PP Control Params"
@@ -167,7 +167,7 @@
                                 <input bind:value={maximumPower} type="number" min="0" max="50000" class="input p-4 rounded-md " onchange={calculatePPControlParams}>
                             </div>
                         </div>
-                        <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg h-full">
+                        <div class="border-surface-600 border flex flex-row gap-4 items-center p-4 rounded-lg h-full">
                             <Command64Bits cmd="PPDebugParams2" text="Submit PP Debug Params 2" values={[0, ppDebugParams2]}/>
                             <div class="grid grid-cols-2 gap-2">
                                 <div class="text-center content-center">Position Offset</div>
@@ -176,7 +176,7 @@
                                 <input bind:value={alpha} type="number" class="input p-4 rounded-md " onchange={calculatePPDebugParams2}>
                             </div>
                         </div>
-                        <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg">
+                        <div class="border-surface-600 border flex flex-row gap-4 items-center p-4 rounded-lg">
                             <Command64Bits cmd="PPDebugParams1" text="Submit PP Debug Params 1" values={[ppDebugParams11, ppDebugParams12]} />
                             <div class="grid grid-cols-2 gap-2">
                                 <div class="text-center content-center">kpq</div>
@@ -189,7 +189,7 @@
                                 <input bind:value={kid} type="number" class="input p-4 rounded-md " onchange={calculatePPDebugParams1}>
                             </div>
                         </div>
-                        <div class="border-surface-600 border-[1px] flex flex-row gap-4 items-center p-4 rounded-lg">
+                        <div class="border-surface-600 border flex flex-row gap-4 items-center p-4 rounded-lg">
                             <Command64Bits cmd="PPTestControlParams" values={[testControlParams1, testControlParams2]} text="Submit PP Test Control Params" />
                             <div class="gap-2 grid grid-cols-2">
                                 <div class="text-center content-center">iq_ref</div>

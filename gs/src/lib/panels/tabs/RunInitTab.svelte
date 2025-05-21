@@ -68,24 +68,24 @@
                 <Command
                     cmd="PropulsionOn"
                     text="Enable Propulsion"
-                    className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto"
+                    className="btn grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto"
                     dependency={propulsionConfigSent}
                     dependencyMessage="Run configuration was not sent! Can't start propulsion without specifying
                     a direction, top speed and modulation factor!"
                     dependencyTitle="Configuration not sent!"
                 />
-                <Command text="Disable Propulsion" cmd="PropulsionOff" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
-                <Command cmd="SystemReset" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
-                <Command cmd="RearmSDC" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" text="Rearm SDC"/>
+                <Command text="Disable Propulsion" cmd="PropulsionOff" className="btn grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
+                <Command cmd="SystemReset" className="btn grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
+                <Command cmd="RearmSDC" className="btn grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" text="Rearm SDC"/>
                 <p class="col-span-2">
                     Choose Direction:
                 </p>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 grow overflow-auto font-medium"
                         onclick={() => {currentDirectionForward = true}}
                         disabled={currentDirectionForward}>
                     Forward
                 </button>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 grow overflow-auto font-medium"
                         onclick={() => {currentDirectionForward = false}}
                         disabled={!currentDirectionForward}>
                     Backward
@@ -93,12 +93,12 @@
                 <p class="col-span-2">
                     Choose Track:
                 </p>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 grow overflow-auto font-medium"
                         onclick={() => {usingTestTrack.set(true)}}
                         disabled={$usingTestTrack}>
                     Test Track
                 </button>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 grow overflow-auto font-medium"
                         onclick={() => {usingTestTrack.set(false)}}
                         disabled={!$usingTestTrack}>
                     EHC Track
@@ -143,7 +143,7 @@
 <!--                        pipstep={25}-->
 <!--                    />-->
 <!--                </div>-->
-                <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow overflow-auto font-medium"
+                <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full grow overflow-auto font-medium"
                         onclick={submitRun} disabled={false}>
                     Submit New Run Parameters
                 </button>

@@ -23,7 +23,7 @@
     const green: string = "bg-[#0f0]";
     const red: string = "bg-[#f00]";
     const colorOff = "bg-surface-800";
-    let color: string = $state("bg-[#000]");
+    let color: string = $state("bg-black");
 
     let blinkOn: boolean = $state(false);
     let timer: number = 200;
@@ -36,7 +36,7 @@
         blinkInterval = setInterval(() => {
             blinkOn = !blinkOn;
             shadow = blinkOn ? redShadow : "";
-            color = blinkOn ? red : "bg-[#000]";
+            color = blinkOn ? red : "bg-black";
         }, timer);
     }
 

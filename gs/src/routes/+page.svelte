@@ -10,7 +10,7 @@
     import StartScreen3D from '$lib/panels3d/StartScreen3D.svelte';
 </script>
 
-<main class="w-full flex-grow border-t border-black overflow-hidden max-h-screen">
+<main class="w-full grow border-t border-black overflow-hidden max-h-screen">
     {#if $threeDModeActive}
         {#if !$rendering}
             <StartScreen3D/>

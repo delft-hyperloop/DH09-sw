@@ -72,7 +72,7 @@
     });
 </script>
 
-<TabGroup regionPanel="m-0 !mt-0" padding="px-3 py-3" regionList="bg-surface-700" border="border-b border-surface-900" >
+<TabGroup regionPanel="m-0 mt-0!" padding="px-3 py-3" regionList="bg-surface-700" border="border-b border-surface-900" >
     {#each tabs as tab}
         {#if $debugModeActive || (!$debugModeActive && tab.name !== "Debug")}
             <Tab bind:group={$detailTabSet} value={tab.value} name={tab.name}>

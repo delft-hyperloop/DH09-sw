@@ -19,7 +19,7 @@
             {/each}
         </AppRail>
     </div>
-    <div class="p-8 w-10/12 flex-grow flex flex-col gap-4">
+    <div class="p-8 w-10/12 grow flex flex-col gap-4">
         <div class="flex gap-x-2 items-start">
             <h2 class="text-xl font-semibold mb-4">{$procedures[currentTile]?.title || 'NONE LOADED'}</h2>
             {#if pop_up}

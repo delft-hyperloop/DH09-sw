@@ -93,7 +93,7 @@
     <TileGrid className="mb-5" columns="1fr 1fr" rows="">
         <CollapsibleTile title="Propulsion Commands">
             {#snippet content()}
-                        <div >
+                <div >
                     <div class="border-surface-600 border rounded-lg m-4 p-2">
                         <div class="m-4">
                             <PropulsionHeartbeat storeName="Word1" labels={propReadLabels}/>
@@ -233,11 +233,11 @@
                         </Tile>
                     </TileGrid>
                 </div>
-                    {/snippet}
+            {/snippet}
         </CollapsibleTile>
         <CollapsibleTile title="Reset Commands">
             {#snippet content()}
-                        <div  class="flex gap-4">
+                <div  class="flex gap-4">
                     <Command cmd="SystemReset"/>
                     <Command cmd="ResetSenseCon"/>
                     <Command cmd="ResetPowertrain"/>
@@ -245,11 +245,11 @@
                     <Command cmd="ResetPropulsion"/>
                     <Command cmd="ResetLocalization"/>
                 </div>
-                    {/snippet}
+            {/snippet}
         </CollapsibleTile>
         <CollapsibleTile title="General Commands">
             {#snippet content()}
-                        <div >
+                <div >
                     <div class="grid grid-cols-4 w-full gap-4">
                         {#each NamedCommandValues as cmd, i}
                             <Command {cmd} val={Number(values[i])}/>
@@ -257,11 +257,11 @@
                         {/each}
                     </div>
                 </div>
-                    {/snippet}
+            {/snippet}
         </CollapsibleTile>
         <CollapsibleTile title="Override commands">
             {#snippet content()}
-                        <div  class="flex gap-4 flex-col">
+                <div  class="flex gap-4 flex-col">
                     <div class="flex flex-row gap-4">
                         {#if $overrideDependencies}
                             <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
@@ -304,7 +304,7 @@
     <!--                    <input type="number" class="input p-4 rounded-md" bind:value={fsmStateInput}>-->
     <!--                </div>-->
                 </div>
-                    {/snippet}
+            {/snippet}
         </CollapsibleTile>
     </TileGrid>
 </div>

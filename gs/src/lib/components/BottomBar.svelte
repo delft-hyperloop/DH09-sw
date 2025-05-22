@@ -1,8 +1,12 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { bigErrorStatus, threeDModeActive } from '$lib/stores/state';
+    import { GrandDataDistributor } from '$lib';
 
     let time = $state(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
+
+    let stores = GrandDataDistributor.getInstance().stores;
+    let fsmState = stores.getWritable("FSMState");
 
     onMount(() => {
         const interval = setInterval(() => {
@@ -31,7 +35,7 @@
                flex-row flex-nowrap justify-between px-4 gap-4 border-t border-black">
     <p>Delft Hyperloop: Theia</p>
     <div class="flex gap-4">
-<!--        <p>Current state: {$fsmState.value}</p>-->
+        <p>Current state: {$fsmState.value}</p>
         <p class="">{time}</p>
     </div>
 </footer>

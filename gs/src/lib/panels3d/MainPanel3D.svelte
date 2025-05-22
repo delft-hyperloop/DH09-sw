@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Canvas } from '@threlte/core';
     import Scene from '$lib/panels3d/components/Scene.svelte';
-    import { menuOpen, rendering } from '$lib/stores/state';
+    import { menuOpen, serverStatus } from '$lib/stores/state';
     import { Menu } from 'carbon-icons-svelte';
     import BurgerMenu from '$lib/panels3d/components/BurgerMenu.svelte';
     import { fade, fly } from 'svelte/transition';
@@ -18,7 +18,7 @@
         </div>
     {/if}
 </div>
-<div class="justify-center h-full w-full {$rendering ? 'visible' : 'invisible'} bg-black">
+<div class="justify-center h-full w-full {$serverStatus ? 'visible' : 'invisible'} bg-black">
     {#if !$menuOpen}
         <button
             onclick={() => {menuOpen.set(true)}}

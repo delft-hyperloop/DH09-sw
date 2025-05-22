@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { enteringScene, rendering } from '$lib/stores/state';
+    import { enteringScene, serverStatus } from '$lib/stores/state';
     import { fade } from 'svelte/transition';
     import { invoke } from '@tauri-apps/api/tauri';
     import { EventChannel, util } from '$lib';
@@ -12,7 +12,7 @@
         waitingForPod = true;
 
         setTimeout(() => {
-            $rendering = true;
+            $serverStatus = true;
         }, 2000);
 
         console.log(`Sending command: connect_to_pod`);

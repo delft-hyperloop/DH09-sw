@@ -1,8 +1,6 @@
 <script lang="ts">
     import {invoke} from '@tauri-apps/api/tauri';
     import {EventChannel, type NamedCommand, util} from "$lib";
-
-
     
     interface Props {
         offCmd: NamedCommand;

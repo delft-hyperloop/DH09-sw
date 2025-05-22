@@ -1,4 +1,3 @@
-<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script lang="ts">
     import {AppBar} from "@skeletonlabs/skeleton-svelte";
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
@@ -7,6 +6,7 @@
     import { bigErrorStatus, ErrorStatus, logsPanelSize, logsScrollAreaSize, logsVisible } from '$lib/stores/state';
     import { View, ViewOff } from 'carbon-icons-svelte';
     import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
+    import { toast } from '$lib/stores/data';
 
     let unlistens: UnlistenFn[] = [];
     let logContainer: HTMLElement;
@@ -24,7 +24,6 @@
     ]);
 
     let filters: Record<string, boolean> = { 'STATUS': true, 'WARNING': true, 'INFO': true, 'ERROR': true }; // filter variable
-    const toastStore = getToastStore();
 
     $: filteredLogs = logs.filter(log => filters[log.log_type]);
 
@@ -72,10 +71,9 @@
             console.log(message)
             console.log(`bg-${message[1]}-600`)
 
-            toastStore.trigger({
-            message: message[0],
-            background: `bg-surface-600` || "bg-surface-600",
-            });
+            toast.info({
+                description: message[0],
+            })
 
             switch (message[0]) {
             case "Unsafe":
@@ -121,7 +119,7 @@
 
 <div class="h-full">
     <AppBar padding="p-3" background="bg-surface-700 text-surface-50 ">
-        <svelte:fragment slot="lead">
+        {#snippet lead()}
             <button class="text-sm" on:click={toggleLogsVisibility}>
                 {#if $logsVisible}
                     <ViewOff size={16}/>
@@ -129,9 +127,9 @@
                     <View size={16}/>
                 {/if}
             </button>
-        </svelte:fragment>
+        {/snippet}
         Logs
-        <svelte:fragment slot="trail">
+        {#snippet trail()}
             <button class="btn rounded-lg text-sm" on:click={clearLogs}>
                 Clear Logs
             </button>
@@ -147,7 +145,7 @@
             <button class="line-through" class:active={filters['ERROR']} on:click={() => toggleFilter('ERROR')}>
                 ERROR
             </button>
-        </svelte:fragment>
+        {/snippet}
     </AppBar>
 
     <div class="p-1 overflow-y-auto" bind:this={logContainer} style="height: {$logsScrollAreaSize}vh;">

@@ -11,21 +11,6 @@
     // import RangeSlider from 'svelte-range-slider-pips';
     import { invoke } from '@tauri-apps/api/tauri';
 
-    // const storeManager = GrandDataDistributor.getInstance().stores;
-    // const statuses = storeManager.getWritable("ConnectionStatus")
-
-    // export let pop_up: boolean = true;
-
-    let tableArr2:any[][];
-    // $: tableArr2 = [
-    //     ["Acceleration X", DatatypeEnum.ACCELERATIONX],
-    //     ["Acceleration Y", DatatypeEnum.ACCELERATIONY],
-    //     ["Acceleration Z", DatatypeEnum.ACCELERATIONZ],
-    //     ["Gyroscope X", DatatypeEnum.GYROSCOPEX],
-    //     ["Gyroscope Y", DatatypeEnum.GYROSCOPEY],
-    //     ["Gyroscope Z", DatatypeEnum.GYROSCOPEZ],
-    // ]
-
     let currentDirectionForward: boolean = $state($goingForward);
     let currentSpeed: number = $state($podTargetSpeed);
     let currentMaxPower: number = $state($propMaxPower);
@@ -178,29 +163,6 @@
 <!--                    <p>Not set</p>-->
 <!--                {/if}-->
             </div>
-        </Tile>
-        <Tile insideClass="grid grid-cols-2 gap-y-2 auto-rows-min" heading="Statuses" >
-<!--            <p>Main PCB</p>-->
-<!--            <Status status={$statuses.value[STATUS.MAIN_PCB]} />-->
-<!--            <p>Propulsion</p>-->
-<!--            <Status on="Active" off="Off" status={$statuses.value[STATUS.PROPULSION]} />-->
-<!--            <p>Levitation</p>-->
-<!--            <Status status={$statuses.value[STATUS.LEVITATION]} />-->
-<!--            <p>Sensor Hub</p>-->
-<!--            <Status status={$statuses.value[STATUS.SENSOR_HUB]} />-->
-<!--            <p>LV Batteries</p>-->
-<!--            <Status status={$statuses.value[STATUS.LV_BATTERIES]} />-->
-<!--            <p>HV Batteries</p>-->
-<!--            <Status status={$statuses.value[STATUS.HV_BATTERIES]} />-->
-<!--            <p>Braking PCB</p>-->
-<!--            <Status on="Armed" off="Extended" status={$statuses.value[STATUS.BRAKING_PCB]} />-->
-<!--            <p>Voltage Over 50</p>-->
-<!--            <Status offColor="text-primary-400" off="Safe"-->
-<!--                    onColor="text-error-400" on="UNSAFE"-->
-<!--                    status={$statuses.value[STATUS.VOLTAGE_OVER]} />-->
-        </Tile>
-        <Tile heading="Data">
-            <Table tableArr={tableArr2} background="bg-surface-900" titles={["important", "variable"]}/>
         </Tile>
         <Tile containerClass="col-span-2">
             <Chart height={250} background="bg-surface-900" title="Velocity" />

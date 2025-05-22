@@ -1,26 +1,23 @@
 <script lang="ts">
     import { Chart, Command, serverStatus, TauriCommand, Tile, TileGrid } from '$lib';
-    import { pinnedCharts, procedures } from '$lib/stores/data';
+    import { pinnedCharts, procedures, toast } from '$lib/stores/data';
     import { parseProcedure } from "$lib/util/parsers";
     import { debugModeActive, threeDModeActive, logsVisible } from '$lib/stores/state';
     import Icon from '@iconify/svelte';
     import { ViewWindow } from '$lib/util/WindowControl';
     import { ChartLineSmooth, Flash, FlashOff, Wifi, WifiOff, WatsonHealth3DMprToggle } from 'carbon-icons-svelte';
 
-    const toastStore = getToastStore();
     const handleSuccess = () => {
-        toastStore.trigger({
-            message: "Server started successfully",
-            background: "bg-primary-400",
-            timeout: 1500
+        toast.success({
+            description: "Server started successfully",
+            duration: 1500,
         });
         serverStatus.set(true);
     };
 
     const handleFailure = (error:string) => {
-        toastStore.trigger({
-            message: `Server did not start successfully: ${error}`,
-            background: "bg-error-400"
+        toast.error({
+            description: `Server did not start successfully: ${error}`,
         });
     };
 
@@ -67,17 +64,17 @@
                     Enable Debug Mode
                 </button>
             {/if}
-<!--            <button class="btn *:pointer-events-none rounded-md font-number font-medium-->
-<!--               py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => {-->
-<!--                   threeDModeActive.set(true);-->
-<!--                   logsVisible.set(false);-->
+            <button class="btn *:pointer-events-none rounded-md font-number font-medium
+               py-2 bg-primary-500 text-surface-900 h-[35px]" onclick={() => {
+                   threeDModeActive.set(true);
+                   logsVisible.set(false);
 
-<!--                   // Making a new window didn't work because you can't share stores between windows-->
-<!--                   // new ViewWindow("pod", `/view/pod`)-->
-<!--               }}>-->
-<!--                <WatsonHealth3DMprToggle  class="mr-1" size={20}/>-->
-<!--                3D Mode-->
-<!--            </button>-->
+                   // Making a new window didn't work because you can't share stores between windows
+                   // new ViewWindow("pod", `/view/pod`)
+               }}>
+                <WatsonHealth3DMprToggle  class="mr-1" size={20}/>
+                3D Mode
+            </button>
         </div>
     <p>
         Press <kbd class="kbd">Esc</kbd> or <kbd class="kbd">Space</kbd> to trigger Emergency Braking or

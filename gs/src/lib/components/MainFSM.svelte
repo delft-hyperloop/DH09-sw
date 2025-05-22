@@ -87,7 +87,6 @@
 
 <div class="flex justify-center">
     <div class="w-full">
-
         <svg viewBox="0 0 977 202" fill="none" xmlns="http://www.w3.org/2000/svg">
             <g id="fsm-dh09">
                 <g id="Group 29">
@@ -197,6 +196,5 @@
                 </g>
             </g>
         </svg>
-
     </div>
 </div>

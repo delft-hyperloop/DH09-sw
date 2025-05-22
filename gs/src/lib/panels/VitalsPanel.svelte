@@ -14,6 +14,7 @@
         showcasingStates,
     } from '$lib/stores/state';
     import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck } from 'carbon-icons-svelte';
+    import { toast } from '$lib/stores/data';
 
     let width: number = $state();
 
@@ -26,20 +27,17 @@
     const localization = storeManager.getWritable("Localization");
     const velocity = storeManager.getWritable("Velocity");
 
-    const toastStore = getToastStore();
     const handleSuccess = () => {
-        toastStore.trigger({
-            message: "Server started successfully",
-            background: "bg-primary-400",
-            timeout: 1500
+        toast.success({
+            description: "Server started successfully",
+            duration: 1500,
         });
         serverStatus.set(true);
     };
 
     const handleFailure = (error:string) => {
-        toastStore.trigger({
-            message: `Server did not start successfully: ${error}`,
-            background: "bg-error-400"
+        toast.error({
+            description: `Server did not start successfully: ${error}`,
         });
     };
 
@@ -76,22 +74,16 @@
         ["Safe Range", "[360, 420] V", "[15,50] °C", "[280,360] V", "[15,50] °C"]
     ])
 
-    
-
-    
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
     <AppBar padding="px-5 pt-3 pb-3" border="border-b border-b-surface-900" background="bg-surface-700" slotDefault="place-self-center">
         {#snippet lead()}
-            
-                <div class="gap-2 flex flex-row items-center">
-                    <Activity size={16}/>
-                    <span>Vitals</span>
-                </div>
-            
-            {/snippet}
-
+            <div class="gap-2 flex flex-row items-center">
+                <Activity size={16}/>
+                <span>Vitals</span>
+            </div>
+        {/snippet}
         <div class="flex gap-5 items-center justify-center">
             <div class="flex flex-row gap-2 items-center">
                 <span>HVAL:</span>
@@ -99,18 +91,13 @@
                 <Light isGreen={false}/>
             </div>
         </div>
-
         {#snippet trail()}
-            
-                <Command callback={() => {
-                    toastStore.trigger({
-                        //@ts-ignore
-                        message: "Emergency Brake triggered!",
-                        background: 'preset-filled-error-500'
-                    });
-                }} className="bg-error-500 text-surface-100 btn py-0 border border-error-500 rounded-sm" cmd="EmergencyBrake"/>
-            
-            {/snippet}
+            <Command callback={() => {
+                toast.error({
+                    description: "Emergency Brake triggered!",
+                })
+            }} className="bg-error-500 text-surface-100 btn py-0 border border-error-500 rounded-sm" cmd="EmergencyBrake"/>
+        {/snippet}
     </AppBar>
 
     {#if width < 200}
@@ -153,7 +140,7 @@
                         <div class="flex flex-col gap-4">
                             <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
                             <span>PT Controller Fault: {$ptcFault.value}</span>
-                            <span>IMD: <status></span>
+                            <span>IMD: %ltstatus%gt</span>
                         </div>
                     </div>
                     <div class="flex gap-4 flex-wrap mt-4">
@@ -167,13 +154,12 @@
                         {:else}
                             <TauriCommand
                                 cmd="disconnect"
-                                on:click={() => serverStatus.set(false)}
+                                onclick={() => serverStatus.set(false)}
                                 successCallback={() => serverStatus.set(false)}
                                 errorCallback={(error) => {
-                                    toastStore.trigger({
-                                        message: `Server is not running: ${error}`,
-                                        background: "bg-error-400"
-                                    });
+                                    toast.error({
+                                        description: `Server is not running: ${error}`,
+                                    })
                                 }}
                                 icon={WifiOff}
                             />

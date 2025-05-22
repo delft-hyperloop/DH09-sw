@@ -3,7 +3,7 @@
     import VitalsPanel from "$lib/panels/VitalsPanel.svelte";
     import DetailsPanel from "$lib/panels/DetailsPanel.svelte";
     import LogsPanel from "$lib/panels/LogsPanel.svelte";
-    import { logsPanelSize, logsScrollAreaSize, logsVisible, rendering, threeDModeActive } from '$lib/stores/state';
+    import { logsPanelSize, logsScrollAreaSize, logsVisible, serverStatus, threeDModeActive } from '$lib/stores/state';
     import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
     import LogsPanel3D from '$lib/panels3d/LogsPanel3D.svelte';
     import MainPanel3D from '$lib/panels3d/MainPanel3D.svelte';
@@ -12,7 +12,7 @@
 
 <main class="w-full grow border-t border-black overflow-hidden max-h-screen">
     {#if $threeDModeActive}
-        {#if !$rendering}
+        {#if !$serverStatus}
             <StartScreen3D/>
         {:else}
             <Splitpanes theme="modern-theme" dblClickSplitter={false} horizontal={false} class="bg-black">

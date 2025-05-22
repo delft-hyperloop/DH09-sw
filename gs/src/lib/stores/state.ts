@@ -57,5 +57,4 @@ export const displayModal: Writable<boolean> = writable(false);
 export const threeDModeActive: Writable<boolean> = writable(false);
 export const enteringScene: Writable<boolean> = writable(false);
 export const inScene: Writable<boolean> = writable(false);
-export const rendering: Writable<boolean> = writable(false);
 export const menuOpen: Writable<boolean> = writable(false);

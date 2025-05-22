@@ -8,8 +8,6 @@
         TitleBar,
     } from '$lib';
     import {
-        type ModalComponent, ToastProvider } from '@skeletonlabs/skeleton-svelte';
-    import {
         chartStore,
         debugModeActive,
         latestTimestamp, leviChartStore,
@@ -17,34 +15,31 @@
         showcaseStateCounter,
         showcasingStates, threeDModeActive,
     } from '$lib/stores/state';
-    import { initProcedures } from '$lib/stores/data';
+    import { initProcedures, toast } from '$lib/stores/data';
     import { onDestroy, onMount } from 'svelte';
     import { listen } from '@tauri-apps/api/event';
     import { parseShortCut } from '$lib/util/parsers';
-    import {
-        computePosition,
-        autoUpdate,
-        offset,
-        shift,
-        flip,
-        arrow,
-    } from '@floating-ui/dom';
-    import AlertModal from '$lib/components/AlertModal.svelte';
+    // import {
+    //     computePosition,
+    //     autoUpdate,
+    //     offset,
+    //     shift,
+    //     flip,
+    //     arrow,
+    // } from '@floating-ui/dom';
+    import {Toaster} from '@skeletonlabs/skeleton-svelte';
+
     interface Props {
         children?: import('svelte').Snippet;
     }
 
     let { children }: Props = $props();
 
-    storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+    // storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
     let propCharts: string[] = [];
     let leviCharts: string[] = [];
     let powertrainCharts: string[] = [];
-
-    const modalRegistry: Record<string, ModalComponent> = {
-        alertModal: { ref: AlertModal },
-    };
 
     initProcedures();
 
@@ -565,7 +560,8 @@
 
     gdd.start(50);
 
-    initializeStores();
+    // TODO: ?????
+    // initializeStores();
 
     setInterval(() => {
         latestTimestamp.set(Date.now());
@@ -586,8 +582,7 @@
 </script>
 
 <div class="flex flex-col w-screen h-screen max-h-screen overflow-hidden">
-    <ToastProvider />
-    <Modal components={modalRegistry} />
+    <Toaster toaster={toast}/>
     <TitleBar />
     {@render children?.()}
     <BottomBar />

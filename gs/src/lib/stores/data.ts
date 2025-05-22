@@ -4,6 +4,7 @@ import type {Procedure} from "$lib/types";
 import {writable, type Writable} from 'svelte/store';
 import {invoke} from "@tauri-apps/api/tauri";
 import {parseProcedure} from "$lib/util/parsers";
+import {createToaster} from '@skeletonlabs/skeleton-svelte';
 
 export const procedures: Writable<Procedure[]> = writable([{
   name: "NO PROCEDURES LOADED",
@@ -31,3 +32,5 @@ export const propMaxPower: Writable<number> = writable(0);
 
 export const modalTitle: Writable<string> = writable("");
 export const modalBody: Writable<string> = writable("");
+
+export const toast = createToaster();

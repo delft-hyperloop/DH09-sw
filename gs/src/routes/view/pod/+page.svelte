@@ -2,7 +2,7 @@
     import { Canvas } from '@threlte/core';
     import Scene from '$lib/panels3d/components/Scene.svelte';
     import { EventChannel, util } from '$lib';
-    import { invoke } from '@tauri-apps/api/tauri';
+    import { invoke } from '@tauri-apps/api/core';
     import { fade } from 'svelte/transition';
     import { enteringScene } from './PodState';
 

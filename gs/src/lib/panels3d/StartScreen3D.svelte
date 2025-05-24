@@ -1,7 +1,7 @@
 <script lang="ts">
     import { enteringScene, serverStatus } from '$lib/stores/state';
     import { fade } from 'svelte/transition';
-    import { invoke } from '@tauri-apps/api/tauri';
+    import { invoke } from '@tauri-apps/api/core';
     import { EventChannel, util } from '$lib';
     import { Circle } from 'svelte-loading-spinners';
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { invoke } from '@tauri-apps/api/tauri';
+    import { invoke } from '@tauri-apps/api/core';
     import { EventChannel, type NamedCommand, util } from "$lib";
     import { writable, type Writable } from 'svelte/store';
     import { Modal } from '$lib/util/Modal';

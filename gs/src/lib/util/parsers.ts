@@ -1,7 +1,7 @@
 import {type dataConvFun, type Procedure} from "$lib/types";
 import {PlotBuffer} from "$lib/util/PlotBuffer";
 import { detailsPanelTab, VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
-import {invoke} from "@tauri-apps/api/tauri";
+import {invoke} from "@tauri-apps/api/core";
 import { debugModeActive, logsPanelSize, logsScrollAreaSize, logsVisible, menuOpen } from '$lib/stores/state';
 const MAX_VALUE = 4_294_967_295;
 

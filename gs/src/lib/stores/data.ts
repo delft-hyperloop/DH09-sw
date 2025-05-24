@@ -2,7 +2,7 @@
 
 import type {Procedure} from "$lib/types";
 import {writable, type Writable} from 'svelte/store';
-import {invoke} from "@tauri-apps/api/tauri";
+import {invoke} from "@tauri-apps/api/core";
 import {parseProcedure} from "$lib/util/parsers";
 import {createToaster} from '@skeletonlabs/skeleton-svelte';
 

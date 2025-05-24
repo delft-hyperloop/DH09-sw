@@ -1,4 +1,4 @@
-import {invoke} from "@tauri-apps/api/tauri";
+import {invoke} from "@tauri-apps/api/core";
 import {get, type Writable, writable} from "svelte/store";
 import {type dataConvFun, type Datapoint, type NamedDatatype} from "$lib/types";
 import {latestTimestamp} from "$lib/stores/state";

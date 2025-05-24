@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Battery, TileGrid, Tile, Command, GrandDataDistributor, Store, TauriCommand, serverStatus } from '$lib';
     import { AppBar } from '@skeletonlabs/skeleton-svelte';
-    import {invoke} from "@tauri-apps/api/tauri";
+    import {invoke} from "@tauri-apps/api/core";
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';

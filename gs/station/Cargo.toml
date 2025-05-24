@@ -14,7 +14,7 @@ build = "build.rs"
 
 [build-dependencies]
 anyhow = "1.0.86"
-tauri-build = { version = "1.5.1", features = [] }
+tauri-build = { version = "2", features = [] }
 serde = { version = "1.0.197", features = ["derive"] }
 regex = "1.10.3"
 toml = "0.8.11"
@@ -32,7 +32,7 @@ regex = "1.10.3"
 rayon = "1.9.0"
 colored = "2.1.0"
 time = "0.3.34"
-tauri = { version = "1.6.7", features = [ "window-create", "global-shortcut-all", "window-start-dragging", "window-unminimize", "window-unmaximize", "window-minimize", "window-hide", "window-show", "window-close", "window-maximize"], optional = true }
+tauri = { version = "2", features = [], optional = true }
 tokio = { version = "1.29.1", features = ["rt", "time", "rt-multi-thread", "macros", "net", "process", "sync", "io-std", "io-util"] }
 anyhow = "1.0.86"
 csv = "1.2.2"
@@ -48,6 +48,7 @@ path = "src/analysis/main.rs"
 [lib]
 name = "gslib"
 path = "src/lib.rs"
+crate-type = ["lib", "staticlib", "cdylib"]
 
 #[dependencies.tauri]
 #version = "1.6.2"
@@ -68,4 +69,7 @@ full = ["backend", "tui"]
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
 custom-protocol = [ "tauri/custom-protocol" ]
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-global-shortcut = "2"
 

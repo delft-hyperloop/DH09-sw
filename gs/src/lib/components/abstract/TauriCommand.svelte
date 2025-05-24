@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {invoke} from '@tauri-apps/api/tauri';
+    import {invoke} from '@tauri-apps/api/core';
     import {EventChannel, util} from "$lib";
     import type {PopupSettings} from "@skeletonlabs/skeleton-svelte";
 

@@ -9,7 +9,7 @@
     import { podTargetSpeed, propMaxPower } from '$lib/stores/data';
     import { goingForward, propulsionConfigSent, usingTestTrack } from '$lib/stores/state';
     // import RangeSlider from 'svelte-range-slider-pips';
-    import { invoke } from '@tauri-apps/api/tauri';
+    import { invoke } from '@tauri-apps/api/core';
 
     let currentDirectionForward: boolean = $state($goingForward);
     let currentSpeed: number = $state($podTargetSpeed);

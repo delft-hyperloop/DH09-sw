@@ -1,4 +1,4 @@
-import { WebviewWindow, type WindowOptions } from "@tauri-apps/api/window"
+import { WebviewWindow, type WindowOptions } from "@tauri-apps/api/webviewWindow"
 
 export class ViewWindow {
     private readonly _webview: WebviewWindow

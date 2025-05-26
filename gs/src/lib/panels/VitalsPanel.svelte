@@ -5,7 +5,7 @@
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
-    import MainFSM from '$lib/components/MainFSM.svelte';
+    import FSM from '$lib/components/FSM.svelte';
     import {
         debugModeActive,
         inStateHVOn,
@@ -192,7 +192,7 @@
                 <Tile
                     bgToken={800}
                     containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
-                    <MainFSM/>
+                    <FSM/>
                 </Tile>
                 {#if $debugModeActive}
                     <Tile bgToken={700} containerClass="col-span-2">

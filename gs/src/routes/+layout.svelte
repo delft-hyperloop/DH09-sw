@@ -560,7 +560,7 @@
 
     gdd.start(50);
 
-    // TODO: ?????
+    // TODO: from skeleton labs, what does this do?????
     // initializeStores();
 
     setInterval(() => {

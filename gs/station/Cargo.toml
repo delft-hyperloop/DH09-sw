@@ -36,6 +36,7 @@ tauri = { version = "2", features = [], optional = true }
 tokio = { version = "1.29.1", features = ["rt", "time", "rt-multi-thread", "macros", "net", "process", "sync", "io-std", "io-util"] }
 anyhow = "1.0.86"
 csv = "1.2.2"
+tauri-plugin-global-shortcut = "2"
 
 [[bin]]
 name = "station"

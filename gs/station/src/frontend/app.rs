@@ -2,7 +2,7 @@ use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
 use std::io::{stdout, Write};
-
+use std::str::FromStr;
 use gslib::{Datatype, Message, Datapoint};
 use gslib::ERROR_CHANNEL;
 use gslib::HEARTBEAT;
@@ -10,8 +10,8 @@ use gslib::INFO_CHANNEL;
 use gslib::SHORTCUT_CHANNEL;
 use gslib::STATUS_CHANNEL;
 use gslib::WARNING_CHANNEL;
-use tauri::AppHandle;
-use tauri::GlobalShortcutManager;
+use tauri::{AppHandle, Emitter};
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
 use tauri::Manager;
 use tauri::WindowEvent;
 use tokio::time::sleep;
@@ -39,9 +39,30 @@ pub fn tauri_main(backend: Backend) {
             test_panic,
             save_logs,
         ])
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new().with_handler(|app, shortcut, _event| {
+                let s = (*app).clone();
+                
+                if shortcut.matches(Modifiers::empty(), Code::Space) || shortcut.matches(Modifiers::empty(), Code::Escape) {
+                    send_command("EmergencyBrake".into(), 0);
+                    s.emit(STATUS_CHANNEL, "Emergency Brake triggered!;red").unwrap();
+                    s.emit(ERROR_CHANNEL, "Emergency Brake triggered!").unwrap()
+                } else if shortcut.matches(Modifiers::empty(), Code::KeyL) {
+                    s.emit(SHORTCUT_CHANNEL, "ToggleLogs").unwrap();
+                } else if shortcut.matches(Modifiers::empty(), Code::KeyD) {
+                    s.emit(SHORTCUT_CHANNEL, "DebugMode").unwrap();
+                } else if shortcut.matches(Modifiers::empty(), Code::KeyM) {
+                    s.emit(SHORTCUT_CHANNEL, "OpenMenu").unwrap();
+                } else {
+                    // Tabs will also go here
+                    s.emit(SHORTCUT_CHANNEL, shortcut.into_string()).unwrap();
+                }
+            })
+                .build(),
+        )
         .setup(move |app| {
             let app_handle = app.handle();
-            let window = app_handle.get_window("main").unwrap();
+            let window = app_handle.get_webview_window("main").unwrap();
 
             let mut message_rcv = backend.message_receiver.resubscribe();
             unsafe {
@@ -58,63 +79,32 @@ pub fn tauri_main(backend: Backend) {
             // set up heartbeat
             tokio::spawn(async move {
                 loop {
-                    s.emit_all(SHORTCUT_CHANNEL, "heartbeat").unwrap();
+                    s.emit(SHORTCUT_CHANNEL, "heartbeat").unwrap();
                     sleep(Duration::from_millis(HEARTBEAT)).await;
                 }
             });
 
             // set up shortcuts
-            let s = app_handle.clone();
-            let s2 = app_handle.clone();
-            let shortcuts = app_handle.global_shortcut_manager();
+            let shortcuts = app_handle.global_shortcut();
 
             window.on_window_event(move |event| {
-                let mut sh = shortcuts.clone();
+                let sh = shortcuts.clone();
                 match event {
                     WindowEvent::Focused(true) => {
                         // Register shortcuts when the window is focused
-                        let ss = s.clone();
-                        sh.register("Space", move || {
-                            send_command("EmergencyBrake".into(), 0);
-                            // ss.emit_all(SHORTCUT_CHANNEL, "emergency_brake").unwrap();
-                            ss.emit_all(STATUS_CHANNEL, "Emergency Brake triggered!;red").unwrap();
-                            ss.emit_all(ERROR_CHANNEL, "Emergency Brake triggered!").unwrap()
-                        })
-                        .expect("Could not register shortcut");
-
-                        let ss = s.clone();
-                        sh.register("Esc", move || {
-                            send_command("EmergencyBrake".into(), 0);
-                            // ss.emit_all(SHORTCUT_CHANNEL, "emergency_brake").unwrap();
-                            ss.emit_all(ERROR_CHANNEL, "Emergency Brake triggered!").unwrap();
-                            ss.emit_all(STATUS_CHANNEL, "Emergency Brake triggered!;red").unwrap();
-                        })
-                        .expect("Could not register shortcut");
-
-                        let ss = s.clone();
-                        sh.register("L", move || {
-                            ss.emit_all(SHORTCUT_CHANNEL, "ToggleLogs").unwrap();
-                        })
-                        .expect("Could not register shortcut");
-
-                        let ss = s.clone();
-                        sh.register("D", move || {
-                            ss.emit_all(SHORTCUT_CHANNEL, "DebugMode").unwrap();
-                        })
-                            .expect("Could not register shortcut");
-
-                        let ss = s.clone();
-                        sh.register("M", move || {
-                            ss.emit_all(SHORTCUT_CHANNEL, "OpenMenu").unwrap();
-                        })
-                            .expect("Could not register shortcut");
+                        sh.register("Space").expect("Could not register shortcut");
+                        sh.register("Esc").expect("Could not register shortcut");
+                        sh.register("L").expect("Could not register shortcut");
+                        sh.register("D").expect("Could not register shortcut");
+                        sh.register("M").expect("Could not register shortcut");
 
                         for i in 1..10 {
-                            let ss = s.clone();
-                            sh.register(&format!("SHIFT+{}", i), move || {
-                                ss.emit_all(SHORTCUT_CHANNEL, format!("tab_{i}")).unwrap();
-                            })
-                                .expect("Could not register shortcut");
+                            sh.register(
+                                Shortcut::new(
+                                    Option::from(Modifiers::SHIFT), 
+                                    Code::from_str(&format!("Digit{}", i)).unwrap()
+                                )
+                            ).expect("Could not register shortcut");
                         }
                     },
                     WindowEvent::Focused(false) => {
@@ -127,11 +117,12 @@ pub fn tauri_main(backend: Backend) {
 
             // --
 
+            let s = app_handle.clone();
             tokio::spawn(async move {
                 let capacity = 50;
                 let mut datapoint_dict: DatapointDict = DatapointDict::new(capacity);
                 print!("{}", "\n".repeat(capacity + 10));
-                let ss = s2.clone();
+                let ss = s.clone();
                 loop {
                     match message_rcv.try_recv() {
                         Ok(msg) => {
@@ -143,32 +134,32 @@ pub fn tauri_main(backend: Backend) {
                                 Message::Data(dp) => {
                                     // println!("Received datapoint: {:?}", dp);
                                     if dp.datatype == Datatype::CANLog {
-                                        ss.emit_all(INFO_CHANNEL, format!("Received datapoint on the main PCB: {:?}", dp)).expect("Couldn't send message");
+                                        ss.emit(INFO_CHANNEL, format!("Received datapoint on the main PCB: {:?}", dp)).expect("Couldn't send message");
                                     }
                                     datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp));
                                     print!("{}", datapoint_dict);
                                     stdout().flush().unwrap();
-                                    app_handle
+                                    ss
                                         .state::<BackendState>()
                                         .data_buffer
                                         .lock()
                                         .unwrap()
                                         .push(Message::Data(dp));
                                 },
-                                Message::Status(s) => app_handle
-                                    .emit_all(
+                                Message::Status(s) => ss
+                                    .emit(
                                         STATUS_CHANNEL,
                                         &*format!("Status: {:?};{}", s, s.to_colour_str()),
                                     )
                                     .unwrap(),
                                 Message::Info(i) => {
-                                    app_handle.emit_all(INFO_CHANNEL, i.to_string()).unwrap()
+                                    ss.emit(INFO_CHANNEL, i.to_string()).unwrap()
                                 },
                                 Message::Warning(w) => {
-                                    app_handle.emit_all(WARNING_CHANNEL, w.to_string()).unwrap()
+                                    ss.emit(WARNING_CHANNEL, w.to_string()).unwrap()
                                 },
                                 Message::Error(e) => {
-                                    app_handle.emit_all(ERROR_CHANNEL, e.to_string()).unwrap()
+                                    ss.emit(ERROR_CHANNEL, e.to_string()).unwrap()
                                 },
                             }
                         },

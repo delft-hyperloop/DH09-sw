@@ -12,8 +12,7 @@ stm32h7xx-hal = { version = "0.16.0", features = [
 ] }
 
 cortex-m = { version = "0.7.7", features = [
-    "inline-asm",
-    "critical-section-single-core",
+    "inline-asm"
 ] }
 cortex-m-rt = "0.7.3"
 cortex-m-semihosting = "0.5"
@@ -102,8 +101,9 @@ git = "https://github.com/delft-hyperloop/embassy"
 rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 
 [workspace.dependencies.smoltcp]
-git = "https://github.com/smoltcp-rs/smoltcp"
-rev = "f8bfa311206aaf29a8dbd55c5920b1fe674a5db1"
+version = "0.11.0"
+default-features = false
+features = ["medium-ethernet", "proto-ipv4", "socket-udp", "async"]
 
 [patch.crates-io]
 defmt = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f56059fc66ac3c7cc3445d092829599e699" }
@@ -116,7 +116,3 @@ defmt-decoder = { git = "https://github.com/knurling-rs/defmt", rev = "b7a89f560
 
 rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }
 #panic-rtt-target = { git = "https://github.com/probe-rs/rtt-target", rev = "ab0fb987fae742a33b843ca92a5c8da75ede38cc" }
-
-[patch.crates-io.smoltcp]
-git = "https://github.com/smoltcp-rs/smoltcp"
-rev = "f8bfa311206aaf29a8dbd55c5920b1fe674a5db1"

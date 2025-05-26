@@ -1,4 +1,12 @@
 [target.thumbv7em-none-eabihf]
+rustflags = [
+  "-C", "target-cpu=cortex-m7", 
+  "-C", "linker=flip-link",
+  "-C", "target-feature=+v7e-m",
+  "-C", "target-feature=+dsp",
+  "-C", "target-feature=+fpv5-sp-d16",
+  "-C", "llvm-args=-mfloat-abi=hard"
+]
 # add `-d cpu,guest_errors` to debug guest errors
 # runner = "qemu-system-arm -cpu cortex-m7 -machine mps2-an500 -nographic -semihosting-config enable=on,target=native -kernel"
 #runner = "arch gdb-multiarch -q -x openocd.gdb"
@@ -13,12 +21,20 @@ runner = "probe-rs run --chip STM32h753zitx --probe 0483:374e:001D00223532511331
 #runner = "probe-rs run --chip STM32h743zitx --probe 0483:3754:001D00293033510735393935" # Thijs' main PCB
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
-rustflags = [
-  "-C", "linker=flip-link",
-]
+# rustflags = [
+#   "-C", "linker=flip-link",
+# ]
 
 [env]
 DEFMT_LOG = "info"
 
 [rust]
 debug-assertions = true
+
+[build]
+rustflags = [
+    "-Dmissing-docs",
+    "-Wmissing-debug-implementations",
+    "-Wmissing-copy-implementations",
+    "-Wunexpected-cfgs",
+]

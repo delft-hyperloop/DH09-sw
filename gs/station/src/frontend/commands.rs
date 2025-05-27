@@ -7,7 +7,7 @@ use gslib::Datatype;
 use gslib::Message;
 use gslib::ProcessedData;
 use rand::Rng;
-use tauri::Manager;
+use tauri::{Emitter};
 use tauri::State;
 
 use crate::backend::Backend;
@@ -136,7 +136,7 @@ pub fn save_logs() -> bool {
             if Backend::save_to_path(log, x).is_ok() {
                 APP_HANDLE
                     .try_lock()
-                    .map(|x| x.as_ref().map(|y| y.emit_all("a", "b").is_ok()).is_some())
+                    .map(|x| x.as_ref().map(|y| y.emit("a", "b").is_ok()).is_some())
                     .is_ok()
                 // APP_HANDLE.try_borrow().map(|x| x.emit_all("clear_logs", "kiko").is_ok()).is_ok()
             } else {

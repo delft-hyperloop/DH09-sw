@@ -50,7 +50,7 @@
 
     let ptcStates = [
         "Idle",
-        "Recharge",
+        "Precharge",
         "HV On",
         "Discharge",
         "Failure",
@@ -205,12 +205,19 @@
                     <MainFSM/>
                 </Tile>
                 {#if $debugModeActive}
-                    <Tile bgToken={700} containerClass="col-span-2">
+                    <Tile bgToken={700} containerClass="col-span-2 bg-surface-800" heading="Propulsion FSM Update Commands" headingOnLeft={true}>
                         <div class="flex gap-4 flex-wrap">
                             <Command cmd="FSMUpdate" text="Initialization" val={200} className="py-3 bg-primary-500 text-surface-900"/>
                             <Command cmd="FSMUpdate" text="Idle" val={201}/>
                             <Command cmd="FSMUpdate" text="Running" val={202}/>
                             <Command cmd="FSMUpdate" text="Braking" val={203}/>
+                        </div>
+                    </Tile>
+                    <Tile bgToken={700} containerClass="col-span-2 bg-surface-800" heading="Powertrain FSM Update Commands" headingOnLeft={true}>
+                        <div class="flex gap-4 flex-wrap">
+                            <Command cmd="FSMUpdate" text="HV On" val={4} className="py-3 bg-primary-500 text-surface-900"/>
+                            <Command cmd="FSMUpdate" text="Idle" val={11}/>
+                            <Command cmd="FSMUpdate" text="Reset Fault from Precharge Fault" val={3}/>
                         </div>
                     </Tile>
                 {/if}

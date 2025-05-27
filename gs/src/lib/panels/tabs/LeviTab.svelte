@@ -18,23 +18,29 @@
             <Command cmd="vertical_0_current" text="Vertical 0 Current"/>
             <Command cmd="vert_0_current_reset" text="Reset Vertical 0 Current"/>
         </div>
-        <Tile containerClass="col-span-full">
+        <Tile containerClass="col-span-1">
             <Chart title="HEMS Current" background="bg-surface-900" />
         </Tile>
-        <Tile containerClass="col-span-full">
+        <Tile containerClass="col-span-1">
             <Chart title="EMS Current" background="bg-surface-900" />
         </Tile>
-        <Tile containerClass="col-span-full">
+        <Tile containerClass="col-span-1">
             <Chart title="Air Gaps" background="bg-surface-900" />
         </Tile>
-        <Tile containerClass="col-span-full">
+        <Tile containerClass="col-span-1">
             <Chart title="Angles" background="bg-surface-900" />
         </Tile>
-        <Tile containerClass="col-span-full">
+        <Tile containerClass="col-span-1">
             <Chart title="Requested Force 1" background="bg-surface-900" />
         </Tile>
-        <Tile containerClass="col-span-full">
+        <Tile containerClass="col-span-1">
             <Chart title="Requested Force 2" background="bg-surface-900" />
+        </Tile>
+        <Tile containerClass="col-span-1">
+            <Chart title="Temperature HEMS" background="bg-surface-900"/>
+        </Tile>
+        <Tile containerClass="col-span-1">
+            <Chart title="Temperature EMS" background="bg-surface-900"/>
         </Tile>
     </TileGrid>
     <br>

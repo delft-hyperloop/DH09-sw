@@ -203,6 +203,40 @@
     $chartStore.set('Requested Force 2', leviRequestForce2Chart);
     leviCharts.push('Requested Force 2');
 
+    let hemsTempChart = new PlotBuffer(500, 60000, [0, 100], true, '1');
+    hemsTempChart.addSeries(StrokePresets.yellow('2'));
+    hemsTempChart.addSeries(StrokePresets.theoretical('3'));
+    hemsTempChart.addSeries(StrokePresets.yellowDashed('4'));
+    hemsTempChart.addSeries(StrokePresets.hyperLoopGreen('5'));
+    hemsTempChart.addSeries(StrokePresets.blue('6'));
+    hemsTempChart.addSeries(StrokePresets.blueDashed('7'));
+    hemsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('8'));
+    $chartStore.set('Temperature HEMS', hemsTempChart);
+    leviCharts.push('Temperature HEMS');
+
+    let emsTempChart = new PlotBuffer(500, 60000, [0, 100], true, '1');
+    emsTempChart.addSeries(StrokePresets.yellow('2'));
+    emsTempChart.addSeries(StrokePresets.theoretical('3'));
+    emsTempChart.addSeries(StrokePresets.yellowDashed('4'));
+    emsTempChart.addSeries(StrokePresets.hyperLoopGreen('5'));
+    emsTempChart.addSeries(StrokePresets.blue('6'));
+    emsTempChart.addSeries(StrokePresets.blueDashed('7'));
+    emsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('8'));
+    $chartStore.set('Temperature EMS', emsTempChart);
+    leviCharts.push('Temperature EMS');
+
+    let BMSVoltageHighChart = new PlotBuffer(500, 60000, [-500, 500], true, "BMS Voltage High");
+    $chartStore.set("BMS Voltage High", BMSVoltageHighChart);
+    powertrainCharts.push("BMS Voltage High");
+
+    let BMSVoltageLowChart = new PlotBuffer(500, 60000, [-500, 500], true, "BSM Voltage Low");
+    $chartStore.set("BMS Voltage Low", BMSVoltageLowChart);
+    powertrainCharts.push("BMS Voltage Low");
+
+    let BMSVoltageTempsChart = new PlotBuffer(500, 60000, [-500, 500], true, "Temp High");
+    BMSVoltageTempsChart.addSeries(StrokePresets.blue("Temp Low"));
+    $chartStore.set("BMS Temps", BMSVoltageTempsChart);
+    powertrainCharts.push("BMS Temps");
 
     leviChartStore.set(leviCharts);
     propChartStore.set(propCharts);
@@ -214,8 +248,7 @@
 
     ////////////////////////////////////////////////////////////////
 
-    // generated
-
+    // gdd stores registration
     // auto-generated with npm run generate:gs
 
     gdd.stores.registerStore<number>("TempMotorLeft0", 0, data => {
@@ -256,6 +289,20 @@
     gdd.stores.registerStore<number>("TempMotorLeft5", 0, data => {
             const curr = Number(data);
             $chartStore.get("Motor Temperatures Left")!.addEntry(6, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempMotorLeft6", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Motor Temperatures Left")!.addEntry(7, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempMotorLeft7", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Motor Temperatures Left")!.addEntry(8, curr);
             return curr;
         }
     );
@@ -309,17 +356,44 @@
         }
     );
 
+    gdd.stores.registerStore<number>("TempMotorRight7", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Motor Temperatures Right")!.addEntry(8, curr);
+            return curr;
+        }
+    );
+
     gdd.stores.registerStore<number>("PTCState", 0);
 
     gdd.stores.registerStore<number>("PTCNonCriticalFault", 0);
 
-    gdd.stores.registerStore<number>("BMSVoltageHigh", 0);
+    gdd.stores.registerStore<number>("BMSVoltageHigh", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Voltage High")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("BMSVoltageLow", 0);
+    gdd.stores.registerStore<number>("BMSVoltageLow", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Voltage Low")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("BMSTemperatureHigh", 0);
+    gdd.stores.registerStore<number>("BMSTemperatureHigh", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Temps")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("BMSTemperatureLow", 0);
+    gdd.stores.registerStore<number>("BMSTemperatureLow", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Temps")!.addEntry(2, curr);
+            return curr;
+        }
+    );
 
     gdd.stores.registerStore<number>("VPack", 0);
 
@@ -338,30 +412,9 @@
         }
     );
 
-    gdd.stores.registerStore<number>("Offset1", 0, data => {
+    gdd.stores.registerStore<number>("Velocity", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Offset")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Offset2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Offset")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Offset3", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Offset")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Offset4", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Offset")!.addEntry(4, curr);
+            $chartStore.get("Velocity")!.addEntry(1, curr);
             return curr;
         }
     );
@@ -552,14 +605,155 @@
 
     gdd.stores.registerStore<number>("FSMAckProp2", 0);
 
-    gdd.stores.registerStore<number>("Velocity", 0, data => {
+    gdd.stores.registerStore<number>("FSMAckLevi", 0);
+
+    gdd.stores.registerStore<number>("ClearFaultAckLevi", 0);
+
+    gdd.stores.registerStore<number>("Offset1", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Velocity")!.addEntry(1, curr);
+            $chartStore.get("Offset")!.addEntry(1, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("FSMState", 0);
+    gdd.stores.registerStore<number>("Offset2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Offset")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Offset3", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Offset")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Offset4", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Offset")!.addEntry(4, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("LevitationState", 0);
+
+    gdd.stores.registerStore<number>("NonCriticalLeviError", 0);
+
+    gdd.stores.registerStore<number>("TempHEMS1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures HEMS")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempHEMS2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures HEMS")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempHEMS3", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures HEMS")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempHEMS4", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures HEMS")!.addEntry(4, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempHEMS5", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures HEMS")!.addEntry(5, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempHEMS6", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures HEMS")!.addEntry(6, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempHEMS7", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures HEMS")!.addEntry(7, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempHEMS8", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures HEMS")!.addEntry(8, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempEMS1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures EMS")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempEMS2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures EMS")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempEMS3", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures EMS")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempEMS4", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures EMS")!.addEntry(4, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempEMS5", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures EMS")!.addEntry(5, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempEMS6", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures EMS")!.addEntry(6, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempEMS7", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures EMS")!.addEntry(7, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("TempEMS8", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Temperatures EMS")!.addEntry(8, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("FSMState", 0)
 
     // End of generated
 

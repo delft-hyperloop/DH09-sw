@@ -217,17 +217,14 @@
 <!--        <Tile containerClass="col-span-4" heading="Battery stats">-->
 <!--            <Table background="bg-surface-900" {tableArr} {titles} />-->
 <!--        </Tile>-->
-        <Tile containerClass="col-span-2" heading="LV Current">
-            <Chart title="LV Current" background="bg-surface-900" />
+        <Tile containerClass="col-span-2">
+            <Chart title="BMS Voltage High" background="bg-surface-900" />
         </Tile>
-        <Tile containerClass="col-span-2" heading="HV Current">
-            <Chart title="HV Current" background="bg-surface-900" />
+        <Tile containerClass="col-span-2">
+            <Chart title="BMS Voltage Low" background="bg-surface-900" />
         </Tile>
-        <Tile containerClass="col-span-2" heading="LV Total">
-            <Chart title="LV Total" background="bg-surface-900" />
-        </Tile>
-        <Tile containerClass="col-span-2" heading="HV Total">
-            <Chart title="HV Total" background="bg-surface-900" />
+        <Tile containerClass="col-span-4">
+            <Chart title="BMS Temps" background="bg-surface-900" />
         </Tile>
 <!--        <Tile containerClass="col-span-4" heading="Lv Cell Voltages">-->
 <!--            <Table background="bg-surface-900" tableArr={lvCellVoltArr} titles =  {lvTitles} />-->

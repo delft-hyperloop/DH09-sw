@@ -64,8 +64,8 @@ procedures:
 #    formula: 'x as f32'
 
   # ======= GS communication =======
-  # dump = Main PCB to GS
-  # parse = GS to Main PCB
+  # dump = convert Main PCB values to u64, to dump over ethernet (on main PCB)
+  # parse = convert the u64 values received from ethernet to f64 (for display, on GS)
   dump-gs_2p_float:
     input: 'f32'
     output: 'u64'
@@ -1313,45 +1313,55 @@ message-processing:
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'
-#  - name: 'AirGaps'
-#    can:
-#      id: 0x516
-#      bus: can2
-#    datapoint-conversion:
-#      - datapoint:
-#          name: 'Vertical'
-#          id: 0x52C
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Air Gaps")!.addEntry(1, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[0..2]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'Lateral'
-#          id: 0x52D
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Air Gaps")!.addEntry(2, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[2..4]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
+  - name: 'Airgaps'
+    can:
+      id: 0x515
+      bus: can2
+      log_period: 100
+    datapoint-conversion:
+      - datapoint:
+          name: 'VAirgap'
+          id: 0x52C
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Air Gaps")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'VAirgap'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 100)'
+      - datapoint:
+          name: 'HAirgap'
+          id: 0x52D
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Air Gaps")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'HAirgap'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 100)'
 #  - name: 'Angles'
 #    can:
 #      id: 0x517
 #      bus: can2
+#      log_period: 100
 #    datapoint-conversion:
 #      - datapoint:
 #          name: 'Roll'
@@ -1863,6 +1873,7 @@ commands:
     can:
       id: 0x190
       bus: can2
+      trim: 7
   - name: 'SystemCheck'
     id: 0x191
     can:
@@ -1957,4 +1968,5 @@ commands:
   - name: 'RearmSDC'
     id: 0x1B6
 
-
+beckhoff:
+  task-period: 10 # period in ms

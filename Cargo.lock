@@ -150,12 +150,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bare-metal"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8fe8f5a8a398345e52358e18ff07cc17a568fbca5c6f73873d3a62056309603"
-
-[[package]]
 name = "base64"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -301,62 +295,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "can-testing-listener"
-version = "0.1.0"
-dependencies = [
- "cortex-m",
- "cortex-m-rt",
- "cortex-m-semihosting",
- "defmt",
- "defmt-rtt",
- "embassy-boot",
- "embassy-boot-stm32",
- "embassy-executor 0.7.0 (git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c)",
- "embassy-net",
- "embassy-stm32",
- "embassy-sync",
- "embassy-time",
- "embedded-io-async",
- "embedded-storage",
- "heapless 0.8.0",
- "panic-probe",
- "rand_core 0.6.4",
- "static_cell",
-]
-
-[[package]]
-name = "can-testing-sender"
-version = "0.1.0"
-dependencies = [
- "cortex-m",
- "cortex-m-rt",
- "cortex-m-semihosting",
- "defmt",
- "defmt-rtt",
- "embassy-boot",
- "embassy-boot-stm32",
- "embassy-executor 0.7.0 (git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c)",
- "embassy-futures",
- "embassy-net",
- "embassy-stm32",
- "embassy-sync",
- "embassy-time",
- "embedded-hal 0.2.7",
- "embedded-hal-async",
- "embedded-io-async",
- "embedded-storage",
- "fdcan",
- "heapless 0.8.0",
- "panic-halt",
- "panic-probe",
- "panic-semihosting",
- "phf 0.11.3",
- "rand_core 0.6.4",
- "static_cell",
- "stm32h7xx-hal",
-]
-
-[[package]]
 name = "cargo_toml"
 version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -371,12 +309,6 @@ name = "cassowary"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df8670b8c7b9dae1793364eafadf7239c40d669904660c5960d74cfd80b46a53"
-
-[[package]]
-name = "cast"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "castaway"
@@ -574,7 +506,7 @@ version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ec610d8f49840a5b376c69663b6369e71f4b34484b9b2eb29fb918d92516cb9"
 dependencies = [
- "bare-metal 0.2.5",
+ "bare-metal",
  "bitfield",
  "critical-section",
  "embedded-hal 0.2.7",
@@ -951,7 +883,7 @@ checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
 [[package]]
 name = "embassy-boot"
 version = "0.4.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "digest",
  "embassy-embedded-hal",
@@ -964,7 +896,7 @@ dependencies = [
 [[package]]
 name = "embassy-boot-stm32"
 version = "0.2.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "cfg-if",
  "cortex-m",
@@ -979,7 +911,7 @@ dependencies = [
 [[package]]
 name = "embassy-embedded-hal"
 version = "0.3.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "defmt",
  "embassy-futures",
@@ -1008,13 +940,13 @@ dependencies = [
 [[package]]
 name = "embassy-executor"
 version = "0.7.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "cortex-m",
  "critical-section",
  "defmt",
  "document-features",
- "embassy-executor-macros 0.6.2 (git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c)",
+ "embassy-executor-macros 0.6.2 (git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17)",
 ]
 
 [[package]]
@@ -1032,7 +964,7 @@ dependencies = [
 [[package]]
 name = "embassy-executor-macros"
 version = "0.6.2"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -1043,12 +975,12 @@ dependencies = [
 [[package]]
 name = "embassy-futures"
 version = "0.1.1"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 
 [[package]]
 name = "embassy-hal-internal"
 version = "0.2.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "cortex-m",
  "critical-section",
@@ -1059,7 +991,7 @@ dependencies = [
 [[package]]
 name = "embassy-net"
 version = "0.7.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "defmt",
  "document-features",
@@ -1076,7 +1008,7 @@ dependencies = [
 [[package]]
 name = "embassy-net-driver"
 version = "0.2.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "defmt",
 ]
@@ -1084,7 +1016,7 @@ dependencies = [
 [[package]]
 name = "embassy-stm32"
 version = "0.2.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "aligned",
  "bit_field",
@@ -1132,7 +1064,7 @@ dependencies = [
 [[package]]
 name = "embassy-sync"
 version = "0.6.2"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "cfg-if",
  "critical-section",
@@ -1146,7 +1078,7 @@ dependencies = [
 [[package]]
 name = "embassy-time"
 version = "0.4.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "cfg-if",
  "critical-section",
@@ -1162,7 +1094,7 @@ dependencies = [
 [[package]]
 name = "embassy-time-driver"
 version = "0.2.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "document-features",
 ]
@@ -1170,16 +1102,16 @@ dependencies = [
 [[package]]
 name = "embassy-time-queue-utils"
 version = "0.1.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
- "embassy-executor 0.7.0 (git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c)",
+ "embassy-executor 0.7.0 (git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17)",
  "heapless 0.8.0",
 ]
 
 [[package]]
 name = "embassy-usb-driver"
 version = "0.1.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "defmt",
 ]
@@ -1187,7 +1119,7 @@ dependencies = [
 [[package]]
 name = "embassy-usb-synopsys-otg"
 version = "0.2.0"
-source = "git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c#4d9b41714da77d82811f39bd6feabe161e93552c"
+source = "git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17#e56a1d0e457bee087a4094206b277fbf595a8f17"
 dependencies = [
  "critical-section",
  "defmt",
@@ -1222,15 +1154,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9d2e857f87ac832df68fa498d18ddc679175cf3d2e4aa893988e5601baf9438"
 dependencies = [
  "nb 1.1.0",
-]
-
-[[package]]
-name = "embedded-dma"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "994f7e5b5cb23521c22304927195f236813053eb9c065dd2226a32ba64695446"
-dependencies = [
- "stable_deref_trait",
 ]
 
 [[package]]
@@ -1380,20 +1303,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
-name = "fdcan"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a745a7ef1532cc436619631a102c1d2f71e8fd4e82f1ee48c85eaa73c0487e81"
-dependencies = [
- "bitflags 1.3.2",
- "nb 1.1.0",
- "paste",
- "static_assertions",
- "vcell",
- "volatile-register",
-]
-
-[[package]]
 name = "fdeflate"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1490,7 +1399,7 @@ dependencies = [
  "defmt-rtt",
  "embassy-boot",
  "embassy-boot-stm32",
- "embassy-executor 0.7.0 (git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c)",
+ "embassy-executor 0.7.0 (git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17)",
  "embassy-futures",
  "embassy-net",
  "embassy-stm32",
@@ -1505,15 +1414,6 @@ dependencies = [
  "rand_core 0.6.4",
  "rtt-target",
  "static_cell",
-]
-
-[[package]]
-name = "fugit"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17186ad64927d5ac8f02c1e77ccefa08ccd9eaa314d5a4772278aa204a22f7e7"
-dependencies = [
- "gcd",
 ]
 
 [[package]]
@@ -1603,12 +1503,6 @@ checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
 dependencies = [
  "byteorder",
 ]
-
-[[package]]
-name = "gcd"
-version = "2.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d758ba1b47b00caf47f24925c0074ecb20d6dfcffe7f6d53395c0465674841a"
 
 [[package]]
 name = "gdk"
@@ -2523,7 +2417,7 @@ dependencies = [
  "defmt-rtt",
  "embassy-boot",
  "embassy-boot-stm32",
- "embassy-executor 0.7.0 (git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c)",
+ "embassy-executor 0.7.0 (git+https://github.com/delft-hyperloop/embassy?rev=e56a1d0e457bee087a4094206b277fbf595a8f17)",
  "embassy-futures",
  "embassy-net",
  "embassy-stm32",
@@ -2857,16 +2751,6 @@ checksum = "4047d9235d1423d66cc97da7d07eddb54d4f154d6c13805c6d0793956f4f25b0"
 dependencies = [
  "cortex-m",
  "defmt",
-]
-
-[[package]]
-name = "panic-semihosting"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee8a3e1233d9073d76a870223512ce4eeea43c067a94a445c13bd6d792d7b1ab"
-dependencies = [
- "cortex-m",
- "cortex-m-semihosting",
 ]
 
 [[package]]
@@ -3473,9 +3357,9 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "sdio-host"
-version = "0.5.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f93c025f9cfe4c388c328ece47d11a54a823da3b5ad0370b22d95ad47137f85a"
+checksum = "b328e2cb950eeccd55b7f55c3a963691455dcd044cfb5354f0c5e68d2c2d6ee2"
 
 [[package]]
 name = "selectors"
@@ -3896,42 +3780,10 @@ dependencies = [
 [[package]]
 name = "stm32-metapac"
 version = "16.0.0"
-source = "git+https://github.com/embassy-rs/stm32-data-generated?tag=stm32-data-4a964af03b298de30ff9f84fcfa890bcab4ce609#aee345990e1a14efd018877b52aff1d63e16bb7f"
+source = "git+https://github.com/embassy-rs/stm32-data-generated?tag=stm32-data-a7a30c9d54e7415709c463a537501691784672db#eb4626497984cba3cad6f381a8745813bd9999d8"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
-]
-
-[[package]]
-name = "stm32h7"
-version = "0.15.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "362f288cd8341e9209587b889c385f323e82fc237b60c272868965bb879bb9b1"
-dependencies = [
- "bare-metal 1.0.0",
- "cortex-m",
- "cortex-m-rt",
- "vcell",
-]
-
-[[package]]
-name = "stm32h7xx-hal"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3bd869329be25440b24e2b3583a1c016151b4a54bc36d96d82af7fcd9d010b98"
-dependencies = [
- "bare-metal 1.0.0",
- "cast",
- "cortex-m",
- "embedded-dma",
- "embedded-hal 0.2.7",
- "embedded-storage",
- "fdcan",
- "fugit",
- "nb 1.1.0",
- "paste",
- "stm32h7",
- "void",
 ]
 
 [[package]]

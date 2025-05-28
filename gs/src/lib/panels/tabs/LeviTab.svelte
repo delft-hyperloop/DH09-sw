@@ -37,10 +37,10 @@
             <Chart title="Requested Force 2" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
-            <Chart title="Temperature HEMS" background="bg-surface-900"/>
+            <Chart title="Temperatures HEMS" background="bg-surface-900"/>
         </Tile>
         <Tile containerClass="col-span-1">
-            <Chart title="Temperature EMS" background="bg-surface-900"/>
+            <Chart title="Temperatures EMS" background="bg-surface-900"/>
         </Tile>
     </TileGrid>
     <br>

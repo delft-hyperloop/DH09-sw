@@ -211,8 +211,8 @@
     hemsTempChart.addSeries(StrokePresets.blue('6'));
     hemsTempChart.addSeries(StrokePresets.blueDashed('7'));
     hemsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('8'));
-    $chartStore.set('Temperature HEMS', hemsTempChart);
-    leviCharts.push('Temperature HEMS');
+    $chartStore.set('Temperatures HEMS', hemsTempChart);
+    leviCharts.push('Temperatures HEMS');
 
     let emsTempChart = new PlotBuffer(500, 60000, [0, 100], true, '1');
     emsTempChart.addSeries(StrokePresets.yellow('2'));
@@ -222,8 +222,8 @@
     emsTempChart.addSeries(StrokePresets.blue('6'));
     emsTempChart.addSeries(StrokePresets.blueDashed('7'));
     emsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('8'));
-    $chartStore.set('Temperature EMS', emsTempChart);
-    leviCharts.push('Temperature EMS');
+    $chartStore.set('Temperatures EMS', emsTempChart);
+    leviCharts.push('Temperatures EMS');
 
     let BMSVoltageHighChart = new PlotBuffer(500, 60000, [-500, 500], true, "BMS Voltage High");
     $chartStore.set("BMS Voltage High", BMSVoltageHighChart);
@@ -641,6 +641,20 @@
 
     gdd.stores.registerStore<number>("NonCriticalLeviError", 0);
 
+    gdd.stores.registerStore<number>("VAirgap", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Air Gaps")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("HAirgap", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Air Gaps")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
     gdd.stores.registerStore<number>("TempHEMS1", 0, data => {
             const curr = Number(data);
             $chartStore.get("Temperatures HEMS")!.addEntry(1, curr);
@@ -753,7 +767,7 @@
         }
     );
 
-    gdd.stores.registerStore<number>("FSMState", 0)
+    gdd.stores.registerStore<number>("FSMState", 0);
 
     // End of generated
 

@@ -17,6 +17,7 @@
     export let dependencyMessage: string = '';
     export let dependencyTitle: string = '';
     export let icon: typeof import("svelte").SvelteComponent | null = null;
+    export let iconClass: string = '';
 
     let modalStore = getModalStore();
 
@@ -45,7 +46,7 @@
         on:click={send}>
     {#if icon}
         <div class="mr-1">
-            <svelte:component this={icon} size={20}/>
+            <svelte:component this={icon} size={20} class={iconClass}/>
         </div>
     {/if}
     {text ? text : util.snakeToCamel(cmd)}

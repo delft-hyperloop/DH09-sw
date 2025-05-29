@@ -7,13 +7,26 @@
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
     import {
-        debugModeActive,
-        inStateHVOn,
+        debugModeActive, inStateAccelerating, inStateCruising,
+        inStateHVOn, inStateLevitating,
         inStateSystemCheck,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
-    import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck } from 'carbon-icons-svelte';
+    import {
+        Activity,
+        Wifi,
+        WifiOff,
+        Flash,
+        FlashOff,
+        QComposerEdit,
+        Reset,
+        SettingsCheck,
+        Meter, RightPanelClose,
+    } from 'carbon-icons-svelte';
+    import StartLevitating from '$lib/components/StartLevitating.svelte';
+    import type { SvelteComponent } from 'svelte';
+    import StopLevitating from '$lib/components/StopLevitating.svelte';
 
     let width: number;
 
@@ -25,6 +38,9 @@
     const ptcFault = storeManager.getWritable("PTCNonCriticalFault");
     const localization = storeManager.getWritable("Localization");
     const velocity = storeManager.getWritable("Velocity");
+
+    const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
+    const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -152,7 +168,26 @@
                             <span>IMD: &ltstatus&gt</span>
                         </div>
                     </div>
-                    <div class="flex gap-4 flex-wrap mt-4">
+                </Tile>
+<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
+<!--                    <Table titles={tableBatteryTitles} tableArr={tableBatteryVitals}/>-->
+<!--                </Tile>-->
+<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
+<!--                    <Table tableArr={tableTempsArr} titles={["Module", "Temp °C", "Safe range", "Module", "Temp °C", "Safe range"]}/>-->
+<!--                </Tile>-->
+<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
+<!--                    <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>-->
+<!--                </Tile>-->
+                <Tile
+                    bgToken={800}
+                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
+                    <MainFSM/>
+                </Tile>
+                <Tile
+                    bgToken={700}
+                    containerClass={"col-span-2"}
+                >
+                    <div class="gap-4 justify-center grid grid-cols-4">
                         {#if !$serverStatus}
                             <TauriCommand
                                 cmd="connect_to_pod"
@@ -187,22 +222,19 @@
                             <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
                         {/if}
                         <Command cmd="RearmSDC" text="Rearm SDC" icon={QComposerEdit}/>
+                        <Command cmd="RetractBrakes" icon={RightPanelClose}/>
+                        {#if !$inStateLevitating}
+                            <Command cmd="LevitationOn" icon={StartLevitatingIcon}/>
+                        {:else}
+                            <Command cmd="LevitationOff" icon={StopLevitatingIcon}/>
+                        {/if}
+                        {#if !$inStateAccelerating}
+                            <Command cmd="PropulsionOn" icon={Meter}/>
+                        {:else}
+                            <Command cmd="PropulsionOff" icon={Meter} iconClass="scale-x-[-1]"/>
+                        {/if}
                         <Command cmd="SystemReset" icon={Reset}/>
                     </div>
-                </Tile>
-<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
-<!--                    <Table titles={tableBatteryTitles} tableArr={tableBatteryVitals}/>-->
-<!--                </Tile>-->
-<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
-<!--                    <Table tableArr={tableTempsArr} titles={["Module", "Temp °C", "Safe range", "Module", "Temp °C", "Safe range"]}/>-->
-<!--                </Tile>-->
-<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
-<!--                    <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>-->
-<!--                </Tile>-->
-                <Tile
-                    bgToken={800}
-                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
-                    <MainFSM/>
                 </Tile>
                 {#if $debugModeActive}
                     <Tile bgToken={700} containerClass="col-span-2 bg-surface-800" heading="Propulsion FSM Update Commands" headingOnLeft={true}>

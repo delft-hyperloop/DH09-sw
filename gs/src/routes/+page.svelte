@@ -9,7 +9,7 @@
 
 <main class="w-full flex-grow border-t border-black overflow-auto">
     <Splitpanes theme="modern-theme" dblClickSplitter={false}>
-        <Pane maxSize={50} snapSize={10} minSize={2} size={40} class="bg-surface-700" >
+        <Pane maxSize={50} snapSize={10} minSize={2} size={42} class="bg-surface-700" >
             <VitalsPanel />
         </Pane>
         <Pane minSize={50} class="bg-surface-900">

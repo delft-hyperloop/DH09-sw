@@ -266,7 +266,7 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u8[2..3]'
+        getter: 'u8[3..4]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:
@@ -402,7 +402,7 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u8[2..3]'
+        getter: 'u8[3..4]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
         gs:

@@ -203,25 +203,25 @@
     $chartStore.set('Requested Force 2', leviRequestForce2Chart);
     leviCharts.push('Requested Force 2');
 
-    let hemsTempChart = new PlotBuffer(500, 60000, [0, 100], true, '1');
-    hemsTempChart.addSeries(StrokePresets.yellow('2'));
-    hemsTempChart.addSeries(StrokePresets.theoretical('3'));
-    hemsTempChart.addSeries(StrokePresets.yellowDashed('4'));
-    hemsTempChart.addSeries(StrokePresets.hyperLoopGreen('5'));
-    hemsTempChart.addSeries(StrokePresets.blue('6'));
-    hemsTempChart.addSeries(StrokePresets.blueDashed('7'));
-    hemsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('8'));
+    let hemsTempChart = new PlotBuffer(500, 60000, [0, 100], true, 'L1');
+    hemsTempChart.addSeries(StrokePresets.yellow('L2'));
+    hemsTempChart.addSeries(StrokePresets.theoretical('L3'));
+    hemsTempChart.addSeries(StrokePresets.yellowDashed('L4'));
+    hemsTempChart.addSeries(StrokePresets.hyperLoopGreen('R1'));
+    hemsTempChart.addSeries(StrokePresets.blue('R2'));
+    hemsTempChart.addSeries(StrokePresets.blueDashed('R3'));
+    hemsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('R4'));
     $chartStore.set('Temperatures HEMS', hemsTempChart);
     leviCharts.push('Temperatures HEMS');
 
-    let emsTempChart = new PlotBuffer(500, 60000, [0, 100], true, '1');
-    emsTempChart.addSeries(StrokePresets.yellow('2'));
-    emsTempChart.addSeries(StrokePresets.theoretical('3'));
-    emsTempChart.addSeries(StrokePresets.yellowDashed('4'));
-    emsTempChart.addSeries(StrokePresets.hyperLoopGreen('5'));
-    emsTempChart.addSeries(StrokePresets.blue('6'));
-    emsTempChart.addSeries(StrokePresets.blueDashed('7'));
-    emsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('8'));
+    let emsTempChart = new PlotBuffer(500, 60000, [0, 100], true, 'L1');
+    emsTempChart.addSeries(StrokePresets.yellow('L2'));
+    emsTempChart.addSeries(StrokePresets.theoretical('L3'));
+    emsTempChart.addSeries(StrokePresets.yellowDashed('L4'));
+    emsTempChart.addSeries(StrokePresets.hyperLoopGreen('R1'));
+    emsTempChart.addSeries(StrokePresets.blue('R2'));
+    emsTempChart.addSeries(StrokePresets.blueDashed('R3'));
+    emsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('R4'));
     $chartStore.set('Temperatures EMS', emsTempChart);
     leviCharts.push('Temperatures EMS');
 

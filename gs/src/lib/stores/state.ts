@@ -42,6 +42,9 @@ export const propulsionConfigSent: Writable<boolean> = writable(false);
 export const inStateSystemCheck: Writable<boolean> = writable(false);
 export const inStateIdle: Writable<boolean> = writable(false); // TODO: for warnings outside of intended state
 export const inStateHVOn: Writable<boolean> = writable(false); // TODO: for warnings outside of intended state
+export const inStateLevitating: Writable<boolean> = writable(false);
+export const inStateCruising: Writable<boolean> = writable(false);
+export const inStateAccelerating: Writable<boolean> = writable(false);
 
 export const overrideDependencies: Writable<boolean> = writable(false);
 export const usingTestTrack: Writable<boolean> = writable(true);

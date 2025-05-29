@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fmt::format;
 use std::fmt::Display;
 use std::fmt::Write;
 use std::str::FromStr;
@@ -952,7 +951,10 @@ END_IF
     )
 }
 
-pub fn make_logging_pcb_code(df: &DataflowSpec) -> String { format!("") }
+pub fn make_logging_pcb_code(_df: &DataflowSpec) -> String { 
+    // TODO
+    format!("") 
+}
 
 pub fn make_gs_code(df: &DataflowSpec) -> String {
     let mut code = String::new();

@@ -4,9 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["h743"]
-h753 = ["embassy-stm32/stm32h753zi"]
-h743 = ["embassy-stm32/stm32h743zi"]
 
 [dependencies]
 embassy-stm32.workspace = true

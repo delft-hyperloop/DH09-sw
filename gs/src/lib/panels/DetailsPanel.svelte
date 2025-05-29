@@ -11,7 +11,7 @@
         BatteriesTab,
         DebugTab, GrandDataDistributor, util, EventChannel,
     } from '$lib';
-    import { acknowledgedHighTemperature, debugModeActive, logsPanelSize, testTempPopup } from '$lib/stores/state';
+    import { debugModeActive, logsPanelSize } from '$lib/stores/state';
     import { MODAL_SETTINGS } from '$lib/types';
 
     let i = 0;

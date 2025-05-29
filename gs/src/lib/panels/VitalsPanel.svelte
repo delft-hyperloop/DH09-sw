@@ -14,7 +14,8 @@
         inStateLevitating,
         inStateSystemCheck,
         showcaseStateCounter,
-        showcasingStates, testTempPopup,
+        showcasingStates,
+        testTempPopup,
     } from '$lib/stores/state';
     import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck } from 'carbon-icons-svelte';
     import { writable } from 'svelte/store';

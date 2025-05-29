@@ -19,8 +19,6 @@
         testTempPopup,
         showcasingStates,
     } from '$lib/stores/state';
-    import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck } from 'carbon-icons-svelte';
-    import { writable } from 'svelte/store';
     import {
         Activity,
         Wifi,
@@ -32,11 +30,12 @@
         SettingsCheck,
         Meter,
         RightPanelClose,
+        ConnectionSignal,
+        ConnectionSignalOff
     } from 'carbon-icons-svelte';
-    import StartLevitating from '$lib/components/StartLevitating.svelte';
     import type { SvelteComponent } from 'svelte';
+    import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
-    import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck, ConnectionSignal, ConnectionSignalOff } from 'carbon-icons-svelte';
 
     let width: number;
 

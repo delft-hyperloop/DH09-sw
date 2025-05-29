@@ -48,3 +48,5 @@ export const inStateAccelerating: Writable<boolean> = writable(false);
 
 export const overrideDependencies: Writable<boolean> = writable(false);
 export const usingTestTrack: Writable<boolean> = writable(true);
+
+export const acknowledgedHighTemperature: Writable<boolean> = writable(false);

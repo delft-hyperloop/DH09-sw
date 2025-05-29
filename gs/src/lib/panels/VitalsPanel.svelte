@@ -7,12 +7,17 @@
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
     import {
-        debugModeActive, inStateAccelerating, inStateCruising,
-        inStateHVOn, inStateLevitating,
+        debugModeActive,
+        inStateAccelerating,
+        inStateCruising,
+        inStateHVOn,
+        inStateLevitating,
         inStateSystemCheck,
         showcaseStateCounter,
-        showcasingStates,
+        showcasingStates, testTempPopup,
     } from '$lib/stores/state';
+    import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck } from 'carbon-icons-svelte';
+    import { writable } from 'svelte/store';
     import {
         Activity,
         Wifi,
@@ -22,7 +27,8 @@
         QComposerEdit,
         Reset,
         SettingsCheck,
-        Meter, RightPanelClose,
+        Meter,
+        RightPanelClose,
     } from 'carbon-icons-svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import type { SvelteComponent } from 'svelte';

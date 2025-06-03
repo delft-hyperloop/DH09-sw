@@ -655,6 +655,104 @@
         }
     );
 
+    gdd.stores.registerStore<number>("Roll", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Angles")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Pitch", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Angles")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("Yaw", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Angles")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("VFL", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("HEMS Current")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("VFR", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("HEMS Current")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("VBL", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("HEMS Current")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("VBR", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("HEMS Current")!.addEntry(4, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("LF", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("EMS Current")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("LB", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("EMS Current")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("ZRequested", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Requested Force 1")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("RollRequested", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Requested Force 1")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("PitchRequested", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Requested Force 1")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("YRequested", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Requested Force 2")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("YawRequested", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Requested Force 2")!.addEntry(2, curr);
+            return curr;
+        }
+    );
+
     gdd.stores.registerStore<number>("TempHEMS1", 0, data => {
             const curr = Number(data);
             $chartStore.get("Temperatures HEMS")!.addEntry(1, curr);

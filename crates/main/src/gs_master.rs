@@ -28,7 +28,6 @@ use embassy_net::tcp::TcpSocket;
 use embassy_net::Ipv4Address;
 use embassy_net::Stack;
 use embassy_net::StackResources;
-use embassy_net::tcp::State;
 use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::Ethernet;
 use embassy_stm32::peripherals::ETH;
@@ -307,11 +306,7 @@ async fn rx_task(
         let mut sock_lock = sock.lock().await;
 
         if !sock_lock.can_recv() {
-            if sock_lock.state() == State::Closed {
-                rs.signal(());
-                continue;
-            }
-            Timer::after_millis(1).await;
+            Timer::after_millis(10).await;
             continue;
         }
         let read_result = sock_lock.read_exact(&mut buf).await;
@@ -332,11 +327,12 @@ async fn rx_task(
             ) => {
                 defmt::error!("{}", e);
                 rs.signal(());
+                Timer::after_millis(100).await;
                 continue;
             }
         };
         publisher.publish(GsToPodMessage::read_from_buf(&buf)).await;
-        // Timer::after_millis(10).await;
+        Timer::after_millis(10).await;
     }
 }
 
@@ -429,7 +425,7 @@ async fn restore_connection(
             );
         }
 
-        sock_lock.set_timeout(Some(embassy_time::Duration::from_secs(1)));
+        sock_lock.set_timeout(Some(embassy_time::Duration::from_secs(10)));
 
         loop {
             match sock_lock.connect(get_remote_endpoint()).await {
@@ -481,7 +477,7 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         });
 
         let mut sock = TcpSocket::new(stack, &mut comms_buffers.rx, &mut comms_buffers.tx);
-        sock.set_timeout(Some(embassy_time::Duration::from_secs(1)));
+        sock.set_timeout(Some(embassy_time::Duration::from_secs(10)));
 
         let remote_endpoint = get_remote_endpoint();
 

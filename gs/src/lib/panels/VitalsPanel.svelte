@@ -15,7 +15,6 @@
         inStateLevitating,
         inStateSystemCheck,
         showcaseStateCounter,
-        showcasingStates,
         testTempPopup,
         showcasingStates,
     } from '$lib/stores/state';

@@ -22,6 +22,7 @@ export const powertrainChartStore: Writable<string[]> = writable([]);
 export const serverStatus: Writable<boolean> = writable(false);
 export const bigErrorStatus: Writable<ErrorStatus> = writable(ErrorStatus.SAFE);
 export const latestTimestamp: Writable<number> = writable(0);
+export const connectedToMainPCB: Writable<boolean> = writable(false);
 
 export const goingForward: Writable<boolean> = writable(true);
 
@@ -49,4 +50,11 @@ export const inStateAccelerating: Writable<boolean> = writable(false);
 export const overrideDependencies: Writable<boolean> = writable(false);
 export const usingTestTrack: Writable<boolean> = writable(true);
 
-export const connectedToMainPCB: Writable<boolean> = writable(false);
+export const leftMotorTempsAcknowledged: Writable<boolean> = writable(true);
+export const rightMotorTempsAcknowledged: Writable<boolean> = writable(true);
+export const emsTempsAcknowledged: Writable<boolean> = writable(true);
+export const hemsTempsAcknowledged: Writable<boolean> = writable(true);
+export const propInitFault1Acknowledged: Writable<boolean> = writable(true);
+export const propInitFault2Acknowledged: Writable<boolean> = writable(true);
+export const propEmergency1Acknowledged: Writable<boolean> = writable(true);
+export const propEmergency2Acknowledged: Writable<boolean> = writable(true);

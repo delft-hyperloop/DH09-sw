@@ -15,7 +15,6 @@
         inStateLevitating,
         inStateSystemCheck,
         showcaseStateCounter,
-        testTempPopup,
         showcasingStates,
     } from '$lib/stores/state';
     import {

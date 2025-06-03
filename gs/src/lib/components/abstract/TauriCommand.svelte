@@ -39,7 +39,7 @@
     </div>
 {/if}
 
-<button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+<button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium text-wrap
                {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
         on:click={send}
         use:popup={popupHover}>

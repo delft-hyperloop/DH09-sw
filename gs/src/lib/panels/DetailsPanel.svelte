@@ -14,7 +14,19 @@
         util,
         EventChannel,
     } from '$lib';
-    import { connectedToMainPCB, debugModeActive, logsPanelSize } from '$lib/stores/state';
+    import {
+        connectedToMainPCB,
+        debugModeActive,
+        emsTempsAcknowledged,
+        hemsTempsAcknowledged,
+        leftMotorTempsAcknowledged,
+        logsPanelSize,
+        propEmergency1Acknowledged,
+        propEmergency2Acknowledged,
+        propInitFault1Acknowledged,
+        propInitFault2Acknowledged,
+        rightMotorTempsAcknowledged,
+    } from '$lib/stores/state';
     import { MODAL_SETTINGS } from '$lib/types';
     import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
 
@@ -102,81 +114,141 @@
     const toastStore = getToastStore();
     leftMotorTemps.forEach((store) => {
         store.subscribe((value) => {
-            if (value.value >= 60) {
+            if (value.value >= 60 && $leftMotorTempsAcknowledged) {
+                leftMotorTempsAcknowledged.set(false);
                 toastStore.trigger({
                     message: "Temperature on the left motor is too high!",
                     background: "bg-error-400",
                     autohide: false,
+                    callback: response => {
+                        if (response.status == 'closed') {
+                            leftMotorTempsAcknowledged.set(true);
+                        }
+                    },
                 });
             }
         })
-    })
+    });
     rightMotorTemps.forEach((store) => {
         store.subscribe((value) => {
-            if (value.value >= 60) {
+            if (value.value >= 60 && $rightMotorTempsAcknowledged) {
+                rightMotorTempsAcknowledged.set(false);
                 toastStore.trigger({
                     message: "Temperature on the right motor is too high!",
                     background: "bg-error-400",
                     autohide: false,
+                    callback: response => {
+                        if (response.status == 'closed') {
+                            rightMotorTempsAcknowledged.set(true);
+                        }
+                    },
                 });
             }
         })
-    })
+    });
     emsTemps.forEach((store) => {
         store.subscribe((value) => {
-            if (value.value >= 60) {
+            if (value.value >= 60 && $emsTempsAcknowledged) {
+                emsTempsAcknowledged.set(false);
                 toastStore.trigger({
                     message: "Temperature on EMS is too high!",
                     background: "bg-error-400",
                     autohide: false,
+                    callback: response => {
+                        if (response.status == 'closed') {
+                            emsTempsAcknowledged.set(true);
+                        }
+                    },
                 });
             }
         })
-    })
+    });
     hemsTemps.forEach((store) => {
         store.subscribe((value) => {
-            if (value.value >= 60) {
+            if (value.value >= 60 && $hemsTempsAcknowledged) {
+                hemsTempsAcknowledged.set(false);
                 toastStore.trigger({
                     message: "Temperature on HEMS is too high!",
                     background: "bg-error-400",
                     autohide: false,
+                    callback: response => {
+                        if (response.status == 'closed') {
+                            hemsTempsAcknowledged.set(true);
+                        }
+                    },
                 });
             }
         })
-    })
-
-    $: {
-        // TODO: Replace all with subscribers
-        let faultValue1 = $propInitFault1.value
-        if (faultValue1 !== 256) {
-            console.error(`PropInitFault1: ${faultValue1}`);
-            util.log(`PropInitFault1: ${faultValue1}`, EventChannel.ERROR);
+    });
+    propInitFault1.subscribe((store) => {
+        if (store.value !== 256 && $propInitFault1Acknowledged) {
+            propInitFault1Acknowledged.set(false);
+            toastStore.trigger({
+                message: `PropInitFault 1: ${store.value}`,
+                background: "bg-error-400",
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        propInitFault1Acknowledged.set(true);
+                    }
+                },
+            });
+            console.error(`PropInitFault 1: ${store.value}`);
+            util.log(`PropInitFault 1: ${store.value}`, EventChannel.ERROR);
         }
-        let faultValue2 = $propInitFault2.value
-        if (faultValue2 !== 256) {
-            console.error(`PropInitFault2: ${faultValue2}`);
-            util.log(`PropInitFault2: ${faultValue2}`, EventChannel.ERROR);
+    });
+    propInitFault2.subscribe((store) => {
+        if (store.value !== 256 && $propInitFault2Acknowledged) {
+            propInitFault2Acknowledged.set(false);
+            toastStore.trigger({
+                message: `PropInitFault 2: ${store.value}`,
+                background: "bg-error-400",
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        propInitFault2Acknowledged.set(true);
+                    }
+                },
+            });
+            console.error(`PropInitFault 2: ${store.value}`);
+            util.log(`PropInitFault 2: ${store.value}`, EventChannel.ERROR);
         }
-
-        let propEmergencyValue1 = $propEmergency1.value;
-        if (propEmergencyValue1 !== 0) {
-            console.error(`PropEmergency1: ${propEmergencyValue1}`);
-            util.log(`PropEmergency1: ${propEmergencyValue1}`, EventChannel.ERROR);
-
-            modalBody.set(`Propulsion motor drive 1 sent an emergency message: ${propEmergencyValue1}`);
-            modalTitle.set("Propulsion Fault!");
-            modalStore.trigger(MODAL_SETTINGS);
+    });
+    propEmergency1.subscribe((store) => {
+        if (store.value !== 0 && $propEmergency1Acknowledged) {
+            propEmergency1Acknowledged.set(false);
+            toastStore.trigger({
+                message: `Prop Emergency 1: ${store.value}`,
+                background: "bg-error-400",
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        propEmergency1Acknowledged.set(true);
+                    }
+                },
+            });
+            console.error(`Prop Emergency 1: ${store.value}`);
+            util.log(`Prop Emergency 1: ${store.value}`, EventChannel.ERROR);
         }
-        let propEmergencyValue2 = $propEmergency2.value;
-        if (propEmergencyValue2 !== 0) {
-            console.error(`PropEmergency2: ${propEmergencyValue2}`);
-            util.log(`PropEmergency2: ${propEmergencyValue2}`, EventChannel.ERROR);
-
-            modalBody.set(`Propulsion motor drive 2 sent an emergency message: ${propEmergencyValue2}`);
-            modalTitle.set("Propulsion Fault!");
-            modalStore.trigger(MODAL_SETTINGS);
+    });
+    propEmergency2.subscribe((store) => {
+        if (store.value !== 0 && $propEmergency2Acknowledged) {
+            propEmergency2Acknowledged.set(false);
+            toastStore.trigger({
+                message: `Prop Emergency 2: ${store.value}`,
+                background: "bg-error-400",
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        propEmergency2Acknowledged.set(true);
+                    }
+                },
+            });
+            console.error(`Prop Emergency 2: ${store.value}`);
+            util.log(`Prop Emergency 2: ${store.value}`, EventChannel.ERROR);
         }
-    }
+    });
+
 </script>
 
 <TabGroup regionPanel="m-0 !mt-0" padding="px-3 py-3" regionList="bg-surface-700" border="border-b border-surface-900" >

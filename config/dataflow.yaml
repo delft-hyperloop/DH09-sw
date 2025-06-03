@@ -1357,242 +1357,298 @@ message-processing:
           name: 'HAirgap'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 100)'
-#  - name: 'Angles'
-#    can:
-#      id: 0x517
-#      bus: can2
-#      log_period: 100
-#    datapoint-conversion:
-#      - datapoint:
-#          name: 'Roll'
-#          id: 0x52E
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Angles")!.addEntry(1, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[0..2]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'Pitch'
-#          id: 0x52F
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Angles")!.addEntry(2, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[2..4]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'Yaw'
-#          id: 0x530
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Angles")!.addEntry(3, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[4..6]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#  - name: 'CurrentHEMS'
-#    can:
-#      id: 0x518
-#      bus: can2
-#    datapoint-conversion:
-#      - datapoint:
-#          name: 'VFL'
-#          id: 0x531
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("HEMS Current")!.addEntry(1, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[0..2]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'VFR'
-#          id: 0x532
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("HEMS Current")!.addEntry(2, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[2..4]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'VBL'
-#          id: 0x533
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("HEMS Current")!.addEntry(3, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[4..6]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'VBR'
-#          id: 0x534
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("HEMS Current")!.addEntry(4, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[6..8]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#  - name: 'CurrentEMS'
-#    can:
-#      id: 0x519
-#      bus: can2
-#    datapoint-conversion:
-#      - datapoint:
-#          name: 'LF'
-#          id: 0x535
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("EMS Current")!.addEntry(1, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[0..2]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'LB'
-#          id: 0x536
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("EMS Current")!.addEntry(2, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[2..4]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#  - name: 'RequestedForce1Levi'
-#    can:
-#      id: 0x51A
-#      bus: can2
-#    datapoint-conversion:
-#      - datapoint:
-#          name: 'Z'
-#          id: 0x537
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Requested Force 1")!.addEntry(1, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[0..2]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'Roll'
-#          id: 0x538
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Requested Force 1")!.addEntry(2, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[2..4]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'Pitch'
-#          id: 0x539
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Requested Force 1")!.addEntry(3, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[4..6]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#  - name: 'RequestedForce2Levi'
-#    can:
-#      id: 0x51B
-#      bus: can2
-#    datapoint-conversion:
-#      - datapoint:
-#          name: 'Y'
-#          id: 0x53A
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Requested Force 2")!.addEntry(1, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[0..2]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
-#      - datapoint:
-#          name: 'Yaw'
-#          id: 0x53B
-#          store:
-#            default: 0
-#            callback: |
-#              data => {
-#                  const curr = Number(data);
-#                  $chartStore.get("Requested Force 2")!.addEntry(2, curr);
-#                  return curr;
-#              }
-#        getter: 'u16[2..4]'
-#        can-conversion: ''
-#        gs:
-#          conversion: ''
+  - name: 'Angles'
+    can:
+      id: 0x517
+      bus: can2
+      log_period: 100
+    datapoint-conversion:
+      - datapoint:
+          name: 'Roll'
+          id: 0x52E
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Angles")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'Roll'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 1000000)'
+      - datapoint:
+          name: 'Pitch'
+          id: 0x52F
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Angles")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'Pitch'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 1000000)'
+      - datapoint:
+          name: 'Yaw'
+          id: 0x530
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Angles")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'u16[4..6]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'Yaw'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 1000000)'
+  - name: 'CurrentHEMS'
+    can:
+      id: 0x518
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'VFL'
+          id: 0x531
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("HEMS Current")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'VFL'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+      - datapoint:
+          name: 'VFR'
+          id: 0x532
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("HEMS Current")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'VFR'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+      - datapoint:
+          name: 'VBL'
+          id: 0x533
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("HEMS Current")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'u16[4..6]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'VBL'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+      - datapoint:
+          name: 'VBR'
+          id: 0x534
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("HEMS Current")!.addEntry(4, curr);
+                  return curr;
+              }
+        getter: 'u16[6..8]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'VBR'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+  - name: 'CurrentEMS'
+    can:
+      id: 0x519
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LF'
+          id: 0x535
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("EMS Current")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'LF'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+      - datapoint:
+          name: 'LB'
+          id: 0x536
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("EMS Current")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'LB'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+  - name: 'RequestedForce1Levi'
+    can:
+      id: 0x51A
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'Z'
+          id: 0x537
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Requested Force 1")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'Z'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 100)'
+      - datapoint:
+          name: 'Roll'
+          id: 0x538
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Requested Force 1")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'Roll'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 100)'
+      - datapoint:
+          name: 'Pitch'
+          id: 0x539
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Requested Force 1")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'u16[4..6]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'Pitch'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 100)'
+  - name: 'RequestedForce2Levi'
+    can:
+      id: 0x51B
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'Y'
+          id: 0x53A
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Requested Force 2")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'Y'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 100)'
+      - datapoint:
+          name: 'Yaw'
+          id: 0x53B
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Requested Force 2")!.addEntry(2, curr);
+                  return curr;
+              }
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'Yaw'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 100)'
   - name: 'TempHEMS'
     can:
       id: 0x33D

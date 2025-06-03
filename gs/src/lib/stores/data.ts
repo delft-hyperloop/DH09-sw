@@ -31,3 +31,5 @@ export const propMaxPower: Writable<number> = writable(0);
 
 export const modalTitle: Writable<string> = writable("");
 export const modalBody: Writable<string> = writable("");
+
+export const lastHeartbeatTimestamp: Writable<number> = writable(Date.now());

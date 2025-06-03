@@ -9,10 +9,14 @@
         LeviTab,
         PneumaticsTab,
         BatteriesTab,
-        DebugTab, GrandDataDistributor, util, EventChannel,
+        DebugTab,
+        GrandDataDistributor,
+        util,
+        EventChannel,
     } from '$lib';
-    import { debugModeActive, logsPanelSize } from '$lib/stores/state';
+    import { connectedToMainPCB, debugModeActive, logsPanelSize } from '$lib/stores/state';
     import { MODAL_SETTINGS } from '$lib/types';
+    import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
 
     let i = 0;
     let tabs = [
@@ -35,6 +39,24 @@
     const propEmergency1 = storeManager.getWritable("PPEmergency1");
     const propInitFault2 = storeManager.getWritable("PPInitFault2");
     const propEmergency2 = storeManager.getWritable("PPEmergency2");
+
+    const heartbeat = storeManager.getWritable("FrontendHeartbeating");
+
+    heartbeat.subscribe(() => {
+        lastHeartbeatTimestamp.set(Date.now());
+    })
+
+    let firstPass = true;
+    connectedToMainPCB.subscribe(() => {
+        if (!$connectedToMainPCB) {
+            if (!firstPass) {
+                modalBody.set('The main PCB disconnected from the groundstation! Make sure to reconnect before continuing!');
+                modalTitle.set('Disconnected from the pod!');
+                modalStore.trigger(MODAL_SETTINGS);
+            }
+            firstPass = false;
+        }
+    })
 
     let emsTemps = [
         storeManager.getWritable("TempEMS1"),
@@ -141,8 +163,8 @@
             console.error(`PropEmergency1: ${propEmergencyValue1}`);
             util.log(`PropEmergency1: ${propEmergencyValue1}`, EventChannel.ERROR);
 
-            MODAL_SETTINGS.body = `Propulsion motor drive 1 sent an emergency message: ${propEmergencyValue1}`;
-            MODAL_SETTINGS.title = "Propulsion Fault!";
+            modalBody.set(`Propulsion motor drive 1 sent an emergency message: ${propEmergencyValue1}`);
+            modalTitle.set("Propulsion Fault!");
             modalStore.trigger(MODAL_SETTINGS);
         }
         let propEmergencyValue2 = $propEmergency2.value;
@@ -150,8 +172,8 @@
             console.error(`PropEmergency2: ${propEmergencyValue2}`);
             util.log(`PropEmergency2: ${propEmergencyValue2}`, EventChannel.ERROR);
 
-            MODAL_SETTINGS.body = `Propulsion motor drive 2 sent an emergency message: ${propEmergencyValue2}`;
-            MODAL_SETTINGS.title = "Propulsion Fault!";
+            modalBody.set(`Propulsion motor drive 2 sent an emergency message: ${propEmergencyValue2}`);
+            modalTitle.set("Propulsion Fault!");
             modalStore.trigger(MODAL_SETTINGS);
         }
     }

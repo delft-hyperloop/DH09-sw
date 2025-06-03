@@ -15,13 +15,17 @@
     } from '@skeletonlabs/skeleton';
     import {
         chartStore,
+        connectedToMainPCB,
         debugModeActive,
-        latestTimestamp, leviChartStore,
-        logsVisible, powertrainChartStore, propChartStore,
+        latestTimestamp,
+        leviChartStore,
+        logsVisible,
+        powertrainChartStore,
+        propChartStore,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
-    import { initProcedures } from '$lib/stores/data';
+    import { initProcedures, lastHeartbeatTimestamp } from '$lib/stores/data';
     import { onDestroy, onMount } from 'svelte';
     import { listen } from '@tauri-apps/api/event';
     import { parseShortCut } from '$lib/util/parsers';
@@ -869,6 +873,8 @@
 
     // End of generated
 
+    gdd.stores.registerStore<number>("FrontendHeartbeating", 0);
+
     gdd.start(50);
 
     initializeStores();
@@ -876,6 +882,20 @@
     setInterval(() => {
         latestTimestamp.set(Date.now());
     }, 1000);
+
+    let firstPass: boolean = true;
+
+    setInterval(() => {
+        if (!firstPass) {
+            let now = Date.now();
+            if (now - $lastHeartbeatTimestamp > 500) {
+                connectedToMainPCB.set(false);
+            } else {
+                connectedToMainPCB.set(true);
+            }
+        }
+        firstPass = false;
+    }, 500);
 
     onMount(() => {
         setInterval(() => {

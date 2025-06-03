@@ -372,16 +372,18 @@ async fn log_can2_on_gs(gstx: gs_master::TxSender<'static>, mut canrx: can2::Can
 
 #[embassy_executor::task]
 async fn gs_heartbeat(gstx: gs_master::TxSender<'static>) {
+    let mut value = 1;
     loop {
         // info!("Sending heartbeat");
         gstx.send(PodToGsMessage {
             dp: Datapoint::new(
                 main::config::Datatype::FrontendHeartbeating,
-                1,
+                value,
                 embassy_time::Instant::now().as_ticks(),
             ),
         })
         .await;
+        value = !value;
         Timer::after_millis(100).await;
     }
 }

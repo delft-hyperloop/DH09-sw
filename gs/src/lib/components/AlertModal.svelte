@@ -50,7 +50,7 @@
             class="btn w-full rounded-md font-number font-medium text-wrap overflow-auto bg-primary-500 text-surface-900 my-7"
             on:click={closeModal}
         >
-            Cancel
+            Dismiss
         </button>
     </div>
 </div>

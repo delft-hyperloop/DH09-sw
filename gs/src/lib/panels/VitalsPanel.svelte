@@ -7,6 +7,7 @@
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
     import {
+        connectedToMainPCB,
         debugModeActive,
         inStateAccelerating,
         inStateCruising,
@@ -16,6 +17,7 @@
         showcaseStateCounter,
         showcasingStates,
         testTempPopup,
+        showcasingStates,
     } from '$lib/stores/state';
     import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck } from 'carbon-icons-svelte';
     import { writable } from 'svelte/store';
@@ -34,6 +36,7 @@
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import type { SvelteComponent } from 'svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
+    import { Activity, Wifi, WifiOff, Flash, FlashOff, QComposerEdit, Reset, SettingsCheck, ConnectionSignal, ConnectionSignalOff } from 'carbon-icons-svelte';
 
     let width: number;
 
@@ -241,6 +244,22 @@
                             <Command cmd="PropulsionOff" icon={Meter} iconClass="scale-x-[-1]"/>
                         {/if}
                         <Command cmd="SystemReset" icon={Reset}/>
+                    </div>
+                </Tile>
+                <Tile
+                    bgToken={700}
+                >
+                    <div class="flex gap-2 items-center">
+                        <span>Connection Status:</span>
+                        <div class="flex flex-row items-center gap-1">
+                            {#if !$connectedToMainPCB}
+                                <ConnectionSignalOff size={20}/>
+                                <span>Not Connected</span>
+                            {:else}
+                                <ConnectionSignal size={20}/>
+                                <span>Connected</span>
+                            {/if}
+                        </div>
                     </div>
                 </Tile>
                 {#if $debugModeActive}

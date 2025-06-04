@@ -36,6 +36,7 @@ tauri = { version = "1.6.7", features = [ "window-create", "global-shortcut-all"
 tokio = { version = "1.29.1", features = ["rt", "time", "rt-multi-thread", "macros", "net", "process", "sync", "io-std", "io-util"] }
 anyhow = "1.0.86"
 csv = "1.2.2"
+dirs = "6.0.0"
 
 [[bin]]
 name = "station"

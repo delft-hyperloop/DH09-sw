@@ -132,16 +132,16 @@ pub fn save_logs() -> bool {
         let log = &backend_mutex.lock().unwrap().log;
         let now = Local::now().naive_local();
         let formatted_time = now.format("%d_%m_%Y at %H_%M_%S").to_string();
-        if let Ok(x) = PathBuf::from_str(&format!("../../ehw/logs/log-{}.txt", formatted_time)) {
-            if Backend::save_to_path(log, x).is_ok() {
-                APP_HANDLE
-                    .try_lock()
-                    .map(|x| x.as_ref().map(|y| y.emit_all("a", "b").is_ok()).is_some())
-                    .is_ok()
-                // APP_HANDLE.try_borrow().map(|x| x.emit_all("clear_logs", "kiko").is_ok()).is_ok()
-            } else {
-                false
+
+        let path = dirs::download_dir()
+            .unwrap_or_else(|| std::env::current_dir().unwrap())
+            .join(format!("log-{}.txt", formatted_time));
+
+        if Backend::save_to_path(log, path).is_ok() {
+            if let Ok(Some(app)) = APP_HANDLE.try_lock().map(|lock| lock.clone()) {
+                let _ = app.emit_all("clear_logs", "Logs saved");
             }
+            true
         } else {
             false
         }

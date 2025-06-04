@@ -15,7 +15,7 @@
         EventChannel,
     } from '$lib';
     import {
-        connectedToMainPCB,
+        connectedToMainPCB, connectionAcknowledged,
         debugModeActive,
         emsTempsAcknowledged,
         hemsTempsAcknowledged,
@@ -47,11 +47,11 @@
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const modalStore = getModalStore();
+    const toastStore = getToastStore();
     const propInitFault1 = storeManager.getWritable("PPInitFault1");
     const propEmergency1 = storeManager.getWritable("PPEmergency1");
     const propInitFault2 = storeManager.getWritable("PPInitFault2");
     const propEmergency2 = storeManager.getWritable("PPEmergency2");
-
     const heartbeat = storeManager.getWritable("FrontendHeartbeating");
 
     heartbeat.subscribe(() => {
@@ -61,10 +61,22 @@
     let firstPass = true;
     connectedToMainPCB.subscribe(() => {
         if (!$connectedToMainPCB) {
-            if (!firstPass) {
-                modalBody.set('The main PCB disconnected from the groundstation! Make sure to reconnect before continuing!');
-                modalTitle.set('Disconnected from the pod!');
-                modalStore.trigger(MODAL_SETTINGS);
+            if (!firstPass && $connectionAcknowledged) {
+                // modalBody.set('The main PCB disconnected from the groundstation! Make sure to reconnect before continuing!');
+                // modalTitle.set('Disconnected from the pod!');
+                // modalStore.trigger(MODAL_SETTINGS);
+
+                connectionAcknowledged.set(false);
+                toastStore.trigger({
+                    message: "The main PCB disconnected from the Groundstation!",
+                    background: "bg-error-400",
+                    autohide: false,
+                    callback: response => {
+                        if (response.status == 'closed') {
+                            connectionAcknowledged.set(true);
+                        }
+                    },
+                });
             }
             firstPass = false;
         }
@@ -111,7 +123,6 @@
         storeManager.getWritable("TempMotorRight7"),
     ]
 
-    const toastStore = getToastStore();
     leftMotorTemps.forEach((store) => {
         store.subscribe((value) => {
             if (value.value >= 60 && $leftMotorTempsAcknowledged) {

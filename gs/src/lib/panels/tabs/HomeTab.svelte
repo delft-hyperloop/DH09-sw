@@ -55,6 +55,7 @@
                 <ChartLineSmooth size={20} class="mr-1"/>
                 Graph Visualizer
             </button>
+            <TauriCommand cmd="save_logs"/>
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => {debugModeActive.set(false)}}>

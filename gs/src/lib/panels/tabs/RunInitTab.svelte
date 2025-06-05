@@ -1,51 +1,46 @@
 <script lang="ts">
     import {
-        Table,
         Command,
         Tile,
         TileGrid,
-        Chart, util, EventChannel,
+        Chart,
+        util,
+        EventChannel,
+        type NamedCommand,
     } from '$lib';
-    import { podTargetSpeed, propMaxPower } from '$lib/stores/data';
     import { goingForward, propulsionConfigSent, usingTestTrack } from '$lib/stores/state';
-    // import RangeSlider from 'svelte-range-slider-pips';
     import { invoke } from '@tauri-apps/api/tauri';
-
-    // const storeManager = GrandDataDistributor.getInstance().stores;
-    // const statuses = storeManager.getWritable("ConnectionStatus")
-
-    // export let pop_up: boolean = true;
-
-    let tableArr2:any[][];
-    // $: tableArr2 = [
-    //     ["Acceleration X", DatatypeEnum.ACCELERATIONX],
-    //     ["Acceleration Y", DatatypeEnum.ACCELERATIONY],
-    //     ["Acceleration Z", DatatypeEnum.ACCELERATIONZ],
-    //     ["Gyroscope X", DatatypeEnum.GYROSCOPEX],
-    //     ["Gyroscope Y", DatatypeEnum.GYROSCOPEY],
-    //     ["Gyroscope Z", DatatypeEnum.GYROSCOPEZ],
-    // ]
+    import PropulsionPoint from '$lib/components/PropulsionPoint.svelte';
+    import { propulsionPoints } from '$lib/stores/data';
+    import { onMount } from 'svelte';
+    import type { PropPoint } from '$lib/types';
 
     let currentDirectionForward: boolean = $goingForward;
-    let currentSpeed: number = $podTargetSpeed;
-    let currentMaxPower: number = $propMaxPower;
+    let pointCount: number = 3;
 
-    // Value bound to the modulation factor slider.
-    // Didn't work with a different name for some reason.
-    // let values = [1];
+    onMount(() => {
+        let array: PropPoint[] = [];
+        for (let i = 0; i < pointCount; i++) {
+            array[i] = {
+                location: 0,
+                iq: 0,
+                id: 0,
+            }
+        }
+        propulsionPoints.set(array);
+    })
 
+    // Look here if values are wrong;
     async function submitRun() {
         goingForward.set(currentDirectionForward);
-        podTargetSpeed.set(currentSpeed);
-        propMaxPower.set(currentMaxPower);
 
         let direction: number = 1;
         if (!$goingForward) {
             direction = 0;
         }
 
-        const value1 = $podTargetSpeed * 10;
-        const value2 = (direction << 16) | $propMaxPower;
+        const value1 = 0;
+        const value2 = (direction << 16) | 0;
 
         await invoke('send_command_64_bits', {cmdName: "PPControlParams", vals: [value1, value2]}).then(() => {
             console.log(`Sending command: PPControlParams, value: ${value1} ${value2}`);
@@ -53,6 +48,22 @@
             console.error(`Error sending command PPControlParams: ${e}`);
         });
         util.log(`Command PPControlParams sent`, EventChannel.INFO);
+
+        // This is sending the run point params
+        for (let i = 0; i < pointCount; i++) {
+            const command: NamedCommand = `PPRunParameters${i === 0 ? 'B' : i}` as NamedCommand;
+
+            // Look here if order of values is wrong
+            const v1 = (($propulsionPoints[i].location * 10) & 0xFFFF);
+            const v2 = (($propulsionPoints[i].iq & 0xFFFF) << 16) | ($propulsionPoints[i].id & 0xFFFF);
+
+            await invoke('send_command_64_bits', { cmdName: command, vals: [v1, v2]}).then(() => {
+                console.log(`Sending command: ${command} with values: ${v1}, ${v2}`);
+            }).catch((e) => {
+                console.error(`Error sending command ${command}: ${e}`);
+            });
+            util.log(`Command ${command} sent`, EventChannel.INFO);
+        }
 
         propulsionConfigSent.set(true);
     }
@@ -63,15 +74,15 @@
     <h2 class="text-2xl font-semibold mb-4 ">Initialization</h2>
 
     <TileGrid columns="1fr 1fr 1.5fr" rows="auto 1fr">
-        <Tile containerClass="row-span-2" insideClass="flex flex-col gap-2" heading="Run Initialization">
-            <div class="grid grid-cols-2 gap-2">
+        <Tile containerClass="row-span-2 col-span-1" insideClass="flex flex-col gap-2" heading="Run Initialization">
+            <div class="grid grid-cols-2 gap-2 row-span-2 col-span-1 p-4">
                 <Command
                     cmd="PropulsionOn"
                     text="Enable Propulsion"
                     className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto"
                     dependency={propulsionConfigSent}
                     dependencyMessage="Run configuration was not sent! Can't start propulsion without specifying
-                    a direction, top speed and modulation factor!"
+                a direction, top speed and modulation factor!"
                     dependencyTitle="Configuration not sent!"
                 />
                 <Command text="Disable Propulsion" cmd="PropulsionOff" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />
@@ -103,49 +114,16 @@
                         disabled={!$usingTestTrack}>
                     EHC Track
                 </button>
-                <p class="col-span-full">
-                    Target Speed:
-                </p>
-                <input class="input rounded-lg px-1 col-span-2 min-h-10"
-                       type="number"
-                       max="500"
-                       min="0"
-                       bind:value={currentSpeed}
-                />
-                <p class="col-span-full">
-                    Maximum power per motor:
-                </p>
-                <input class="input rounded-lg px-1 col-span-2 min-h-10"
-                       type="number"
-                       max="50000"
-                       min="0"
-                       bind:value={currentMaxPower}
-                />
-<!--                <p class="col-span-full">-->
-<!--                    Modulation factor:-->
-<!--                </p>-->
-<!--                <input class="input rounded-lg px-1 col-span-2 min-h-10"-->
-<!--                       type="number"-->
-<!--                       max="1"-->
-<!--                       min="0"-->
-<!--                       bind:value={values[0]}-->
-<!--                       step="0.01"-->
-<!--                />-->
-<!--                <div class="col-span-full mb-4">-->
-<!--                    <RangeSlider-->
-<!--                        value={1}-->
-<!--                        bind:values-->
-<!--                        min={0}-->
-<!--                        max={1}-->
-<!--                        pips-->
-<!--                        all="label"-->
-<!--                        step={0.01}-->
-<!--                        pipstep={25}-->
-<!--                    />-->
-<!--                </div>-->
+                <div class="flex gap-4 col-span-2 mt-4">
+                    <div class="flex flex-col overflow-y-auto gap-2 w-full">
+                        {#each Array.from({ length: pointCount }, (_, i) => i) as i}
+                            <PropulsionPoint index={i}/>
+                        {/each}
+                    </div>
+                </div>
                 <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow overflow-auto font-medium"
                         on:click={submitRun} disabled={false}>
-                    Submit New Run Parameters
+                    Submit All Run Parameters
                 </button>
                 <hr class="col-span-full">
                 <p class="col-span-full font-normal text-xl justify-center text-center pb-3 ">Current Values:</p>
@@ -159,51 +137,13 @@
                 {:else}
                     <p>Not set</p>
                 {/if}
-                <p>Desired Speed:</p>
-                {#if $propulsionConfigSent}
-                    <p>{$podTargetSpeed} m/s</p>
-                {:else}
-                    <p>Not set</p>
-                {/if}
-                <p>Maximum power:</p>
-                {#if $propulsionConfigSent}
-                    <p>{$propMaxPower} W</p>
-                {:else}
-                    <p>Not set</p>
-                {/if}
-<!--                <p>Modulation Factor:</p>-->
-<!--                {#if $propulsionConfigSent}-->
-<!--                    <p>{$propModulationFactor}</p>-->
-<!--                {:else}-->
-<!--                    <p>Not set</p>-->
-<!--                {/if}-->
             </div>
         </Tile>
-        <Tile insideClass="grid grid-cols-2 gap-y-2 auto-rows-min" heading="Statuses" >
-<!--            <p>Main PCB</p>-->
-<!--            <Status status={$statuses.value[STATUS.MAIN_PCB]} />-->
-<!--            <p>Propulsion</p>-->
-<!--            <Status on="Active" off="Off" status={$statuses.value[STATUS.PROPULSION]} />-->
-<!--            <p>Levitation</p>-->
-<!--            <Status status={$statuses.value[STATUS.LEVITATION]} />-->
-<!--            <p>Sensor Hub</p>-->
-<!--            <Status status={$statuses.value[STATUS.SENSOR_HUB]} />-->
-<!--            <p>LV Batteries</p>-->
-<!--            <Status status={$statuses.value[STATUS.LV_BATTERIES]} />-->
-<!--            <p>HV Batteries</p>-->
-<!--            <Status status={$statuses.value[STATUS.HV_BATTERIES]} />-->
-<!--            <p>Braking PCB</p>-->
-<!--            <Status on="Armed" off="Extended" status={$statuses.value[STATUS.BRAKING_PCB]} />-->
-<!--            <p>Voltage Over 50</p>-->
-<!--            <Status offColor="text-primary-400" off="Safe"-->
-<!--                    onColor="text-error-400" on="UNSAFE"-->
-<!--                    status={$statuses.value[STATUS.VOLTAGE_OVER]} />-->
-        </Tile>
-        <Tile heading="Data">
-            <Table tableArr={tableArr2} background="bg-surface-900" titles={["important", "variable"]}/>
+        <Tile containerClass="col-span-2">
+            <Chart title="Velocity" background="bg-surface-900"/>
         </Tile>
         <Tile containerClass="col-span-2">
-            <Chart height={250} background="bg-surface-900" title="Velocity" />
+            <Chart title="Offset" background="bg-surface-900"/>
         </Tile>
     </TileGrid>
     <TileGrid columns="1fr 1fr" rows="auto" className="mt-2">
@@ -224,9 +164,6 @@
         </Tile>
         <Tile containerClass="col-span-1">
             <Chart title="Propulsion Log 3 - Left Motor" background="bg-surface-900" />
-        </Tile>
-        <Tile containerClass="col-span-2">
-            <Chart title="Offset" background="bg-surface-900"/>
         </Tile>
     </TileGrid>
 </div>

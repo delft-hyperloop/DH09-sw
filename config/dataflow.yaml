@@ -2012,6 +2012,21 @@ commands:
     can:
       id: 0x1B3
       bus: can2
+  - name: 'PPRunParametersB'
+    id: 0x1B7
+    can:
+      id: 0x1B7
+      bus: can2
+  - name: 'PPRunParameters1'
+    id: 0x1B8
+    can:
+      id: 0x1B8
+      bus: can2
+  - name: 'PPRunParameters2'
+    id: 0x1B9
+    can:
+      id: 0x1B9
+      bus: can2
   - name: 'Shutdown'
     id: 0x5f
   - name: 'EmergencyBrake'

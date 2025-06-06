@@ -7,11 +7,10 @@ use defmt::Format;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 #[cfg(test)]
 use embassy_sync::mutex::Mutex;
-use lib::config::States;
-use lib::config::States::Boot;
-use lib::utils::data::Event;
-use lib::utils::types::EventReceiver;
-use lib::utils::types::EventSender;
+use lib::Event;
+use lib::EventReceiver;
+use lib::EventSender;
+use lib::States;
 
 use crate::entry_methods::enter_fault;
 
@@ -46,7 +45,7 @@ impl FSM {
         #[cfg(test)] state_mutex: &'static Mutex<NoopRawMutex, States>,
     ) -> Self {
         Self {
-            state: Boot,
+            state: States::Boot,
             event_receiver,
             event_sender2,
             #[cfg(test)]
@@ -96,7 +95,7 @@ impl FSM {
 
             (_, Event::ResetFSM) => self.transition(States::Boot).await,
 
-            (States::Fault, Event::FaultFixed) => self.transition(SystemCheck).await,
+            (States::Fault, Event::FaultFixed) => self.transition(States::SystemCheck).await,
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,
             (States::ConnectedToGS, Event::StartSystemCheck) => {
                 self.transition(States::SystemCheck).await

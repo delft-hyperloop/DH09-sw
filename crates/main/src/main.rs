@@ -20,7 +20,6 @@ use embassy_stm32::gpio::Output;
 use embassy_stm32::gpio::Speed;
 use embassy_stm32::peripherals;
 use embassy_stm32::peripherals::*;
-use embassy_stm32::rcc;
 use embassy_sync::pubsub::WaitResult;
 use embassy_time::Timer;
 use embedded_can::Id;
@@ -28,13 +27,13 @@ use embedded_can::StandardId;
 use fsm::FSM;
 use lib::config::Command;
 use lib::config::Datatype;
-use lib::utils::types::EventChannel;
-use lib::utils::types::EventReceiver;
-use lib::utils::types::EventSender;
+use lib::Datapoint;
+use lib::EventChannel;
+use lib::EventReceiver;
+use lib::EventSender;
 use main::can::can1;
 use main::can::can2;
 use main::gs_master;
-use main::gs_master::Datapoint;
 use main::gs_master::EthernetGsCommsLayerInitializer;
 use main::gs_master::GsMaster;
 use main::gs_master::PodToGsMessage;
@@ -187,7 +186,9 @@ async fn forward_fsm_relay_events_to_can1(
 
                 let frame = can::frame::FdFrame::new(header, &[0; 64]).expect("Invalid frame");
 
-                cantx.send(can1::CanEnvelope::new_from_frame(frame)).await;
+                cantx
+                    .send(lib::can::can1::CanEnvelope::new_from_frame(frame))
+                    .await;
             }
 
             _ => {}
@@ -205,7 +206,10 @@ async fn forward_fsm_relay_events_to_can2(
         match event {
             fsm::Event::FSMTransition(state_number) => {
                 cantx
-                    .send(can2::CanEnvelope::new_with_id(0x190, &[state_number]))
+                    .send(lib::can::can2::CanEnvelope::new_with_id(
+                        0x190,
+                        &[state_number],
+                    ))
                     .await
             }
             _ => {}
@@ -399,7 +403,9 @@ async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
 
         let frame = can::frame::Frame::new(header, &[1u8; 8]).expect("Invalid frame");
 
-        can_tx.send(can2::CanEnvelope::new_from_frame(frame)).await;
+        can_tx
+            .send(lib::can::can2::CanEnvelope::new_from_frame(frame))
+            .await;
         info!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SENDING");
 
         Timer::after_millis(100).await;
@@ -412,7 +418,7 @@ async fn main(spawner: Spawner) -> ! {
 
     let mut config = embassy_stm32::Config::default();
     {
-        use embassy_stm32::rcc::*;
+        use embassy_stm32::rcc;
 
         // Config can
         config.rcc.hsi = Some(rcc::HSIPrescaler::DIV1);

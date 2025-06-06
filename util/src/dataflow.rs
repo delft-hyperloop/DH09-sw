@@ -113,7 +113,7 @@ impl Display for Ty {
             Self::F16 => write!(f, "f16"),
             Self::F32 => write!(f, "f32"),
             Self::F64 => write!(f, "f64"),
-            Self::U8Arr(n) => write!(f, "[u8; {}]", n),
+            Self::U8Arr(n) => write!(f, "[u8; {n}]"),
         }
     }
 }
@@ -363,7 +363,7 @@ impl GetterSpec {
             Ty::U8Arr(n) => {
                 let mut s = String::from("[");
                 for i in 0..n {
-                    s.push_str(&format!("{data_slice}[{start} + {i}], ", i = i));
+                    s.push_str(&format!("{data_slice}[{start} + {i}], "));
                 }
                 s.push(']');
                 s
@@ -427,7 +427,7 @@ fn make_datapoint_parser(spec: &MessageProcessingSpec) -> String {
     let mut code = String::new();
     for dpc in &spec.datapoint_conversion {
         let s = dpc.getter.get_from_can_frame("data");
-        writeln!(&mut code, "let d = {};", s).unwrap();
+        writeln!(&mut code, "let d = {s};").unwrap();
 
         if dpc.getter.ty != dpc.can_conversion.input {
             panic!("getter type does not match can conversion input type");
@@ -621,7 +621,7 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         .unwrap();
 
     for (id, event) in &can1_ids_to_events {
-        writeln!(&mut code, "{} => crate::Event::{},", id, event).unwrap();
+        writeln!(&mut code, "{id} => crate::Event::{event},").unwrap();
     }
 
     writeln!(
@@ -636,7 +636,7 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         .unwrap();
 
     for (id, event) in &can2_ids_to_events {
-        writeln!(&mut code, "{} => crate::Event::{},", id, event).unwrap();
+        writeln!(&mut code, "{id} => crate::Event::{event},").unwrap();
     }
 
     writeln!(
@@ -652,9 +652,8 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         if let CanSpec::Can1 { id, .. } = mp.can {
             writeln!(
                 &mut code,
-                "{} => {{
-                    ",
-                id
+                "{id} => {{
+                    "
             )
             .unwrap();
 
@@ -675,9 +674,8 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         if let CanSpec::Can2 { id, .. } = mp.can {
             writeln!(
                 &mut code,
-                "{} => {{
-                    ",
-                id
+                "{id} => {{
+                    "
             )
             .unwrap();
 
@@ -708,13 +706,13 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         }
     }
 
-    writeln!(&mut code, "pub async fn gs_to_can1<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can1::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
+    writeln!(&mut code, "pub async fn gs_to_can1<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::can1::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
     for (command_name, id, conversion, trim) in &can1commands {
         writeln!(
             &mut code,
             r#"Command::{command_name}(v) => {{
                 let data = {apply_trim}({conversion}(v), "{command_name}");
-                f(crate::can1::CanEnvelope::new_from_frame(embassy_stm32::can::frame::FdFrame::new_extended({id}, &data).expect("Invalid frame!"))).await;
+                f(crate::can::can1::CanEnvelope::new_from_frame(embassy_stm32::can::frame::FdFrame::new_extended({id}, &data).expect("Invalid frame!"))).await;
             }}"#,
             conversion = conversion.as_deref().unwrap_or("default_command_process"),
             apply_trim = format_args!("apply_trim_{trim}", trim = trim.0),
@@ -723,13 +721,13 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
     }
     writeln!(&mut code, "_ => {{}}}}}}").unwrap();
 
-    writeln!(&mut code, "pub async fn gs_to_can2<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can2::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
+    writeln!(&mut code, "pub async fn gs_to_can2<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::can2::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
     for (command_name, id, conversion, trim) in &can2commands {
         writeln!(
             &mut code,
             r#"Command::{command_name}(v) => {{
                 let data = {apply_trim}({conversion}(v), "{command_name}");
-                f(crate::can2::CanEnvelope::new_from_frame(embassy_stm32::can::frame::Frame::new_standard({id}, &data).expect("Invalid frame!"))).await;
+                f(crate::can::can2::CanEnvelope::new_from_frame(embassy_stm32::can::frame::Frame::new_standard({id}, &data).expect("Invalid frame!"))).await;
             }}"#,
             conversion = conversion.as_deref().unwrap_or("default_command_process"),
             apply_trim = format_args!("apply_trim_{trim}", trim = trim.0),
@@ -742,57 +740,58 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
 }
 
 pub fn make_levi_beckhoff_code(df: &DataflowSpec) -> String {
-    r#"
-VAR
-	i: UINT;
-	
-	test_real: LUINT_AND_BYTES;
-	test_Quint: QUINT_Reals;
-	
-	send_messages: BOOL := FALSE;
-END_VAR
+    /*
+        r#"
+    VAR
+        i: UINT;
 
-IF CAN_INPUTS.RxCounter <> CAN_OUTPUTS.RxCounter THEN
-	FOR i:= 0 TO (CAN_INPUTS.NoOfRxMessages - 1) DO
-		Incoming_messages[i] := CAN_INPUTS.RxMessages[i];
-	END_FOR
-	CAN_OUTPUTS.RxCounter := CAN_INPUTS.RxCounter;
-	
-END_IF
+        test_real: LUINT_AND_BYTES;
+        test_Quint: QUINT_Reals;
 
-IF send_messages THEN
+        send_messages: BOOL := FALSE;
+    END_VAR
 
-	//Messages_To_Send[0].length := 1;
-	//Messages_To_Send[0].cobId := 450;
-	//Messages_To_Send[0].txData[0] := 123;
-	
-	test_real.value := 123.0;
-	//Messages_To_Send[1].length := 8;
-	//Messages_To_Send[1].cobId := 460;
-	//Messages_To_Send[1].txData := test_real.bytes;
-	
-	test_Quint.values[0] := 41241.25;
-	test_Quint.values[1] := 0;
-	Messages_To_Send[0].length := 8;
-	Messages_To_Send[0].cobId := 420;
-	Messages_To_Send[0].txData := test_Quint.bytes;
-	
-	No_Messages_Queued := 1;
-END_IF
+    IF CAN_INPUTS.RxCounter <> CAN_OUTPUTS.RxCounter THEN
+        FOR i:= 0 TO (CAN_INPUTS.NoOfRxMessages - 1) DO
+            Incoming_messages[i] := CAN_INPUTS.RxMessages[i];
+        END_FOR
+        CAN_OUTPUTS.RxCounter := CAN_INPUTS.RxCounter;
 
-//Send new messages
-IF (CAN_OUTPUTS.TxCounter = CAN_INPUTS.TxCounter) AND (No_Messages_Queued <> 0) THEN
-	FOR i:= 0 TO (No_Messages_Queued - 1) DO
-		CAN_OUTPUTS.TxMessages[i] := Messages_To_Send[i];
-	END_FOR
-	//Tell interface how many messages to send
-	CAN_Outputs.NoOfTxMessages := No_Messages_Queued;
-	CAN_OUTPUTS.TxCounter := CAN_INPUTS.TxCounter + 1;
-	No_Messages_Queued := 0;
-END_IF
+    END_IF
 
-"#;
+    IF send_messages THEN
 
+        //Messages_To_Send[0].length := 1;
+        //Messages_To_Send[0].cobId := 450;
+        //Messages_To_Send[0].txData[0] := 123;
+
+        test_real.value := 123.0;
+        //Messages_To_Send[1].length := 8;
+        //Messages_To_Send[1].cobId := 460;
+        //Messages_To_Send[1].txData := test_real.bytes;
+
+        test_Quint.values[0] := 41241.25;
+        test_Quint.values[1] := 0;
+        Messages_To_Send[0].length := 8;
+        Messages_To_Send[0].cobId := 420;
+        Messages_To_Send[0].txData := test_Quint.bytes;
+
+        No_Messages_Queued := 1;
+    END_IF
+
+    //Send new messages
+    IF (CAN_OUTPUTS.TxCounter = CAN_INPUTS.TxCounter) AND (No_Messages_Queued <> 0) THEN
+        FOR i:= 0 TO (No_Messages_Queued - 1) DO
+            CAN_OUTPUTS.TxMessages[i] := Messages_To_Send[i];
+        END_FOR
+        //Tell interface how many messages to send
+        CAN_Outputs.NoOfTxMessages := No_Messages_Queued;
+        CAN_OUTPUTS.TxCounter := CAN_INPUTS.TxCounter + 1;
+        No_Messages_Queued := 0;
+    END_IF
+
+    "#;
+    */
     let mut vars = String::new();
     let mut input_vars = String::new();
 
@@ -912,7 +911,7 @@ VAR
             .unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].length := 8;").unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].cobId := {id};").unwrap();
-            writeln!(&mut code, "{}", tx_data_create).unwrap();
+            writeln!(&mut code, "{tx_data_create}").unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].txData := tx_data;")
                 .unwrap();
             writeln!(&mut code, "    No_Messages_Queued := No_Messages_Queued + 1;").unwrap();

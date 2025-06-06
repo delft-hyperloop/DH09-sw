@@ -14,6 +14,6 @@ pub(crate) mod fsm;
 #[cfg(test)]
 mod tests;
 
-pub use fsm::States;
 pub use fsm::FSM;
 pub use lib::utils::data::Event;
+pub use lib::States;

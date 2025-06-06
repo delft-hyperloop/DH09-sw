@@ -26,10 +26,8 @@ use embassy_sync::priority_channel::{self};
 use embassy_sync::pubsub::PubSubChannel;
 use embassy_sync::pubsub::Publisher;
 use embassy_sync::pubsub::Subscriber;
-use embassy_time::Instant;
 use embassy_time::Timer;
-use embedded_can::Id;
-pub use lib::can1::CanEnvelope;
+use lib::can::can1::CanEnvelope;
 use static_cell::StaticCell;
 
 const CAN_RX_CAPACITY: usize = 4;

@@ -1,17 +1,3 @@
-// use std::env;
-// fn main() {
-//     println!("cargo:rustc-link-search={}", out.display());
-//     println!("cargo:rustc-link-arg=-Tlink.x");
-
-//     // add linker script for embedded-test!!
-//     println!("cargo::rustc-link-arg-tests=-Tembedded-test.x");
-
-//     // Check if the `defmt` feature is enabled, and if so link its linker
-// script     if env::var("CARGO_FEATURE_DEFMT").is_ok() {
-//         println!("cargo:rustc-link-arg=-Tdefmt.x");
-//     }
-// }
-
 //! This build script copies the `memory.x` file from the crate root into
 //! a directory where the linker can always find it at build time.
 //! For many projects this is optional, as the linker always searches the
@@ -34,7 +20,7 @@ fn main() {
     // Put `memory.x` in our output directory and ensure it's
     // on the linker search path.
     let out = &PathBuf::from(env::var_os("OUT_DIR").unwrap());
-    println!("{:?}", out);
+    println!("{out:?}");
     File::create(out.join("memory.x"))
         .unwrap()
         .write_all(include_bytes!("memory.x"))

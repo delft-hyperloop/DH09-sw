@@ -133,9 +133,9 @@ fn main() -> Result<()> {
             e
         )
     });
-    println!("cargo::rerun-if-changed={}", CONFIG_PATH);
-    println!("cargo::rerun-if-changed={}", EVENTS_PATH);
-    println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
+    println!("cargo::rerun-if-changed={CONFIG_PATH}");
+    println!("cargo::rerun-if-changed={EVENTS_PATH}");
+    println!("cargo::rerun-if-changed={DATAFLOW_PATH}");
 
     // By default, Cargo will re-run a build script whenever
     // any file in the project changes. By specifying `memory.x`
@@ -165,7 +165,7 @@ fn configure_heartbeats(config: &Config, dt: &str) -> Result<String> {
                 key
             ));
         }
-        x.push_str(&format!("(Datatype::{}, {}), ", key, val));
+        x.push_str(&format!("(Datatype::{key}, {val}), "));
     }
     x.push_str("];\n");
     Ok(x)

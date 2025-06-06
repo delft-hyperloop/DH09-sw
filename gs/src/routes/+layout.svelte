@@ -423,9 +423,9 @@
         }
     );
 
-    gdd.stores.registerStore<number>("PPInitFault1", 256);
+    gdd.stores.registerStore<number>("PPInitFault1", 255);
 
-    gdd.stores.registerStore<number>("PPInitFault2", 256);
+    gdd.stores.registerStore<number>("PPInitFault2", 255);
 
     gdd.stores.registerStore<number>("PPEmergency1", 0);
 

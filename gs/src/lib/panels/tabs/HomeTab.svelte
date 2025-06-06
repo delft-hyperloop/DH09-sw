@@ -40,31 +40,27 @@
     </div>
         <div class="flex gap-3 flex-wrap">
             {#if $debugModeActive}
-                <div class="flex flex-col gap-3">
-                    <TauriCommand cmd="connect_to_pod" successCallback={handleSuccess} errorCallback={handleFailure} icon={Wifi}/>
-                    <TauriCommand cmd="disconnect" successCallback={() => serverStatus.set(false)} icon={WifiOff}/>
-                </div>
-                <div class="flex flex-col gap-3">
-                    <Command cmd="StartHV" text="Start HV" icon={Flash}/>
-                    <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2 h-[35px]" icon={FlashOff}/>
-                </div>
+                <TauriCommand cmd="connect_to_pod" successCallback={handleSuccess} errorCallback={handleFailure} icon={Wifi}/>
+                <TauriCommand cmd="disconnect" successCallback={() => serverStatus.set(false)} icon={WifiOff}/>
+                <Command cmd="StartHV" text="Start HV" icon={Flash}/>
+                <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2 py-2" icon={FlashOff}/>
             {/if}
 
             <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-                   py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => new ViewWindow(`Charts_${graphVisualizerCount++}`, `/view/charts`)}>
+                   py-2 bg-primary-500 text-surface-900" on:click={() => new ViewWindow(`Charts_${graphVisualizerCount++}`, `/view/charts`)}>
                 <ChartLineSmooth size={20} class="mr-1"/>
                 Graph Visualizer
             </button>
             <TauriCommand cmd="save_logs"/>
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-                   py-2 bg-primary-500 text-surface-900 h-[35px]" on:click={() => {debugModeActive.set(false)}}>
+                   bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(false)}}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Disable Debug Mode
                 </button>
             {:else}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-                   py-2 bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>
+                   bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Enable Debug Mode
                 </button>

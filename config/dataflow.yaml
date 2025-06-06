@@ -686,7 +686,7 @@ message-processing:
           name: 'PPInitFault1'
           id: 0x507
           store:
-            default: 256
+            default: 255
         getter: 'u8[0..1]'
         can-conversion: 'identity_u8:u8->u8'
         gs:
@@ -700,7 +700,7 @@ message-processing:
           name: 'PPInitFault2'
           id: 0x508
           store:
-            default: 256
+            default: 255
         getter: 'u8[0..1]'
         can-conversion: 'identity_u8:u8->u8'
         gs:

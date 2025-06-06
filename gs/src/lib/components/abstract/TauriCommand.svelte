@@ -39,8 +39,8 @@
     </div>
 {/if}
 
-<button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium text-wrap
-               {className ? className : 'py-2 bg-primary-500 text-surface-900'}"
+<button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium text-wrap flex-wrap flex
+               {className ? className : 'bg-primary-500 text-surface-900'}"
         on:click={send}
         use:popup={popupHover}>
     {#if icon}

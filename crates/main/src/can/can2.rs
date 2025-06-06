@@ -19,23 +19,24 @@ use embassy_executor::Spawner;
 use embassy_stm32::can::Can;
 use embassy_stm32::can::CanRx;
 use embassy_stm32::can::CanTx;
-use embassy_stm32::can::Frame;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::priority_channel::PriorityChannel;
 use embassy_sync::priority_channel::{self};
 use embassy_sync::pubsub::PubSubChannel;
 use embassy_sync::pubsub::Publisher;
 use embassy_sync::pubsub::Subscriber;
-use embassy_time::Instant;
 use embassy_time::Timer;
-use embedded_can::Id;
 use lib::can::can2::CanEnvelope;
 use static_cell::StaticCell;
 
+/// todo: docs
 const CAN_RX_CAPACITY: usize = 4;
+/// todo: docs
 const CAN_RX_SUBSCRIBERS: usize = 4;
+/// todo: docs
 const CAN_RX_PUBLISHERS: usize = 1;
 
+/// todo: docs
 type CanRxChannel = PubSubChannel<
     NoopRawMutex,
     CanEnvelope,
@@ -52,6 +53,7 @@ pub type CanRxSubscriber<'a> = Subscriber<
     CAN_RX_SUBSCRIBERS,
     CAN_RX_PUBLISHERS,
 >;
+/// todo: docs
 type CanRxPublisher<'a> = Publisher<
     'a,
     NoopRawMutex,
@@ -96,13 +98,17 @@ async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>
     }
 }
 
+/// todo: docs
 const CAN_TX_CAPACITY: usize = 32;
+/// todo: docs
 type CanTxChannelKind = heapless::binary_heap::Min;
+/// todo: docs
 type CanTxChannel = PriorityChannel<NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
 /// Sender object for the priority channel used for transmitting messages over
 /// the CAN bus.
 pub type CanTxSender<'a> =
     priority_channel::Sender<'a, NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
+/// todo: docs
 type CanTxReceiver<'a> =
     priority_channel::Receiver<'a, NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
 
@@ -132,7 +138,9 @@ async fn can_tx_task(
 /// Interface for communicating over CAN
 #[allow(missing_debug_implementations)]
 pub struct CanInterface {
+/// todo: docs
     rx_channel: CanRxChannel,
+/// todo: docs
     tx_channel: CanTxChannel,
 }
 

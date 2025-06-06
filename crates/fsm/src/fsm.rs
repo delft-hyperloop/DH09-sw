@@ -1,8 +1,5 @@
 //! This module contains the struct used for the Main FSM.
 
-use core::cmp::PartialEq;
-
-use defmt::Format;
 #[cfg(test)]
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 #[cfg(test)]
@@ -22,10 +19,14 @@ use crate::entry_methods::enter_fault;
 /// - `event_sender2`: Object used to send message over the second CAN bus
 #[derive(Debug, Copy, Clone)]
 pub struct FSM {
+/// todo: docs
     #[cfg(test)]
     state_mutex: &'static Mutex<NoopRawMutex, States>,
+/// todo: docs
     state: States,
+/// todo: docs
     event_receiver: EventReceiver,
+/// todo: docs
     event_sender2: EventSender,
 }
 

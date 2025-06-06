@@ -8,11 +8,8 @@ use std::path::Path;
 
 use anyhow::Result;
 use goose_utils::check_config;
-use goose_utils::commands::generate_commands;
 use goose_utils::commands::generate_commands_from_config;
 use goose_utils::datatypes::generate_data_types_from_config;
-use goose_utils::datatypes::generate_datatypes;
-use goose_utils::events::generate_events;
 use goose_utils::ip::configure_gs_ip;
 use serde::Deserialize;
 
@@ -78,10 +75,8 @@ fn main() -> Result<()> {
     content.push_str(&dt);
     let commands = goose_utils::dataflow::collect_commands(&df);
     content.push_str(&generate_commands_from_config(&commands, false));
-    content.push_str(&generate_events(EVENTS_PATH, false)?);
     content.push_str(&configure_channels(&config));
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, true)?);
-    // content.push_str(&levi_req_data(&config, dt)?);
     content.push_str(&goose_utils::dataflow::make_gs_code(&df));
 
     fs::write(dest_path.clone(), content).unwrap_or_else(|_| {
@@ -89,33 +84,12 @@ fn main() -> Result<()> {
     });
 
     println!("cargo::rerun-if-changed={}", CONFIG_PATH);
-    println!("cargo::rerun-if-changed={}", EVENTS_PATH);
     println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
     println!("cargo::rerun-if-changed=build.rs");
     println!("cargo::rerun-if-changed=../../util");
 
     Ok(())
 }
-
-// fn levi_req_data(config: &Config, dt: String) -> Result<String> {
-//     for data in config.pod.comm.levi_requested_data.iter() {
-//         if !dt.contains(data) {
-//             return Err(anyhow::anyhow!(
-//                 "Data type {:?} not found in datatypes.toml
-//             Check that the (case-sensitive) spelling is correct, and that the datatype exists.",
-//                 data
-//             ));
-//         }
-//     }
-//     Ok(format!(
-//         "\npub const LEVI_REQUESTED_DATA: [Datatype; {}] = [{}];\n",
-//         config.pod.comm.levi_requested_data.len(),
-//         config.pod.comm.levi_requested_data.iter().fold(String::new(), |mut acc, x| {
-//             let _ = write!(acc, "Datatype::{}, ", x);
-//             acc
-//         })
-//     ))
-// }
 
 fn configure_gs(config: &Config) -> String {
     // format!("pub fn gs_socket() -> std::net::SocketAddr {{ std::net::SocketAddr::new(std::net::IpAddr::from([{},{},{},{}]),{}) }}\n", config.gs.ip[0], config.gs.ip[1], config.gs.ip[2], config.gs.ip[3], config.gs.port)

@@ -96,7 +96,14 @@ async fn forward_gs_to_fsm(
         let command = msg.command;
 
         match command {
-            // General Commands
+            // General commands
+            Command::GeneralEmergency(_) => {
+                event_sender
+                    .send(lib::Event::Emergency {
+                        emergency_type: lib::EmergencyType::GeneralEmergency,
+                    })
+                    .await
+            }
             Command::EmergencyBrake(_) => {
                 event_sender
                     .send(lib::Event::Emergency {
@@ -104,9 +111,6 @@ async fn forward_gs_to_fsm(
                     })
                     .await
             }
-            Command::DefaultCommand(_) => {}
-            Command::Heartbeat(_) => {}
-            Command::FrontendHeartbeat(_) => {}
 
             // HV commands
             Command::StartHV(_) => event_sender.send(lib::Event::StartPreCharge).await,
@@ -121,9 +125,10 @@ async fn forward_gs_to_fsm(
             Command::PropulsionOff(_) => event_sender.send(lib::Event::Cruise).await,
 
             // Control commands
+            Command::SystemCheck(_) => {
+                todo!()
+            }
             Command::Shutdown(_) => event_sender.send(lib::Event::ShutDown).await,
-            Command::SystemReset(_) => event_sender.send(lib::Event::ResetFSM).await,
-            Command::ResetSenseCon(_) => event_sender.send(lib::Event::ResetFSM).await,
             Command::RearmSDC(_) => {
                 // Pull pin high
                 rearm_output.set_high();
@@ -134,6 +139,20 @@ async fn forward_gs_to_fsm(
                 // Pull pin low
                 rearm_output.set_low();
             }
+            
+            // Reset commands
+            Command::SystemReset(_) => event_sender.send(lib::Event::ResetFSM).await,
+            Command::ResetSenseCon(_) => event_sender.send(lib::Event::ResetFSM).await,
+            Command::ResetLevitation(_) => { 
+                todo!()
+            }
+            Command::ResetPowertrain(_) => {
+                todo!()
+            }
+            Command::ResetPropulsion(_) => {
+                todo!()
+            }
+            
             _ => {}
         }
     }
@@ -268,21 +287,6 @@ async fn forward_can2_messages_to_fsm(
 
         // TODO: Get config to match correct event
         let fsm_event = lib::config::event_for_can_2_id(id as u32);
-
-        // let fsm_event = match (id as u32) {
-        //     1 => fsm::Event::ConnectToGS,
-        //     2 => fsm::Event::StartSystemCheck,
-        //     3 => fsm::Event::SystemCheckSuccess,
-        //     4 => fsm::Event::StartPreCharge,
-        //     5 => fsm::Event::Activate,
-        //     6 => fsm::Event::EnterDemo,
-        //     7 => fsm::Event::Levitate,
-        //     // 8 => fsm::Event::StopLevitating,
-        //     8 => fsm::Event::Accelerate,
-        //     9 => fsm::Event::Brake,
-        //     10 => fsm::Event::ShutDown,
-        //     _ => fsm::Event::NoEvent,
-        // };
 
         if fsm_event != fsm::Event::NoEvent {
             event_sender.send(fsm_event).await;

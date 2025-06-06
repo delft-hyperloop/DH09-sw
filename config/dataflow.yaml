@@ -1974,10 +1974,6 @@ commands:
     id: 0x407
   - name: 'LevitationOff'
     id: 0x408
-  - name: 'vertical_0_current'
-    id: 0x409
-  - name: 'vert_0_current_reset'
-    id: 0x40a
   - name: 'PropulsionOn'
     id: 0x6c
   - name: 'PropulsionOff'

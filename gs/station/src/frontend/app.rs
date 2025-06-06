@@ -140,8 +140,8 @@ pub fn tauri_main(backend: Backend) {
                                         ss.emit_all(INFO_CHANNEL, format!("Received datapoint on the main PCB: {:?}", dp)).expect("Couldn't send message");
                                     }
                                     datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp));
-                                    print!("{}", datapoint_dict);
-                                    stdout().flush().unwrap();
+                                    // print!("{}", datapoint_dict);
+                                    // stdout().flush().unwrap();
                                     app_handle
                                         .state::<BackendState>()
                                         .data_buffer

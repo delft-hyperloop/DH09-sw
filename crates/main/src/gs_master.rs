@@ -55,10 +55,12 @@ use lib::config::EVENTS_HASH;
 use lib::Datapoint;
 use static_cell::StaticCell;
 
+/// todo: docs
 type GsCommsLayerImpl = EthernetGsCommsLayer;
 
-///
+/// todo: docs
 pub struct GsMaster<C: GsCommsLayer> {
+/// todo: docs
     comms: C,
 }
 
@@ -70,8 +72,8 @@ impl GsMaster<GsCommsLayerImpl> {
     {
         let comms = comms.init(spawner).await;
         static GS_MASTER: StaticCell<GsMaster<GsCommsLayerImpl>> = StaticCell::new();
-        let gs_master = GS_MASTER.init(GsMaster { comms });
-        gs_master
+        
+        (GS_MASTER.init(GsMaster { comms })) as _
     }
 }
 
@@ -95,6 +97,7 @@ pub struct GsToPodMessage {
 }
 
 impl GsToPodMessage {
+/// todo: docs
     const SIZE: usize = 20;
 
     /// Reads from the buffer
@@ -121,49 +124,66 @@ pub trait GsCommsLayer {
     fn transmitter(&self) -> TxSender<'_>;
 }
 
-///
+/// todo: docs
 pub trait GsCommsLayerInitializable {
-    ///
+/// todo: docs
     type CommsLayer: GsCommsLayer;
 
     /// Initializes the comms with the GS
     async fn init(self, spawner: Spawner) -> Self::CommsLayer;
 }
 
+/// todo: docs
 const RX_BUFFER_SIZE: usize = 8192;
+/// todo: docs
 const TX_BUFFER_SIZE: usize = 32768;
 
+/// todo: docs
 struct CommsBuffers {
+/// todo: docs
     rx: [u8; RX_BUFFER_SIZE],
+/// todo: docs
     tx: [u8; TX_BUFFER_SIZE],
 }
 
+/// todo: docs
 struct CommsCore {
+/// todo: docs
     rx_channel: RxChannel,
+/// todo: docs
     tx_channel: TxChannel,
 }
 
-///
+
+/// todo: docs
 pub struct EthernetGsCommsLayer {
+/// todo: docs
     cc: &'static CommsCore,
 }
 
 impl GsCommsLayer for EthernetGsCommsLayer {
+/// todo: docs
     fn subscribe(&self) -> RxSubscriber<'_> {
         unwrap!(self.cc.rx_channel.subscriber())
     }
 
+/// todo: docs
     fn transmitter(&self) -> TxSender<'_> {
         self.cc.tx_channel.sender()
     }
 }
 
+/// todo: docs
 type EthDevice = Ethernet<'static, ETH, GenericPhy>;
 
-///
+
+/// todo: docs
 pub struct EthernetGsCommsLayerInitializer {
+/// todo: docs
     seed: u64,
+/// todo: docs
     device: EthDevice,
+/// todo: docs
     config: embassy_net::Config,
 }
 
@@ -178,21 +198,31 @@ impl EthernetGsCommsLayerInitializer {
     }
 }
 
+/// todo: docs
 const TX_CAP: usize = 1024;
+/// todo: docs
 type TxChannel = Channel<NoopRawMutex, PodToGsMessage, TX_CAP>;
+/// todo: docs 
 type TxReceiver<'a> = embassy_sync::channel::Receiver<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
-/// TxSender
+/// todo: docs
 pub type TxSender<'a> = embassy_sync::channel::Sender<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
 
+/// max references
 const RX_CAP: usize = 8;
+/// max number of subscribers
 const RX_SUBS: usize = 4;
+/// max number of publishers
 const RX_PUBS: usize = 1;
+/// pub-sub channel for gs->pod
 type RxChannel = PubSubChannel<NoopRawMutex, GsToPodMessage, RX_CAP, RX_SUBS, RX_PUBS>;
+/// ground station -> pod publisher
 type RxPublisher<'a> = Publisher<'a, NoopRawMutex, GsToPodMessage, RX_CAP, RX_SUBS, RX_PUBS>;
 /// RxSubscriber
 pub type RxSubscriber<'a> = Subscriber<'a, NoopRawMutex, GsToPodMessage, RX_CAP, RX_SUBS, RX_PUBS>;
 
+/// cross-task signaling to say we have reconnected
 type ReconnectSignal = Signal<CriticalSectionRawMutex, ()>;
+/// cross-task signaling to say we have connected
 type ConnectedSignal = Signal<CriticalSectionRawMutex, ()>;
 
 #[embassy_executor::task]
@@ -283,7 +313,9 @@ async fn tx_task(
     }
 }
 
+/// get ground station [`Ipv4Address`]
 fn get_remote_endpoint() -> (Ipv4Address, u16) {
+    // SAFETY: read-only static defined at compile time
     let (oct, port) = unsafe { config::GS_IP_ADDRESS };
     (Ipv4Address::new(oct[0], oct[1], oct[2], oct[3]), port)
 }
@@ -322,6 +354,7 @@ async fn restore_connection(
 
         // make sure to drop the previous socket before initializing the new one.
         // we are using the same buffers.
+        // SAFETY: only use the socket's memory, this is just forced re-initialisation
         unsafe {
             core::ptr::drop_in_place(&mut *sock_lock as *mut TcpSocket<'_>);
             let rx = core::ptr::from_mut(&mut comms_buffers.rx);

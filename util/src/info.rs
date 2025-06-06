@@ -24,10 +24,10 @@ pub fn generate_info(path: &str, drv: bool) -> Result<String> {
     let mut colours = String::new();
     for (i, info) in config.Info.iter().enumerate() {
         enum_definitions.push_str(&format!("    {},\n", info.label));
-        match_to_id.push_str(&format!("            Info::{} => {},\n", info.label, i));
-        match_from_id.push_str(&format!("            {} => Info::{},\n", i, info.label));
+        match_to_id.push_str(&format!("            Info::{} => {i},\n", info.label));
+        match_from_id.push_str(&format!("            {i} => Info::{},\n", info.label));
         if let Some(c) = &info.colour {
-            colours.push_str(&format!("{:?}, ", c));
+            colours.push_str(&format!("{c:?}, "));
         } else {
             colours.push_str("\"gray\", ");
         }
@@ -35,25 +35,25 @@ pub fn generate_info(path: &str, drv: bool) -> Result<String> {
 
     Ok(format!(
         "
-pub const INFO_COLOURS: [&str; {}] = [{}\"yellow\"];
+pub const INFO_COLOURS: [&str; {}] = [{colours}\"yellow\"];
 
 #[allow(non_camel_case_types)]
 #[allow(non_snake_case)]
 {}
 pub enum Info {{
-{}
+{enum_definitions}
     UnknownInfo,
 }}
 impl Info {{
     pub fn to_idx(&self) -> u64 {{
         match *self {{
-{}
+{match_to_id}
             _ => 0
         }}
     }}
     pub fn from_id(id: u16) -> Self {{
         match id {{
-{}
+{match_from_id}
             _ => Info::UnknownInfo,
         }}
     }}
@@ -63,14 +63,11 @@ impl Info {{
 }}
     ",
         config.Info.len() + 1,
-        colours,
+        
         if drv {
             "#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, PartialOrd, Ord)]"
         } else {
             "#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, defmt::Format)]"
         },
-        enum_definitions,
-        match_to_id,
-        match_from_id
     ))
 }

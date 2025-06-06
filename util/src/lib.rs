@@ -69,7 +69,7 @@ pub fn check_config(ep: &str, conf: &str) -> Result<String> {
     let mut hasher = DefaultHasher::new();
     cs.hash(&mut hasher);
     let hash = hasher.finish();
-    Ok(format!("\npub const CONFIG_HASH: u64 = {};\n", hash))
+    Ok(format!("\npub const CONFIG_HASH: u64 = {hash};\n"))
 }
 
 fn nearest_id(id: u16, ids: &[u16]) -> u16 {

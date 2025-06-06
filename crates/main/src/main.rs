@@ -54,6 +54,7 @@ bind_interrupts!(
     }
 );
 
+/// !halt (loop forever)
 fn hlt() -> ! {
     loop {
         cortex_m::asm::wfe();
@@ -61,6 +62,7 @@ fn hlt() -> ! {
 }
 
 #[allow(dead_code)]
+/// an ethernet device peripheral, abstract over the specific PHY used
 type Device = Ethernet<'static, ETH, GenericPhy>;
 
 #[embassy_executor::task]
@@ -69,8 +71,11 @@ async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
 }
 
 // Initialize the channel for publishing events to the FSMs.
+/// fsm priority channel for events
 static EVENT_CHANNEL_FSM: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+/// can 1 priority channel for events
 static EVENT_CHANNEL_CAN1: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+/// can 2 priority channel for events
 static EVENT_CHANNEL_CAN2: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 
 #[embassy_executor::task]
@@ -169,29 +174,25 @@ async fn forward_fsm_relay_events_to_can1(
 ) {
     loop {
         let event = event_receiver.receive().await;
-        match event {
-            fsm::Event::HighVoltageOnCanRelay => {
-                let header = can::frame::Header::new_fd(
-                    embedded_can::Id::from(
-                        embedded_can::StandardId::new(
-                            // main::config::Command::HighVoltageOnCanRelay(0).to_id() as u32,
-                            10,
-                        )
-                        .expect("Invalid ID"),
-                    ),
-                    64,
-                    false,
-                    true,
-                );
+        if event == fsm::Event::HighVoltageOnCanRelay {
+            let header = can::frame::Header::new_fd(
+                embedded_can::Id::from(
+                    embedded_can::StandardId::new(
+                        // main::config::Command::HighVoltageOnCanRelay(0).to_id() as u32,
+                        10,
+                    )
+                    .expect("Invalid ID"),
+                ),
+                64,
+                false,
+                true,
+            );
 
-                let frame = can::frame::FdFrame::new(header, &[0; 64]).expect("Invalid frame");
+            let frame = can::frame::FdFrame::new(header, &[0; 64]).expect("Invalid frame");
 
-                cantx
-                    .send(lib::can::can1::CanEnvelope::new_from_frame(frame))
-                    .await;
-            }
-
-            _ => {}
+            cantx
+                .send(lib::can::can1::CanEnvelope::new_from_frame(frame))
+                .await;
         }
     }
 }
@@ -203,16 +204,13 @@ async fn forward_fsm_relay_events_to_can2(
 ) {
     loop {
         let event = event_receiver.receive().await;
-        match event {
-            fsm::Event::FSMTransition(state_number) => {
-                cantx
-                    .send(lib::can::can2::CanEnvelope::new_with_id(
-                        0x190,
-                        &[state_number],
-                    ))
-                    .await
-            }
-            _ => {}
+        if let fsm::Event::FSMTransition(state_number) = event {
+            cantx
+                .send(lib::can::can2::CanEnvelope::new_with_id(
+                    0x190,
+                    &[state_number],
+                ))
+                .await
         }
     }
 }
@@ -396,7 +394,7 @@ async fn gs_heartbeat(gstx: gs_master::TxSender<'static>) {
 async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
     loop {
         let header = Header::new(
-            Id::try_from(StandardId::new(8u16).unwrap()).expect("Invalid header"),
+            Id::from(StandardId::new(8u16).unwrap()),
             8,
             false,
         );
@@ -458,9 +456,9 @@ async fn main(spawner: Spawner) -> ! {
 
     // The event channel that will be used to transmit events from the FSM over the
     // CAN bus
-    let event_channel_can1: &mut EventChannel = EVENT_CHANNEL_CAN1.init(EventChannel::new().into());
+    let event_channel_can1: &mut EventChannel = EVENT_CHANNEL_CAN1.init(EventChannel::new());
     let event_receiver_can1: EventReceiver = event_channel_can1.receiver().into();
-    let event_channel_can2: &mut EventChannel = EVENT_CHANNEL_CAN2.init(EventChannel::new().into());
+    let event_channel_can2: &mut EventChannel = EVENT_CHANNEL_CAN2.init(EventChannel::new());
     let event_receiver_can2: EventReceiver = event_channel_can2.receiver().into();
     let event_sender_can2: EventSender = event_channel_can2.sender().into();
 
@@ -579,5 +577,6 @@ async fn main(spawner: Spawner) -> ! {
         Timer::after_millis(100).await;
     }
 
+    #[allow(unreachable_code)]
     hlt()
 }

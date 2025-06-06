@@ -7,12 +7,10 @@ use gslib::Message;
 use gslib::COMMAND_HASH;
 use gslib::CONFIG_HASH;
 use gslib::DATA_HASH;
-use gslib::EVENTS_HASH;
 
 use crate::battery::DataSender;
 use crate::battery::HV_DATATYPES;
 use crate::data::process::process;
-use crate::Command;
 use crate::CommandSender;
 use crate::MessageSender;
 
@@ -42,14 +40,6 @@ pub async fn handle_incoming_data(
                 msg_sender.send(Message::Status(Info::DataHashFailed))?;
             } else {
                 msg_sender.send(Message::Status(Info::DataHashPassed))?;
-            }
-        },
-        Datatype::EventsHash => {
-            if data.value != EVENTS_HASH {
-                msg_sender.send(Message::Error("Event hash mismatch".to_string()))?;
-                msg_sender.send(Message::Status(Info::EventsHashFailed))?;
-            } else {
-                msg_sender.send(Message::Status(Info::EventsHashPassed))?;
             }
         },
         Datatype::ConfigHash => {

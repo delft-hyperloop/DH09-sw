@@ -152,11 +152,6 @@ standard-datapoints:
     priority: 1
 
   - datapoint:
-      name: 'EventsHash'
-      id: 0x168
-    priority: 1
-
-  - datapoint:
       name: 'DataHash'
       id: 0x169
     priority: 1
@@ -197,6 +192,24 @@ standard-datapoints:
   - datapoint:
       name: 'FSMState'
       id: 0x202
+      store:
+        default: 0
+        
+  - datapoint:
+      name: 'FSMTransition'
+      id: 0x203
+      store:
+        default: 0
+        
+  - datapoint:
+      name: 'FSMTransitionFail'
+      id: 0x204
+      store:
+        default: 0
+        
+  - datapoint:
+      name: 'Emergency'
+      id: 0x205
       store:
         default: 0
 

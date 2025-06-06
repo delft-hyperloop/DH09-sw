@@ -11,7 +11,7 @@ pub enum Event {
     ConnectToGS,
     /// Start system check
     StartSystemCheck,
-    /// System was checked successfully
+    /// The System was checked successfully
     SystemCheckSuccess,
     /// Enters `Idle` state from `Discharge` state
     EnterIdle,
@@ -25,7 +25,7 @@ pub enum Event {
     Levitate,
     /// Stops levitating
     StopLevitating,
-    /// Starts accelerating until it reaches the target speed
+    /// Starts accelerating
     Accelerate,
     /// Stops accelerating
     Cruise,
@@ -44,8 +44,6 @@ pub enum Event {
     StopCharge,
     /// Resets the FSM to the `Boot` state
     ResetFSM,
-    /// Stops the FSM
-    StopFSM,
     /// Fault happened
     Fault,
     /// Emergency event that must trigger the emergency braking system
@@ -59,11 +57,11 @@ pub enum Event {
     ///
     HighVoltageOnCanRelay,
     /// Event sent when transitioning. Used to send the `FSMUpdate` CAN message.
+    /// - `u8`: State in which the FSM transitioned
     FSMTransition(u8),
-
-    /// Event used when testing to stop the FSM
-    #[cfg(test)]
-    StopFSM,
+    /// Event sent by the FSM whenever a transition fails
+    /// - `u8`: The state in which the FSM didn't transition. 
+    TransitionFail(u8),
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]
@@ -74,14 +72,16 @@ pub enum Event {
 #[derive(Clone, PartialEq, Eq, Debug, Copy, defmt::Format, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum EmergencyType {
+    /// General emergency
+    GeneralEmergency = 0,
     /// Emergency triggered by propulsion
     EmergencyPropulsion,
     /// Emergency triggered by levitation
     EmergencyLevitation,
     /// Emergency triggered by the powertrain controller
     EmergencyPTC,
-    /// General emergency happened
-    GeneralEmergency,
+    /// Emergency triggered by SenseCon
+    EmergencySenseCon,
 }
 
 impl Event {

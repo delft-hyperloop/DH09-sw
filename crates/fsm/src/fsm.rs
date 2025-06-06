@@ -1,9 +1,5 @@
 //! This module contains the struct used for the Main FSM.
 
-#[cfg(test)]
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-#[cfg(test)]
-use embassy_sync::mutex::Mutex;
 use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
@@ -11,23 +7,19 @@ use lib::States;
 
 use crate::entry_methods::enter_fault;
 
+// TODO: !!!!Send Transition messages to GS!!!!
+
 /// The struct for the `MainFSM`
-///
-/// # Fields:
-/// - `state`: The state in which the pod is in
-/// - `event_receiver`: Object used for receive access to the event channel
-/// - `event_sender2`: Object used to send message over the second CAN bus
 #[derive(Debug, Copy, Clone)]
 pub struct FSM {
-/// todo: docs
-    #[cfg(test)]
-    state_mutex: &'static Mutex<NoopRawMutex, States>,
-/// todo: docs
+    /// The state in which the pod is in
     state: States,
-/// todo: docs
+    /// Object used for receive access to the event channel
     event_receiver: EventReceiver,
-/// todo: docs
+    /// Object used to send message over the second CAN bus
     event_sender2: EventSender,
+    /// Object used to send messages to the groundstations
+    event_sender_gs: EventSender,
 }
 
 impl FSM {
@@ -37,20 +29,23 @@ impl FSM {
     /// # Parameters:
     /// - `event_receiver`: Static reference to a receiver object from the
     ///   `PriorityChannel` used to transmit events
+    /// - `event_sender2`: Static reference to a sender object from the
+    ///   `PriorityChannel` used to send events on CAN 2
+    /// - `event_sender_gs`: Static reference to a sender object from the
+    ///   `PriorityChannel` used to send events to the groundstation
     ///
     /// # Returns:
     /// - A future for an instance of the `FSM` struct
     pub async fn new(
         event_receiver: EventReceiver,
         event_sender2: EventSender,
-        #[cfg(test)] state_mutex: &'static Mutex<NoopRawMutex, States>,
+        event_sender_gs: EventSender,
     ) -> Self {
         Self {
             state: States::Boot,
             event_receiver,
             event_sender2,
-            #[cfg(test)]
-            state_mutex,
+            event_sender_gs,
         }
     }
 
@@ -90,8 +85,24 @@ impl FSM {
     /// - `false`: If the FSM receives a `Quit` event
     /// - `true`: Otherwise
     async fn handle_events(&mut self, event: Event) -> bool {
+        // TODO: match event first and then state
+        
+        
         match (self.state, event) {
-            (_, Event::Emergency { emergency_type: _ }) => self.transition(States::Fault).await,
+            (_, Event::Emergency { emergency_type }) => {
+                self.transition(States::Fault).await;
+
+                // If going in emergency state, send messages over CAN and to the groundstation
+                self.event_sender2
+                    .send(Event::Emergency { emergency_type })
+                    .await;
+                self.event_sender_gs
+                    .send(Event::FSMTransition(States::Fault as u8))
+                    .await;
+                self.event_sender_gs
+                    .send(Event::Emergency { emergency_type })
+                    .await;
+            }
             (_, Event::Fault) => self.transition(States::Fault).await,
 
             (_, Event::ResetFSM) => self.transition(States::Boot).await,
@@ -118,10 +129,17 @@ impl FSM {
             (States::Discharge, Event::EnterIdle) => self.transition(States::Idle).await,
             (States::Discharge, Event::ShutDown) => return false,
 
-            #[cfg(test)]
-            (_, Event::StopFSM) => return false,
-
-            _ => {}
+            (_, event) => {
+                let mut failedStateTransition = match event {
+                    Event::Emergency { emergency_type: _ } | Event::Fault => States::Fault,
+                    Event::ResetFSM => States::Boot,
+                    Event::FaultFixed => States::
+                        _ => 
+                }
+                self
+                    .event_sender_gs
+                    .send(Event::TransitionFail(failedStateTransition as u8))
+            },
         }
         true
     }
@@ -137,12 +155,11 @@ impl FSM {
         self.call_exit_method(self.state).await;
 
         self.state = new_state;
-        #[cfg(test)]
-        {
-            **self.state_mutex.lock().await = new_state;
-        }
 
         self.event_sender2
+            .send(Event::FSMTransition(new_state as u8))
+            .await;
+        self.event_sender_gs
             .send(Event::FSMTransition(new_state as u8))
             .await;
 

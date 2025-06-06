@@ -192,7 +192,7 @@
         })
     });
     propInitFault1.subscribe((store) => {
-        if (store.value !== 256 && $propInitFault1Acknowledged) {
+        if (store.value !== 255 && $propInitFault1Acknowledged) {
             propInitFault1Acknowledged.set(false);
             toastStore.trigger({
                 message: `PropInitFault 1: ${store.value}`,
@@ -209,7 +209,7 @@
         }
     });
     propInitFault2.subscribe((store) => {
-        if (store.value !== 256 && $propInitFault2Acknowledged) {
+        if (store.value !== 255 && $propInitFault2Acknowledged) {
             propInitFault2Acknowledged.set(false);
             toastStore.trigger({
                 message: `PropInitFault 2: ${store.value}`,

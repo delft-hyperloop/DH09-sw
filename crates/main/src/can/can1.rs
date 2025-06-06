@@ -1,5 +1,5 @@
 //! Module that deals with communication to the CAN1 bus.
-//! 
+//!
 //! The CAN1 bus is responsible for comms between SenseCon PCBs.
 //! This CAN bus runs on CAN-FD.
 //!
@@ -29,63 +29,8 @@ use embassy_sync::pubsub::Subscriber;
 use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_can::Id;
+pub use lib::can1::CanEnvelope;
 use static_cell::StaticCell;
-
-/// CanEvnelope used for making CAN messages
-#[derive(Debug, Clone)]
-pub struct CanEnvelope {
-    envelope: embassy_stm32::can::frame::FdEnvelope,
-}
-
-impl CanEnvelope {
-    /// Makes a new `CanEnvelope` object from an `FdFrame`
-    pub fn new_from_frame(frame: FdFrame) -> Self {
-        Self {
-            envelope: embassy_stm32::can::frame::FdEnvelope {
-                frame,
-                ts: Instant::now(),
-            },
-        }
-    }
-
-    /// Returns the ID of the envelope
-    pub fn id(&self) -> &Id {
-        self.envelope.frame.id()
-    }
-
-    /// Returns the payload of the envelope
-    pub fn payload(&self) -> &[u8] {
-        self.envelope.frame.data()
-    }
-
-    /// Returns the timestamp of the envelope
-    pub fn timestamp(&self) -> Instant {
-        self.envelope.ts
-    }
-}
-
-impl core::cmp::PartialEq for CanEnvelope {
-    fn eq(&self, other: &Self) -> bool {
-        self.envelope.frame.id() == other.envelope.frame.id()
-    }
-}
-
-impl core::cmp::PartialOrd for CanEnvelope {
-    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        self.envelope
-            .frame
-            .id()
-            .partial_cmp(&other.envelope.frame.id())
-    }
-}
-
-impl core::cmp::Eq for CanEnvelope {}
-
-impl core::cmp::Ord for CanEnvelope {
-    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-        self.envelope.frame.id().cmp(&other.envelope.frame.id())
-    }
-}
 
 const CAN_RX_CAPACITY: usize = 4;
 const CAN_RX_SUBSCRIBERS: usize = 4;
@@ -146,18 +91,13 @@ async fn can_rx_task(mut can: CanRx<'static>, publisher: CanRxPublisher<'static>
 
 const CAN_TX_CAPACITY: usize = 32;
 type CanTxChannelKind = heapless::binary_heap::Min;
-type CanTxChannel =
-    PriorityChannel<NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
-/// Sender object for the priority channel used to transmit messages over the CAN bus
+type CanTxChannel = PriorityChannel<NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
+/// Sender object for the priority channel used to transmit messages over the
+/// CAN bus
 pub type CanTxSender<'a> =
     priority_channel::Sender<'a, NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
-type CanTxReceiver<'a> = priority_channel::Receiver<
-    'a,
-    NoopRawMutex,
-    CanEnvelope,
-    CanTxChannelKind,
-    CAN_TX_CAPACITY,
->;
+type CanTxReceiver<'a> =
+    priority_channel::Receiver<'a, NoopRawMutex, CanEnvelope, CanTxChannelKind, CAN_TX_CAPACITY>;
 
 /// Task that sends CAN envelopes received from the TX channel over the CAN
 /// bus.

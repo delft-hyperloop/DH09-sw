@@ -1430,6 +1430,7 @@ dependencies = [
  "embedded-storage",
  "embedded-test",
  "heapless 0.8.0",
+ "lib",
  "log",
  "panic-halt",
  "rand_core 0.6.4",
@@ -2334,6 +2335,36 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
+name = "lib"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "cortex-m",
+ "cortex-m-rt",
+ "cortex-m-semihosting",
+ "defmt",
+ "defmt-rtt",
+ "embassy-boot",
+ "embassy-boot-stm32",
+ "embassy-executor 0.7.0 (git+https://github.com/delft-hyperloop/embassy?rev=4d9b41714da77d82811f39bd6feabe161e93552c)",
+ "embassy-futures",
+ "embassy-net",
+ "embassy-stm32",
+ "embassy-sync",
+ "embassy-time",
+ "embedded-can",
+ "embedded-io-async",
+ "embedded-storage",
+ "goose_utils",
+ "heapless 0.8.0",
+ "panic-probe",
+ "rand_core 0.6.4",
+ "serde",
+ "static_cell",
+ "toml 0.4.10",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.169"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2448,13 +2479,12 @@ dependencies = [
  "embedded-io-async",
  "embedded-storage",
  "fsm",
- "goose_utils",
  "heapless 0.8.0",
+ "lib",
  "panic-probe",
  "rand_core 0.6.4",
  "serde",
  "static_cell",
- "toml 0.4.10",
 ]
 
 [[package]]

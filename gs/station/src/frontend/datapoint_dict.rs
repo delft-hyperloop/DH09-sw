@@ -1,5 +1,7 @@
 use std::fmt::Formatter;
-use gslib::{Datapoint, Datatype};
+
+use gslib::Datapoint;
+use gslib::Datatype;
 
 const DATATYPE_HEADER: &str = "Datatype";
 const VALUE_HEADER: &str = "Value";
@@ -36,12 +38,13 @@ impl DatapointDict {
         );
         for i in 0..self.size {
             let dp = self.datapoints[i];
-            result.push_str(&format!("\n{:?}{}|{}{}|{}",
-                                     dp.datatype,
-                                     " ".repeat(self.max_length_type.saturating_sub(format!("{:?}", dp.datatype).len())), 
-                                     dp.value,
-                                     " ".repeat(self.max_length_value.saturating_sub(format!("{:?}", dp.value).len())),
-                                     dp.timestamp,
+            result.push_str(&format!(
+                "\n{:?}{}|{}{}|{}",
+                dp.datatype,
+                " ".repeat(self.max_length_type.saturating_sub(format!("{:?}", dp.datatype).len())),
+                dp.value,
+                " ".repeat(self.max_length_value.saturating_sub(format!("{:?}", dp.value).len())),
+                dp.timestamp,
             ));
         }
         result.push_str("\n");
@@ -49,11 +52,22 @@ impl DatapointDict {
     }
 
     pub fn add_datapoint(&mut self, datapoint: Datapoint) {
-        if datapoint.datatype != Datatype::CommandHash && datapoint.datatype != Datatype::EventsHash && datapoint.datatype != Datatype::DataHash && datapoint.datatype != Datatype::ConfigHash && datapoint.datatype != Datatype::DefaultDatatype {
+        if datapoint.datatype != Datatype::CommandHash
+            && datapoint.datatype != Datatype::EventsHash
+            && datapoint.datatype != Datatype::DataHash
+            && datapoint.datatype != Datatype::ConfigHash
+            && datapoint.datatype != Datatype::DefaultDatatype
+        {
             for i in 0..self.capacity {
                 if self.datapoints[i].datatype == Datatype::DefaultDatatype {
-                    self.max_length_value = std::cmp::max(self.max_length_value, format!("{:?}", datapoint.value).len());
-                    self.max_length_type = std::cmp::max(self.max_length_type, format!("{:?}", datapoint.datatype).len()); 
+                    self.max_length_value = std::cmp::max(
+                        self.max_length_value,
+                        format!("{:?}", datapoint.value).len(),
+                    );
+                    self.max_length_type = std::cmp::max(
+                        self.max_length_type,
+                        format!("{:?}", datapoint.datatype).len(),
+                    );
                     self.datapoints[i] = datapoint;
                     self.size += 1;
                     return;

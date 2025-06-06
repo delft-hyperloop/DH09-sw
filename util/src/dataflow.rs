@@ -448,7 +448,7 @@ fn make_datapoint_parser(spec: &MessageProcessingSpec) -> String {
             )).await;",
             dpc.datapoint.name, dpc.gs.conversion.procedure_suffix
         )
-            .unwrap();
+        .unwrap();
     }
     code
 }
@@ -486,7 +486,7 @@ pub fn collect_data_types(df: &DataflowSpec) -> crate::datatypes::Config {
 pub fn make_main_pcb_code(df: &DataflowSpec) -> String {
     let mut code = String::from(
         r#"
-use crate::gs_master::Datapoint;
+use crate::Datapoint;
 use core::future::Future;
 
 #[inline(always)]
@@ -617,33 +617,35 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         }
     }
 
-    writeln!(&mut code, "pub fn event_for_can_1_id(id: u32) -> fsm::Event {{ match id {{").unwrap();
+    writeln!(&mut code, "pub fn event_for_can_1_id(id: u32) -> crate::Event {{ match id {{")
+        .unwrap();
 
     for (id, event) in &can1_ids_to_events {
-        writeln!(&mut code, "{} => fsm::Event::{},", id, event).unwrap();
+        writeln!(&mut code, "{} => crate::Event::{},", id, event).unwrap();
     }
 
     writeln!(
         &mut code,
-        "_ => fsm::Event::NoEvent,
+        "_ => crate::Event::NoEvent,
         }}
     }}",
     )
-        .unwrap();
+    .unwrap();
 
-    writeln!(&mut code, "pub fn event_for_can_2_id(id: u32) -> fsm::Event {{ match id {{").unwrap();
+    writeln!(&mut code, "pub fn event_for_can_2_id(id: u32) -> crate::Event {{ match id {{")
+        .unwrap();
 
     for (id, event) in &can2_ids_to_events {
-        writeln!(&mut code, "{} => fsm::Event::{},", id, event).unwrap();
+        writeln!(&mut code, "{} => crate::Event::{},", id, event).unwrap();
     }
 
     writeln!(
         &mut code,
-        "_ =>fsm::Event::NoEvent,
+        "_ =>crate::Event::NoEvent,
         }}
     }}",
     )
-        .unwrap();
+    .unwrap();
 
     writeln!(&mut code, "pub async fn parse_datapoints_can_1<F, Fut>(id: u32, data: &[u8], mut f: F) where F: FnMut(Datapoint) -> Fut, Fut: Future<Output=()> {{ {proc} match id {{").unwrap();
     for mp in &df.message_processing {
@@ -654,7 +656,7 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
                     ",
                 id
             )
-                .unwrap();
+            .unwrap();
 
             code.push_str(&make_datapoint_parser(mp));
 
@@ -663,7 +665,7 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
                 "}}
                 "
             )
-                .unwrap();
+            .unwrap();
         }
     }
     writeln!(&mut code, "_ => {{}}}}}}").unwrap();
@@ -677,7 +679,7 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
                     ",
                 id
             )
-                .unwrap();
+            .unwrap();
 
             code.push_str(&make_datapoint_parser(mp));
 
@@ -686,7 +688,7 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
                 "}}
                 "
             )
-                .unwrap();
+            .unwrap();
         }
     }
     writeln!(&mut code, "_ => {{}}}}}}").unwrap();
@@ -706,13 +708,13 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         }
     }
 
-    writeln!(&mut code, "pub async fn gs_to_can1<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::can1::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
+    writeln!(&mut code, "pub async fn gs_to_can1<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can1::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
     for (command_name, id, conversion, trim) in &can1commands {
         writeln!(
             &mut code,
             r#"Command::{command_name}(v) => {{
                 let data = {apply_trim}({conversion}(v), "{command_name}");
-                f(crate::can::can1::CanEnvelope::new_from_frame(embassy_stm32::can::frame::FdFrame::new_extended({id}, &data).expect("Invalid frame!"))).await;
+                f(crate::can1::CanEnvelope::new_from_frame(embassy_stm32::can::frame::FdFrame::new_extended({id}, &data).expect("Invalid frame!"))).await;
             }}"#,
             conversion = conversion.as_deref().unwrap_or("default_command_process"),
             apply_trim = format_args!("apply_trim_{trim}", trim = trim.0),
@@ -721,13 +723,13 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
     }
     writeln!(&mut code, "_ => {{}}}}}}").unwrap();
 
-    writeln!(&mut code, "pub async fn gs_to_can2<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::can2::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
+    writeln!(&mut code, "pub async fn gs_to_can2<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can2::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
     for (command_name, id, conversion, trim) in &can2commands {
         writeln!(
             &mut code,
             r#"Command::{command_name}(v) => {{
                 let data = {apply_trim}({conversion}(v), "{command_name}");
-                f(crate::can::can2::CanEnvelope::new_from_frame(embassy_stm32::can::frame::Frame::new_standard({id}, &data).expect("Invalid frame!"))).await;
+                f(crate::can2::CanEnvelope::new_from_frame(embassy_stm32::can::frame::Frame::new_standard({id}, &data).expect("Invalid frame!"))).await;
             }}"#,
             conversion = conversion.as_deref().unwrap_or("default_command_process"),
             apply_trim = format_args!("apply_trim_{trim}", trim = trim.0),
@@ -812,7 +814,7 @@ VAR
 
 "#
     )
-        .unwrap();
+    .unwrap();
     writeln!(
         &mut input_vars,
         r#"
@@ -820,7 +822,7 @@ VAR
         
     "#
     )
-        .unwrap();
+    .unwrap();
 
     for mp in &df.message_processing {
         if let CanSpec::Can2 { id, comes_from_levi: Some(l) } = &mp.can {
@@ -835,7 +837,7 @@ VAR
                     "        {}",
                     levi_info.levi_type.make_input(&levi_info.name)
                 )
-                    .unwrap();
+                .unwrap();
                 match dp.getter.ty {
                     Ty::U8 => {
                         writeln!(
@@ -844,7 +846,7 @@ VAR
                             dp.getter.can_payload_range.start,
                             levi_info.formula.replace("$", &levi_info.name)
                         )
-                            .unwrap();
+                        .unwrap();
                     },
                     Ty::U16 => {
                         writeln!(
@@ -852,19 +854,19 @@ VAR
                             "    local_u16.value := {};",
                             levi_info.formula.replace("$", &levi_info.name)
                         )
-                            .unwrap();
+                        .unwrap();
                         writeln!(
                             &mut tx_data_create,
                             "    tx_data[{}] := local_u16.bytes[1];",
                             dp.getter.can_payload_range.start
                         )
-                            .unwrap();
+                        .unwrap();
                         writeln!(
                             &mut tx_data_create,
                             "    tx_data[{}] := local_u16.bytes[0];",
                             dp.getter.can_payload_range.start + 1
                         )
-                            .unwrap();
+                        .unwrap();
                     },
                     Ty::U32 => {
                         writeln!(
@@ -872,31 +874,31 @@ VAR
                             "    local_u32.value := {};",
                             levi_info.formula.replace("$", &levi_info.name)
                         )
-                            .unwrap();
+                        .unwrap();
                         writeln!(
                             &mut tx_data_create,
                             "    tx_data[{}] := local_u32.bytes[3];",
                             dp.getter.can_payload_range.start
                         )
-                            .unwrap();
+                        .unwrap();
                         writeln!(
                             &mut tx_data_create,
                             "    tx_data[{}] := local_u32.bytes[2];",
                             dp.getter.can_payload_range.start + 1
                         )
-                            .unwrap();
+                        .unwrap();
                         writeln!(
                             &mut tx_data_create,
                             "    tx_data[{}] := local_u32.bytes[1];",
                             dp.getter.can_payload_range.start + 2
                         )
-                            .unwrap();
+                        .unwrap();
                         writeln!(
                             &mut tx_data_create,
                             "    tx_data[{}] := local_u32.bytes[0];",
                             dp.getter.can_payload_range.start + 3
                         )
-                            .unwrap();
+                        .unwrap();
                     },
                     _ => panic!("not supported"),
                 }
@@ -907,7 +909,7 @@ VAR
                 "IF ({} * can_{id}_periods_since_last_log >= {} AND No_Messages_Queued < 32) THEN",
                 df.beckhoff.task_period, l.log_period
             )
-                .unwrap();
+            .unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].length := 8;").unwrap();
             writeln!(&mut code, "    Messages_To_Send[No_Messages_Queued].cobId := {id};").unwrap();
             writeln!(&mut code, "{}", tx_data_create).unwrap();
@@ -919,7 +921,7 @@ VAR
                 &mut code,
                 "ELSE\n    can_{id}_periods_since_last_log := can_{id}_periods_since_last_log + 1;"
             )
-                .unwrap();
+            .unwrap();
             writeln!(&mut code, "END_IF;").unwrap();
         }
     }
@@ -951,9 +953,9 @@ END_IF
     )
 }
 
-pub fn make_logging_pcb_code(_df: &DataflowSpec) -> String { 
+pub fn make_logging_pcb_code(_df: &DataflowSpec) -> String {
     // TODO
-    format!("") 
+    format!("")
 }
 
 pub fn make_gs_code(df: &DataflowSpec) -> String {
@@ -993,7 +995,7 @@ pub fn output_gs_frontend_code(df: &DataflowSpec) -> String {
 /* AUTO GENERATED USING npm run generate:gs */
 export type NamedCommand = "#
     )
-        .unwrap();
+    .unwrap();
 
     for (id, command) in df.commands.iter().enumerate() {
         if id != 0 {
@@ -1007,7 +1009,7 @@ export type NamedCommand = "#
         r#";
 export const NamedCommandValues:NamedCommand[] = ["#
     )
-        .unwrap();
+    .unwrap();
     for (id, command) in df.commands.iter().enumerate() {
         if id != 0 {
             write!(&mut code, ", ").unwrap();
@@ -1020,7 +1022,7 @@ export const NamedCommandValues:NamedCommand[] = ["#
 
 export type NamedDatatype = "#
     )
-        .unwrap();
+    .unwrap();
 
     let dt = collect_data_types(df);
 
@@ -1037,7 +1039,7 @@ export type NamedDatatype = "#
 
 export const NamedDatatypeValues = ["#
     )
-        .unwrap();
+    .unwrap();
 
     dt.Datatype.iter().enumerate().for_each(|(id, datatype)| {
         if id != 0 {
@@ -1055,7 +1057,7 @@ export const NamedDatatypeValues = ["#
         // auto-generated with npm run generate:gs
         "#
     )
-        .unwrap();
+    .unwrap();
 
     for d in &dt.Datatype {
         if let Some(store) = &d.store {
@@ -1067,7 +1069,7 @@ export const NamedDatatypeValues = ["#
                 name = d.name,
                 default = store.default,
             )
-                .unwrap();
+            .unwrap();
             if let Some(callback) = &store.callback {
                 write!(&mut code, ", {callback}").unwrap();
             }

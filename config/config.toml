@@ -35,6 +35,162 @@ sensor_hub = [0x1b,0x1c,0x1d,0x15]
 # <datatype name> = <timeout in milliseconds>
 FrontendHeartbeating = 1000
 
+[[Event]]
+event = "NoEvent"
+doc = "No event happened"
+
+[[Event]]
+event = "ConnectToGS"
+doc = "Connection to the Ground Station has been established"
+
+[[Event]]
+event = "StartSystemCheck"
+doc = "Start system check"
+
+[[Event]]
+event = "SystemCheckSuccess"
+doc = "System was checked successfully"
+
+[[Event]]
+event = "EnterIdle"
+doc = "Enters `Idle` state from `Discharge` state"
+
+[[Event]]
+event = "StartPreCharge"
+doc = "Starts the pre-charging process"
+
+[[Event]]
+event = "Activate"
+doc = "Will turn on high voltage while SDC is closed and brakes are deployed"
+
+[[Event]]
+event = "EnterDemo"
+doc = "Enters the demo state armed brakes, SDC still closed"
+
+[[Event]]
+event = "Levitate"
+doc = "Starts levitating"
+
+[[Event]]
+event = "StopLevitating"
+doc = "Stops levitating"
+
+[[Event]]
+event = "Accelerate"
+doc = "Starts accelerating until it reaches the target speed"
+
+[[Event]]
+event = "Cruise"
+doc = "Stops accelerating"
+
+[[Event]]
+event = "Brake"
+doc = "Deploys brakes"
+
+[[Event]]
+event = "Stopped"
+doc = "Used for transitioning from braking to levitating when the speed of the pod is 0"
+
+[[Event]]
+event = "Discharge"
+doc = "Starts discharging the high voltage batteries"
+
+[[Event]]
+event = "ShutDown"
+doc = "Shuts down the pod"
+
+[[Event]]
+event = "Charge"
+doc = "Pod should start charging"
+
+[[Event]]
+event = "StopCharge"
+doc = "Pod should stop charging"
+
+[[Event]]
+event = "ResetFSM"
+doc = "Resets the FSM to the `Boot` state"
+
+[[Event]]
+event = "StopFSM"
+doc = "Stops the FSM"
+
+[[Event]]
+event = "Fault"
+doc = "Fault happened"
+
+[[Event]]
+event = "Emergency"
+doc = "Emergency event that must trigger the emergency braking system"
+
+[[Event]]
+event = "FaultFixed"
+doc = "Used to transition from `Fault` to `SystemCheck` when the fault is fixed and no reboot is required"
+
+[[Event]]
+event = "HighVoltageOnCanRelay"
+doc = ""
+
+[[Event]]
+event = "FSMTransition"
+doc = "Event sent when transitioning. Used to send the `FSMUpdate` CAN message."
+
+
+[[FSMState]]
+state = "Boot"
+doc = "Initial state of the FSM"
+
+[[FSMState]]
+state = "ConnectedToGS"
+doc = "Pretty self-explanatory :)"
+
+[[FSMState]]
+state = "SystemCheck"
+doc = "State for checking each subsystem"
+
+[[FSMState]]
+state = "Idle"
+doc = "Idle state, SDC is open and emergency brakes are deployed"
+
+[[FSMState]]
+state = "PreCharge"
+doc = "Pre-charging the batteries before turning on high voltage"
+
+[[FSMState]]
+state = "Active"
+doc = "High voltage is on, SDC is closed, emergency brakes are still deployed"
+
+[[FSMState]]
+state = "Demo"
+doc = "SDC closed, brakes not deployed (SDC is armed)"
+
+[[FSMState]]
+state = "Levitating"
+doc = "Pod is levitating"
+
+[[FSMState]]
+state = "Accelerating"
+doc = "Pod is accelerating"
+
+[[FSMState]]
+state = "Cruising"
+doc = "Pod is cruising"
+
+[[FSMState]]
+state = "Braking"
+doc = "Pod is braking"
+
+[[FSMState]]
+state = "Discharge"
+doc = "Discharge state for the high voltage current"
+
+[[FSMState]]
+state = "Charging"
+doc = "State for charging the pod"
+
+[[FSMState]]
+state = "Fault"
+doc = "Fault/Emergency state - can be reached from any state and must cause emergency brake"
 
 [[Info]]
 label = "ServerStarted"

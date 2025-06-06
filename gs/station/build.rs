@@ -8,8 +8,10 @@ use std::path::Path;
 
 use anyhow::Result;
 use goose_utils::check_config;
-use goose_utils::commands::{generate_commands, generate_commands_from_config};
-use goose_utils::datatypes::{generate_data_types_from_config, generate_datatypes};
+use goose_utils::commands::generate_commands;
+use goose_utils::commands::generate_commands_from_config;
+use goose_utils::datatypes::generate_data_types_from_config;
+use goose_utils::datatypes::generate_datatypes;
 use goose_utils::events::generate_events;
 use goose_utils::ip::configure_gs_ip;
 use serde::Deserialize;

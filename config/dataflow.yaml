@@ -194,13 +194,13 @@ standard-datapoints:
       id: 0x202
       store:
         default: 0
-        
+
   - datapoint:
       name: 'FSMTransitionFail'
       id: 0x204
       store:
         default: 100
-        
+
   - datapoint:
       name: 'Emergency'
       id: 0x205

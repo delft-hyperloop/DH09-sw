@@ -22,6 +22,7 @@
 #![allow(missing_copy_implementations)]
 #![allow(missing_debug_implementations)]
 
+
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_net::tcp::TcpSocket;
@@ -44,6 +45,14 @@ use embassy_time::Timer;
 use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
+use lib::config;
+use lib::config::Command;
+use lib::config::Datatype;
+use lib::config::COMMAND_HASH;
+use lib::config::CONFIG_HASH;
+use lib::config::DATA_HASH;
+use lib::config::EVENTS_HASH;
+use lib::Datapoint;
 use static_cell::StaticCell;
 
 type GsCommsLayerImpl = EthernetGsCommsLayer;
@@ -96,18 +105,6 @@ impl GsToPodMessage {
         Self { command }
     }
 }
-
-use core::cmp::Ordering;
-
-use defmt::Formatter;
-use lib::config;
-use lib::config::Command;
-use lib::config::Datatype;
-use lib::config::COMMAND_HASH;
-use lib::config::CONFIG_HASH;
-use lib::config::DATA_HASH;
-use lib::config::EVENTS_HASH;
-use lib::Datapoint;
 
 /// Struct for the datapoints sent from the pod to the ground station
 #[derive(Clone, Debug)]

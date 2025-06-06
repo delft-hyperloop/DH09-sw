@@ -1,8 +1,6 @@
 #![no_std]
 
-pub mod can1;
-pub mod can2;
-pub mod datapoint;
+pub mod can;
 pub mod utils;
 
 pub mod config {
@@ -16,6 +14,11 @@ pub mod config {
 }
 
 // export these so they're visible under `lib::`
-pub use config::States;
-pub use datapoint::Datapoint;
+pub use utils::data::EmergencyType;
 pub use utils::data::Event;
+pub use utils::datapoint::Datapoint;
+pub use utils::event_types::EventChannel;
+pub use utils::event_types::EventReceiver;
+pub use utils::event_types::EventSender;
+
+pub use crate::config::States;

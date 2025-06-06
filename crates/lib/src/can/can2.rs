@@ -1,22 +1,33 @@
-use embassy_stm32::can::frame::FdFrame;
+use embassy_stm32::can::Frame;
 use embassy_time::Instant;
 use embedded_can::Id;
 
-/// CanEvnelope used for making CAN messages
+/// Envelope for CAN messages
 #[derive(Debug, Clone)]
 pub struct CanEnvelope {
-    envelope: embassy_stm32::can::frame::FdEnvelope,
+    pub envelope: embassy_stm32::can::frame::Envelope,
+}
+
+impl defmt::Format for CanEnvelope {
+    fn format(&self, f: defmt::Formatter) {
+        defmt::write!(f, "{:?}", &self.envelope.frame);
+    }
 }
 
 impl CanEnvelope {
-    /// Makes a new `CanEnvelope` object from an `FdFrame`
-    pub fn new_from_frame(frame: FdFrame) -> Self {
+    /// Makes a `CanEnvelope` from a `Frame`
+    pub fn new_from_frame(frame: Frame) -> Self {
         Self {
-            envelope: embassy_stm32::can::frame::FdEnvelope {
+            envelope: embassy_stm32::can::frame::Envelope {
                 frame,
                 ts: Instant::now(),
             },
         }
+    }
+
+    /// Makes a `CanEnvelope` from an ID with the provided payload
+    pub fn new_with_id(id: u16, payload: &[u8]) -> Self {
+        Self::new_from_frame(Frame::new_standard(id, payload).unwrap())
     }
 
     /// Returns the ID of the envelope

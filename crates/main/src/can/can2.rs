@@ -29,7 +29,7 @@ use embassy_sync::pubsub::Subscriber;
 use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_can::Id;
-pub use lib::can2::CanEnvelope;
+use lib::can::can2::CanEnvelope;
 use static_cell::StaticCell;
 
 const CAN_RX_CAPACITY: usize = 4;

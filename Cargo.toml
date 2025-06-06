@@ -39,6 +39,7 @@ defmt-semihosting = { version = "*", features = [] }
 anyhow = "1"
 
 fsm = { path = "crates/fsm" }
+lib = { path = "crates/lib" }
 embedded-test = { version = "0.6.0", features = ["embassy", "defmt"] }
 rtt-target = { version = "*", features = ["defmt"] }
 #features = ["defmt"]

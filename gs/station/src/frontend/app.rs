@@ -1,9 +1,12 @@
+use std::io::stdout;
+use std::io::Write;
 use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
-use std::io::{stdout, Write};
 
-use gslib::{Datatype, Message, Datapoint};
+use gslib::Datapoint;
+use gslib::Datatype;
+use gslib::Message;
 use gslib::ERROR_CHANNEL;
 use gslib::HEARTBEAT;
 use gslib::INFO_CHANNEL;
@@ -18,9 +21,9 @@ use tokio::time::sleep;
 
 use crate::backend::Backend;
 use crate::frontend::commands::*;
+use crate::frontend::datapoint_dict::DatapointDict;
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
-use crate::frontend::datapoint_dict::DatapointDict;
 
 pub static APP_HANDLE: Mutex<Option<AppHandle>> = Mutex::new(None);
 
@@ -101,14 +104,14 @@ pub fn tauri_main(backend: Backend) {
                         sh.register("D", move || {
                             ss.emit_all(SHORTCUT_CHANNEL, "DebugMode").unwrap();
                         })
-                            .expect("Could not register shortcut bruh");
+                        .expect("Could not register shortcut bruh");
 
                         for i in 1..10 {
                             let ss = s.clone();
                             sh.register(&format!("SHIFT+{}", i), move || {
                                 ss.emit_all(SHORTCUT_CHANNEL, format!("tab_{i}")).unwrap();
                             })
-                                .expect("Could not register shortcut");
+                            .expect("Could not register shortcut");
                         }
                     },
                     WindowEvent::Focused(false) => {
@@ -137,9 +140,17 @@ pub fn tauri_main(backend: Backend) {
                                 Message::Data(dp) => {
                                     // println!("Received datapoint: {:?}", dp);
                                     if dp.datatype == Datatype::CANLog {
-                                        ss.emit_all(INFO_CHANNEL, format!("Received datapoint on the main PCB: {:?}", dp)).expect("Couldn't send message");
+                                        ss.emit_all(
+                                            INFO_CHANNEL,
+                                            format!("Received datapoint on the main PCB: {:?}", dp),
+                                        )
+                                        .expect("Couldn't send message");
                                     }
-                                    datapoint_dict.add_datapoint(Datapoint::new(dp.datatype, dp.value as u64, dp.timestamp));
+                                    datapoint_dict.add_datapoint(Datapoint::new(
+                                        dp.datatype,
+                                        dp.value as u64,
+                                        dp.timestamp,
+                                    ));
                                     print!("{}", datapoint_dict);
                                     stdout().flush().unwrap();
                                     app_handle

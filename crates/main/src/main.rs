@@ -15,21 +15,26 @@ use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::eth::{self};
-use embassy_stm32::gpio::{Level, Output, Speed};
+use embassy_stm32::gpio::Level;
+use embassy_stm32::gpio::Output;
+use embassy_stm32::gpio::Speed;
 use embassy_stm32::peripherals;
 use embassy_stm32::peripherals::*;
 use embassy_stm32::rcc;
 use embassy_sync::pubsub::WaitResult;
 use embassy_time::Timer;
-use embedded_can::{Id, StandardId};
-use fsm::utils::types::EventChannel;
-use fsm::utils::types::EventReceiver;
-use fsm::utils::types::EventSender;
+use embedded_can::Id;
+use embedded_can::StandardId;
 use fsm::FSM;
+use lib::config::Command;
+use lib::config::Datatype;
+use lib::utils::types::EventChannel;
+use lib::utils::types::EventReceiver;
+use lib::utils::types::EventSender;
 use main::can::can1;
 use main::can::can2;
 use main::gs_master;
-use main::gs_master::{Datapoint};
+use main::gs_master::Datapoint;
 use main::gs_master::EthernetGsCommsLayerInitializer;
 use main::gs_master::GsMaster;
 use main::gs_master::PodToGsMessage;
@@ -70,16 +75,17 @@ static EVENT_CHANNEL_CAN1: static_cell::StaticCell<EventChannel> = static_cell::
 static EVENT_CHANNEL_CAN2: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 
 #[embassy_executor::task]
-async fn run_fsm(
-    event_receiver: EventReceiver,
-    event_sender2: EventSender,
-) {
+async fn run_fsm(event_receiver: EventReceiver, event_sender2: EventSender) {
     let mut fsm = FSM::new(event_receiver, event_sender2).await;
     fsm.run().await;
 }
 
 #[embassy_executor::task]
-async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sender: EventSender, mut rearm_output: Output<'static>) {
+async fn forward_gs_to_fsm(
+    mut gsrx: gs_master::RxSubscriber<'static>,
+    event_sender: EventSender,
+    mut rearm_output: Output<'static>,
+) {
     loop {
         let msg = gsrx.next_message_pure().await;
         trace!("Received message from GS: {:?}", msg);
@@ -87,54 +93,40 @@ async fn forward_gs_to_fsm(mut gsrx: gs_master::RxSubscriber<'static>, event_sen
 
         match command {
             // General Commands
-            main::config::Command::EmergencyBrake(_) => {
+            Command::EmergencyBrake(_) => {
                 event_sender
-                    .send(fsm::utils::Event::Emergency {
-                        emergency_type: fsm::utils::EmergencyType::GeneralEmergency,
+                    .send(lib::Event::Emergency {
+                        emergency_type: lib::EmergencyType::GeneralEmergency,
                     })
                     .await
             }
-            main::config::Command::DefaultCommand(_) => {}
-            main::config::Command::Heartbeat(_) => {}
-            main::config::Command::FrontendHeartbeat(_) => {}
+            Command::DefaultCommand(_) => {}
+            Command::Heartbeat(_) => {}
+            Command::FrontendHeartbeat(_) => {}
 
             // HV commands
-            main::config::Command::StartHV(_) => {
-                event_sender.send(fsm::utils::Event::StartPreCharge).await
-            }
-            main::config::Command::StopHV(_) => {
-                event_sender.send(fsm::utils::Event::Discharge).await
-            }
+            Command::StartHV(_) => event_sender.send(lib::Event::StartPreCharge).await,
+            Command::StopHV(_) => event_sender.send(lib::Event::Discharge).await,
 
             // Levi commands
-            main::config::Command::LevitationOn(_) => {
-                event_sender.send(fsm::utils::Event::Levitate).await
-            }
-            main::config::Command::LevitationOff(_) => {
-                event_sender.send(fsm::utils::Event::StopLevitating).await
-            }
+            Command::LevitationOn(_) => event_sender.send(lib::Event::Levitate).await,
+            Command::LevitationOff(_) => event_sender.send(lib::Event::StopLevitating).await,
 
             // Propulsion commands
-            main::config::Command::PropulsionOn(_) => {
-                event_sender.send(fsm::utils::Event::Accelerate).await
-            }
-            main::config::Command::PropulsionOff(_) => {
-                event_sender.send(fsm::utils::Event::Cruise).await
-            }
+            Command::PropulsionOn(_) => event_sender.send(lib::Event::Accelerate).await,
+            Command::PropulsionOff(_) => event_sender.send(lib::Event::Cruise).await,
 
             // Control commands
-            main::config::Command::Shutdown(_) => {
-                event_sender.send(fsm::utils::Event::ShutDown).await
-            }
-            main::config::Command::SystemReset(_) => event_sender.send(fsm::utils::Event::ResetFSM).await,
-            main::config::Command::ResetSenseCon(_) => event_sender.send(fsm::utils::Event::ResetFSM).await,
-            main::config::Command::RearmSDC(_) => {
+            Command::Shutdown(_) => event_sender.send(lib::Event::ShutDown).await,
+            Command::SystemReset(_) => event_sender.send(lib::Event::ResetFSM).await,
+            Command::ResetSenseCon(_) => event_sender.send(lib::Event::ResetFSM).await,
+            Command::RearmSDC(_) => {
                 // Pull pin high
                 rearm_output.set_high();
 
                 embassy_time::Timer::after_millis(100).await;
-                event_sender.send(fsm::utils::Event::EnterDemo).await;
-                
+                event_sender.send(lib::Event::EnterDemo).await;
+
                 // Pull pin low
                 rearm_output.set_low();
             }
@@ -153,7 +145,7 @@ async fn forward_gs_to_can1(
         info!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
-        main::config::gs_to_can1(command, |frame| cantx.send(frame)).await;
+        lib::config::gs_to_can1(command, |frame| cantx.send(frame)).await;
     }
 }
 
@@ -167,7 +159,7 @@ async fn forward_gs_to_can2(
         trace!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
-        main::config::gs_to_can2(command, |frame| cantx.send(frame)).await;
+        lib::config::gs_to_can2(command, |frame| cantx.send(frame)).await;
     }
 }
 
@@ -211,7 +203,11 @@ async fn forward_fsm_relay_events_to_can2(
     loop {
         let event = event_receiver.receive().await;
         match event {
-            fsm::Event::FSMTransition(state_number) => cantx.send(can2::CanEnvelope::new_with_id(0x190, &[state_number])).await,
+            fsm::Event::FSMTransition(state_number) => {
+                cantx
+                    .send(can2::CanEnvelope::new_with_id(0x190, &[state_number]))
+                    .await
+            }
             _ => {}
         }
     }
@@ -239,7 +235,7 @@ async fn forward_can1_messages_to_fsm(
         };
 
         info!("Received CAN frame with ID: {}", id);
-        let fsm_event = main::config::event_for_can_1_id(id);
+        let fsm_event = lib::config::event_for_can_1_id(id);
 
         if fsm_event != fsm::Event::NoEvent {
             event_sender.send(fsm_event).await;
@@ -269,7 +265,7 @@ async fn forward_can2_messages_to_fsm(
         };
 
         // TODO: Get config to match correct event
-        let fsm_event = main::config::event_for_can_2_id(id as u32);
+        let fsm_event = lib::config::event_for_can_2_id(id as u32);
 
         // let fsm_event = match (id as u32) {
         //     1 => fsm::Event::ConnectToGS,
@@ -308,10 +304,10 @@ async fn forward_can1_messages_to_gs(
         };
 
         // info!("Received CAN frame with ID: {}", id);
-        
+
         let data = can_frame.payload();
         // id = id as u32;
-        main::config::parse_datapoints_can_1(id, data, |dp| async move {
+        lib::config::parse_datapoints_can_1(id, data, |dp| async move {
             gstx.send(PodToGsMessage { dp }).await;
         })
         .await;
@@ -336,7 +332,7 @@ async fn forward_can2_messages_to_gs(
 
         let data = can_frame.payload();
 
-        main::config::parse_datapoints_can_2(id as u32, data, |dp| async move {
+        lib::config::parse_datapoints_can_2(id as u32, data, |dp| async move {
             gstx.send(PodToGsMessage { dp }).await;
         })
         .await;
@@ -347,7 +343,10 @@ async fn forward_can2_messages_to_gs(
 
 /// Forwards all CAN messages to the groundstation for logging
 #[embassy_executor::task]
-async fn log_can2_on_gs(gstx: gs_master::TxSender<'static>, mut canrx: can2::CanRxSubscriber<'static>) {
+async fn log_can2_on_gs(
+    gstx: gs_master::TxSender<'static>,
+    mut canrx: can2::CanRxSubscriber<'static>,
+) {
     loop {
         let can_frame = canrx.next_message_pure().await;
         let id = match can_frame.id() {
@@ -357,13 +356,13 @@ async fn log_can2_on_gs(gstx: gs_master::TxSender<'static>, mut canrx: can2::Can
                 continue;
             }
         };
-        
+
         gstx.send(PodToGsMessage {
             dp: Datapoint::new(
-                main::config::Datatype::CANLog,
+                Datatype::CANLog,
                 u64::from(id),
                 embassy_time::Instant::now().as_ticks(),
-            )
+            ),
         })
         .await;
         // Timer::after_millis(50).await;
@@ -377,7 +376,7 @@ async fn gs_heartbeat(gstx: gs_master::TxSender<'static>) {
         // info!("Sending heartbeat");
         gstx.send(PodToGsMessage {
             dp: Datapoint::new(
-                main::config::Datatype::FrontendHeartbeating,
+                Datatype::FrontendHeartbeating,
                 value,
                 embassy_time::Instant::now().as_ticks(),
             ),
@@ -395,7 +394,7 @@ async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
         let header = Header::new(
             Id::try_from(StandardId::new(8u16).unwrap()).expect("Invalid header"),
             8,
-            false
+            false,
         );
 
         let frame = can::frame::Frame::new(header, &[1u8; 8]).expect("Invalid frame");
@@ -482,10 +481,7 @@ async fn main(spawner: Spawner) -> ! {
     info!("CAN Configured");
     defmt::println!("CAN Configured");
     spawner
-        .spawn(run_fsm(
-            event_receiver_fsm,
-            event_sender_can2,
-        ))
+        .spawn(run_fsm(event_receiver_fsm, event_sender_can2))
         .unwrap();
 
     unwrap!(spawner.spawn(forward_fsm_relay_events_to_can1(
@@ -510,7 +506,7 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("FSM started!");
 
-    let mac_addr = main::config::POD_MAC_ADDRESS;
+    let mac_addr = lib::config::POD_MAC_ADDRESS;
 
     static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
     // warning: Not all STM32H7 devices have the exact same pins here
@@ -525,15 +521,12 @@ async fn main(spawner: Spawner) -> ! {
         p.PA7, // CRS_DV: Carrier Sense
         p.PC4, // RX_D0: Received Bit 0
         p.PC5, // RX_D1: Received Bit 1
-
         //choose one:
         p.PB12, // FOR MPCB (TX_D0: Transmit Bit 0)
         // p.PG13, // FOR NUCLEO (TX_D0: Transmit Bit 0)
-
         p.PB13, // TX_D1: Transmit Bit 1
-
         //choose one:
-        p.PB11,//FOR MPCB (TX_EN: Transmit Enable)
+        p.PB11, //FOR MPCB (TX_EN: Transmit Enable)
         // p.PG11, // FOR NUCLEO (TX_EN: Transmit Enable)
         GenericPhy::new(0),
         mac_addr,
@@ -546,7 +539,7 @@ async fn main(spawner: Spawner) -> ! {
         spawner,
     )
     .await;
-    
+
     let rearm_sdc = Output::new(p.PA10, Level::Low, Speed::Medium);
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(
@@ -568,8 +561,11 @@ async fn main(spawner: Spawner) -> ! {
     )));
 
     unwrap!(spawner.spawn(gs_heartbeat(gs_master.transmitter())));
-    
-    unwrap!(spawner.spawn(log_can2_on_gs(gs_master.transmitter(), can2.new_subscriber())));
+
+    unwrap!(spawner.spawn(log_can2_on_gs(
+        gs_master.transmitter(),
+        can2.new_subscriber()
+    )));
 
     // unwrap!(spawner.spawn(send_random_msg_continuously(can2.new_sender())));
 

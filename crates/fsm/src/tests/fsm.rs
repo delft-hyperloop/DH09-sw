@@ -15,17 +15,17 @@ mod main_fsm_tests {
     use embassy_executor::Spawner;
     use embassy_sync::blocking_mutex::raw::NoopRawMutex;
     use embassy_sync::mutex::Mutex;
+    use lib::utils::data::EmergencyType::GeneralEmergency;
+    use lib::utils::types::EventChannel;
+    use lib::utils::types::EventReceiver;
+    use lib::utils::types::EventSender;
+    use lib::Event;
+    use lib::States;
     use static_cell::StaticCell;
 
     use super::run_fsm;
     use crate::tests::commons::publish_and_check_events;
     use crate::tests::commons::Tools;
-    use crate::utils::data::EmergencyType::GeneralEmergency;
-    use crate::utils::types::EventChannel;
-    use crate::utils::types::EventReceiver;
-    use crate::utils::types::EventSender;
-    use crate::utils::Event;
-    use crate::States;
     use crate::FSM;
 
     extern crate embassy_executor;

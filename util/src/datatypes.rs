@@ -37,9 +37,7 @@ pub struct StoreInfo {
     pub callback: Option<String>,
 }
 
-fn number_s() -> String {
-    "number".into()
-}
+fn number_s() -> String { "number".into() }
 
 #[derive(Debug, Hash, Clone, Copy)]
 pub enum Limit {

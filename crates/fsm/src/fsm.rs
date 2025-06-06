@@ -7,47 +7,13 @@ use defmt::Format;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 #[cfg(test)]
 use embassy_sync::mutex::Mutex;
-use States::*;
+use lib::config::States;
+use lib::config::States::Boot;
+use lib::utils::data::Event;
+use lib::utils::types::EventReceiver;
+use lib::utils::types::EventSender;
 
 use crate::entry_methods::enter_fault;
-use crate::utils::data::Event;
-use crate::utils::types::EventReceiver;
-use crate::utils::types::EventSender;
-
-/// Enum representing the different states that the `MainFSM` will be in
-#[derive(Eq, PartialEq, Debug, Clone, Copy, Format)]
-#[allow(dead_code)]
-pub enum States {
-    /// Initial state of the FSM
-    Boot = 0,
-    /// Pretty self-explanatory :)
-    ConnectedToGS,
-    /// State for checking each subsystem
-    SystemCheck,
-    /// Idle state, SDC is open and emergency brakes are deployed
-    Idle,
-    /// Pre-charging the batteries before turning on high voltage
-    PreCharge,
-    /// High voltage is on, SDC is closed, emergency brakes are still deployed
-    Active,
-    /// SDC closed, brakes not deployed (SDC is armed)
-    Demo,
-    /// Pod is levitating
-    Levitating,
-    /// Pod is accelerating
-    Accelerating,
-    /// Pod is cruising
-    Cruising,
-    /// Pod is braking
-    Braking,
-    /// Discharge state for the high voltage current
-    Discharge,
-    /// State for charging the pod
-    Charging,
-    /// Fault/Emergency state - can be reached from any state and must cause
-    /// emergency brake
-    Fault,
-}
 
 /// The struct for the `MainFSM`
 ///
@@ -175,8 +141,10 @@ impl FSM {
         {
             **self.state_mutex.lock().await = new_state;
         }
-        
-        self.event_sender2.send(Event::FSMTransition(new_state as u8)).await;
+
+        self.event_sender2
+            .send(Event::FSMTransition(new_state as u8))
+            .await;
 
         self.call_entry_method(self.state).await;
         defmt::info!("Transitioned to state {}", self.state);

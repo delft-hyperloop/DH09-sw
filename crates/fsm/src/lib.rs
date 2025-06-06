@@ -10,11 +10,10 @@
 mod entry_methods;
 mod exit_methods;
 pub(crate) mod fsm;
-pub mod utils;
 
 #[cfg(test)]
 mod tests;
 
 pub use fsm::States;
 pub use fsm::FSM;
-pub use utils::data::Event;
+pub use lib::utils::data::Event;

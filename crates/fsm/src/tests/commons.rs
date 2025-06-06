@@ -4,9 +4,9 @@ use core::fmt::Debug;
 
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::mutex::Mutex;
+use lib::utils::types::EventSender;
+use lib::utils::Event;
 
-use crate::utils::types::EventSender;
-use crate::utils::Event;
 use crate::States;
 
 #[cfg(test)]

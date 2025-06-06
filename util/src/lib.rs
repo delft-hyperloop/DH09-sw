@@ -8,12 +8,14 @@ use std::hash::Hash;
 use std::hash::Hasher;
 
 pub mod commands;
+pub mod dataflow;
 pub mod datatypes;
 pub mod events;
+pub mod fsm_states;
 pub mod info;
 pub mod ip;
 pub mod limits;
-pub mod dataflow;
+
 // mod shared;
 use anyhow::Result;
 
@@ -52,16 +54,10 @@ pub fn check_config(ep: &str, conf: &str) -> Result<String> {
             });
             panic!(
                 "\nDuplicate entry found:\n1: {} {}->{} \n2: {} {}->{}\n",
-                category(
-                    &e.iter().map(|x| x.0).collect::<Vec<u16>>(),
-                    *id
-                ),
+                category(&e.iter().map(|x| x.0).collect::<Vec<u16>>(), *id),
                 name,
                 format_args!("{:#05x}", id),
-                category(
-                    &e.iter().map(|x| x.0).collect::<Vec<u16>>(),
-                    other.0
-                ),
+                category(&e.iter().map(|x| x.0).collect::<Vec<u16>>(), other.0),
                 other.1,
                 format_args!("{:#05x}", other.0),
             );

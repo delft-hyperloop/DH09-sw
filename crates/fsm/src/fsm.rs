@@ -185,7 +185,7 @@ impl FSM {
     async fn call_entry_method(&self, state: States) {
         match state {
             States::Fault => enter_fault().await,
-            _ => {}
+            _ => unimplemented!()
         }
     }
 
@@ -193,7 +193,7 @@ impl FSM {
     /// whenever a transition happens
     async fn call_exit_method(&self, state: States) {
         match state {
-            _ => {}
+            _ => unimplemented!()
         }
     }
 }

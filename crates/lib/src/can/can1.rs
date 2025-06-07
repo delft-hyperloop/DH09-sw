@@ -41,12 +41,13 @@ impl core::cmp::PartialEq for CanEnvelope {
     }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl core::cmp::PartialOrd for CanEnvelope {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         self.envelope
             .frame
             .id()
-            .partial_cmp(&other.envelope.frame.id())
+            .partial_cmp(other.envelope.frame.id())
     }
 }
 
@@ -54,6 +55,6 @@ impl core::cmp::Eq for CanEnvelope {}
 
 impl core::cmp::Ord for CanEnvelope {
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-        self.envelope.frame.id().cmp(&other.envelope.frame.id())
+        self.envelope.frame.id().cmp(other.envelope.frame.id())
     }
 }

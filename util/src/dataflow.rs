@@ -441,11 +441,7 @@ fn make_datapoint_parser(spec: &MessageProcessingSpec) -> String {
 
         writeln!(
             &mut code,
-            "f(Datapoint::new(
-                Datatype::{},
-                dump_{}(c),
-                embassy_time::Instant::now().as_ticks(),
-            )).await;",
+            "f(Datapoint::new(Datatype::{},dump_{}(c),embassy_time::Instant::now().as_ticks(),)).await;",
             dpc.datapoint.name, dpc.gs.conversion.procedure_suffix
         )
         .unwrap();
@@ -617,43 +613,40 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         }
     }
 
-    writeln!(&mut code, "pub fn event_for_can_1_id(id: u32) -> crate::Event {{ match id {{")
+    writeln!(&mut code, "pub fn event_for_can_1_id(id: u32) -> crate::Event {{\n\tmatch id {{")
         .unwrap();
 
     for (id, event) in &can1_ids_to_events {
-        writeln!(&mut code, "{id} => crate::Event::{event},").unwrap();
+        writeln!(&mut code, "\t\t{id} => crate::Event::{event},").unwrap();
     }
 
     writeln!(
         &mut code,
-        "_ => crate::Event::NoEvent,
+        "\t_ => crate::Event::NoEvent,
         }}
     }}",
     )
     .unwrap();
 
-    writeln!(&mut code, "pub fn event_for_can_2_id(id: u32) -> crate::Event {{ match id {{")
+    writeln!(&mut code, "pub fn event_for_can_2_id(id: u32) -> crate::Event {{\n\tmatch id {{")
         .unwrap();
 
     for (id, event) in &can2_ids_to_events {
-        writeln!(&mut code, "{id} => crate::Event::{event},").unwrap();
+        writeln!(&mut code, "\t\t{id} => crate::Event::{event},").unwrap();
     }
 
     writeln!(
         &mut code,
-        "_ =>crate::Event::NoEvent,
-        }}
-    }}",
+        "\t\t_ =>crate::Event::NoEvent,\n\t}}\n}}",
     )
     .unwrap();
 
-    writeln!(&mut code, "pub async fn parse_datapoints_can_1<F, Fut>(id: u32, data: &[u8], mut f: F) where F: FnMut(Datapoint) -> Fut, Fut: Future<Output=()> {{ {proc} match id {{").unwrap();
+    writeln!(&mut code, "pub async fn parse_datapoints_can_1<F, Fut>(id: u32, data: &[u8], mut f: F) where F: FnMut(Datapoint) -> Fut, Fut: Future<Output=()> {{\n\t{proc}\n\tmatch id {{\n").unwrap();
     for mp in &df.message_processing {
         if let CanSpec::Can1 { id, .. } = mp.can {
             writeln!(
                 &mut code,
-                "{id} => {{
-                    "
+                "\t\t{id} => {{\n\t\t\t"
             )
             .unwrap();
 
@@ -661,13 +654,12 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
 
             writeln!(
                 &mut code,
-                "}}
-                "
+                "\n\t\t}}\n"
             )
             .unwrap();
         }
     }
-    writeln!(&mut code, "_ => {{}}}}}}").unwrap();
+    writeln!(&mut code, "\t\t_ => {{}}\n\t}}\n}}").unwrap();
 
     writeln!(&mut code, "pub async fn parse_datapoints_can_2<F, Fut>(id: u32, data: &[u8], mut f: F) where F: FnMut(Datapoint) -> Fut, Fut: Future<Output=()> {{ {proc} match id {{").unwrap();
     for mp in &df.message_processing {
@@ -954,7 +946,7 @@ END_IF
 
 pub fn make_logging_pcb_code(_df: &DataflowSpec) -> String {
     // TODO
-    format!("")
+    unimplemented!()
 }
 
 pub fn make_gs_code(df: &DataflowSpec) -> String {

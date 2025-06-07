@@ -42,7 +42,7 @@ struct Config {
 
 #[derive(Debug, Deserialize)]
 struct GS {
-    ip: [u8; 4],
+    ips: Vec<[u8; 4]>,
     force: bool,
     port: u16,
     buffer_size: usize,
@@ -105,7 +105,7 @@ fn main() -> Result<()> {
 
     content.push_str(&configure_ip(&config));
     content.push_str(&configure_gs_ip(
-        config.gs.ip,
+        config.gs.ips.clone(),
         config.gs.port,
         config.gs.force,
     )?);
@@ -187,7 +187,7 @@ fn configure_pod(config: &Config) -> String {
         config.pod.net.ip[3],
         config.pod.net.port
     )
-        + &format!("\npub const USE_DHCP: bool = {}\n;", config.pod.net.dhcp)
+        + &format!("\npub const USE_DHCP: bool = {};\n", config.pod.net.dhcp)
         //     + &*format!(
         //     "pub static POD_UDP_IP_ADDRESS: ([u8;4],u16) = ([{},{},{},{}],{});\n",
         //     config.pod.net.ip[0],

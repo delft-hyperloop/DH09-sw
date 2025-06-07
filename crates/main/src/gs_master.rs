@@ -21,11 +21,14 @@
 
 #![allow(missing_copy_implementations)]
 #![allow(missing_debug_implementations)]
+#![allow(async_fn_in_trait)]
+
+use core::sync::atomic::AtomicUsize;
 
 use defmt::*;
 use embassy_executor::Spawner;
+use embassy_net::tcp::ConnectError;
 use embassy_net::tcp::TcpSocket;
-use embassy_net::Ipv4Address;
 use embassy_net::Stack;
 use embassy_net::StackResources;
 use embassy_stm32::eth::Ethernet;
@@ -39,17 +42,21 @@ use embassy_sync::pubsub::PubSubChannel;
 use embassy_sync::pubsub::Publisher;
 use embassy_sync::pubsub::Subscriber;
 use embassy_sync::signal::Signal;
+use embassy_time::Duration;
 use embassy_time::Instant;
+use embassy_time::TimeoutError;
 use embassy_time::Timer;
 use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
-use lib::config;
 use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
 use lib::config::DATA_HASH;
+use lib::config::EVENTS_HASH;
+use lib::config::GS_ADDR_COUNT;
+use lib::config::GS_IP_SOCKETS;
 use lib::Datapoint;
 use static_cell::StaticCell;
 
@@ -221,6 +228,11 @@ type ReconnectSignal = Signal<CriticalSectionRawMutex, ()>;
 /// cross-task signaling to say we have connected
 type ConnectedSignal = Signal<CriticalSectionRawMutex, ()>;
 
+/// Index in [`GS_IP_SOCKETS`] where the last connection was made
+pub static LAST_CONNECTED: AtomicUsize = AtomicUsize::new(0);
+/// How long to wait for SYN-ACK
+pub const CONNECTION_PERSISTENCE: Duration = Duration::from_millis(350);
+
 #[embassy_executor::task]
 async fn rx_task(
     sock: &'static Mutex<NoopRawMutex, TcpSocket<'static>>,
@@ -309,12 +321,15 @@ async fn tx_task(
     }
 }
 
-/// get ground station [`Ipv4Address`]
-fn get_remote_endpoint() -> (Ipv4Address, u16) {
-    // SAFETY: read-only static defined at compile time
-    let (oct, port) = unsafe { config::GS_IP_ADDRESS };
-    (Ipv4Address::new(oct[0], oct[1], oct[2], oct[3]), port)
-}
+// /// get ground station [`Ipv4Address`]es
+// fn get_remote_endpoint() -> ([Ipv4Address; GS_ADDR_COUNT], u16) {
+//     // SAFETY: read-only static defined at compile time
+//     let port = unsafe { config::GS_IP_PORT };
+//     let addresses = unsafe { config::GS_IP_ADDRESSES };
+//
+//     (addresses.iter()
+//         .map(|oct| Ipv4Address::new(oct[0], oct[1], oct[2],
+// oct[3])).collect(), port) }
 
 #[embassy_executor::task]
 async fn restore_connection(
@@ -362,21 +377,86 @@ async fn restore_connection(
         }
 
         sock_lock.set_timeout(Some(embassy_time::Duration::from_secs(10)));
+        core::mem::drop(sock_lock);
 
-        loop {
-            match sock_lock.connect(get_remote_endpoint()).await {
-                Ok(()) => {
-                    break;
-                }
-                Err(e) => {
-                    error!("{}", e);
-                }
-            }
-        }
+        establish_connection(
+            sock,
+            LAST_CONNECTED.load(core::sync::atomic::Ordering::SeqCst),
+        )
+        .await;
+        // loop {
+        //     sock_lock.
+        //     match sock_lock.connect(get_remote_endpoint()).await {
+        //         Ok(()) => {
+        //             break;
+        //         }
+        //         Err(e) => {
+        //             error!("{}", e);
+        //         }
+        //     }
+        // }
 
         rs.reset();
         csrx.signal(());
         cstx.signal(());
+    }
+}
+
+/// establish a new connection with the ground station,
+/// ensuring any old connections are properly dropped.
+async fn establish_connection(
+    sock: &'static Mutex<NoopRawMutex, TcpSocket<'static>>,
+    start_from: usize,
+) {
+    // no-op mutex, compiles to typecast
+    let mut sock_lock = sock.lock().await;
+
+    // is there someone still on the other end?
+    if sock_lock.remote_endpoint().is_some() {
+        // they're listening to us!!
+        sock_lock.abort();
+        #[allow(clippy::single_match)]
+        match sock_lock.flush().await {
+            Ok(_) => {}
+            Err(_) => {
+                #[cfg(debug_assertions)]
+                unreachable!("flushing should be infallible")
+            }
+        }
+    }
+
+    let endpoints: [embassy_net::IpEndpoint; GS_ADDR_COUNT] = GS_IP_SOCKETS;
+    for (idx, try_addr) in endpoints.iter().enumerate().cycle().skip(start_from) {
+        let connect_future = sock_lock.connect(*try_addr);
+        match embassy_time::with_timeout(CONNECTION_PERSISTENCE, connect_future).await {
+            Err(TimeoutError) => {
+                warn!("timed out connecting to {:?}", try_addr);
+                continue;
+            }
+            Ok(connect_result) => match connect_result {
+                Ok(_) => {
+                    info!("connected to {}!", try_addr);
+                    LAST_CONNECTED.store(idx, core::sync::atomic::Ordering::SeqCst);
+                    core::mem::drop(sock_lock);
+                    return;
+                }
+                Err(ConnectError::TimedOut) => {
+                    warn!("timed out connecting to {:?}", try_addr);
+                    continue;
+                }
+                Err(ConnectError::NoRoute) => {
+                    warn!("no route to {}", try_addr);
+                    // this likely means the device isn't on the network
+                    continue;
+                }
+                e @ Err(ConnectError::InvalidState) | e @ Err(ConnectError::ConnectionReset) => {
+                    error!("error connecting: {}", e);
+                    sock_lock.abort();
+                    let _ = sock_lock.flush().await;
+                    continue;
+                }
+            },
+        }
     }
 }
 
@@ -415,24 +495,26 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         let mut sock = TcpSocket::new(stack, &mut comms_buffers.rx, &mut comms_buffers.tx);
         sock.set_timeout(Some(embassy_time::Duration::from_secs(10)));
 
-        let remote_endpoint = get_remote_endpoint();
+        // let remote_endpoint = get_remote_endpoint();
 
-        let sock = loop {
-            let r = sock.connect(remote_endpoint).await;
-            if let Err(e) = r {
-                error!("{}", e);
-                // hprintln!("connect error: {:?}", e);
-                Timer::after_secs(1).await;
-                continue;
-            }
-
-            break sock;
-        };
-
-        info!("Connected to gs");
+        // let sock = loop {
+        //     let r = sock.connect(remote_endpoint).await;
+        //     if let Err(e) = r {
+        //         error!("{}", e);
+        //         // hprintln!("connect error: {:?}", e);
+        //         Timer::after_secs(1).await;
+        //         continue;
+        //     }
+        //
+        //     break sock;
+        // };
 
         static SOCK: StaticCell<Mutex<NoopRawMutex, TcpSocket<'static>>> = StaticCell::new();
         let sock = SOCK.init(Mutex::new(sock));
+
+        establish_connection(sock, 0).await;
+
+        info!("Connected to gs");
 
         static COMMS_CORE: StaticCell<CommsCore> = StaticCell::new();
 

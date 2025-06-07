@@ -54,11 +54,12 @@ pub enum Event {
     /// Used to transition from `Fault` to `SystemCheck` when the fault is fixed
     /// and no reboot is required
     FaultFixed,
-    ///
+    /// todo: docs
     HighVoltageOnCanRelay,
     /// Event sent when transitioning. Used to send the `FSMUpdate` CAN message.
     /// - `u8`: State in which the FSM transitioned
     FSMTransition(u8),
+
     /// Event sent by the FSM whenever a transition fails
     /// - `u8`: The state in which the FSM didn't transition.
     TransitionFail(u8),

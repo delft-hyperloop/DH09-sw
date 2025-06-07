@@ -2,7 +2,6 @@
 
 extern crate serde;
 use std::env;
-use std::fmt::Write;
 use std::fs;
 use std::path::Path;
 
@@ -40,7 +39,7 @@ struct CommConfig {
 
 #[derive(Debug, Deserialize)]
 struct GS {
-    ip: [u8; 4],
+    ips: Vec<[u8; 4]>,
     force: bool,
     port: u16,
     buffer_size: usize,
@@ -70,7 +69,7 @@ fn main() -> Result<()> {
     content.push_str(&check_config(EVENTS_PATH, CONFIG_PATH)?);
 
     content.push_str(&configure_gs(&config));
-    content.push_str(&configure_gs_ip(config.gs.ip, config.gs.port, config.gs.force)?);
+    content.push_str(&configure_gs_ip(config.gs.ips.clone(), config.gs.port, config.gs.force)?);
     let df = fs::read_to_string(DATAFLOW_PATH)?;
     let df = goose_utils::dataflow::parse_from(&df);
     let dt = goose_utils::dataflow::collect_data_types(&df);
@@ -88,9 +87,9 @@ fn main() -> Result<()> {
         panic!("Couldn't write to {}! Build failed.", dest_path.to_str().unwrap());
     });
 
-    println!("cargo::rerun-if-changed={}", CONFIG_PATH);
-    println!("cargo::rerun-if-changed={}", EVENTS_PATH);
-    println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
+    println!("cargo::rerun-if-changed={CONFIG_PATH}");
+    println!("cargo::rerun-if-changed={EVENTS_PATH}" );
+    println!("cargo::rerun-if-changed={DATAFLOW_PATH}" );
     println!("cargo::rerun-if-changed=build.rs");
     println!("cargo::rerun-if-changed=../../util");
 

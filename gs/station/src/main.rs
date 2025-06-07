@@ -4,7 +4,7 @@
 
 use gslib::Command;
 use gslib::Message;
-use gslib::GS_IP_ADDRESS;
+use gslib::GS_IP_ADDRESSES;
 
 use crate::backend::Backend;
 #[cfg(feature = "backend")]
@@ -29,13 +29,13 @@ pub type MessageReceiver = tokio::sync::broadcast::Receiver<Message>;
 /// Entry point of the application
 #[tokio::main]
 async fn main() {
-    let args = std::env::args().collect::<Vec<String>>();
-    if args.len() > 1 {
-        let x = args[1].trim().split('.').map(|x| x.parse().unwrap()).collect::<Vec<u8>>();
-        unsafe {
-            GS_IP_ADDRESS = ([x[0], x[1], x[2], x[3]], GS_IP_ADDRESS.1);
-        }
-    }
+    // let args = std::env::args().collect::<Vec<String>>();
+    // if args.len() > 1 {
+    //     let x = args[1].trim().split('.').map(|x| x.parse().unwrap()).collect::<Vec<u8>>();
+    //     unsafe {
+    //         GS_IP_ADDRESSES = [GS_IP_ADDRESSES, [[x[0], x[1], x[2], x[3]]]].concat();
+    //     }
+    // }
     let backend = Backend::new();
 
     if cfg!(feature = "tui") {

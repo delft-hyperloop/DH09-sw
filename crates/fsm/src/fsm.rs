@@ -14,6 +14,10 @@ pub struct FSM {
     state: States,
     /// Object used for receive access to the event channel
     event_receiver: EventReceiver,
+    /// todo: docs
+    state: States,
+    /// todo: docs
+    event_receiver: EventReceiver,
     /// Object used to send message over the second CAN bus
     event_sender2: EventSender,
     /// Object used to send messages to the groundstations
@@ -185,7 +189,7 @@ impl FSM {
     async fn call_entry_method(&self, state: States) {
         match state {
             States::Fault => enter_fault().await,
-            _ => unimplemented!()
+            _ => unimplemented!(),
         }
     }
 
@@ -193,7 +197,7 @@ impl FSM {
     /// whenever a transition happens
     async fn call_exit_method(&self, state: States) {
         match state {
-            _ => unimplemented!()
+            _ => unimplemented!(),
         }
     }
 }

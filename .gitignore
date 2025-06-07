@@ -3,3 +3,5 @@
 .idea
 help/
 .vscode/
+
+Cargo.lock

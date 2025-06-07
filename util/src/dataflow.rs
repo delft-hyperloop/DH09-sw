@@ -635,28 +635,16 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         writeln!(&mut code, "\t\t{id} => crate::Event::{event},").unwrap();
     }
 
-    writeln!(
-        &mut code,
-        "\t\t_ =>crate::Event::NoEvent,\n\t}}\n}}",
-    )
-    .unwrap();
+    writeln!(&mut code, "\t\t_ =>crate::Event::NoEvent,\n\t}}\n}}",).unwrap();
 
     writeln!(&mut code, "pub async fn parse_datapoints_can_1<F, Fut>(id: u32, data: &[u8], mut f: F) where F: FnMut(Datapoint) -> Fut, Fut: Future<Output=()> {{\n\t{proc}\n\tmatch id {{\n").unwrap();
     for mp in &df.message_processing {
         if let CanSpec::Can1 { id, .. } = mp.can {
-            writeln!(
-                &mut code,
-                "\t\t{id} => {{\n\t\t\t"
-            )
-            .unwrap();
+            writeln!(&mut code, "\t\t{id} => {{\n\t\t\t").unwrap();
 
             code.push_str(&make_datapoint_parser(mp));
 
-            writeln!(
-                &mut code,
-                "\n\t\t}}\n"
-            )
-            .unwrap();
+            writeln!(&mut code, "\n\t\t}}\n").unwrap();
         }
     }
     writeln!(&mut code, "\t\t_ => {{}}\n\t}}\n}}").unwrap();

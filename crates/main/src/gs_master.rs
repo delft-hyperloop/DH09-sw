@@ -229,7 +229,7 @@ type ReconnectSignal = Signal<CriticalSectionRawMutex, ()>;
 type ConnectedSignal = Signal<CriticalSectionRawMutex, ()>;
 
 /// Index in [`GS_IP_SOCKETS`] where the last connection was made
-pub static LAST_CONNECTED: AtomicUsize = AtomicUsize::new(0);
+pub static mut LAST_CONNECTED: usize = 0usize;
 /// How long to wait for SYN-ACK
 pub const CONNECTION_PERSISTENCE: Duration = Duration::from_millis(350);
 
@@ -303,6 +303,8 @@ async fn tx_task(
             debug!("Actually writing");
             let mut sock_lock = sock.lock().await;
             let tx_result = sock_lock.write_all(&bytes).await;
+            // question: do we need to flush right away (ensure timely message delivery),
+            // or prioritise efficiency (flushing when enough data is in the buffer)?
             // let _ = sock_lock.flush().await;
             drop(sock_lock);
 
@@ -321,16 +323,6 @@ async fn tx_task(
     }
 }
 
-// /// get ground station [`Ipv4Address`]es
-// fn get_remote_endpoint() -> ([Ipv4Address; GS_ADDR_COUNT], u16) {
-//     // SAFETY: read-only static defined at compile time
-//     let port = unsafe { config::GS_IP_PORT };
-//     let addresses = unsafe { config::GS_IP_ADDRESSES };
-//
-//     (addresses.iter()
-//         .map(|oct| Ipv4Address::new(oct[0], oct[1], oct[2],
-// oct[3])).collect(), port) }
-
 #[embassy_executor::task]
 async fn restore_connection(
     rs: &'static ReconnectSignal,
@@ -339,6 +331,7 @@ async fn restore_connection(
     sock: &'static Mutex<NoopRawMutex, TcpSocket<'static>>,
     stack: Stack<'static>,
 ) -> ! {
+    // tcp buffers used for new connections after the first one is dropped.
     static COMMS_BUFFERS: StaticCell<CommsBuffers> = StaticCell::new();
 
     let comms_buffers = COMMS_BUFFERS.init_with(|| CommsBuffers {
@@ -376,25 +369,16 @@ async fn restore_connection(
             );
         }
 
-        sock_lock.set_timeout(Some(embassy_time::Duration::from_secs(10)));
+        sock_lock.set_timeout(Some(CONNECTION_PERSISTENCE * 2));
+        sock_lock.set_keep_alive(Some(CONNECTION_PERSISTENCE));
         core::mem::drop(sock_lock);
 
         establish_connection(
             sock,
-            LAST_CONNECTED.load(core::sync::atomic::Ordering::SeqCst),
+            // SAFETY: single-core read of a static usize
+            unsafe { LAST_CONNECTED },
         )
         .await;
-        // loop {
-        //     sock_lock.
-        //     match sock_lock.connect(get_remote_endpoint()).await {
-        //         Ok(()) => {
-        //             break;
-        //         }
-        //         Err(e) => {
-        //             error!("{}", e);
-        //         }
-        //     }
-        // }
 
         rs.reset();
         csrx.signal(());
@@ -436,7 +420,10 @@ async fn establish_connection(
             Ok(connect_result) => match connect_result {
                 Ok(_) => {
                     info!("connected to {}!", try_addr);
-                    LAST_CONNECTED.store(idx, core::sync::atomic::Ordering::SeqCst);
+                    // SAFETY: single-core write on a single usize is safe
+                    unsafe {
+                        LAST_CONNECTED = idx;
+                    }
                     core::mem::drop(sock_lock);
                     return;
                 }
@@ -485,6 +472,9 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
 
         info!("Config is up");
 
+        // buffers in the initial socket
+        // these differ from the buffers used after the connection is dropped.
+        // NOTE: (to harry) this isn't necessary, can you think of a simpler way?
         static COMMS_BUFFERS_INIT: StaticCell<CommsBuffers> = StaticCell::new();
 
         let comms_buffers = COMMS_BUFFERS_INIT.init(CommsBuffers {
@@ -493,21 +483,8 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         });
 
         let mut sock = TcpSocket::new(stack, &mut comms_buffers.rx, &mut comms_buffers.tx);
-        sock.set_timeout(Some(embassy_time::Duration::from_secs(10)));
-
-        // let remote_endpoint = get_remote_endpoint();
-
-        // let sock = loop {
-        //     let r = sock.connect(remote_endpoint).await;
-        //     if let Err(e) = r {
-        //         error!("{}", e);
-        //         // hprintln!("connect error: {:?}", e);
-        //         Timer::after_secs(1).await;
-        //         continue;
-        //     }
-        //
-        //     break sock;
-        // };
+        sock.set_timeout(Some(CONNECTION_PERSISTENCE * 2));
+        sock.set_keep_alive(Some(CONNECTION_PERSISTENCE));
 
         static SOCK: StaticCell<Mutex<NoopRawMutex, TcpSocket<'static>>> = StaticCell::new();
         let sock = SOCK.init(Mutex::new(sock));

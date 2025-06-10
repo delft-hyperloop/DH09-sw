@@ -171,11 +171,15 @@
         3 * 60000,
         [-11.3, 11.3],
         true,
-        'VFL'
+        'VFL1'
     );
-    hemsCurrentChart.addSeries(StrokePresets.blue('VFR'));
-    hemsCurrentChart.addSeries(StrokePresets.theoretical('VBL'));
-    hemsCurrentChart.addSeries(StrokePresets.yellow('VBR'));
+    hemsCurrentChart.addSeries(StrokePresets.blue('VFL2'));
+    hemsCurrentChart.addSeries(StrokePresets.theoretical('VFR1'));
+    hemsCurrentChart.addSeries(StrokePresets.yellow('VFR2'));
+    hemsCurrentChart.addSeries(StrokePresets.blueDashed('VBL1'));
+    hemsCurrentChart.addSeries(StrokePresets.theoreticalDashed('VBL2'));
+    hemsCurrentChart.addSeries(StrokePresets.yellowDashed('VBR1'));
+    hemsCurrentChart.addSeries(StrokePresets.hyperLoopGreen('VBR2'));
     $chartStore.set('HEMS Current', hemsCurrentChart);
     leviCharts.push('HEMS Current');
 
@@ -196,16 +200,16 @@
     localizationChart.addSeries(StrokePresets.yellow("Localization"))
     $chartStore.set("Localization", localizationChart);
 
-    let leviRequestForce1Chart = new PlotBuffer(500, 60000, [0, 100], true, 'Z');
-    leviRequestForce1Chart.addSeries(StrokePresets.yellow('Roll'));
-    leviRequestForce1Chart.addSeries(StrokePresets.theoretical('Pitch'));
-    $chartStore.set('Requested Force 1', leviRequestForce1Chart);
-    leviCharts.push('Requested Force 1');
+    let leviRequestForceVerticalChart = new PlotBuffer(500, 60000, [0, 100], true, 'Z');
+    leviRequestForceVerticalChart.addSeries(StrokePresets.yellow('Roll'));
+    leviRequestForceVerticalChart.addSeries(StrokePresets.theoretical('Pitch'));
+    $chartStore.set('Requested Force Vertical', leviRequestForceVerticalChart);
+    leviCharts.push('Requested Force Vertical');
 
-    let leviRequestForce2Chart = new PlotBuffer(500, 60000, [0, 100], true, 'Y');
-    leviRequestForce2Chart.addSeries(StrokePresets.yellow('Yaw'));
-    $chartStore.set('Requested Force 2', leviRequestForce2Chart);
-    leviCharts.push('Requested Force 2');
+    let leviRequestForceHorizontalChart = new PlotBuffer(500, 60000, [0, 100], true, 'Y');
+    leviRequestForceHorizontalChart.addSeries(StrokePresets.yellow('Yaw'));
+    $chartStore.set('Requested Force Horizontal', leviRequestForceHorizontalChart);
+    leviCharts.push('Requested Force Horizontal');
 
     let hemsTempChart = new PlotBuffer(500, 60000, [0, 100], true, 'L1');
     hemsTempChart.addSeries(StrokePresets.yellow('L2'));
@@ -641,18 +645,24 @@
         }
     );
 
+    gdd.stores.registerStore<number>("LeviFault", 0);
+
+    gdd.stores.registerStore<number>("LeviHeartbeat", 0);
+
+    gdd.stores.registerStore<number>("LeviFSMStateChanged", 0);
+
     gdd.stores.registerStore<number>("LevitationState", 0);
 
     gdd.stores.registerStore<number>("NonCriticalLeviError", 0);
 
-    gdd.stores.registerStore<number>("VAirgap", 0, data => {
+    gdd.stores.registerStore<number>("Vertical", 0, data => {
             const curr = Number(data);
             $chartStore.get("Air Gaps")!.addEntry(1, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("HAirgap", 0, data => {
+    gdd.stores.registerStore<number>("Lateral", 0, data => {
             const curr = Number(data);
             $chartStore.get("Air Gaps")!.addEntry(2, curr);
             return curr;
@@ -680,79 +690,121 @@
         }
     );
 
-    gdd.stores.registerStore<number>("VFL", 0, data => {
+    gdd.stores.registerStore<number>("VFL1", 0, data => {
             const curr = Number(data);
             $chartStore.get("HEMS Current")!.addEntry(1, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("VFR", 0, data => {
+    gdd.stores.registerStore<number>("VFL2", 0, data => {
             const curr = Number(data);
             $chartStore.get("HEMS Current")!.addEntry(2, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("VBL", 0, data => {
+    gdd.stores.registerStore<number>("VFR1", 0, data => {
             const curr = Number(data);
             $chartStore.get("HEMS Current")!.addEntry(3, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("VBR", 0, data => {
+    gdd.stores.registerStore<number>("VFR2", 0, data => {
             const curr = Number(data);
             $chartStore.get("HEMS Current")!.addEntry(4, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("LF", 0, data => {
+    gdd.stores.registerStore<number>("VBL1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("HEMS Current")!.addEntry(5, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("VBL2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("HEMS Current")!.addEntry(6, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("VBR1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("HEMS Current")!.addEntry(7, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("VBR2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("HEMS Current")!.addEntry(8, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("LF1", 0, data => {
             const curr = Number(data);
             $chartStore.get("EMS Current")!.addEntry(1, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("LB", 0, data => {
+    gdd.stores.registerStore<number>("LF2", 0, data => {
             const curr = Number(data);
             $chartStore.get("EMS Current")!.addEntry(2, curr);
             return curr;
         }
     );
 
+    gdd.stores.registerStore<number>("LB1", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("EMS Current")!.addEntry(3, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("LB2", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("EMS Current")!.addEntry(4, curr);
+            return curr;
+        }
+    );
+
     gdd.stores.registerStore<number>("ZRequested", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Requested Force 1")!.addEntry(1, curr);
+            $chartStore.get("Requested Force Vertical")!.addEntry(1, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("RollRequested", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Requested Force 1")!.addEntry(2, curr);
+            $chartStore.get("Requested Force Vertical")!.addEntry(2, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("PitchRequested", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Requested Force 1")!.addEntry(3, curr);
+            $chartStore.get("Requested Force Vertical")!.addEntry(3, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("YRequested", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Requested Force 2")!.addEntry(1, curr);
+            $chartStore.get("Requested Force Horizontal")!.addEntry(1, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("YawRequested", 0, data => {
             const curr = Number(data);
-            $chartStore.get("Requested Force 2")!.addEntry(2, curr);
+            $chartStore.get("Requested Force Horizontal")!.addEntry(2, curr);
             return curr;
         }
     );

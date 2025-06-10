@@ -1290,6 +1290,48 @@ message-processing:
         display-units: 'mm'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'LeviFault'
+    can:
+      id: 0x65
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LeviFault'
+          id: 0x568
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'LeviHeartbeat'
+    can:
+      id: 0x388
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LeviHeartbeat'
+          id: 0x567
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'LeviFSMStateChanged'
+    can:
+      id: 0x389
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LeviFSMStateChanged'
+          id: 0x566
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
   - name: 'LevitationState'
     can:
       id: 0x515
@@ -1315,12 +1357,12 @@ message-processing:
           conversion: 'gs_u8:u8'
   - name: 'Airgaps'
     can:
-      id: 0x515
+      id: 0x516
       bus: can2
       log_period: 100
     datapoint-conversion:
       - datapoint:
-          name: 'VAirgap'
+          name: 'Vertical'
           id: 0x52C
           store:
             default: 0
@@ -1335,11 +1377,11 @@ message-processing:
         gs:
           conversion: 'gs_u16:u16'
         beckhoff:
-          name: 'VAirgap'
+          name: 'Vertical-Beckhoff'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 100)'
       - datapoint:
-          name: 'HAirgap'
+          name: 'Lateral'
           id: 0x52D
           store:
             default: 0
@@ -1354,7 +1396,7 @@ message-processing:
         gs:
           conversion: 'gs_u16:u16'
         beckhoff:
-          name: 'HAirgap'
+          name: 'Lateral-Beckhoff'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 100)'
   - name: 'Angles'
@@ -1420,13 +1462,13 @@ message-processing:
           name: 'Yaw'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 1000000)'
-  - name: 'CurrentHEMS'
+  - name: 'CurrentHEMSFront'
     can:
       id: 0x518
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'VFL'
+          name: 'VFL1'
           id: 0x531
           store:
             default: 0
@@ -1441,11 +1483,11 @@ message-processing:
         gs:
           conversion: 'gs_u16:u16'
         beckhoff:
-          name: 'VFL'
+          name: 'VFL1-Beckhoff'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 10)'
       - datapoint:
-          name: 'VFR'
+          name: 'VFL2'
           id: 0x532
           store:
             default: 0
@@ -1460,11 +1502,11 @@ message-processing:
         gs:
           conversion: 'gs_u16:u16'
         beckhoff:
-          name: 'VFR'
+          name: 'VFL2-Beckhoff'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 10)'
       - datapoint:
-          name: 'VBL'
+          name: 'VFR1'
           id: 0x533
           store:
             default: 0
@@ -1479,11 +1521,11 @@ message-processing:
         gs:
           conversion: 'gs_u16:u16'
         beckhoff:
-          name: 'VBL'
+          name: 'VFR1-Beckhoff'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 10)'
       - datapoint:
-          name: 'VBR'
+          name: 'VFR2'
           id: 0x534
           store:
             default: 0
@@ -1498,16 +1540,97 @@ message-processing:
         gs:
           conversion: 'gs_u16:u16'
         beckhoff:
-          name: 'VBR'
+          name: 'VFR2-Beckhoff'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 10)'
-  - name: 'CurrentEMS'
+  - name: 'CurrentHEMSBack'
     can:
       id: 0x519
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LF'
+          name: 'VBL1'
+          id: 0x562
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("HEMS Current")!.addEntry(5, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'VBL1-Beckhoff'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+      - datapoint:
+          name: 'VBL2'
+          id: 0x563
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("HEMS Current")!.addEntry(6, curr);
+                  return curr;
+              }
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'VBL2-Beckhoff'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+      - datapoint:
+          name: 'VBR1'
+          id: 0x564
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("HEMS Current")!.addEntry(7, curr);
+                  return curr;
+              }
+        getter: 'u16[4..6]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'VBR1-Beckhoff'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+      - datapoint:
+          name: 'VBR2'
+          id: 0x565
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("HEMS Current")!.addEntry(8, curr);
+                  return curr;
+              }
+        getter: 'u16[6..8]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'VBR2-Beckhoff'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+  - name: 'CurrentEMS'
+    can:
+      id: 0x51A
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LF1'
           id: 0x535
           store:
             default: 0
@@ -1522,11 +1645,11 @@ message-processing:
         gs:
           conversion: 'gs_u16:u16'
         beckhoff:
-          name: 'LF'
+          name: 'LF1-Beckhoff'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 10)'
       - datapoint:
-          name: 'LB'
+          name: 'LF2'
           id: 0x536
           store:
             default: 0
@@ -1541,12 +1664,50 @@ message-processing:
         gs:
           conversion: 'gs_u16:u16'
         beckhoff:
-          name: 'LB'
+          name: 'LF2-Beckhoff'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 10)'
-  - name: 'RequestedForce1Levi'
+      - datapoint:
+          name: 'LB1'
+          id: 0x560
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("EMS Current")!.addEntry(3, curr);
+                  return curr;
+              }
+        getter: 'u16[4..6]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'LB1-Beckhoff'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+      - datapoint:
+          name: 'LB2'
+          id: 0x561
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("EMS Current")!.addEntry(4, curr);
+                  return curr;
+              }
+        getter: 'u16[6..8]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+        beckhoff:
+          name: 'LB2-Beckhoff'
+          levi_type: 'LReal'
+          formula: 'LREAL_TO_UINT($ * 10)'
+  - name: 'RequestedForceVerticalLevi'
     can:
-      id: 0x51A
+      id: 0x51C
       bus: can2
     datapoint-conversion:
       - datapoint:
@@ -1557,7 +1718,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Requested Force 1")!.addEntry(1, curr);
+                  $chartStore.get("Requested Force Vertical")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'u16[0..2]'
@@ -1576,7 +1737,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Requested Force 1")!.addEntry(2, curr);
+                  $chartStore.get("Requested Force Vertical")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'u16[2..4]'
@@ -1595,7 +1756,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Requested Force 1")!.addEntry(3, curr);
+                  $chartStore.get("Requested Force Vertical")!.addEntry(3, curr);
                   return curr;
               }
         getter: 'u16[4..6]'
@@ -1606,9 +1767,9 @@ message-processing:
           name: 'PitchRequested'
           levi_type: 'LReal'
           formula: 'LREAL_TO_UINT($ * 100)'
-  - name: 'RequestedForce2Levi'
+  - name: 'RequestedForceHorizontalLevi'
     can:
-      id: 0x51B
+      id: 0x51D
       bus: can2
     datapoint-conversion:
       - datapoint:
@@ -1619,7 +1780,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Requested Force 2")!.addEntry(1, curr);
+                  $chartStore.get("Requested Force Horizontal")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'u16[0..2]'
@@ -1638,7 +1799,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("Requested Force 2")!.addEntry(2, curr);
+                  $chartStore.get("Requested Force Horizontal")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'u16[2..4]'

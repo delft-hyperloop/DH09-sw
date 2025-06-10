@@ -53,7 +53,6 @@ impl DatapointDict {
 
     pub fn add_datapoint(&mut self, datapoint: Datapoint) {
         if datapoint.datatype != Datatype::CommandHash
-            && datapoint.datatype != Datatype::EventsHash
             && datapoint.datatype != Datatype::DataHash
             && datapoint.datatype != Datatype::ConfigHash
             && datapoint.datatype != Datatype::DefaultDatatype

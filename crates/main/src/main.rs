@@ -230,7 +230,7 @@ async fn forward_fsm_relay_events_to_can2(
 ) {
     loop {
         let event = event_receiver.receive().await;
-        if let fsm::Event::FSMTransition(_, state_number) = event {
+        if let fsm::Event::FSMTransition(state_number) = event {
             cantx
                 .send(lib::can::can2::CanEnvelope::new_with_id(
                     0x190,

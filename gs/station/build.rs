@@ -12,6 +12,7 @@ use goose_utils::commands::generate_commands_from_config;
 use goose_utils::datatypes::generate_data_types_from_config;
 use goose_utils::ip::configure_gs_ip;
 use serde::Deserialize;
+use goose_utils::events::generate_events;
 
 #[derive(Debug, Deserialize)]
 struct Config {
@@ -75,6 +76,7 @@ fn main() -> Result<()> {
     content.push_str(&dt);
     let commands = goose_utils::dataflow::collect_commands(&df);
     content.push_str(&generate_commands_from_config(&commands, false));
+    content.push_str(&generate_events(EVENTS_PATH, false)?);
     content.push_str(&configure_channels(&config));
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, true)?);
     content.push_str(&goose_utils::dataflow::make_gs_code(&df));
@@ -84,6 +86,7 @@ fn main() -> Result<()> {
     });
 
     println!("cargo::rerun-if-changed={}", CONFIG_PATH);
+    println!("cargo::rerun-if-changed={}", EVENTS_PATH);
     println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
     println!("cargo::rerun-if-changed=build.rs");
     println!("cargo::rerun-if-changed=../../util");

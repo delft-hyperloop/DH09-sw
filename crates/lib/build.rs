@@ -116,6 +116,7 @@ fn main() -> Result<()> {
         &commands, true,
     ));
     content.push_str(&generate_fsm_states(&config));
+    content.push_str(&goose_utils::events::generate_events(EVENTS_PATH, true)?);
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, false)?);
     let dt = goose_utils::dataflow::collect_data_types(&df);
     let dt = goose_utils::datatypes::generate_data_types_from_config(&dt, false)?;
@@ -133,6 +134,7 @@ fn main() -> Result<()> {
         )
     });
     println!("cargo::rerun-if-changed={CONFIG_PATH}");
+    println!("cargo::rerun-if-changed={EVENTS_PATH}");
     println!("cargo::rerun-if-changed={DATAFLOW_PATH}");
 
     // By default, Cargo will re-run a build script whenever

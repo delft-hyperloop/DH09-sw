@@ -1,7 +1,16 @@
 <script lang="ts">
     import { Chart, Command, GrandDataDistributor, Tile, TileGrid } from '$lib';
     import { NamedCommandValues } from "$lib/types";
-    import { overrideDependencies, propControlWord1, propControlWord2, propulsionConfigSent, showcasingStates, RedHVALTurnedOn, GreenHVALTurnedOn } from '$lib/stores/state';
+    import {
+        overrideDependencies,
+        propControlWord1,
+        propControlWord2,
+        propulsionConfigSent,
+        showcasingStates,
+        RedHVALTurnedOn,
+        GreenHVALTurnedOn,
+        inDropdown,
+    } from '$lib/stores/state';
     import CollapsibleTile from '$lib/components/generic/CollapsibleTile.svelte';
     import Command64Bits from '$lib/components/abstract/Command64Bits.svelte';
     import BinaryInput1 from '$lib/components/BinaryInput1.svelte';
@@ -83,6 +92,31 @@
     <TileGrid className="mb-5" columns="1fr 1fr" rows="">
         <CollapsibleTile title="Propulsion Commands">
             <div slot="content">
+                <div class="flex flex-row gap-4">
+                    <div class="flex flex-col gap-2">
+                        <span>
+                            Toggle dropdown commands:
+                        </span>
+                        <div>
+                            <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                                    on:click={() => {
+                                inDropdown.set(true);
+                            }}>
+                                Permanent Dropdown
+                            </button>
+                            <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
+                                    on:click={() => {inDropdown.set(false)}}>
+                                Stop Dropdown
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <span class="text-wrap">
+                            Single dropdown pulse command thingy that I didn't know how to name :)
+                        </span>
+                        <Command cmd="LeviDropdown"/>
+                    </div>
+                </div>
                 <div class="border-surface-600 border-[1px] rounded-lg m-4 p-2">
                     <div class="m-4">
                         <PropulsionHeartbeat storeName="Word1" labels={propReadLabels}/>

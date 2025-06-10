@@ -2,10 +2,12 @@
     import '../app.postcss';
     import {
         BottomBar,
+        EventChannel,
         GrandDataDistributor,
         PlotBuffer,
         StrokePresets,
         TitleBar,
+        util
     } from '$lib';
     import {
         initializeStores,
@@ -17,6 +19,7 @@
         chartStore,
         connectedToMainPCB,
         debugModeActive,
+        inDropdown,
         latestTimestamp,
         leviChartStore,
         logsVisible,
@@ -39,6 +42,7 @@
     } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
     import AlertModal from '$lib/components/AlertModal.svelte';
+    import { invoke } from '@tauri-apps/api/tauri';
 
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -950,9 +954,19 @@
     }, 500);
 
     onMount(() => {
-        setInterval(() => {
+        setInterval(async () => {
             if ($showcasingStates) {
                 showcaseStateCounter.set(($showcaseStateCounter + 1) % 14);
+            }
+            if ($inDropdown) {
+                let val = 0;
+                console.log(`Sending command: LeviDropdown`);
+                await invoke('send_command', {cmdName: "LeviDropdown", val}).then(() => {
+                    console.log(`Command LeviDropdown sent`);
+                }).catch((e) => {
+                    console.error(`Error sending command LeviDropdown: ${e}`);
+                });
+                util.log(`Command LeviDropdown sent`, EventChannel.INFO);
             }
         }, 500);
     });

@@ -2078,6 +2078,11 @@ message-processing:
           conversion: 'gs_2p_float:f32'
 
 commands:
+  - name: 'LeviDropdown'
+    id: 0x1BA
+    can:
+      id: 0x1BA
+      bus: can2
   - name: 'DefaultCommand'
     id: 0xFFF
   - name: 'GeneralEmergency'

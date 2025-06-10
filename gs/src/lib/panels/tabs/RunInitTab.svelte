@@ -54,10 +54,10 @@
             const command: NamedCommand = `PPRunParameters${i === 0 ? 'B' : i}` as NamedCommand;
 
             // Look here if order of values is wrong
-            const v1 = (($propulsionPoints[i].location * 10) & 0xFFFF);
-            const v2 = (($propulsionPoints[i].iq & 0xFFFF) << 16) | ($propulsionPoints[i].id & 0xFFFF);
+            const v1 = ($propulsionPoints[i].id & 0xFFFF) << 16;
+            const v2 = ((($propulsionPoints[i].location * 10) & 0xFFFF) << 16) | ($propulsionPoints[i].iq & 0xFFFF);
 
-            await invoke('send_command_64_bits', { cmdName: command, vals: [v1, v2]}).then(() => {
+            await invoke('send_command_64_bits', { cmdName: command, vals: [v2, v1]}).then(() => {
                 console.log(`Sending command: ${command} with values: ${v1}, ${v2}`);
             }).catch((e) => {
                 console.error(`Error sending command ${command}: ${e}`);

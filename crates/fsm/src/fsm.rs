@@ -7,8 +7,6 @@ use lib::States;
 
 use crate::entry_methods::enter_fault;
 
-// TODO: !!!!Send Transition messages to GS!!!!
-
 /// The struct for the `MainFSM`
 #[derive(Debug, Copy, Clone)]
 pub struct FSM {
@@ -93,9 +91,6 @@ impl FSM {
                 // If going in emergency state, send messages over CAN and to the groundstation
                 self.event_sender2
                     .send(Event::Emergency { emergency_type })
-                    .await;
-                self.event_sender_gs
-                    .send(Event::FSMTransition(States::Fault as u8))
                     .await;
                 self.event_sender_gs
                     .send(Event::Emergency { emergency_type })

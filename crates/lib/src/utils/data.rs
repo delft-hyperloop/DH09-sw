@@ -60,7 +60,7 @@ pub enum Event {
     /// - `u8`: State in which the FSM transitioned
     FSMTransition(u8),
     /// Event sent by the FSM whenever a transition fails
-    /// - `u8`: The state in which the FSM didn't transition. 
+    /// - `u8`: The state in which the FSM didn't transition.
     TransitionFail(u8),
 
     /// Used as upper bound when transmuting

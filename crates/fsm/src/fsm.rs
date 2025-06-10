@@ -76,7 +76,8 @@ impl FSM {
     /// This method transitions the `FSM` from one state to another
     /// depending on which state it currently is in and what event it
     /// received. If it receives an event that it wasn't expecting in the
-    /// current state, it ignores it.
+    /// current state, it ignores it or sends a `TransitionFail` event to the GS
+    /// if it was an event related to a state transition.
     ///
     /// # Parameters:
     /// - `event`: Event that can cause a transition in the FSM.
@@ -85,9 +86,6 @@ impl FSM {
     /// - `false`: If the FSM receives a `Quit` event
     /// - `true`: Otherwise
     async fn handle_events(&mut self, event: Event) -> bool {
-        // TODO: match event first and then state
-        
-        
         match (self.state, event) {
             (_, Event::Emergency { emergency_type }) => {
                 self.transition(States::Fault).await;
@@ -129,17 +127,37 @@ impl FSM {
             (States::Discharge, Event::EnterIdle) => self.transition(States::Idle).await,
             (States::Discharge, Event::ShutDown) => return false,
 
+            // Send a message to the GS with the state in which it failed to transition in case it
+            // receives a wrong event
             (_, event) => {
-                let mut failedStateTransition = match event {
-                    Event::Emergency { emergency_type: _ } | Event::Fault => States::Fault,
-                    Event::ResetFSM => States::Boot,
-                    Event::FaultFixed => States::
-                        _ => 
+                if let Some(failedStateTransition) = match event {
+                    Event::Emergency { emergency_type: _ } | Event::Fault => Some(States::Fault),
+                    Event::ResetFSM => Some(States::Boot),
+                    Event::FaultFixed => Some(States::SystemCheck),
+                    Event::ConnectToGS => Some(States::ConnectedToGS),
+                    Event::StartSystemCheck => Some(States::SystemCheck),
+                    Event::SystemCheckSuccess => Some(States::Idle),
+                    Event::StartPreCharge => Some(States::PreCharge),
+                    Event::Activate => Some(States::Active),
+                    Event::Charge => Some(States::Charging),
+                    Event::StopCharge => Some(States::Active),
+                    Event::EnterDemo => Some(States::Demo),
+                    Event::Discharge => Some(States::Discharge),
+                    Event::Levitate => Some(States::Levitating),
+                    Event::StopLevitating => Some(States::Demo),
+                    Event::Accelerate => Some(States::Accelerating),
+                    Event::Cruise => Some(States::Cruising),
+                    Event::Brake => Some(States::Braking),
+                    Event::Stopped => Some(States::Levitating),
+                    Event::EnterIdle => Some(States::Idle),
+                    Event::ShutDown => Some(States::Boot),
+                    _ => None,
+                } {
+                    self.event_sender_gs
+                        .send(Event::TransitionFail(failedStateTransition as u8))
+                        .await;
                 }
-                self
-                    .event_sender_gs
-                    .send(Event::TransitionFail(failedStateTransition as u8))
-            },
+            }
         }
         true
     }

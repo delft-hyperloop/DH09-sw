@@ -29,6 +29,7 @@
     } from '$lib/stores/state';
     import { MODAL_SETTINGS } from '$lib/types';
     import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
+    import { invoke } from '@tauri-apps/api/tauri';
 
     let i = 0;
     let tabs = [
@@ -53,34 +54,36 @@
     const propInitFault2 = storeManager.getWritable("PPInitFault2");
     const propEmergency2 = storeManager.getWritable("PPEmergency2");
     const heartbeat = storeManager.getWritable("FrontendHeartbeating");
+    const fsmTransitionFail = storeManager.getWritable("FSMTransitionFail");
+    const emergency = storeManager.getWritable("Emergency");
 
     heartbeat.subscribe(() => {
         lastHeartbeatTimestamp.set(Date.now());
     })
 
-    let firstPass = true;
-    connectedToMainPCB.subscribe(() => {
-        if (!$connectedToMainPCB) {
-            if (!firstPass && $connectionAcknowledged) {
-                // modalBody.set('The main PCB disconnected from the groundstation! Make sure to reconnect before continuing!');
-                // modalTitle.set('Disconnected from the pod!');
-                // modalStore.trigger(MODAL_SETTINGS);
-
-                connectionAcknowledged.set(false);
-                toastStore.trigger({
-                    message: "The main PCB disconnected from the Groundstation!",
-                    background: "bg-error-400",
-                    autohide: false,
-                    callback: response => {
-                        if (response.status == 'closed') {
-                            connectionAcknowledged.set(true);
-                        }
-                    },
-                });
-            }
-            firstPass = false;
-        }
-    })
+    // let firstPass = true;
+    // connectedToMainPCB.subscribe(() => {
+    //     if (!$connectedToMainPCB) {
+    //         if (!firstPass && $connectionAcknowledged) {
+    //             // modalBody.set('The main PCB disconnected from the groundstation! Make sure to reconnect before continuing!');
+    //             // modalTitle.set('Disconnected from the pod!');
+    //             // modalStore.trigger(MODAL_SETTINGS);
+    //
+    //             connectionAcknowledged.set(false);
+    //             toastStore.trigger({
+    //                 message: "The main PCB disconnected from the Groundstation!",
+    //                 background: "bg-error-400",
+    //                 autohide: false,
+    //                 callback: response => {
+    //                     if (response.status == 'closed') {
+    //                         connectionAcknowledged.set(true);
+    //                     }
+    //                 },
+    //             });
+    //         }
+    //         firstPass = false;
+    //     }
+    // })
 
     let emsTemps = [
         storeManager.getWritable("TempEMS1"),
@@ -259,6 +262,40 @@
             util.log(`Prop Emergency 2: ${store.value}`, EventChannel.ERROR);
         }
     });
+
+    fsmTransitionFail.subscribe(async (store) => {
+        let state: string = await invoke('get_fsm_state_by_index', { index: store.value });
+        if (state !== "UnknownState") {
+            toastStore.trigger({
+                message: `Transition to state ${state} failed!`,
+                background: 'bg-error-400',
+                autohide: false,
+            });
+            console.error(`Transition to state ${state} failed!`);
+            util.log(`Transition to state ${state} failed!`, EventChannel.ERROR);
+        }
+    });
+
+    emergency.subscribe((store) => {
+        if (store.value !== 0) {
+            let sources: String[] = [
+                "General",
+                "Propulsion",
+                "Levitation",
+                "Powertrain Controller",
+                "SenseCon",
+            ]
+            modalTitle.set(`${sources[store.value - 1]} Emergency!`);
+            modalBody.set(
+                `Emergency triggered: ${sources[store.value - 1]} Emergency!
+                The Main PCB attempted to turn off high voltage with a message on the CAN bus.
+                Always double check if it succeeded.`
+            );
+            modalStore.trigger(MODAL_SETTINGS);
+            console.error(`Emergency triggered with source ${store.value - 1}!`);
+            util.log(`Emergency triggered: ${sources[store.value - 1]} Emergency!`, EventChannel.ERROR);
+        }
+    })
 
 </script>
 

@@ -22,7 +22,6 @@
 #![allow(missing_copy_implementations)]
 #![allow(missing_debug_implementations)]
 
-
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_net::tcp::TcpSocket;
@@ -51,7 +50,6 @@ use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
 use lib::config::DATA_HASH;
-use lib::config::EVENTS_HASH;
 use lib::Datapoint;
 use static_cell::StaticCell;
 
@@ -60,7 +58,7 @@ type GsCommsLayerImpl = EthernetGsCommsLayer;
 
 /// todo: docs
 pub struct GsMaster<C: GsCommsLayer> {
-/// todo: docs
+    /// todo: docs
     comms: C,
 }
 
@@ -72,7 +70,7 @@ impl GsMaster<GsCommsLayerImpl> {
     {
         let comms = comms.init(spawner).await;
         static GS_MASTER: StaticCell<GsMaster<GsCommsLayerImpl>> = StaticCell::new();
-        
+
         (GS_MASTER.init(GsMaster { comms })) as _
     }
 }
@@ -97,7 +95,7 @@ pub struct GsToPodMessage {
 }
 
 impl GsToPodMessage {
-/// todo: docs
+    /// todo: docs
     const SIZE: usize = 20;
 
     /// Reads from the buffer
@@ -126,7 +124,7 @@ pub trait GsCommsLayer {
 
 /// todo: docs
 pub trait GsCommsLayerInitializable {
-/// todo: docs
+    /// todo: docs
     type CommsLayer: GsCommsLayer;
 
     /// Initializes the comms with the GS
@@ -140,34 +138,33 @@ const TX_BUFFER_SIZE: usize = 32768;
 
 /// todo: docs
 struct CommsBuffers {
-/// todo: docs
+    /// todo: docs
     rx: [u8; RX_BUFFER_SIZE],
-/// todo: docs
+    /// todo: docs
     tx: [u8; TX_BUFFER_SIZE],
 }
 
 /// todo: docs
 struct CommsCore {
-/// todo: docs
+    /// todo: docs
     rx_channel: RxChannel,
-/// todo: docs
+    /// todo: docs
     tx_channel: TxChannel,
 }
 
-
 /// todo: docs
 pub struct EthernetGsCommsLayer {
-/// todo: docs
+    /// todo: docs
     cc: &'static CommsCore,
 }
 
 impl GsCommsLayer for EthernetGsCommsLayer {
-/// todo: docs
+    /// todo: docs
     fn subscribe(&self) -> RxSubscriber<'_> {
         unwrap!(self.cc.rx_channel.subscriber())
     }
 
-/// todo: docs
+    /// todo: docs
     fn transmitter(&self) -> TxSender<'_> {
         self.cc.tx_channel.sender()
     }
@@ -176,14 +173,13 @@ impl GsCommsLayer for EthernetGsCommsLayer {
 /// todo: docs
 type EthDevice = Ethernet<'static, ETH, GenericPhy>;
 
-
 /// todo: docs
 pub struct EthernetGsCommsLayerInitializer {
-/// todo: docs
+    /// todo: docs
     seed: u64,
-/// todo: docs
+    /// todo: docs
     device: EthDevice,
-/// todo: docs
+    /// todo: docs
     config: embassy_net::Config,
 }
 
@@ -202,7 +198,7 @@ impl EthernetGsCommsLayerInitializer {
 const TX_CAP: usize = 1024;
 /// todo: docs
 type TxChannel = Channel<NoopRawMutex, PodToGsMessage, TX_CAP>;
-/// todo: docs 
+/// todo: docs
 type TxReceiver<'a> = embassy_sync::channel::Receiver<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
 /// todo: docs
 pub type TxSender<'a> = embassy_sync::channel::Sender<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
@@ -487,11 +483,6 @@ impl GsCommsLayerInitializable for EthernetGsCommsLayerInitializer {
         tx.send(PodToGsMessage {
             // 0xE981A1EA0B1A4199
             dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
-        })
-        .await;
-        tx.send(PodToGsMessage {
-            // 0xDEEDB95C8FC613FF
-            dp: Datapoint::new(Datatype::EventsHash, EVENTS_HASH, ticks()),
         })
         .await;
         tx.send(PodToGsMessage {

@@ -152,11 +152,6 @@ standard-datapoints:
     priority: 1
 
   - datapoint:
-      name: 'EventsHash'
-      id: 0x168
-    priority: 1
-
-  - datapoint:
       name: 'DataHash'
       id: 0x169
     priority: 1
@@ -197,6 +192,18 @@ standard-datapoints:
   - datapoint:
       name: 'FSMState'
       id: 0x202
+      store:
+        default: 0
+
+  - datapoint:
+      name: 'FSMTransitionFail'
+      id: 0x204
+      store:
+        default: 100
+
+  - datapoint:
+      name: 'Emergency'
+      id: 0x205
       store:
         default: 0
 
@@ -2140,10 +2147,6 @@ commands:
     id: 0x407
   - name: 'LevitationOff'
     id: 0x408
-  - name: 'vertical_0_current'
-    id: 0x409
-  - name: 'vert_0_current_reset'
-    id: 0x40a
   - name: 'PropulsionOn'
     id: 0x6c
   - name: 'PropulsionOff'

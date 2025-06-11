@@ -8,18 +8,18 @@ use std::path::Path;
 
 use anyhow::Result;
 use goose_utils::check_config;
-use goose_utils::commands::generate_commands;
 use goose_utils::commands::generate_commands_from_config;
 use goose_utils::datatypes::generate_data_types_from_config;
-use goose_utils::datatypes::generate_datatypes;
-use goose_utils::events::generate_events;
 use goose_utils::ip::configure_gs_ip;
 use serde::Deserialize;
+use goose_utils::events::generate_events;
+use goose_utils::fsm_states::FSMState;
 
 #[derive(Debug, Deserialize)]
 struct Config {
     gs: GS,
     pod: Pod,
+    FSMState: Vec<FSMState>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -79,9 +79,9 @@ fn main() -> Result<()> {
     let commands = goose_utils::dataflow::collect_commands(&df);
     content.push_str(&generate_commands_from_config(&commands, false));
     content.push_str(&generate_events(EVENTS_PATH, false)?);
+    content.push_str(&generate_fsm_states(&config));
     content.push_str(&configure_channels(&config));
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, true)?);
-    // content.push_str(&levi_req_data(&config, dt)?);
     content.push_str(&goose_utils::dataflow::make_gs_code(&df));
 
     fs::write(dest_path.clone(), content).unwrap_or_else(|_| {
@@ -96,26 +96,6 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-
-// fn levi_req_data(config: &Config, dt: String) -> Result<String> {
-//     for data in config.pod.comm.levi_requested_data.iter() {
-//         if !dt.contains(data) {
-//             return Err(anyhow::anyhow!(
-//                 "Data type {:?} not found in datatypes.toml
-//             Check that the (case-sensitive) spelling is correct, and that the datatype exists.",
-//                 data
-//             ));
-//         }
-//     }
-//     Ok(format!(
-//         "\npub const LEVI_REQUESTED_DATA: [Datatype; {}] = [{}];\n",
-//         config.pod.comm.levi_requested_data.len(),
-//         config.pod.comm.levi_requested_data.iter().fold(String::new(), |mut acc, x| {
-//             let _ = write!(acc, "Datatype::{}, ", x);
-//             acc
-//         })
-//     ))
-// }
 
 fn configure_gs(config: &Config) -> String {
     // format!("pub fn gs_socket() -> std::net::SocketAddr {{ std::net::SocketAddr::new(std::net::IpAddr::from([{},{},{},{}]),{}) }}\n", config.gs.ip[0], config.gs.ip[1], config.gs.ip[2], config.gs.ip[3], config.gs.port)
@@ -137,4 +117,31 @@ fn configure_channels(config: &Config) -> String {
         + &*format!("pub const INFO_CHANNEL: &str = \"{}\";\n", config.gs.info_channel)
         + &*format!("pub const ERROR_CHANNEL: &str = \"{}\";\n", config.gs.error_channel)
         + &*format!("pub const SHORTCUT_CHANNEL: &str = \"{}\";\n", config.gs.shortcut_channel)
+}
+
+fn generate_fsm_states(config: &Config) -> String {
+    format!(
+        "\n\n/// Enum representing the different states that the `MainFSM` will be in
+#[derive(Eq, PartialEq, Debug, Clone, Copy, defmt::Format)]
+#[allow(dead_code)]
+pub enum States {{
+{}
+}}
+
+impl States {{
+    pub fn from_index(index: u8) -> States {{
+        match index {{
+{},
+            _ => States::UnknownState,
+        }}
+    }}
+}}",
+        config
+            .FSMState
+            .iter()
+            .map(|x| format!("\t/// {}\n\t{}", x.doc, x.state))
+            .collect::<Vec<String>>()
+            .join(",\n"),
+        config.FSMState.iter().filter(|x| x.state != "UnknownState").map(|x| format!("\t\t\t{} => States::{}", x.index, x.state)).collect::<Vec<String>>().join(",\n")
+    )
 }

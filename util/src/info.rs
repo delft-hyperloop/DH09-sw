@@ -63,7 +63,6 @@ impl Info {{
 }}
     ",
         config.Info.len() + 1,
-        
         if drv {
             "#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, PartialOrd, Ord)]"
         } else {

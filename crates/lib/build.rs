@@ -290,12 +290,22 @@ fn generate_fsm_states(config: &Config) -> String {
 #[allow(dead_code)]
 pub enum States {{
 {}
+}}
+
+impl States {{
+    pub fn from_index(index: u8) -> States {{
+        match index {{
+{},
+            _ => States::UnknownState,
+        }}
+    }}
 }}",
         config
             .FSMState
             .iter()
             .map(|x| format!("\t/// {}\n\t{}", x.doc, x.state))
             .collect::<Vec<String>>()
-            .join(",\n")
+            .join(",\n"),
+        config.FSMState.iter().filter(|x| x.state != "UnknownState").map(|x| format!("\t\t\t{} => States::{}", x.index, x.state)).collect::<Vec<String>>().join(",\n")
     )
 }

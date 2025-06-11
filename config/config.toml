@@ -135,62 +135,80 @@ doc = ""
 event = "FSMTransition"
 doc = "Event sent when transitioning. Used to send the `FSMUpdate` CAN message."
 
-
 [[FSMState]]
 state = "Boot"
 doc = "Initial state of the FSM"
+index = 0
 
 [[FSMState]]
 state = "ConnectedToGS"
 doc = "Pretty self-explanatory :)"
+index = 1
 
 [[FSMState]]
 state = "SystemCheck"
 doc = "State for checking each subsystem"
+index = 2
 
 [[FSMState]]
 state = "Idle"
 doc = "Idle state, SDC is open and emergency brakes are deployed"
+index = 3
 
 [[FSMState]]
 state = "PreCharge"
 doc = "Pre-charging the batteries before turning on high voltage"
+index = 4
 
 [[FSMState]]
 state = "Active"
 doc = "High voltage is on, SDC is closed, emergency brakes are still deployed"
+index = 5
 
 [[FSMState]]
 state = "Demo"
 doc = "SDC closed, brakes not deployed (SDC is armed)"
+index = 6
 
 [[FSMState]]
 state = "Levitating"
 doc = "Pod is levitating"
+index = 7
 
 [[FSMState]]
 state = "Accelerating"
 doc = "Pod is accelerating"
+index = 8
 
 [[FSMState]]
 state = "Cruising"
 doc = "Pod is cruising"
+index = 9
 
 [[FSMState]]
 state = "Braking"
 doc = "Pod is braking"
+index = 10
 
 [[FSMState]]
 state = "Discharge"
 doc = "Discharge state for the high voltage current"
+index = 11
 
 [[FSMState]]
 state = "Charging"
 doc = "State for charging the pod"
+index = 12
 
 [[FSMState]]
 state = "Fault"
 doc = "Fault/Emergency state - can be reached from any state and must cause emergency brake"
+index = 13
+
+[[FSMState]]
+state = "UnknownState"
+doc = "The pod should never be in this state."
+index = 100
 
 [[Info]]
 label = "ServerStarted"

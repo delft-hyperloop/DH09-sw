@@ -138,9 +138,9 @@ async fn can_tx_task(
 /// Interface for communicating over CAN
 #[allow(missing_debug_implementations)]
 pub struct CanInterface {
-/// todo: docs
+    /// todo: docs
     rx_channel: CanRxChannel,
-/// todo: docs
+    /// todo: docs
     tx_channel: CanTxChannel,
 }
 

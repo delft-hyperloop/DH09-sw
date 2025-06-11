@@ -28,6 +28,7 @@ use fsm::FSM;
 use lib::config::Command;
 use lib::config::Datatype;
 use lib::Datapoint;
+use lib::Event;
 use lib::EventChannel;
 use lib::EventReceiver;
 use lib::EventSender;
@@ -77,10 +78,16 @@ static EVENT_CHANNEL_FSM: static_cell::StaticCell<EventChannel> = static_cell::S
 static EVENT_CHANNEL_CAN1: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 /// can 2 priority channel for events
 static EVENT_CHANNEL_CAN2: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+/// priority channel for events from the fsm to the gs
+static EVENT_CHANNEL_GS: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 
 #[embassy_executor::task]
-async fn run_fsm(event_receiver: EventReceiver, event_sender2: EventSender) {
-    let mut fsm = FSM::new(event_receiver, event_sender2).await;
+async fn run_fsm(
+    event_receiver: EventReceiver,
+    event_sender2: EventSender,
+    event_sender_gs: EventSender,
+) {
+    let mut fsm = FSM::new(event_receiver, event_sender2, event_sender_gs).await;
     fsm.run().await;
 }
 
@@ -96,7 +103,15 @@ async fn forward_gs_to_fsm(
         let command = msg.command;
 
         match command {
-            // General Commands
+            // General commands
+            // TODO: Turn off High Voltage!
+            Command::GeneralEmergency(_) => {
+                event_sender
+                    .send(lib::Event::Emergency {
+                        emergency_type: lib::EmergencyType::GeneralEmergency,
+                    })
+                    .await
+            }
             Command::EmergencyBrake(_) => {
                 event_sender
                     .send(lib::Event::Emergency {
@@ -104,9 +119,6 @@ async fn forward_gs_to_fsm(
                     })
                     .await
             }
-            Command::DefaultCommand(_) => {}
-            Command::Heartbeat(_) => {}
-            Command::FrontendHeartbeat(_) => {}
 
             // HV commands
             Command::StartHV(_) => event_sender.send(lib::Event::StartPreCharge).await,
@@ -121,9 +133,10 @@ async fn forward_gs_to_fsm(
             Command::PropulsionOff(_) => event_sender.send(lib::Event::Cruise).await,
 
             // Control commands
+            Command::SystemCheck(_) => {
+                todo!()
+            }
             Command::Shutdown(_) => event_sender.send(lib::Event::ShutDown).await,
-            Command::SystemReset(_) => event_sender.send(lib::Event::ResetFSM).await,
-            Command::ResetSenseCon(_) => event_sender.send(lib::Event::ResetFSM).await,
             Command::RearmSDC(_) => {
                 // Pull pin high
                 rearm_output.set_high();
@@ -134,6 +147,20 @@ async fn forward_gs_to_fsm(
                 // Pull pin low
                 rearm_output.set_low();
             }
+
+            // Reset commands
+            Command::SystemReset(_) => event_sender.send(lib::Event::ResetFSM).await,
+            Command::ResetSenseCon(_) => event_sender.send(lib::Event::ResetFSM).await,
+            Command::ResetLevitation(_) => {
+                todo!()
+            }
+            Command::ResetPowertrain(_) => {
+                todo!()
+            }
+            Command::ResetPropulsion(_) => {
+                todo!()
+            }
+
             _ => {}
         }
     }
@@ -207,7 +234,7 @@ async fn forward_fsm_relay_events_to_can2(
         if let fsm::Event::FSMTransition(state_number) = event {
             cantx
                 .send(lib::can::can2::CanEnvelope::new_with_id(
-                    0x190,
+                    Command::FSMUpdate(0).to_id(),
                     &[state_number],
                 ))
                 .await
@@ -268,21 +295,6 @@ async fn forward_can2_messages_to_fsm(
 
         // TODO: Get config to match correct event
         let fsm_event = lib::config::event_for_can_2_id(id as u32);
-
-        // let fsm_event = match (id as u32) {
-        //     1 => fsm::Event::ConnectToGS,
-        //     2 => fsm::Event::StartSystemCheck,
-        //     3 => fsm::Event::SystemCheckSuccess,
-        //     4 => fsm::Event::StartPreCharge,
-        //     5 => fsm::Event::Activate,
-        //     6 => fsm::Event::EnterDemo,
-        //     7 => fsm::Event::Levitate,
-        //     // 8 => fsm::Event::StopLevitating,
-        //     8 => fsm::Event::Accelerate,
-        //     9 => fsm::Event::Brake,
-        //     10 => fsm::Event::ShutDown,
-        //     _ => fsm::Event::NoEvent,
-        // };
 
         if fsm_event != fsm::Event::NoEvent {
             event_sender.send(fsm_event).await;
@@ -393,11 +405,7 @@ async fn gs_heartbeat(gstx: gs_master::TxSender<'static>) {
 #[embassy_executor::task]
 async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
     loop {
-        let header = Header::new(
-            Id::from(StandardId::new(8u16).unwrap()),
-            8,
-            false,
-        );
+        let header = Header::new(Id::from(StandardId::new(8u16).unwrap()), 8, false);
 
         let frame = can::frame::Frame::new(header, &[1u8; 8]).expect("Invalid frame");
 
@@ -407,6 +415,49 @@ async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
         info!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SENDING");
 
         Timer::after_millis(100).await;
+    }
+}
+
+#[embassy_executor::task]
+async fn forward_fsm_to_gs(gs_tx: gs_master::TxSender<'static>, event_receiver: EventReceiver) {
+    loop {
+        let event = event_receiver.receive().await;
+        match event {
+            Event::FSMTransition(transitioned_state) => {
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(
+                            Datatype::FSMState,
+                            transitioned_state as u64,
+                            embassy_time::Instant::now().as_ticks(),
+                        ),
+                    })
+                    .await
+            }
+            Event::TransitionFail(other_state) => {
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(
+                            Datatype::FSMTransitionFail,
+                            other_state as u64,
+                            embassy_time::Instant::now().as_ticks(),
+                        ),
+                    })
+                    .await
+            }
+            Event::Emergency { emergency_type } => {
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(
+                            Datatype::Emergency,
+                            (emergency_type as i32 + 1) as u64,
+                            embassy_time::Instant::now().as_ticks(),
+                        ),
+                    })
+                    .await
+            }
+            _ => {}
+        }
     }
 }
 
@@ -462,6 +513,10 @@ async fn main(spawner: Spawner) -> ! {
     let event_receiver_can2: EventReceiver = event_channel_can2.receiver().into();
     let event_sender_can2: EventSender = event_channel_can2.sender().into();
 
+    let event_channel_gs: &mut EventChannel = EVENT_CHANNEL_GS.init(EventChannel::new());
+    let event_receiver_fsm_to_gs: EventReceiver = event_channel_gs.receiver().into();
+    let event_sender_fsm_to_gs: EventSender = event_channel_gs.sender().into();
+
     info!("Embassy initialized!");
 
     let can1 = {
@@ -485,7 +540,11 @@ async fn main(spawner: Spawner) -> ! {
     info!("CAN Configured");
     defmt::println!("CAN Configured");
     spawner
-        .spawn(run_fsm(event_receiver_fsm, event_sender_can2))
+        .spawn(run_fsm(
+            event_receiver_fsm,
+            event_sender_can2,
+            event_sender_fsm_to_gs,
+        ))
         .unwrap();
 
     unwrap!(spawner.spawn(forward_fsm_relay_events_to_can1(
@@ -562,6 +621,11 @@ async fn main(spawner: Spawner) -> ! {
     unwrap!(spawner.spawn(forward_can2_messages_to_gs(
         can2.new_subscriber(),
         gs_master.transmitter()
+    )));
+
+    unwrap!(spawner.spawn(forward_fsm_to_gs(
+        gs_master.transmitter(),
+        event_receiver_fsm_to_gs
     )));
 
     unwrap!(spawner.spawn(gs_heartbeat(gs_master.transmitter())));

@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use chrono::Local;
-use gslib::Datapoint;
+use gslib::{Datapoint, States};
 use gslib::Datatype;
 use gslib::Message;
 use gslib::ProcessedData;
@@ -47,6 +47,13 @@ pub fn generate_test_data() -> Vec<Datapoint> {
     datapoints.push(datapoint7);
 
     datapoints
+}
+
+#[macro_export]
+#[allow(unused)]
+#[tauri::command]
+pub fn get_fsm_state_by_index(index: u8) -> String {
+    format!("{:?}", States::from_index(index))
 }
 
 #[macro_export]

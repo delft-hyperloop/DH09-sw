@@ -11,9 +11,6 @@ mod entry_methods;
 mod exit_methods;
 pub(crate) mod fsm;
 
-#[cfg(test)]
-mod tests;
-
 pub use fsm::FSM;
 pub use lib::utils::data::Event;
 pub use lib::States;

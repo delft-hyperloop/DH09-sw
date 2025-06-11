@@ -41,6 +41,7 @@ pub fn tauri_main(backend: Backend) {
             procedures,
             test_panic,
             save_logs,
+            get_fsm_state_by_index,
         ])
         .setup(move |app| {
             let app_handle = app.handle();

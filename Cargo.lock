@@ -3822,7 +3822,6 @@ dependencies = [
  "colored",
  "crossterm",
  "csv",
- "defmt",
  "dirs",
  "goose_utils",
  "rand 0.8.5",

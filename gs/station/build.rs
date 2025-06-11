@@ -122,7 +122,8 @@ fn configure_channels(config: &Config) -> String {
 fn generate_fsm_states(config: &Config) -> String {
     format!(
         "\n\n/// Enum representing the different states that the `MainFSM` will be in
-#[derive(Eq, PartialEq, Debug, Clone, Copy, defmt::Format)]
+#[derive(Eq, PartialEq, Debug, Clone, Copy)]
+#[cfg_attr(target_os = \"none\", derive(defmt::Format))]
 #[allow(dead_code)]
 pub enum States {{
 {}

@@ -37,7 +37,6 @@ tokio = { version = "1.29.1", features = ["rt", "time", "rt-multi-thread", "macr
 anyhow = "1.0.86"
 csv = "1.2.2"
 dirs = "6.0.0"
-defmt.workspace = true
 
 [[bin]]
 name = "station"

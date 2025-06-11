@@ -18,10 +18,10 @@
             <Command cmd="vertical_0_current" text="Vertical 0 Current"/>
             <Command cmd="vert_0_current_reset" text="Reset Vertical 0 Current"/>
         </div>
-        <Tile containerClass="col-span-1">
+        <Tile containerClass="col-span-2">
             <Chart title="HEMS Current" background="bg-surface-900" />
         </Tile>
-        <Tile containerClass="col-span-1">
+        <Tile containerClass="col-span-2">
             <Chart title="EMS Current" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
@@ -31,10 +31,10 @@
             <Chart title="Angles" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
-            <Chart title="Requested Force 1" background="bg-surface-900" />
+            <Chart title="Requested Force Vertical" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
-            <Chart title="Requested Force 2" background="bg-surface-900" />
+            <Chart title="Requested Force Horizontal" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
             <Chart title="Temperatures HEMS" background="bg-surface-900"/>

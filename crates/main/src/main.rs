@@ -104,6 +104,7 @@ async fn forward_gs_to_fsm(
 
         match command {
             // General commands
+            // TODO: Turn off High Voltage!
             Command::GeneralEmergency(_) => {
                 event_sender
                     .send(lib::Event::Emergency {
@@ -233,7 +234,7 @@ async fn forward_fsm_relay_events_to_can2(
         if let fsm::Event::FSMTransition(state_number) = event {
             cantx
                 .send(lib::can::can2::CanEnvelope::new_with_id(
-                    0x190,
+                    Command::FSMUpdate(0).to_id(),
                     &[state_number],
                 ))
                 .await
@@ -426,7 +427,7 @@ async fn forward_fsm_to_gs(gs_tx: gs_master::TxSender<'static>, event_receiver: 
                 gs_tx
                     .send(PodToGsMessage {
                         dp: Datapoint::new(
-                            Datatype::FSMTransition,
+                            Datatype::FSMState,
                             transitioned_state as u64,
                             embassy_time::Instant::now().as_ticks(),
                         ),

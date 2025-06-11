@@ -125,7 +125,7 @@ impl FSM {
             // Send a message to the GS with the state in which it failed to transition in case it
             // receives a wrong event
             (_, event) => {
-                if let Some(failedStateTransition) = match event {
+                if let Some(failed_state_transition) = match event {
                     Event::Emergency { emergency_type: _ } | Event::Fault => Some(States::Fault),
                     Event::ResetFSM => Some(States::Boot),
                     Event::FaultFixed => Some(States::SystemCheck),
@@ -149,7 +149,7 @@ impl FSM {
                     _ => None,
                 } {
                     self.event_sender_gs
-                        .send(Event::TransitionFail(failedStateTransition as u8))
+                        .send(Event::TransitionFail(failed_state_transition as u8))
                         .await;
                 }
             }

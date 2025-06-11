@@ -16,7 +16,6 @@ import PneumaticsTab from "$lib/panels/tabs/PneumaticsTab.svelte";
 // Components
 import Battery from "$lib/components/Battery.svelte";
 import BottomBar from "$lib/components/BottomBar.svelte";
-import FSM from "$lib/components/FSM.svelte";
 import Localiser from "$lib/components/Localiser.svelte";
 import Pneumatics from "$lib/components/Pneumatics.svelte";
 import TitleBar from "$lib/components/TitleBar.svelte";
@@ -75,7 +74,6 @@ export {
     RunInitTab,
     Battery,
     BottomBar,
-    FSM,
     TitleBar,
     Chart,
     Table,

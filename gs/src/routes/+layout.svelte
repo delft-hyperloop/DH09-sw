@@ -871,6 +871,10 @@
 
     gdd.stores.registerStore<number>("FSMState", 0);
 
+    gdd.stores.registerStore<number>("FSMTransitionFail", 100);
+
+    gdd.stores.registerStore<number>("Emergency", 0);
+
     // End of generated
 
     gdd.stores.registerStore<number>("FrontendHeartbeating", 0);

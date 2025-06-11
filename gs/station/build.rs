@@ -10,10 +10,10 @@ use anyhow::Result;
 use goose_utils::check_config;
 use goose_utils::commands::generate_commands_from_config;
 use goose_utils::datatypes::generate_data_types_from_config;
-use goose_utils::ip::configure_gs_ip;
-use serde::Deserialize;
 use goose_utils::events::generate_events;
 use goose_utils::fsm_states::FSMState;
+use goose_utils::ip::configure_gs_ip;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 struct Config {
@@ -142,6 +142,12 @@ impl States {{
             .map(|x| format!("\t/// {}\n\t{}", x.doc, x.state))
             .collect::<Vec<String>>()
             .join(",\n"),
-        config.FSMState.iter().filter(|x| x.state != "UnknownState").map(|x| format!("\t\t\t{} => States::{}", x.index, x.state)).collect::<Vec<String>>().join(",\n")
+        config
+            .FSMState
+            .iter()
+            .filter(|x| x.state != "UnknownState")
+            .map(|x| format!("\t\t\t{} => States::{}", x.index, x.state))
+            .collect::<Vec<String>>()
+            .join(",\n")
     )
 }

@@ -306,6 +306,12 @@ impl States {{
             .map(|x| format!("\t/// {}\n\t{}", x.doc, x.state))
             .collect::<Vec<String>>()
             .join(",\n"),
-        config.FSMState.iter().filter(|x| x.state != "UnknownState").map(|x| format!("\t\t\t{} => States::{}", x.index, x.state)).collect::<Vec<String>>().join(",\n")
+        config
+            .FSMState
+            .iter()
+            .filter(|x| x.state != "UnknownState")
+            .map(|x| format!("\t\t\t{} => States::{}", x.index, x.state))
+            .collect::<Vec<String>>()
+            .join(",\n")
     )
 }

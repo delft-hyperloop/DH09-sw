@@ -1176,6 +1176,8 @@ message-processing:
     can:
       id: 0x36C
       bus: can2
+    fsm:
+      event: 'PropulsionAck1'
     datapoint-conversion:
       - datapoint:
           name: 'FSMAckProp1'
@@ -1190,6 +1192,8 @@ message-processing:
     can:
       id: 0x36D
       bus: can2
+    fsm:
+      event: 'PropulsionAck2'
     datapoint-conversion:
       - datapoint:
           name: 'FSMAckProp2'
@@ -1204,6 +1208,8 @@ message-processing:
     can:
       id: 0x385
       bus: can2
+    fsm:
+      event: 'LeviAck'
     datapoint-conversion:
       - datapoint:
           name: 'FSMAckLevi'
@@ -1218,6 +1224,8 @@ message-processing:
     can:
       id: 0x386
       bus: can2
+    fsm:
+      event: 'ClearFaultAckLevi'
     datapoint-conversion:
       - datapoint:
           name: 'ClearFaultAckLevi'
@@ -1329,6 +1337,8 @@ message-processing:
     can:
       id: 0x389
       bus: can2
+    fsm:
+      event: 'LeviAck'
     datapoint-conversion:
       - datapoint:
           name: 'LeviFSMStateChanged'

@@ -62,7 +62,17 @@ pub enum Event {
     /// Event sent by the FSM whenever a transition fails
     /// - `u8`: The state in which the FSM didn't transition.
     TransitionFail(u8),
-
+    /// Acknowledgement received from levi that their FSM also transitioned to new state
+    LeviAck,
+    /// Acknowledgement received from the first propulsion motor that their FSM also transitioned to new state
+    PropulsionAck1,
+    /// Acknowledgement received from the second propulsion motor that their FSM also transitioned to new state
+    PropulsionAck2,
+    /// Acknowledgement received from powertrain that their FSM also transitioned to new state
+    PowertrainAck,
+    /// Acknowledgement for levi fault clear
+    ClearFaultAckLevi,
+    
     /// Used as upper bound when transmuting
     #[doc(hidden)]
     __GUARD,

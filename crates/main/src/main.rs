@@ -55,15 +55,8 @@ bind_interrupts!(
     }
 );
 
-/// !halt (loop forever)
-fn hlt() -> ! {
-    loop {
-        cortex_m::asm::wfe();
-    }
-}
-
 #[allow(dead_code)]
-/// an ethernet device peripheral, abstract over the specific PHY used
+/// an ethernet device peripheral, abstract over the specific PHY used 
 type Device = Ethernet<'static, ETH, GenericPhy>;
 
 #[embassy_executor::task]
@@ -161,6 +154,8 @@ async fn forward_gs_to_fsm(
                 todo!()
             }
 
+            // Acknowledgements
+            // Command::FSM
             _ => {}
         }
     }
@@ -640,7 +635,4 @@ async fn main(spawner: Spawner) -> ! {
     loop {
         Timer::after_millis(100).await;
     }
-
-    #[allow(unreachable_code)]
-    hlt()
 }

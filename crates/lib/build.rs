@@ -20,6 +20,7 @@ extern crate serde;
 use std::collections::BTreeMap;
 use std::env;
 use std::fs;
+use std::hash::DefaultHasher;
 use std::path::Path;
 
 use anyhow::Result;
@@ -101,7 +102,7 @@ fn main() -> Result<()> {
     let df = std::fs::read_to_string(DATAFLOW_PATH)?;
     let df = goose_utils::dataflow::parse_from(&df);
 
-    content.push_str(&check_config(EVENTS_PATH, CONFIG_PATH)?);
+    content.push_str(&check_config(DATAFLOW_PATH, )?);
 
     content.push_str(&configure_ip(&config));
     content.push_str(&configure_gs_ip(
@@ -125,6 +126,9 @@ fn main() -> Result<()> {
 
     content.push_str(&goose_utils::dataflow::make_main_pcb_code(&df));
     // content.push_str(&*can::main(&id_list));
+
+    let mut hasher = DefaultHasher::new();
+    
 
     fs::write(dest_path.clone(), content).unwrap_or_else(|e| {
         panic!(

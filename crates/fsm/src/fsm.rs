@@ -172,9 +172,7 @@ impl FSM {
         self.event_sender2
             .send(Event::FSMTransition(new_state as u8))
             .await;
-        
-        
-        
+
         self.event_sender_gs
             .send(Event::FSMTransition(new_state as u8))
             .await;

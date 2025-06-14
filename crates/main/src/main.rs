@@ -56,7 +56,7 @@ bind_interrupts!(
 );
 
 #[allow(dead_code)]
-/// an ethernet device peripheral, abstract over the specific PHY used 
+/// an ethernet device peripheral, abstract over the specific PHY used
 type Device = Ethernet<'static, ETH, GenericPhy>;
 
 #[embassy_executor::task]

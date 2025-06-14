@@ -15,8 +15,8 @@ pub mod ip;
 pub mod limits;
 use anyhow::Result;
 
-/// Checks if there are duplicate IDs in the datatypes. Obsolete since we 
-/// don't use events with IDs or commands/datatypes in files other than 
+/// Checks if there are duplicate IDs in the datatypes. Obsolete since we
+/// don't use events with IDs or commands/datatypes in files other than
 /// dataflow.yaml, which are parsed somewhere else.
 ///
 /// -`dp`: datatypes path

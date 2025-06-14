@@ -3,19 +3,19 @@
     import {
         HomeTab,
         ProceduresTab,
-        RunInitTab,
+        PropulsionTab,
         detailTabSet,
-        LocationTab,
         LeviTab,
         PneumaticsTab,
-        BatteriesTab,
+        PowertrainTab,
         DebugTab,
         GrandDataDistributor,
         util,
         EventChannel,
     } from '$lib';
     import {
-        connectedToMainPCB, connectionAcknowledged,
+        connectedToMainPCB,
+        connectionAcknowledged,
         debugModeActive,
         emsTempsAcknowledged,
         hemsTempsAcknowledged,
@@ -34,10 +34,10 @@
     let i = 0;
     let tabs = [
         {name: "Home", value: i++},
-        {name: "Run", value: i++},
-        {name: "Location", value: i++},
-        {name: "Batteries", value: i++},
+        {name: "Propulsion", value: i++},
+        {name: "Powertrain", value: i++},
         {name: "Levitation", value: i++},
+        // {name: "Location", value: i++},
         {name: "Pneumatics", value: i++},
         {name: "Procedures", value: i++},
         {name: "Debug", value: i++}
@@ -313,18 +313,16 @@
                 {#if $detailTabSet === 0}
                     <HomeTab />
                 {:else if $detailTabSet === 1}
-                    <RunInitTab />
+                    <PropulsionTab />
                 {:else if $detailTabSet === 2}
-                    <LocationTab />
+                    <PowertrainTab />
                 {:else if $detailTabSet === 3}
-                    <BatteriesTab />
-                {:else if $detailTabSet === 4}
                     <LeviTab />
-                {:else if $detailTabSet === 5}
+                {:else if $detailTabSet === 4}
                     <PneumaticsTab />
-                {:else if $detailTabSet === 6}
+                {:else if $detailTabSet === 5}
                     <ProceduresTab />
-                {:else if $detailTabSet === 7}
+                {:else if $detailTabSet === 6}
                     <DebugTab />
                 {/if}
             </div>

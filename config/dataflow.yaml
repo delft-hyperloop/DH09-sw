@@ -591,6 +591,12 @@ message-processing:
           id: 0x3A5
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("BMS Logs")!.addEntry(1, curr);
+                  return curr;
+              }
         getter: 'u16[0..2]'
         can-conversion: 'decode_bms_voltage:u16->f32'
         gs:
@@ -604,6 +610,12 @@ message-processing:
           id: 0x3A6
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("BMS Logs")!.addEntry(2, curr);
+                  return curr;
+              }
         getter: 'u16[2..4]'
         can-conversion: 'decode_bms_voltage:u16->f32'
         gs:
@@ -617,6 +629,12 @@ message-processing:
           id: 0x3A7
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("BMS Logs")!.addEntry(3, curr);
+                  return curr;
+              }
         getter: 'u16[4..6]'
         can-conversion: 'decode_bms_voltage:u16->f32'
         display-units: 'V'

@@ -250,6 +250,12 @@
     $chartStore.set("BMS Temps", BMSVoltageTempsChart);
     powertrainCharts.push("BMS Temps");
 
+    let BMSLogsChart = new PlotBuffer(500, 60000, [-500, 500], true, "V Pack");
+    BMSLogsChart.addSeries(StrokePresets.blue("I Pack"));
+    BMSLogsChart.addSeries(StrokePresets.theoretical("V DC Link"));
+    $chartStore.set("BMS Logs", BMSLogsChart);
+    powertrainCharts.push("BMS Logs");
+
     leviChartStore.set(leviCharts);
     propChartStore.set(propCharts);
     powertrainChartStore.set(powertrainCharts);
@@ -407,11 +413,26 @@
         }
     );
 
-    gdd.stores.registerStore<number>("VPack", 0);
+    gdd.stores.registerStore<number>("VPack", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Logs")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("IPack", 0);
+    gdd.stores.registerStore<number>("IPack", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Logs")!.addEntry(2, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("VDCLink", 0);
+    gdd.stores.registerStore<number>("VDCLink", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Logs")!.addEntry(3, curr);
+            return curr;
+        }
+    );
 
     gdd.stores.registerStore<number>("TempRangeStart", 0);
 

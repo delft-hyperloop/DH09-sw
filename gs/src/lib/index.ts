@@ -4,12 +4,12 @@ import LogsPanel from "$lib/panels/LogsPanel.svelte";
 import DetailsPanel from "$lib/panels/DetailsPanel.svelte";
 
 // Tabs
-import BatteriesTab from "$lib/panels/tabs/BatteriesTab.svelte";
+import PowertrainTab from "$lib/panels/tabs/PowertrainTab.svelte";
 import LeviTab from "$lib/panels/tabs/LeviTab.svelte";
 import HomeTab from "$lib/panels/tabs/HomeTab.svelte";
 import LocationTab from "$lib/panels/tabs/LocationTab.svelte";
 import ProceduresTab from "$lib/panels/tabs/ProceduresTab.svelte";
-import RunInitTab from "$lib/panels/tabs/RunInitTab.svelte";
+import PropulsionTab from "$lib/panels/tabs/PropulsionTab.svelte";
 import DebugTab from "$lib/panels/tabs/DebugTab.svelte";
 import PneumaticsTab from "$lib/panels/tabs/PneumaticsTab.svelte";
 
@@ -66,12 +66,12 @@ export {
     VitalsPanel,
     LogsPanel,
     DetailsPanel,
-    BatteriesTab,
+    PowertrainTab,
     LeviTab,
     HomeTab,
     LocationTab,
     ProceduresTab,
-    RunInitTab,
+    PropulsionTab,
     Battery,
     BottomBar,
     TitleBar,

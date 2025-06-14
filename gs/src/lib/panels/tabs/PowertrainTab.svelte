@@ -3,7 +3,8 @@
         Battery,
         Chart,
         GrandDataDistributor,
-        Status, Store,
+        Status,
+        Store,
         Table,
         Tile,
         TileGrid, ToggleCommand,
@@ -225,6 +226,9 @@
         </Tile>
         <Tile containerClass="col-span-4">
             <Chart title="BMS Temps" background="bg-surface-900" />
+        </Tile>
+        <Tile containerClass="col-span-full">
+            <Chart title="BMS Logs" background="bg-surface-900"/>
         </Tile>
 <!--        <Tile containerClass="col-span-4" heading="Lv Cell Voltages">-->
 <!--            <Table background="bg-surface-900" tableArr={lvCellVoltArr} titles =  {lvTitles} />-->

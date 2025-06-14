@@ -7,3 +7,4 @@
 pub mod can;
 pub mod comms_forwarding_tasks;
 pub mod gs_master;
+pub mod ethernet;

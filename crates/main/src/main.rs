@@ -7,6 +7,7 @@
 use defmt::*;
 use defmt_rtt as _;
 use embassy_executor::Spawner;
+use embassy_futures::select::select;
 use embassy_stm32::bind_interrupts;
 use embassy_stm32::can;
 use embassy_stm32::can::frame::Header;
@@ -42,6 +43,7 @@ use main::gs_master::GsMaster;
 use main::gs_master::PodToGsMessage;
 use panic_probe as _;
 use static_cell::StaticCell;
+use main::ethernet::logic::init;
 
 bind_interrupts!(
     struct Irqs {
@@ -204,41 +206,15 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("FSM started!");
 
-    let mac_addr = lib::config::POD_MAC_ADDRESS;
+    let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
 
-    static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
-    // warning: Not all STM32H7 devices have the exact same pins here
-    // for STM32H747XIH, replace p.PB13 for PG12
-    let device = Ethernet::new(
-        PACKETS.init(PacketQueue::<4, 4>::new()),
-        p.ETH,
-        Irqs,
-        p.PA1, // ref_clk
-        p.PA2, // mdio
-        p.PC1, // eth_mdc
-        p.PA7, // CRS_DV: Carrier Sense
-        p.PC4, // RX_D0: Received Bit 0
-        p.PC5, // RX_D1: Received Bit 1
-        //choose one:
-        p.PB12, // FOR MPCB (TX_D0: Transmit Bit 0)
-        // p.PG13, // FOR NUCLEO (TX_D0: Transmit Bit 0)
-        p.PB13, // TX_D1: Transmit Bit 1
-        //choose one:
-        p.PB11, //FOR MPCB (TX_EN: Transmit Enable)
-        // p.PG11, // FOR NUCLEO (TX_EN: Transmit Enable)
-        GenericPhy::new(0),
-        mac_addr,
-    );
-
-    let config = embassy_net::Config::dhcpv4(Default::default());
-
+    init(p).await;
+    
     let gs_master = GsMaster::new(
         EthernetGsCommsLayerInitializer::new(device, config),
         spawner,
     )
     .await;
-
-    let rearm_sdc = Output::new(p.PA10, Level::Low, Speed::Medium);
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(
         gs_master.subscribe(),

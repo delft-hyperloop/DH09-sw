@@ -7,11 +7,11 @@ use std::fs;
 use std::path::Path;
 
 use anyhow::Result;
-use goose_utils::check_config;
 use goose_utils::commands::generate_commands_from_config;
 use goose_utils::datatypes::generate_data_types_from_config;
 use goose_utils::events::generate_events;
 use goose_utils::fsm_states::FSMState;
+use goose_utils::hash_config;
 use goose_utils::ip::configure_gs_ip;
 use serde::Deserialize;
 
@@ -67,7 +67,8 @@ fn main() -> Result<()> {
 
     let mut content = String::from("//@generated\n");
 
-    content.push_str(&check_config(EVENTS_PATH, CONFIG_PATH)?);
+    // content.push_str(&check_config(EVENTS_PATH, CONFIG_PATH)?);
+    content.push_str(&hash_config(CONFIG_PATH)?);
 
     content.push_str(&configure_gs(&config));
     content.push_str(&configure_gs_ip(config.gs.ip, config.gs.port, config.gs.force)?);

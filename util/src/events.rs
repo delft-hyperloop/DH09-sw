@@ -36,7 +36,6 @@ pub fn generate_events(path: &str, drv: bool) -> Result<String> {
 
     let event_count = config.Event.len();
     for event in config.Event.iter() {
-
         match &event.params {
             None => {
                 enum_definitions.push_str(&format!("    {},\n", event.name));
@@ -58,11 +57,7 @@ pub fn generate_events(path: &str, drv: bool) -> Result<String> {
 pub enum Event {{
 {}
 }}
-impl Event {{
-    pub fn to_str(&self) -> &'static str {{
-        EVENTS_DISPLAY[self.to_idx()]
-    }}
-}}",
+",
         if drv {
             "#[derive(Debug, PartialEq, Eq, defmt::Format)]"
         } else {

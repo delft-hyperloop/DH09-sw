@@ -15,7 +15,14 @@ pub mod ip;
 pub mod limits;
 use anyhow::Result;
 
-pub fn check_config(dp: &str, conf: &str) -> Result<String> {
+/// Checks if there are duplicate IDs in the datatypes. Obsolete since we 
+/// don't use events with IDs or commands/datatypes in files other than 
+/// dataflow.yaml, which are parsed somewhere else.
+///
+/// -`dp`: datatypes path
+/// -`cp`: commands path
+/// -`conf`: config path
+pub fn check_config(dp: &str, cp: &str, conf: &str) -> Result<String> {
     let mut items = vec![];
     let d = datatypes::get_data_items(dp)?;
     let c = commands::get_command_items(cp)?;
@@ -89,6 +96,16 @@ fn nearest_id(id: u16, ids: &[u16]) -> u16 {
         }
     }
     panic!("There are no more available ids!")
+}
+
+/// Makes a hash from the config file and returns the value formatted as a
+/// constant
+pub fn hash_config(conf: &str) -> Result<String> {
+    let cs = read_to_string(conf)?;
+    let mut hasher = DefaultHasher::new();
+    cs.hash(&mut hasher);
+    let hash = hasher.finish();
+    Ok(format!("\npub const CONFIG_HASH: u64 = {};\n", hash))
 }
 
 fn category(d: &[u16], c: &[u16], i: u16) -> String {

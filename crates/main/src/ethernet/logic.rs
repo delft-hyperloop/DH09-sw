@@ -1,22 +1,44 @@
-//! The logic behind ethernet. Made using an FSM that checks the SOCKET status
+//! The logic behind ethernet. Made using an FSM that checks the state of the socket used for communications.
 
-use embassy_net::tcp::{TcpSocket, State};
-use embassy_stm32::eth::{Ethernet, GenericPhy, PacketQueue};
+use defmt::*;
+use embassy_executor::Spawner;
+use embassy_net::{Ipv4Address, Stack, StackResources};
+use embassy_net::tcp::State;
+use embassy_net::tcp::TcpSocket;
+use embassy_stm32::eth::Ethernet;
+use embassy_stm32::eth::GenericPhy;
+use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::Peripherals;
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::mutex::Mutex;
 use static_cell::StaticCell;
-
-// static mut SOCKET: Mutex<NoopRawMutex, TcpSocket<'static>> = Mutex::new();
+use lib::config;
+use crate::ethernet::types::{EthDevice, GsToPodPublisher};
+use crate::ethernet::types::PodToGsSubscriber;
 
 pub struct GsMaster {
-    socket: TcpSocket<'static>
+    stack: Stack<'static>,
+    socket: TcpSocket<'static>,
+    remote: (Ipv4Address, u16),
+    pod_to_gs_subscriber: PodToGsSubscriber<'static>,
+    gs_to_pod_publisher: GsToPodPublisher<'static>,
 }
 
 impl GsMaster {
-    pub async fn init(p: Peripherals) -> Self {
+    pub async fn init(
+        p: Peripherals,
+        pod_to_gs_subscriber: PodToGsSubscriber<'static>,
+        gs_to_pod_publisher: GsToPodPublisher<'static>,
+        spawner: Spawner,
+    ) -> Self {
+        
+        // Get the mac address of the pod
         let mac_addr = lib::config::POD_MAC_ADDRESS;
-
+        // Get an IPv4 address for the pod
+        let config = embassy_net::Config::dhcpv4(Default::default());
+        // Get the IPv4 address of the GS
+        let remote = get_remote_endpoint();
+        // Random seed
+        let seed: u64 = 0x1234567890ABCDEF;
+        
         static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
         // warning: Not all STM32H7 devices have the exact same pins here
         // for STM32H747XIH, replace p.PB13 for PG12
@@ -40,24 +62,43 @@ impl GsMaster {
             GenericPhy::new(0),
             mac_addr,
         );
+        
+        // Resources for the TCP stack
+        static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
+        
+        // Initialize the TCP stack and its runner 
+        let (stack, runner) = embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
+        
+        info!("Waiting for ethernet peripheral to be configured");
+        stack.wait_config_up().await;
+        info!("Ethernet peripheral configured");
+        
+        // Spawn the task that runs the TCP stack
+        unwrap!(spawner.spawn(eth_task(runner)));
+        
+        // Create a new socket for the connection
+        let socket: TcpSocket = TcpSocket::new(stack, rx_buffer, tx_buffer);
 
-        // Get an IPv4 address
-        let config = embassy_net::Config::dhcpv4(Default::default());
-
-
+        Self { 
+            stack,
+            socket,
+            remote,
+            pod_to_gs_subscriber,
+            gs_to_pod_publisher
+        }
     }
-    
-    pub async fn run(&self) -> ! {
+
+    pub async fn run(&mut self) -> ! {
         loop {
             let state: embassy_net::tcp::State = self.socket.state();
 
             match state {
                 State::Closed | State::Closing | State::CloseWait => {
                     self.reconnect().await;
-                },
+                }
                 State::Established => {
-                    self.transmit().await;
                     self.receive().await;
+                    self.transmit().await;
                 }
                 // and other states, I haven't looked into them
                 _ => {}
@@ -65,19 +106,41 @@ impl GsMaster {
         }
     }
 
-    pub async fn connect(&self) {
+    async fn connect(&mut self) {
+        info!("Connecting to the GS");
+        loop {
+            match self.socket.connect(self.remote).await {
+                Ok(()) => break,
+                Err(e) => {
+                    error!("{}", e);
+                }
+            }
+        }
+    }
+
+    async fn reconnect(&mut self) {
+        info!("Reconnecting to the GS");
+        
+        // flush whatever was still written to the socket
+        let _ = self.socket.flush();
+        // close the socket
+        self.socket.abort();
+        
+        // drop the socket??
+        
+        
+        // initialize a new one
+        self.socket = TcpSocket::new(self.stack, rx_buffer, tx_buffer);
+        
+        // Connect to the GS
+        self.connect().await;
+    }
+
+    async fn transmit(&mut self) {
         todo!()
     }
 
-    pub async fn reconnect(&self) {
-        todo!()
-    }
-
-    pub async fn transmit(&self) {
-        todo!()
-    }
-
-    pub async fn receive(&self) {
+    async fn receive(&mut self) {
         todo!()
     }
 }
@@ -93,3 +156,18 @@ impl GsMaster {
 // Closing,
 // LastAck,
 // TimeWait,
+
+// TODO: in the future, this should support multiple addresses or discover the address of a groundstation
+/// get ground station [`Ipv4Address`]
+fn get_remote_endpoint() -> (Ipv4Address, u16) {
+    // SAFETY: read-only static defined at compile time
+    let (oct, port) = unsafe { config::GS_IP_ADDRESS };
+    (Ipv4Address::new(oct[0], oct[1], oct[2], oct[3]), port)
+}
+
+/// Task that runs the network stack
+#[embassy_executor::task]
+async fn eth_task(mut runner: embassy_net::Runner<'static, EthDevice>) -> ! {
+    info!("Running the TCP stack");
+    runner.run().await
+}

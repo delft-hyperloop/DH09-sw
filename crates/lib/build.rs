@@ -188,7 +188,7 @@ fn configure_pod(config: &Config) -> String {
         config.pod.net.ip[3],
         config.pod.net.port
     )
-        + &format!("\npub const USE_DHCP: bool = {}\n;", config.pod.net.dhcp)
+        + &format!("\npub const USE_DHCP: bool = {};\n", config.pod.net.dhcp)
         //     + &*format!(
         //     "pub static POD_UDP_IP_ADDRESS: ([u8;4],u16) = ([{},{},{},{}],{});\n",
         //     config.pod.net.ip[0],

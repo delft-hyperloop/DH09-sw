@@ -1,7 +1,11 @@
 //! Types for the ethernet logic
 
+use embassy_stm32::eth::{Ethernet, GenericPhy};
+use embassy_stm32::peripherals::ETH;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::pubsub::{PubSubChannel, Publisher, Subscriber};
+use embassy_sync::pubsub::PubSubChannel;
+use embassy_sync::pubsub::Publisher;
+use embassy_sync::pubsub::Subscriber;
 use lib::config::Command;
 use lib::Datapoint;
 
@@ -11,18 +15,28 @@ const RX_BUFFER_SIZE: usize = 8192;
 const TX_BUFFER_SIZE: usize = 32768;
 
 /// max references
-const RX_CAP: usize = 8;
+const CAP: usize = 8;
 /// max number of subscribers
-const RX_SUBS: usize = 4;
+const SUBS: usize = 4;
 /// max number of publishers
-const RX_PUBS: usize = 1;
-/// pub-sub channel for gs->pod
-type RxChannel = PubSubChannel<NoopRawMutex, GsToPodMessage, RX_CAP, RX_SUBS, RX_PUBS>;
-/// ground station -> pod publisher
-type RxPublisher<'a> = Publisher<'a, NoopRawMutex, GsToPodMessage, RX_CAP, RX_SUBS, RX_PUBS>;
-/// RxSubscriber
-pub type RxSubscriber<'a> = Subscriber<'a, NoopRawMutex, GsToPodMessage, RX_CAP, RX_SUBS, RX_PUBS>;
+const PUBS: usize = 1;
 
+/// pub-sub channel for gs->pod
+pub type GsToPodChannel = PubSubChannel<NoopRawMutex, GsToPodMessage, CAP, SUBS, PUBS>;
+/// ground station -> pod publisher
+pub type GsToPodPublisher<'a> = Publisher<'a, NoopRawMutex, GsToPodMessage, CAP, SUBS, PUBS>;
+/// ground station -> pod subscriber
+pub type GsToPodSubscriber<'a> = Subscriber<'a, NoopRawMutex, GsToPodMessage, CAP, SUBS, PUBS>;
+
+/// pub-sub channel for pod->gs
+pub type PodToGsChannel = PubSubChannel<NoopRawMutex, PodToGsMessage, CAP, SUBS, PUBS>;
+/// pod -> gs publisher
+pub type PodToGsPublisher<'a> = Publisher<'a, NoopRawMutex, PodToGsMessage, CAP, SUBS, PUBS>;
+/// pod -> gs subscriber
+pub type PodToGsSubscriber<'a> = Subscriber<'a, NoopRawMutex, PodToGsMessage, CAP, SUBS, PUBS>;
+
+/// TODO: docs
+pub type EthDevice = Ethernet<'static, ETH, GenericPhy>;
 
 /// Struct used to represent a message from the ground station to the pod
 #[derive(Clone, Debug, defmt::Format)]
@@ -32,7 +46,7 @@ pub struct GsToPodMessage {
 }
 
 impl GsToPodMessage {
-    /// todo: docs
+    /// TODO: docs
     const SIZE: usize = 20;
 
     /// Reads from the buffer

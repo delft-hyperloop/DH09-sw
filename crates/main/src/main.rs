@@ -30,20 +30,17 @@ use lib::EventChannel;
 use lib::EventReceiver;
 use lib::EventSender;
 use main::can::can2;
-use main::comms_forwarding_tasks::forward_can2_messages_to_fsm;
-use main::comms_forwarding_tasks::forward_can2_messages_to_gs;
-use main::comms_forwarding_tasks::forward_fsm_events_to_can2;
-use main::comms_forwarding_tasks::forward_fsm_to_gs;
-use main::comms_forwarding_tasks::forward_gs_to_can2;
-use main::comms_forwarding_tasks::forward_gs_to_fsm;
-use main::comms_forwarding_tasks::log_can2_on_gs;
-use main::gs_master;
-use main::gs_master::EthernetGsCommsLayerInitializer;
-use main::gs_master::GsMaster;
-use main::gs_master::PodToGsMessage;
+use main::comms_tasks::forward_can2_messages_to_fsm;
+use main::comms_tasks::forward_can2_messages_to_gs;
+use main::comms_tasks::forward_fsm_events_to_can2;
+use main::comms_tasks::forward_fsm_to_gs;
+use main::comms_tasks::forward_gs_to_can2;
+use main::comms_tasks::forward_gs_to_fsm;
+use main::comms_tasks::log_can2_on_gs;
+use main::ethernet::logic::GsMaster;
 use panic_probe as _;
 use static_cell::StaticCell;
-use main::ethernet::logic::init;
+use main::ethernet::types::PodToGsMessage;
 
 bind_interrupts!(
     struct Irqs {
@@ -68,11 +65,11 @@ async fn net_task(mut runner: embassy_net::Runner<'static, Device>) -> ! {
     runner.run().await
 }
 
-/// FSM priority channel for events
+/// fsm priority channel for events
 static EVENT_CHANNEL_FSM: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-/// CAN2 priority channel for events
+/// can 2 priority channel for events
 static EVENT_CHANNEL_CAN2: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-/// GS priority cannel for events
+/// priority channel for events from the fsm to the gs
 static EVENT_CHANNEL_GS: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 
 #[embassy_executor::task]
@@ -210,14 +207,17 @@ async fn main(spawner: Spawner) -> ! {
     info!("FSM started!");
 
     let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
-
-    init(p).await;
     
-    let gs_master = GsMaster::new(
-        EthernetGsCommsLayerInitializer::new(device, config),
-        spawner,
-    )
-    .await;
+    let gs_master = GsMaster::init(
+        p,
+        spawner
+    ).await;
+    
+    // let gs_master = GsMaster::new(
+    //     EthernetGsCommsLayerInitializer::new(device, config),
+    //     spawner,
+    // )
+    // .await;
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(
         gs_master.subscribe(),

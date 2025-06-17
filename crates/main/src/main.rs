@@ -38,9 +38,9 @@ use main::comms_tasks::forward_gs_to_can2;
 use main::comms_tasks::forward_gs_to_fsm;
 use main::comms_tasks::log_can2_on_gs;
 use main::ethernet::logic::GsMaster;
+use main::ethernet::types::PodToGsMessage;
 use panic_probe as _;
 use static_cell::StaticCell;
-use main::ethernet::types::PodToGsMessage;
 
 bind_interrupts!(
     struct Irqs {
@@ -83,18 +83,19 @@ async fn run_fsm(
 }
 
 #[embassy_executor::task]
-async fn gs_heartbeat(gstx: gs_master::TxSender<'static>) {
+async fn gs_heartbeat(gs_tx: gs_master::TxSender<'static>) {
     let mut value = 1;
     loop {
         // info!("Sending heartbeat");
-        gstx.send(PodToGsMessage {
-            dp: Datapoint::new(
-                Datatype::FrontendHeartbeating,
-                value,
-                embassy_time::Instant::now().as_ticks(),
-            ),
-        })
-        .await;
+        gs_tx
+            .send(PodToGsMessage {
+                dp: Datapoint::new(
+                    Datatype::FrontendHeartbeating,
+                    value,
+                    embassy_time::Instant::now().as_ticks(),
+                ),
+            })
+            .await;
         value = !value;
         Timer::after_millis(100).await;
     }
@@ -204,12 +205,9 @@ async fn main(spawner: Spawner) -> ! {
     info!("FSM started!");
 
     let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
-    
-    let gs_master = GsMaster::init(
-        p,
-        spawner
-    ).await;
-    
+
+    let gs_master = GsMaster::init(p, spawner, Irqs).await;
+
     // let gs_master = GsMaster::new(
     //     EthernetGsCommsLayerInitializer::new(device, config),
     //     spawner,
@@ -217,12 +215,12 @@ async fn main(spawner: Spawner) -> ! {
     // .await;
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(
-        gs_master.subscribe(),
+        gs_master.receiver(),
         event_sender_gs_to_fsm,
         rearm_sdc,
     )));
 
-    unwrap!(spawner.spawn(forward_gs_to_can2(gs_master.subscribe(), can2.new_sender())));
+    unwrap!(spawner.spawn(forward_gs_to_can2(gs_master.receiver(), can2.new_sender())));
 
     unwrap!(spawner.spawn(forward_can2_messages_to_gs(
         can2.new_subscriber(),

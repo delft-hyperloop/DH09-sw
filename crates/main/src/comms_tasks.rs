@@ -14,22 +14,23 @@ use lib::EventReceiver;
 use lib::EventSender;
 
 use crate::can::can2;
+use crate::ethernet;
 use crate::gs_master;
 use crate::gs_master::PodToGsMessage;
 
 /// Forward the messages received from the GS to the FSM.
 ///
-/// -`gsrx`: Receiver object for the GS
+/// -`gs_rx`: Receiver object for the GS
 /// -`event_sender`: The sender object for FSM events
 /// -`rearm_output`: The pin used to rearm the SDC
 #[embassy_executor::task]
 pub async fn forward_gs_to_fsm(
-    mut gsrx: gs_master::RxSubscriber<'static>,
+    mut gs_rx: ethernet::types::GsToPodSubscriber<'static>,
     event_sender: EventSender,
     mut rearm_output: Output<'static>,
 ) {
     loop {
-        let msg = gsrx.next_message_pure().await;
+        let msg = gs_rx.next_message_pure().await;
         trace!("Received message from GS: {:?}", msg);
         let command: Command = msg.command;
         let event: Event = match_cmd_to_event(command);
@@ -91,42 +92,41 @@ fn match_cmd_to_event(command: Command) -> Event {
 
         // TODO: Acknowledgements
         // Command::FSM
-        
         _ => Event::NoEvent,
     }
 }
 
 /// Forward the messages received from the GS over CAN2.
 ///
-/// -`gsrx`: Receiver object for the GS
-/// -`cantx`: The sender object for CAN2
+/// -`gs_rx`: Receiver object for the GS
+/// -`can_tx`: The sender object for CAN2
 #[embassy_executor::task]
 pub async fn forward_gs_to_can2(
-    mut gsrx: gs_master::RxSubscriber<'static>,
-    cantx: can2::CanTxSender<'static>,
+    mut gs_rx: ethernet::types::GsToPodSubscriber<'static>,
+    can_tx: can2::CanTxSender<'static>,
 ) {
     loop {
-        let msg = gsrx.next_message_pure().await;
+        let msg = gs_rx.next_message_pure().await;
         trace!("Received message from GS: {:?}", msg);
         let command = msg.command;
 
-        lib::config::gs_to_can2(command, |frame| cantx.send(frame)).await;
+        lib::config::gs_to_can2(command, |frame| can_tx.send(frame)).await;
     }
 }
 
 /// Forward the messages received from the FSM over CAN2.
 ///
-/// -`cantx`: The sender object for CAN2
+/// -`can_tx`: The sender object for CAN2
 /// -`event_receiver`: The receiver object for FSM events
 #[embassy_executor::task]
 pub async fn forward_fsm_events_to_can2(
-    cantx: can2::CanTxSender<'static>,
+    can_tx: can2::CanTxSender<'static>,
     event_receiver: EventReceiver,
 ) {
     loop {
         let event = event_receiver.receive().await;
         if let fsm::Event::FSMTransition(state_number) = event {
-            cantx
+            can_tx
                 .send(lib::can::can2::CanEnvelope::new_with_id(
                     Command::FSMUpdate(0).to_id(),
                     &[state_number],
@@ -138,16 +138,16 @@ pub async fn forward_fsm_events_to_can2(
 
 /// Forward the messages received on CAN2 to the FSM.
 ///
-/// -`canrx`: Receiver object for CAN2
+/// -`can_rx`: Receiver object for CAN2
 /// -`event_sender`: The sender object for FSM events
 #[embassy_executor::task]
 pub async fn forward_can2_messages_to_fsm(
-    mut canrx: can2::CanRxSubscriber<'static>,
+    mut can_rx: can2::CanRxSubscriber<'static>,
     event_sender: EventSender,
 ) {
     loop {
         // TODO: Check if data is inside bounds
-        let msg = canrx.next_message().await;
+        let msg = can_rx.next_message().await;
 
         let envelope = match msg {
             WaitResult::Message(envelope) => envelope,
@@ -172,15 +172,15 @@ pub async fn forward_can2_messages_to_fsm(
 
 /// Forward the messages received on CAN2 to the GS.
 ///
-/// -`canrx`: Receiver object for CAN2
-/// -`gstx`: Transmitter object for the GS
+/// -`can_rx`: Receiver object for CAN2
+/// -`gs_tx`: Transmitter object for the GS
 #[embassy_executor::task]
 pub async fn forward_can2_messages_to_gs(
-    mut canrx: can2::CanRxSubscriber<'static>,
-    gstx: gs_master::TxSender<'static>,
+    mut can_rx: can2::CanRxSubscriber<'static>,
+    gs_tx: ethernet::types::PodToGsPublisher<'static>,
 ) {
     loop {
-        let can_frame = canrx.next_message_pure().await;
+        let can_frame = can_rx.next_message_pure().await;
         let id = match can_frame.id() {
             Id::Extended(_extended_id) => todo!("Nuh-uh"),
             Id::Standard(id) => id.as_raw(),
@@ -191,7 +191,7 @@ pub async fn forward_can2_messages_to_gs(
         let data = can_frame.payload();
 
         lib::config::parse_datapoints_can_2(id as u32, data, |dp| async move {
-            gstx.send(PodToGsMessage { dp }).await;
+            gs_tx.send(PodToGsMessage { dp }).await;
         })
         .await;
 
@@ -204,7 +204,10 @@ pub async fn forward_can2_messages_to_gs(
 /// -`gs_tx`: Transmitter object for the GS
 /// -`event_receiver`: Receiver object for the FSM
 #[embassy_executor::task]
-pub async fn forward_fsm_to_gs(gs_tx: gs_master::TxSender<'static>, event_receiver: EventReceiver) {
+pub async fn forward_fsm_to_gs(
+    gs_tx: ethernet::types::PodToGsPublisher<'static>,
+    event_receiver: EventReceiver,
+) {
     loop {
         let event = event_receiver.receive().await;
         match event {
@@ -249,11 +252,11 @@ pub async fn forward_fsm_to_gs(gs_tx: gs_master::TxSender<'static>, event_receiv
 /// Forwards all CAN messages to the groundstation for logging
 #[embassy_executor::task]
 pub async fn log_can2_on_gs(
-    gstx: gs_master::TxSender<'static>,
-    mut canrx: can2::CanRxSubscriber<'static>,
+    gs_tx: ethernet::types::PodToGsPublisher<'static>,
+    mut can_rx: can2::CanRxSubscriber<'static>,
 ) {
     loop {
-        let can_frame = canrx.next_message_pure().await;
+        let can_frame = can_rx.next_message_pure().await;
         let id = match can_frame.id() {
             Id::Standard(s) => s.as_raw() as u32,
             Id::Extended(e) => {
@@ -262,14 +265,15 @@ pub async fn log_can2_on_gs(
             }
         };
 
-        gstx.send(PodToGsMessage {
-            dp: Datapoint::new(
-                Datatype::CANLog,
-                u64::from(id),
-                embassy_time::Instant::now().as_ticks(),
-            ),
-        })
-        .await;
+        gs_tx
+            .send(PodToGsMessage {
+                dp: Datapoint::new(
+                    Datatype::CANLog,
+                    u64::from(id),
+                    embassy_time::Instant::now().as_ticks(),
+                ),
+            })
+            .await;
         // Timer::after_millis(50).await;
     }
 }

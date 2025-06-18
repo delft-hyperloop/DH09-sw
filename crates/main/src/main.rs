@@ -366,7 +366,7 @@ async fn log_can2_on_gs(
         let id = match can_frame.id() {
             Id::Standard(s) => s.as_raw() as u32,
             Id::Extended(e) => {
-                warn!("Received extended CAN ID on can1->gs: {}", e.as_raw());
+                warn!("Received extended CAN ID on can2->gs: {}", e.as_raw());
                 continue;
             }
         };

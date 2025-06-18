@@ -1,5 +1,5 @@
 [target.thumbv7em-none-eabihf]
-runner = "probe-rs run --chip STM32h753zitx --probe 0483:3754:002500273232511939353236"# Thijs' main PCB
+runner = "probe-rs run --chip STM32h753zitx --probe  0483:3754:002F002A3232511639353236"# Thijs' main PCB
 #runner = "probe-rs run --chip STM32h753zitx --probe  0483:374e:002600333133510936303739"
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']

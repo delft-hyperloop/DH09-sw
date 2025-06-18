@@ -5,9 +5,13 @@ use defmt::todo;
 use defmt::*;
 use embassy_stm32::gpio::Output;
 use embassy_sync::pubsub::WaitResult;
+use embassy_time::Instant;
 use embedded_can::Id;
 use lib::config::Command;
 use lib::config::Datatype;
+use lib::config::COMMAND_HASH;
+use lib::config::CONFIG_HASH;
+use lib::config::DATA_HASH;
 use lib::Datapoint;
 use lib::Event;
 use lib::EventReceiver;
@@ -15,8 +19,7 @@ use lib::EventSender;
 
 use crate::can::can2;
 use crate::ethernet;
-use crate::gs_master;
-use crate::gs_master::PodToGsMessage;
+use crate::ethernet::types::PodToGsMessage;
 
 /// Forward the messages received from the GS to the FSM.
 ///
@@ -103,12 +106,41 @@ fn match_cmd_to_event(command: Command) -> Event {
 #[embassy_executor::task]
 pub async fn forward_gs_to_can2(
     mut gs_rx: ethernet::types::GsToPodSubscriber<'static>,
+    mut gs_tx: ethernet::types::PodToGsPublisher<'static>,
     can_tx: can2::CanTxSender<'static>,
 ) {
     loop {
         let msg = gs_rx.next_message_pure().await;
         trace!("Received message from GS: {:?}", msg);
         let command = msg.command;
+
+        // Sends the hashes if the GS asks for them
+        if command == Command::SendHashes {
+            fn ticks() -> u64 {
+                Instant::now().as_ticks()
+            }
+
+            gs_tx
+                .send(PodToGsMessage {
+                    dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
+                })
+                .await;
+            gs_tx
+                .send(PodToGsMessage {
+                    dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
+                })
+                .await;
+            gs_tx
+                .send(PodToGsMessage {
+                    dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
+                })
+                .await;
+            gs_tx
+                .send(PodToGsMessage {
+                    dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
+                })
+                .await;
+        }
 
         lib::config::gs_to_can2(command, |frame| can_tx.send(frame)).await;
     }

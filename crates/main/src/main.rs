@@ -37,6 +37,7 @@ use main::comms_tasks::forward_fsm_to_gs;
 use main::comms_tasks::forward_gs_to_can2;
 use main::comms_tasks::forward_gs_to_fsm;
 use main::comms_tasks::log_can2_on_gs;
+use main::ethernet;
 use main::ethernet::logic::GsMaster;
 use main::ethernet::types::PodToGsMessage;
 use panic_probe as _;
@@ -84,7 +85,7 @@ async fn run_fsm(
 }
 
 #[embassy_executor::task]
-async fn gs_heartbeat(gs_tx: gs_master::TxSender<'static>) {
+async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
     let mut value = 1;
     loop {
         // info!("Sending heartbeat");
@@ -209,6 +210,7 @@ async fn main(spawner: Spawner) -> ! {
 
     let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
 
+    // TODO: Finish this sucker
     let gs_master = GsMaster::init(p, spawner, Irqs).await;
 
     // let gs_master = GsMaster::new(
@@ -223,7 +225,11 @@ async fn main(spawner: Spawner) -> ! {
         rearm_sdc,
     )));
 
-    unwrap!(spawner.spawn(forward_gs_to_can2(gs_master.receiver(), can2.new_sender())));
+    unwrap!(spawner.spawn(forward_gs_to_can2(
+        gs_master.receiver(),
+        gs_master.transmitter(),
+        can2.new_sender()
+    )));
 
     unwrap!(spawner.spawn(forward_can2_messages_to_gs(
         can2.new_subscriber(),

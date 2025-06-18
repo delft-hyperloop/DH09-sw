@@ -2113,6 +2113,8 @@ message-processing:
           conversion: 'gs_2p_float:f32'
 
 commands:
+  - name: 'SendHashes'
+    id: 0x888
   - name: 'LeviDropdown'
     id: 0x1BA
     can:

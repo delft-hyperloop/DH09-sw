@@ -14,33 +14,51 @@ use embassy_stm32::eth::InterruptHandler;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::interrupt;
 use embassy_stm32::Peripherals;
+use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
 use lib::config;
+use lib::config::Datatype;
+use lib::config::COMMAND_HASH;
+use lib::config::CONFIG_HASH;
+use lib::config::DATA_HASH;
+use lib::Datapoint;
 use static_cell::StaticCell;
 
-use crate::ethernet::types::Comms;
+use crate::ethernet::types::GsComms;
 use crate::ethernet::types::EthDevice;
 use crate::ethernet::types::GsToPodMessage;
 use crate::ethernet::types::GsToPodPublisher;
 use crate::ethernet::types::GsToPodSubscriber;
+use crate::ethernet::types::PodToGsMessage;
 use crate::ethernet::types::PodToGsPublisher;
 use crate::ethernet::types::PodToGsSubscriber;
+use crate::ethernet::types::RX_BUFFER_SIZE;
+use crate::ethernet::types::TX_BUFFER_SIZE;
 
 pub struct GsMaster {
     stack: Stack<'static>,
     socket: TcpSocket<'static>,
     remote: (Ipv4Address, u16),
-    pub comms: Comms,
+    pub comms: GsComms,
+    should_reconnect: bool,
 }
 
+/// Buffers used by the TCP stack when transmitting and receiving
+static mut RX_BUFFER: [u8; RX_BUFFER_SIZE] = [0; RX_BUFFER_SIZE];
+static mut TX_BUFFER: [u8; TX_BUFFER_SIZE] = [0; TX_BUFFER_SIZE];
+
 impl GsMaster {
+    /// Initializes the TCP stack and spawns a task for its runner.
+    ///
+    /// # Returns:
+    /// - An instance of the `GsMaster`struct used to communicate over ethernet.
     pub async fn init(
         p: Peripherals,
         spawner: Spawner,
-        irq: impl interrupt::typelevel::Binding<interrupt::typelevel::ETH, InterruptHandler>,
+        irq: impl interrupt::typelevel::Binding<interrupt::typelevel::ETH, InterruptHandler> + 'static,
     ) -> Self {
         // Get the mac address of the pod
         let mac_addr = lib::config::POD_MAC_ADDRESS;
@@ -89,32 +107,65 @@ impl GsMaster {
         // Spawn the task that runs the TCP stack
         unwrap!(spawner.spawn(eth_task(runner)));
 
-        // Create a new socket for the connection
-        let socket: TcpSocket = TcpSocket::new(stack, rx_buffer, tx_buffer);
+        // Create a new socket for the connection. Pass static mutable references to the
+        // buffers that should be used for transmitting and receiving.
+        let socket: TcpSocket = unsafe { TcpSocket::new(stack, &mut RX_BUFFER, &mut TX_BUFFER) };
 
         Self {
             stack,
             socket,
             remote,
-            comms: Comms::new(),
+            comms: GsComms::new(),
+            should_reconnect: false,
         }
     }
 
+    /// Runs the FSM for the GsMaster. Uses the state of the socket to determine
+    /// what it should do. Also checks the internal reconnection flag if it
+    /// needs to reconnect or not.
+    ///
+    /// # States:
+    /// - `Reconnect`: if socket is in one of the following states: Closed,
+    ///   Closing, CloseWait...??? It attempts to reconnect by calling the
+    ///   `reconnect` method.
+    /// - `Connected`: if socket is in state Established. It sends and transmits
+    ///   data.
+    /// - `First Connection`: if socket is in state Established for the first
+    ///   time. Attempts to connect and sends the hashes to the GS.
+    ///
+    /// Closed,
+    /// Listen,
+    /// SynSent,
+    /// SynReceived,
+    /// Established,
+    /// FinWait1,
+    /// FinWait2,
+    /// CloseWait,
+    /// Closing,
+    /// LastAck,
+    /// TimeWait
     pub async fn run(&mut self) -> ! {
-        let rx_buffer = [0; GsToPodMessage::SIZE];
         let receiver = self.comms.tx_channel.receiver();
         let publisher = self.comms.rx_channel.publisher().unwrap();
+        let mut first_connection: bool = true;
 
         loop {
-            let state: embassy_net::tcp::State = self.socket.state();
+            if self.should_reconnect {
+                self.reconnect().await;
+            }
+            let state = self.socket.state();
 
             match state {
                 State::Closed | State::Closing | State::CloseWait => {
                     self.reconnect().await;
                 }
+                State::Established if first_connection => {
+                    first_connection = false;
+                    self.connect(true).await;
+                }
                 State::Established => {
-                    self.receive(rx_buffer).await;
-                    self.transmit().await;
+                    self.receive(publisher).await;
+                    self.transmit(receiver).await;
                 }
                 // and other states, I haven't looked into them
                 _ => {}
@@ -122,7 +173,9 @@ impl GsMaster {
         }
     }
 
-    async fn connect(&mut self) {
+    /// Makes the initial connection with the GS. If successful, it sends the
+    /// hashes for the config, commands, and data files to the GS.
+    async fn connect(&mut self, send_hashes: bool) {
         info!("Connecting to the GS");
         loop {
             match self.socket.connect(self.remote).await {
@@ -131,6 +184,37 @@ impl GsMaster {
                     error!("{}", e);
                 }
             }
+        }
+        fn ticks() -> u64 {
+            Instant::now().as_ticks()
+        }
+
+        if send_hashes {
+            debug!("Handshaking");
+            self.comms
+                .tx_channel
+                .send(PodToGsMessage {
+                    dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
+                })
+                .await;
+            self.comms
+                .tx_channel
+                .send(PodToGsMessage {
+                    dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
+                })
+                .await;
+            self.comms
+                .tx_channel
+                .send(PodToGsMessage {
+                    dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
+                })
+                .await;
+            self.comms
+                .tx_channel
+                .send(PodToGsMessage {
+                    dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
+                })
+                .await;
         }
     }
 
@@ -144,11 +228,12 @@ impl GsMaster {
 
         // drop the socket??
 
-        // initialize a new one
-        self.socket = TcpSocket::new(self.stack, rx_buffer, tx_buffer);
+        // initialize a new one with the same buffers
+        self.socket = unsafe { TcpSocket::new(self.stack, &mut RX_BUFFER, &mut TX_BUFFER) };
 
         // Connect to the GS
-        self.connect().await;
+        self.connect(false).await;
+        self.should_reconnect = false;
     }
 
     async fn transmit(&mut self, receiver: PodToGsSubscriber<'static>) {
@@ -160,6 +245,7 @@ impl GsMaster {
         match tx_result {
             Ok(()) => {}
             Err(embassy_net::tcp::Error::ConnectionReset) => {
+                self.should_reconnect = true;
                 // TODO: Trigger reconnection and somehow keep the bytes that we were supposed
                 //       to send so we send them again after reconnecting
                 Timer::after_millis(200).await;
@@ -167,11 +253,7 @@ impl GsMaster {
         }
     }
 
-    async fn receive(
-        &mut self,
-        mut buf: [u8; GsToPodMessage::SIZE],
-        transmitter: GsToPodPublisher<'static>,
-    ) {
+    async fn receive(&mut self, transmitter: GsToPodPublisher<'static>) {
         if !self.socket.can_recv() {
             Timer::after_millis(5).await;
         }
@@ -189,7 +271,7 @@ impl GsMaster {
                 ),
             ) => {
                 defmt::error!("{}", e);
-                // TODO: trigger reconnection
+                self.should_reconnect = true;
                 Timer::after_millis(100).await;
             }
         };
@@ -208,18 +290,6 @@ impl GsMaster {
         self.comms.tx_channel.sender()
     }
 }
-
-// Closed,
-// Listen,
-// SynSent,
-// SynReceived,
-// Established,
-// FinWait1,
-// FinWait2,
-// CloseWait,
-// Closing,
-// LastAck,
-// TimeWait,
 
 // TODO: in the future, this should support multiple addresses or discover the
 //       address of a groundstation

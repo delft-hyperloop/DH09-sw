@@ -11,11 +11,6 @@ use embassy_sync::pubsub::Subscriber;
 use lib::config::Command;
 use lib::Datapoint;
 
-/// todo: docs
-const RX_BUFFER_SIZE: usize = 8192;
-/// todo: docs
-const TX_BUFFER_SIZE: usize = 32768;
-
 /// max references
 const CAP: usize = 8;
 /// max number of subscribers
@@ -33,24 +28,26 @@ pub type GsToPodPublisher<'a> = Publisher<'a, NoopRawMutex, GsToPodMessage, CAP,
 pub type GsToPodSubscriber<'a> = Subscriber<'a, NoopRawMutex, GsToPodMessage, CAP, SUBS, PUBS>;
 
 /// pub-sub channel for pod->gs
-pub type PodToGsChannel = Channel<NoopRawMutex, PodToGsMessage, CAP>;
+pub type PodToGsChannel = Channel<NoopRawMutex, PodToGsMessage, TX_CAP>;
 /// pod -> gs publisher
 pub type PodToGsPublisher<'a> =
-    embassy_sync::channel::Sender<'a, NoopRawMutex, crate::gs_master::PodToGsMessage, TX_CAP>;
+    embassy_sync::channel::Sender<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
 /// pod -> gs subscriber
 pub type PodToGsSubscriber<'a> =
-    embassy_sync::channel::Receiver<'a, NoopRawMutex, crate::gs_master::PodToGsMessage, TX_CAP>;
+    embassy_sync::channel::Receiver<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
 
 /// TODO: docs
 pub type EthDevice = Ethernet<'static, ETH, GenericPhy>;
 
-/// Struct used to store the communication channels
-pub struct Comms {
+/// Struct used to store the communication channels between the GsMaster and the
+/// outside
+pub struct GsComms {
     pub(crate) rx_channel: GsToPodChannel,
     pub(crate) tx_channel: PodToGsChannel,
 }
 
-impl Comms {
+impl GsComms {
+    /// Constructor for an instance of the Comms struct
     pub fn new() -> Self {
         Self {
             rx_channel: GsToPodChannel::new(),
@@ -58,6 +55,11 @@ impl Comms {
         }
     }
 }
+
+/// todo: docs
+pub(crate) const RX_BUFFER_SIZE: usize = 8192;
+/// todo: docs
+pub(crate) const TX_BUFFER_SIZE: usize = 32768;
 
 /// Struct used to represent a message from the ground station to the pod
 #[derive(Clone, Debug, defmt::Format)]

@@ -147,17 +147,33 @@ impl GsMaster {
     /// - `First Connection`: if socket is in state Established for the first
     ///   time. Attempts to connect and sends the hashes to the GS.
     ///
-    /// Closed,
-    /// Listen,
-    /// SynSent,
-    /// SynReceived,
-    /// Established,
-    /// FinWait1,
-    /// FinWait2,
-    /// CloseWait,
-    /// Closing,
-    /// LastAck,
-    /// TimeWait
+    /// # Possible Socket States:
+    /// - `LISTEN` represents waiting for a connection request from any remote
+    ///   TCP and port.
+    /// - `SYN-SENT` represents waiting for a matching connection request after
+    ///   having sent a connection request.
+    /// - `SYN-RECEIVED` represents waiting for a confirming connection request
+    ///   acknowledgment after having both received and sent a connection
+    ///   request.
+    /// - `ESTABLISHED` represents an open connection, data received can be
+    ///   delivered to the user. The normal state for the data transfer phase of
+    ///   the connection.
+    /// - `FIN-WAIT-1` represents waiting for a connection termination request
+    ///   from the remote TCP, or an acknowledgment of the connection
+    ///   termination request previously sent.
+    /// - `FIN-WAIT-2` represents waiting for a connection termination request
+    ///   from the remote TCP.
+    /// - `CLOSE-WAIT` represents waiting for a connection termination request
+    ///   from the local user.
+    /// - `CLOSING` represents waiting for a connection termination request
+    ///   acknowledgment from the remote TCP.
+    /// - `LAST-ACK` represents waiting for an acknowledgment of the connection
+    ///   termination request previously sent to the remote TCP (which includes
+    ///   an acknowledgment of its connection termination request).
+    /// - `TIME-WAIT` represents waiting for enough time to pass to be sure the
+    ///   remote TCP received the acknowledgment of its connection termination
+    ///   request.
+    /// - `CLOSED` represents no connection state at all
     pub async fn run(&mut self) -> ! {
         let mut first_connection: bool = true;
 
@@ -168,7 +184,13 @@ impl GsMaster {
             let state = self.socket.state();
 
             match state {
-                State::Closed | State::Closing | State::CloseWait => {
+                State::Closed
+                | State::Closing
+                | State::CloseWait
+                | State::FinWait1
+                | State::FinWait2
+                | State::LastAck
+                | State::TimeWait => {
                     self.reconnect().await;
                 }
                 State::Established if first_connection => {
@@ -179,7 +201,8 @@ impl GsMaster {
                     self.receive().await;
                     self.transmit().await;
                 }
-                // and other states, I haven't looked into them
+                // If in states `Listen`, `SynSent`, or `SynReceived`, it's waiting for a connection
+                // which should not be handled here.
                 _ => {}
             }
         }

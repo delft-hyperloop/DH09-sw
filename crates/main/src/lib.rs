@@ -7,4 +7,3 @@
 pub mod can;
 pub mod comms_tasks;
 pub mod ethernet;
-pub mod gs_master;

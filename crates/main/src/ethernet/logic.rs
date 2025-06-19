@@ -111,12 +111,12 @@ impl GsMaster {
         let (stack, runner) =
             embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
 
+        // Spawn the task that runs the TCP stack
+        unwrap!(spawner.spawn(eth_task(runner)));
+
         info!("Waiting for ethernet peripheral to be configured");
         stack.wait_config_up().await;
         info!("Ethernet peripheral configured");
-
-        // Spawn the task that runs the TCP stack
-        unwrap!(spawner.spawn(eth_task(runner)));
 
         // Create a new socket for the connection. Pass static mutable references to the
         // buffers that should be used for transmitting and receiving.
@@ -175,10 +175,13 @@ impl GsMaster {
     ///   request.
     /// - `CLOSED` represents no connection state at all
     pub async fn run(&mut self) -> ! {
-        let mut first_connection: bool = true;
+        info!("Running the ethernet fsm");
+        
+        self.connect(false).await;
 
         loop {
             if self.should_reconnect {
+                info!("Should reconnect triggered");
                 self.reconnect().await;
             }
             let state = self.socket.state();
@@ -191,11 +194,9 @@ impl GsMaster {
                 | State::FinWait2
                 | State::LastAck
                 | State::TimeWait => {
+                    info!("Reconnection triggered with socket state {}", state);
+
                     self.reconnect().await;
-                }
-                State::Established if first_connection => {
-                    first_connection = false;
-                    self.connect(true).await;
                 }
                 State::Established => {
                     self.receive().await;
@@ -210,17 +211,21 @@ impl GsMaster {
 
     /// Makes the initial connection with the GS. If successful, it sends the
     /// hashes for the config, commands, and data files to the GS.
-    async fn connect(&mut self, send_hashes: bool) {
-        info!("Connecting to the GS");
+    async fn connect(&mut self, from_reconnection: bool) {
+        if !from_reconnection {
+            info!("Connecting to the GS");
+        }
         loop {
             match self.socket.connect(self.remote).await {
                 Ok(()) => break,
                 Err(ConnectError::InvalidState) => {
-                    error!("Connect Error Invalid State");
+                    error!("Connect Error Invalid State (already connected)");
                     break;
                 }
                 Err(e) => {
-                    error!("{}", e);
+                    trace!("Connect error (probably waiting for the GS server to start): {}", e);
+                    // Don't remove this timer! 
+                    Timer::after_millis(5).await;
                 }
             }
         }
@@ -228,28 +233,30 @@ impl GsMaster {
             Instant::now().as_ticks()
         }
 
-        if send_hashes {
-            debug!("Handshaking");
-            self.tx_transmitter
-                .send(PodToGsMessage {
-                    dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
-                })
-                .await;
-            self.tx_transmitter
-                .send(PodToGsMessage {
-                    dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
-                })
-                .await;
-            self.tx_transmitter
-                .send(PodToGsMessage {
-                    dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
-                })
-                .await;
-            self.tx_transmitter
-                .send(PodToGsMessage {
-                    dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
-                })
-                .await;
+        debug!("Handshaking");
+        self.tx_transmitter
+            .send(PodToGsMessage {
+                dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
+            })
+            .await;
+        self.tx_transmitter
+            .send(PodToGsMessage {
+                dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
+            })
+            .await;
+        self.tx_transmitter
+            .send(PodToGsMessage {
+                dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
+            })
+            .await;
+        self.tx_transmitter
+            .send(PodToGsMessage {
+                dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
+            })
+            .await;
+        while self.socket.state() == State::Closed {
+            warn!("waiting for the GS to open the server. state={}", self.socket.state());
+            Timer::after_millis(5).await;
         }
     }
 
@@ -262,13 +269,17 @@ impl GsMaster {
         // close the socket
         self.socket.abort();
 
-        // drop the socket??
-
-        // initialize a new one with the same buffers
-        self.socket = unsafe { TcpSocket::new(self.stack, &mut RX_BUFFER, &mut TX_BUFFER) };
+        // SAFETY: replace the socket in memory with a new socket.
+        unsafe {
+            core::ptr::drop_in_place(&mut self.socket as *mut TcpSocket<'_>);
+            core::ptr::write(
+                &mut self.socket as *mut TcpSocket<'_>,
+                TcpSocket::new(self.stack, &mut RX_BUFFER, &mut TX_BUFFER),
+            );
+        }
 
         // Connect to the GS
-        self.connect(false).await;
+        self.connect(true).await;
         self.should_reconnect = false;
     }
 

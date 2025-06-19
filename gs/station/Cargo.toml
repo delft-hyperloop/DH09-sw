@@ -42,10 +42,6 @@ dirs = "6.0.0"
 name = "station"
 path = "src/main.rs"
 
-[[bin]]
-name = "anal"
-path = "src/analysis/main.rs"
-
 [lib]
 name = "gslib"
 path = "src/lib.rs"

@@ -40,7 +40,7 @@ pub async fn transmit_commands_to_tcp(
                 if matches!(command, Command::Shutdown(_)) {
                     status_transmitter
                         .send(Message::Warning("Closing connection...".into()))
-                        .unwrap();
+                        .expect("channel closed (irrecoverable)");
                     writer.shutdown().await.unwrap();
                     break;
                 }

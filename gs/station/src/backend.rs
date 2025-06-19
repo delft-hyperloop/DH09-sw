@@ -10,10 +10,9 @@ use gslib::ProcessedData;
 use regex::Regex;
 use tokio::task::AbortHandle;
 
-use crate::battery::DataReceiver;
-use crate::battery::DataSender;
 use crate::CommandReceiver;
 use crate::CommandSender;
+use crate::connect::{DataReceiver, DataSender};
 use crate::MessageReceiver;
 use crate::MessageSender;
 

@@ -13,7 +13,6 @@ use crate::frontend::app::tauri_main;
 use crate::tui::tui_main;
 
 mod backend;
-pub mod battery;
 pub mod connect;
 mod data;
 #[cfg(feature = "backend")]

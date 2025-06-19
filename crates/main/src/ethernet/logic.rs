@@ -3,6 +3,7 @@
 
 use defmt::*;
 use embassy_executor::Spawner;
+use embassy_net::tcp::ConnectError;
 use embassy_net::tcp::State;
 use embassy_net::tcp::TcpSocket;
 use embassy_net::Ipv4Address;
@@ -13,7 +14,6 @@ use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::InterruptHandler;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::interrupt;
-use embassy_stm32::Peripherals;
 use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_io_async::Read;
@@ -27,28 +27,36 @@ use lib::config::DATA_HASH;
 use lib::Datapoint;
 use static_cell::StaticCell;
 
-use crate::ethernet::types::GsComms;
 use crate::ethernet::types::EthDevice;
+use crate::ethernet::types::EthPeripherals;
 use crate::ethernet::types::GsToPodMessage;
 use crate::ethernet::types::GsToPodPublisher;
-use crate::ethernet::types::GsToPodSubscriber;
 use crate::ethernet::types::PodToGsMessage;
 use crate::ethernet::types::PodToGsPublisher;
 use crate::ethernet::types::PodToGsSubscriber;
 use crate::ethernet::types::RX_BUFFER_SIZE;
 use crate::ethernet::types::TX_BUFFER_SIZE;
 
+/// Struct used to communicate over ethernet with the GS.
 pub struct GsMaster {
     stack: Stack<'static>,
     socket: TcpSocket<'static>,
     remote: (Ipv4Address, u16),
-    pub comms: GsComms,
+    tx_receiver: PodToGsSubscriber<'static>,
+    rx_transmitter: GsToPodPublisher<'static>,
+    tx_transmitter: PodToGsPublisher<'static>,
     should_reconnect: bool,
+    tx_failed: bool,
 }
 
-/// Buffers used by the TCP stack when transmitting and receiving
+/// Buffer used by the TCP stack when receiving
 static mut RX_BUFFER: [u8; RX_BUFFER_SIZE] = [0; RX_BUFFER_SIZE];
+/// Buffer used by the TCP stack when transmitting
 static mut TX_BUFFER: [u8; TX_BUFFER_SIZE] = [0; TX_BUFFER_SIZE];
+
+/// Buffer used to retransmit a message that failed to transmit because of a
+/// connection reset error
+static mut TX_BYTES: [u8; 20] = [0; 20];
 
 impl GsMaster {
     /// Initializes the TCP stack and spawns a task for its runner.
@@ -56,9 +64,12 @@ impl GsMaster {
     /// # Returns:
     /// - An instance of the `GsMaster`struct used to communicate over ethernet.
     pub async fn init(
-        p: Peripherals,
+        p: EthPeripherals,
         spawner: Spawner,
         irq: impl interrupt::typelevel::Binding<interrupt::typelevel::ETH, InterruptHandler> + 'static,
+        tx_receiver: PodToGsSubscriber<'static>,
+        rx_transmitter: GsToPodPublisher<'static>,
+        tx_transmitter: PodToGsPublisher<'static>,
     ) -> Self {
         // Get the mac address of the pod
         let mac_addr = lib::config::POD_MAC_ADDRESS;
@@ -74,20 +85,20 @@ impl GsMaster {
         // for STM32H747XIH, replace p.PB13 for PG12
         let device = Ethernet::new(
             PACKETS.init(PacketQueue::<4, 4>::new()),
-            p.ETH,
+            p.eth,
             irq,
-            p.PA1, // ref_clk
-            p.PA2, // mdio
-            p.PC1, // eth_mdc
-            p.PA7, // CRS_DV: Carrier Sense
-            p.PC4, // RX_D0: Received Bit 0
-            p.PC5, // RX_D1: Received Bit 1
+            p.pa1, // ref_clk
+            p.pa2, // mdio
+            p.pc1, // eth_mdc
+            p.pa7, // CRS_DV: Carrier Sense
+            p.pc4, // RX_D0: Received Bit 0
+            p.pc5, // RX_D1: Received Bit 1
             //choose one:
-            p.PB12, // FOR MPCB (TX_D0: Transmit Bit 0)
+            p.pb12, // FOR MPCB (TX_D0: Transmit Bit 0)
             // p.PG13, // FOR NUCLEO (TX_D0: Transmit Bit 0)
-            p.PB13, // TX_D1: Transmit Bit 1
+            p.pb13, // TX_D1: Transmit Bit 1
             //choose one:
-            p.PB11, //FOR MPCB (TX_EN: Transmit Enable)
+            p.pb11, //FOR MPCB (TX_EN: Transmit Enable)
             // p.PG11, // FOR NUCLEO (TX_EN: Transmit Enable)
             GenericPhy::new(0),
             mac_addr,
@@ -115,8 +126,11 @@ impl GsMaster {
             stack,
             socket,
             remote,
-            comms: GsComms::new(),
+            tx_receiver,
+            rx_transmitter,
+            tx_transmitter,
             should_reconnect: false,
+            tx_failed: false,
         }
     }
 
@@ -145,8 +159,6 @@ impl GsMaster {
     /// LastAck,
     /// TimeWait
     pub async fn run(&mut self) -> ! {
-        let receiver = self.comms.tx_channel.receiver();
-        let publisher = self.comms.rx_channel.publisher().unwrap();
         let mut first_connection: bool = true;
 
         loop {
@@ -164,8 +176,8 @@ impl GsMaster {
                     self.connect(true).await;
                 }
                 State::Established => {
-                    self.receive(publisher).await;
-                    self.transmit(receiver).await;
+                    self.receive().await;
+                    self.transmit().await;
                 }
                 // and other states, I haven't looked into them
                 _ => {}
@@ -180,6 +192,10 @@ impl GsMaster {
         loop {
             match self.socket.connect(self.remote).await {
                 Ok(()) => break,
+                Err(ConnectError::InvalidState) => {
+                    error!("Connect Error Invalid State");
+                    break;
+                }
                 Err(e) => {
                     error!("{}", e);
                 }
@@ -191,26 +207,22 @@ impl GsMaster {
 
         if send_hashes {
             debug!("Handshaking");
-            self.comms
-                .tx_channel
+            self.tx_transmitter
                 .send(PodToGsMessage {
                     dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
                 })
                 .await;
-            self.comms
-                .tx_channel
+            self.tx_transmitter
                 .send(PodToGsMessage {
                     dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
                 })
                 .await;
-            self.comms
-                .tx_channel
+            self.tx_transmitter
                 .send(PodToGsMessage {
                     dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
                 })
                 .await;
-            self.comms
-                .tx_channel
+            self.tx_transmitter
                 .send(PodToGsMessage {
                     dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
                 })
@@ -218,6 +230,7 @@ impl GsMaster {
         }
     }
 
+    /// Reconnects to the GS if the connection drops by creating a new socket.
     async fn reconnect(&mut self) {
         info!("Reconnecting to the GS");
 
@@ -236,29 +249,66 @@ impl GsMaster {
         self.should_reconnect = false;
     }
 
-    async fn transmit(&mut self, receiver: PodToGsSubscriber<'static>) {
-        let msg = receiver.receive().await;
-        let bytes = msg.dp.as_bytes();
+    /// Transmits the messages from the PodToGsChannel. If a transmission fails,
+    /// it saves the bytes it was supposed to send in `TX_BYTES` and reattempts
+    /// to send them in the next call.
+    async fn transmit(&mut self) {
+        if self.tx_failed {
+            let mut buf: [u8; 20] = [0; 20];
+            unsafe {
+                buf.copy_from_slice(&TX_BYTES);
+            }
+            let tx_result = self.socket.write_all(&buf).await;
 
-        let tx_result = self.socket.write_all(&bytes).await;
+            match tx_result {
+                Ok(()) => {
+                    self.tx_failed = false;
+                }
+                Err(embassy_net::tcp::Error::ConnectionReset) => {
+                    self.should_reconnect = true;
+                }
+            }
+
+            return;
+        }
+
+        let msg = self.tx_receiver.receive().await;
+
+        let buf = msg.dp.as_bytes();
+        unsafe {
+            // Copy buf into TX_BYTES
+            TX_BYTES.copy_from_slice(&buf);
+        }
+
+        let tx_result = self.socket.write_all(&buf).await;
 
         match tx_result {
-            Ok(()) => {}
+            Ok(()) => {
+                self.tx_failed = false;
+            }
             Err(embassy_net::tcp::Error::ConnectionReset) => {
                 self.should_reconnect = true;
-                // TODO: Trigger reconnection and somehow keep the bytes that we were supposed
-                //       to send so we send them again after reconnecting
-                Timer::after_millis(200).await;
+                self.tx_failed = true;
             }
         }
     }
 
-    async fn receive(&mut self, transmitter: GsToPodPublisher<'static>) {
+    /// Receives messages over ethernet and publishes them to the
+    /// GsToPodChannel. If this fails, trigger a reconnection.
+    async fn receive(&mut self) {
+        // Buffer should have the size of a message so it can only store one message.
+        let mut buf = [0; GsToPodMessage::SIZE];
+
         if !self.socket.can_recv() {
-            Timer::after_millis(5).await;
+            // Timer::after_millis(5).await;
+            return;
         }
 
+        // Reads and stores in the buffer an amount of bytes equal to the size of the
+        // buffer.
         let read_result = self.socket.read_exact(&mut buf).await;
+
+        debug!("Read result: {}", &read_result);
 
         match read_result {
             Ok(()) => {}
@@ -276,18 +326,10 @@ impl GsMaster {
             }
         };
 
-        transmitter
+        self.rx_transmitter
             .publish(GsToPodMessage::read_from_buf(&buf))
             .await;
         Timer::after_millis(5).await;
-    }
-
-    pub fn receiver(&self) -> GsToPodSubscriber {
-        self.comms.rx_channel.subscriber().unwrap()
-    }
-
-    pub fn transmitter(&self) -> PodToGsPublisher {
-        self.comms.tx_channel.sender()
     }
 }
 

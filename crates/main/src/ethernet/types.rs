@@ -3,6 +3,16 @@
 use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::peripherals::ETH;
+use embassy_stm32::peripherals::PA1;
+use embassy_stm32::peripherals::PA2;
+use embassy_stm32::peripherals::PA7;
+use embassy_stm32::peripherals::PB11;
+use embassy_stm32::peripherals::PB12;
+use embassy_stm32::peripherals::PB13;
+use embassy_stm32::peripherals::PC1;
+use embassy_stm32::peripherals::PC4;
+use embassy_stm32::peripherals::PC5;
+use embassy_stm32::Peri;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::channel::Channel;
 use embassy_sync::pubsub::PubSubChannel;
@@ -54,6 +64,26 @@ impl GsComms {
             tx_channel: PodToGsChannel::new(),
         }
     }
+
+    /// Gives a subscriber object for the PodToGsChannel
+    pub fn tx_receiver(&self) -> PodToGsSubscriber {
+        self.tx_channel.receiver()
+    }
+
+    /// Give a publisher object for the PodToGsChannel
+    pub fn tx_publisher(&self) -> PodToGsPublisher {
+        self.tx_channel.sender()
+    }
+
+    /// Gives a publisher object for the GsToPodChannel
+    pub fn rx_publisher(&self) -> GsToPodPublisher {
+        self.rx_channel.publisher().unwrap()
+    }
+
+    /// Gives a receiver object for the GsToPodChannel
+    pub fn rx_receiver(&self) -> GsToPodSubscriber {
+        self.rx_channel.subscriber().unwrap()
+    }
 }
 
 /// todo: docs
@@ -62,7 +92,7 @@ pub(crate) const RX_BUFFER_SIZE: usize = 8192;
 pub(crate) const TX_BUFFER_SIZE: usize = 32768;
 
 /// Struct used to represent a message from the ground station to the pod
-#[derive(Clone, Debug, defmt::Format)]
+#[derive(Clone, Debug, defmt::Format, Copy)]
 pub struct GsToPodMessage {
     /// The command sent
     pub command: Command,
@@ -82,8 +112,32 @@ impl GsToPodMessage {
 }
 
 /// Struct for the datapoints sent from the pod to the ground station
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub struct PodToGsMessage {
     /// The datapoint being sent
     pub dp: Datapoint,
+}
+
+/// The pins used for ethernet
+pub struct EthPeripherals {
+    /// todo
+    pub eth: Peri<'static, ETH>,
+    /// todo
+    pub pa1: Peri<'static, PA1>,
+    /// todo
+    pub pa2: Peri<'static, PA2>,
+    /// todo
+    pub pc1: Peri<'static, PC1>,
+    /// todo
+    pub pa7: Peri<'static, PA7>,
+    /// todo
+    pub pc4: Peri<'static, PC4>,
+    /// todo
+    pub pc5: Peri<'static, PC5>,
+    /// todo
+    pub pb12: Peri<'static, PB12>,
+    /// todo
+    pub pb13: Peri<'static, PB13>,
+    /// todo
+    pub pb11: Peri<'static, PB11>,
 }

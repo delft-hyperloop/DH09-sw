@@ -106,7 +106,7 @@ fn match_cmd_to_event(command: Command) -> Event {
 #[embassy_executor::task]
 pub async fn forward_gs_to_can2(
     mut gs_rx: ethernet::types::GsToPodSubscriber<'static>,
-    mut gs_tx: ethernet::types::PodToGsPublisher<'static>,
+    gs_tx: ethernet::types::PodToGsPublisher<'static>,
     can_tx: can2::CanTxSender<'static>,
 ) {
     loop {
@@ -115,7 +115,7 @@ pub async fn forward_gs_to_can2(
         let command = msg.command;
 
         // Sends the hashes if the GS asks for them
-        if command == Command::SendHashes {
+        if let Command::SendHashes(_) = command {
             fn ticks() -> u64 {
                 Instant::now().as_ticks()
             }

@@ -7,13 +7,11 @@
 use defmt::*;
 use defmt_rtt as _;
 use embassy_executor::Spawner;
-use embassy_futures::select::select;
 use embassy_stm32::bind_interrupts;
 use embassy_stm32::can;
 use embassy_stm32::can::frame::Header;
 use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::GenericPhy;
-use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::eth::{self};
 use embassy_stm32::gpio::Level;
 use embassy_stm32::gpio::Output;
@@ -39,6 +37,8 @@ use main::comms_tasks::forward_gs_to_fsm;
 use main::comms_tasks::log_can2_on_gs;
 use main::ethernet;
 use main::ethernet::logic::GsMaster;
+use main::ethernet::types::EthPeripherals;
+use main::ethernet::types::GsComms;
 use main::ethernet::types::PodToGsMessage;
 use panic_probe as _;
 use static_cell::StaticCell;
@@ -72,6 +72,9 @@ static EVENT_CHANNEL_FSM: static_cell::StaticCell<EventChannel> = static_cell::S
 static EVENT_CHANNEL_CAN2: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 /// priority channel for events from the fsm to the gs
 static EVENT_CHANNEL_GS: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+
+static GS_MASTER: StaticCell<GsMaster> = StaticCell::new();
+static GS_COMMS: StaticCell<GsComms> = StaticCell::new();
 
 #[embassy_executor::task]
 async fn run_fsm(
@@ -118,6 +121,12 @@ async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
 
         Timer::after_millis(100).await;
     }
+}
+
+/// Run the GsMaster
+#[embassy_executor::task]
+async fn run_gs_master(gs_master: &'static mut GsMaster) -> ! {
+    gs_master.run().await;
 }
 
 #[embassy_executor::main]
@@ -208,43 +217,65 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("FSM started!");
 
+    let gs_comms = GS_COMMS.init(GsComms::new());
+    let gs_tx_receiver = gs_comms.tx_receiver();
+    let gs_tx_transmitter = gs_comms.tx_publisher();
+    let gs_rx_transmitter = gs_comms.rx_publisher();
+
+    let eth_peripherals = EthPeripherals {
+        eth: p.ETH,
+        pa1: p.PA1,
+        pa2: p.PA2,
+        pc1: p.PC1,
+        pa7: p.PA7,
+        pc4: p.PC4,
+        pc5: p.PC5,
+        pb12: p.PB12,
+        pb13: p.PB13,
+        pb11: p.PB11,
+    };
+
+    let gs_master = GS_MASTER.init(
+        GsMaster::init(
+            eth_peripherals,
+            spawner,
+            Irqs,
+            gs_tx_receiver,
+            gs_rx_transmitter,
+            gs_tx_transmitter,
+        )
+        .await,
+    );
+
+    unwrap!(spawner.spawn(run_gs_master(gs_master)));
+
     let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
-
-    // TODO: Finish this sucker
-    let gs_master = GsMaster::init(p, spawner, Irqs).await;
-
-    // let gs_master = GsMaster::new(
-    //     EthernetGsCommsLayerInitializer::new(device, config),
-    //     spawner,
-    // )
-    // .await;
-
     unwrap!(spawner.spawn(forward_gs_to_fsm(
-        gs_master.receiver(),
+        gs_comms.rx_receiver(),
         event_sender_gs_to_fsm,
-        rearm_sdc,
+        rearm_sdc_pin,
     )));
 
     unwrap!(spawner.spawn(forward_gs_to_can2(
-        gs_master.receiver(),
-        gs_master.transmitter(),
+        gs_comms.rx_receiver(),
+        gs_comms.tx_publisher(),
         can2.new_sender()
     )));
 
     unwrap!(spawner.spawn(forward_can2_messages_to_gs(
         can2.new_subscriber(),
-        gs_master.transmitter()
+        gs_comms.tx_publisher()
     )));
 
     unwrap!(spawner.spawn(forward_fsm_to_gs(
-        gs_master.transmitter(),
+        gs_comms.tx_publisher(),
         event_receiver_fsm_to_gs
     )));
 
-    unwrap!(spawner.spawn(gs_heartbeat(gs_master.transmitter())));
+    unwrap!(spawner.spawn(gs_heartbeat(gs_comms.tx_publisher())));
 
     unwrap!(spawner.spawn(log_can2_on_gs(
-        gs_master.transmitter(),
+        gs_comms.tx_publisher(),
         can2.new_subscriber()
     )));
 

@@ -43,19 +43,19 @@ impl Backlog {
     //     (self.levi_max - self.levi_min).abs() > CYGNUS_MAX_DIFFERENCE
     // }
 
-    fn compare_voltages(&self) -> Event {
-        if self.levi_min <= 0.9 * self.bms_avg {
-            Event::HvLevitationBelowBms
-        } else {
-            Event::HvLevitationAboveBms
-        }
-    }
+    // fn compare_voltages(&self) -> Event {
+    //     if self.levi_min <= 0.9 * self.bms_avg {
+    //         Event::HvLevitationBelowBms
+    //     } else {
+    //         Event::HvLevitationAboveBms
+    //     }
+    // }
 
-    fn levi_rising_edge(&self) -> bool { self.levi_max > LEVI_LED_THRESHOLD }
-
-    fn levi_falling_edge(&self) -> bool { self.levi_max < LEVI_LED_THRESHOLD }
-
-    fn is_pre_charging(&self) -> bool { (self.state - 4.0) < f64::EPSILON * 4.0 }
+    // fn levi_rising_edge(&self) -> bool { self.levi_max > LEVI_LED_THRESHOLD }
+    // 
+    // fn levi_falling_edge(&self) -> bool { self.levi_max < LEVI_LED_THRESHOLD }
+    // 
+    // fn is_pre_charging(&self) -> bool { (self.state - 4.0) < f64::EPSILON * 4.0 }
 }
 
 pub async fn aggregate_voltage_readings(
@@ -63,11 +63,11 @@ pub async fn aggregate_voltage_readings(
     cmd_out: CommandSender,
     status: MessageSender,
 ) {
-    let send = |event: Event| {
-        cmd_out
-            .send(Command::EmitEvent(event.to_id() as u64))
-            .expect("Batteries couldn't send command");
-    };
+    // let send = |event: Event| {
+    //     cmd_out
+    //         .send(Command::EmitEvent(event.to_id() as u64))
+    //         .expect("Batteries couldn't send command");
+    // };
 
     let mut edge = false;
 
@@ -111,7 +111,7 @@ pub async fn aggregate_voltage_readings(
 
         if !edge {
             edge = true;
-            send(Event::LeviConnected);
+            // send(Event::LeviConnected);
         }
 
         // Run checks:
@@ -119,14 +119,14 @@ pub async fn aggregate_voltage_readings(
         //     send(Event::CygnusesVaryingVoltages);
         // }
 
-        if backlog.levi_rising_edge() {
-            send(Event::LeviLedOn);
-        }
-
-        if backlog.levi_falling_edge() {
-            send(Event::LeviLedOff);
-        }
-
-        send(backlog.compare_voltages());
+        // if backlog.levi_rising_edge() {
+        //     send(Event::LeviLedOn);
+        // }
+        // 
+        // if backlog.levi_falling_edge() {
+        //     send(Event::LeviLedOff);
+        // }
+        // 
+        // send(backlog.compare_voltages());
     }
 }

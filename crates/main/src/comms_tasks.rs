@@ -7,6 +7,8 @@ use embassy_stm32::gpio::Output;
 use embassy_sync::pubsub::WaitResult;
 use embassy_time::Instant;
 use embedded_can::Id;
+use embedded_can::StandardId;
+use embedded_can::Frame;
 use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
@@ -16,6 +18,7 @@ use lib::Datapoint;
 use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
+use embassy_time::Timer;
 
 use crate::can::can2;
 use crate::ethernet;
@@ -307,5 +310,20 @@ pub async fn log_can2_on_gs(
             })
             .await;
         // Timer::after_millis(50).await;
+    }
+}
+
+/// Only used for testing, should not be run in the final version
+#[embassy_executor::task]
+pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
+    loop {
+        let frame = Frame::new(Id::Standard(StandardId::new(826u16).unwrap()), &[1u8; 6]).expect("Invalid frame");
+
+        can_tx
+            .send(lib::can::can2::CanEnvelope::new_from_frame(frame))
+            .await;
+        info!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SENDING");
+
+        Timer::after_millis(100).await;
     }
 }

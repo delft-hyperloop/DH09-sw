@@ -3,8 +3,8 @@ use std::collections::VecDeque;
 use gslib::Datapoint;
 
 use crate::connect::handle_incoming_data::handle_incoming_data;
-use crate::CommandSender;
 use crate::connect::DataSender;
+use crate::CommandSender;
 use crate::MessageSender;
 
 /// # Unloads from the buffer and transmits any messages found
@@ -31,11 +31,7 @@ pub async fn parse(
                 // x.reverse();
                 // tx.send(Message::Info(format!("[TRACE] received: {:?}", x))).unwrap();
                 //msg_sender.send(Message::Data(Datapoint::from_bytes(&x)))?;
-                handle_incoming_data(
-                    Datapoint::from_bytes(&x),
-                    msg_sender.clone(),
-                )
-                .await?;
+                handle_incoming_data(Datapoint::from_bytes(&x), msg_sender.clone()).await?;
             }
         } else {
             parsing_buffer.pop_front();

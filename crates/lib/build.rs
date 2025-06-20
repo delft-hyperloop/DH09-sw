@@ -103,10 +103,7 @@ fn main() -> Result<()> {
     content.push_str(&hash_config(CONFIG_PATH)?);
 
     content.push_str(&configure_ip(&config));
-    content.push_str(&configure_gs_ips(
-        &config.gs.ips,
-        config.gs.port
-    ));
+    content.push_str(&configure_gs_ips(&config.gs.ips, config.gs.port));
     content.push_str(&configure_pod(&config));
     content.push_str(&configure_internal(&config));
     let commands = goose_utils::dataflow::collect_commands(&df);
@@ -319,12 +316,17 @@ fn configure_gs_ips(ips: &Vec<[u8; 4]>, port: u16) -> String {
     let mut result: String = String::from("");
 
     for ip in ips {
-        result.push_str(&format!("\t([{}, {}, {}, {}], {}),\n", ip[0], ip[1], ip[2], ip[3], port));
+        result.push_str(&format!(
+            "\t([{}, {}, {}, {}], {}),\n",
+            ip[0], ip[1], ip[2], ip[3], port
+        ));
     }
 
     format!(
         "\npub const IP_ADDRESS_COUNT: usize = {};\npub const GS_IP_ADDRESSES: [([u8;4], u16); {}] = [\n\
         {}\n];\n\n",
-        ips.len(), ips.len(), result
+        ips.len(),
+        ips.len(),
+        result
     )
 }

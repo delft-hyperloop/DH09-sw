@@ -12,7 +12,6 @@ use goose_utils::datatypes::generate_data_types_from_config;
 use goose_utils::events::generate_events;
 use goose_utils::fsm_states::FSMState;
 use goose_utils::hash_config;
-use goose_utils::ip::configure_gs_ip;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -40,7 +39,7 @@ struct CommConfig {
 
 #[derive(Debug, Deserialize)]
 struct GS {
-    ip: [u8; 4],
+    ips: Vec<[u8; 4]>,
     force: bool,
     port: u16,
     buffer_size: usize,
@@ -71,7 +70,7 @@ fn main() -> Result<()> {
     content.push_str(&hash_config(CONFIG_PATH)?);
 
     content.push_str(&configure_gs(&config));
-    content.push_str(&configure_gs_ip(config.gs.ip, config.gs.port, config.gs.force)?);
+    content.push_str(&configure_gs_ips(&config.gs.ips, config.gs.port));
     let df = fs::read_to_string(DATAFLOW_PATH)?;
     let df = goose_utils::dataflow::parse_from(&df);
     let dt = goose_utils::dataflow::collect_data_types(&df);
@@ -151,5 +150,20 @@ impl States {{
             .map(|x| format!("\t\t\t{} => States::{}", x.index, x.state))
             .collect::<Vec<String>>()
             .join(",\n")
+    )
+}
+
+/// Generates the IPv4 addresses from the provided list of (IP, port) tuples
+fn configure_gs_ips(ips: &Vec<[u8; 4]>, port: u16) -> String {
+    let mut result: String = String::from("");
+
+    for ip in ips {
+        result.push_str(&format!("\t([{}, {}, {}, {}], {}),\n", ip[0], ip[1], ip[2], ip[3], port));
+    }
+
+    format!(
+        "\npub const IP_ADDRESS_COUNT: usize = {};\npub const GS_IP_ADDRESSES: [([u8;4], u16); {}] = [\n\
+        {}\n];\n\n",
+        ips.len(), ips.len(), result
     )
 }

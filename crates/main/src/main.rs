@@ -35,6 +35,7 @@ use main::comms_tasks::forward_fsm_to_gs;
 use main::comms_tasks::forward_gs_to_can2;
 use main::comms_tasks::forward_gs_to_fsm;
 use main::comms_tasks::log_can2_on_gs;
+use main::comms_tasks::send_random_msg_continuously;
 use main::ethernet;
 use main::ethernet::logic::GsMaster;
 use main::ethernet::types::EthPeripherals;
@@ -106,22 +107,6 @@ async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
     }
 }
 
-/// Only used for testing, should not be run in the final version
-#[embassy_executor::task]
-async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
-    loop {
-        let header = Header::new(Id::from(StandardId::new(8u16).unwrap()), 8, false);
-
-        let frame = can::frame::Frame::new(header, &[1u8; 8]).expect("Invalid frame");
-
-        can_tx
-            .send(lib::can::can2::CanEnvelope::new_from_frame(frame))
-            .await;
-        info!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SENDING");
-
-        Timer::after_millis(100).await;
-    }
-}
 
 /// Run the GsMaster
 #[embassy_executor::task]
@@ -196,6 +181,10 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("CAN Configured");
     defmt::println!("CAN Configured");
+
+    spawner.spawn(send_random_msg_continuously(
+        can2.new_sender(),
+    )).unwrap();
     spawner
         .spawn(run_fsm(
             event_receiver_fsm,

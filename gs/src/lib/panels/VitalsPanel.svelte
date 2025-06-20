@@ -156,9 +156,10 @@
                 <Tile bgToken={700} containerClass="col-span-2">
                     <div class="flex flex-wrap justify-between gap-4">
                         <div class="flex justify-between flex-col">
-                            <p>Velocity: {$velocity.value} m/s</p>
-                            <p>Acceleration: // m/s²</p>
-                            <p>Position: {$localization.value / 100} mm</p>
+                            <p>Velocity: <Store datatype="Velocity" /></p>
+                            <p>Position: <Store datatype="Localization" /></p>
+                            <p>LV Temp High: <Store datatype="BMSTemperatureLow" /></p>
+                            <p>HV Temp High: <Store datatype="BMSTemperatureHigh" /></p>
                         </div>
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
                             <span>LV:</span>
@@ -229,7 +230,7 @@
                             <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
                         {/if}
                         <Command cmd="RearmSDC" text="Rearm SDC" icon={QComposerEdit}/>
-                        <Command cmd="RetractBrakes" icon={RightPanelClose}/>
+                        <!-- <Command cmd="RetractBrakes" icon={RightPanelClose}/> -->
                         {#if !$inStateLevitating}
                             <Command cmd="LevitationOn" icon={StartLevitatingIcon}/>
                         {:else}

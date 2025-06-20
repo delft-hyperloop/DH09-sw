@@ -10,7 +10,7 @@
     $: store;
 </script>
 
-<span class="text-{$latestTimestamp - $store.timestamp > STALE_DATA_TICKS ? 'surface' : $store.style === 'critical' ? 'error' : $store.style}-400">
+<span class="text-{$latestTimestamp - $store.timestamp > STALE_DATA_TICKS ? 'surface' : $store.style === 'critical' ? 'error' : ($store.style || 'success')}-400">
     {typeof $store.value === "number" ?
         $store.value.toFixed(2) : $store.value} {$store.units}
 </span>

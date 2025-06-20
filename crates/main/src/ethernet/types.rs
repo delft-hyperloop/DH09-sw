@@ -22,8 +22,9 @@ use embassy_time::Duration;
 use lib::config::Command;
 use lib::Datapoint;
 
-/// if nothing is sent over tcp for [timeout], send an RST and close the connection.
-/// keep alive will send a TCP_KEEP_ALIVE frame every [duration] milliseconds.
+/// if nothing is sent over tcp for [timeout], send an RST and close the
+/// connection. keep alive will send a TCP_KEEP_ALIVE frame every [duration]
+/// milliseconds.
 pub const SOCKET_KEEP_ALIVE: Duration = Duration::from_millis(300);
 
 /// max references

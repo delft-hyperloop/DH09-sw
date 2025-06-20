@@ -2,6 +2,7 @@
 //! socket used for communications.
 
 use core::ops::Rem;
+
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_net::tcp::ConnectError;
@@ -28,7 +29,7 @@ use lib::config::DATA_HASH;
 use lib::Datapoint;
 use static_cell::StaticCell;
 
-use crate::ethernet::types::{EthDevice, SOCKET_KEEP_ALIVE,};
+use crate::ethernet::types::EthDevice;
 use crate::ethernet::types::EthPeripherals;
 use crate::ethernet::types::GsToPodMessage;
 use crate::ethernet::types::GsToPodPublisher;
@@ -36,6 +37,7 @@ use crate::ethernet::types::PodToGsMessage;
 use crate::ethernet::types::PodToGsPublisher;
 use crate::ethernet::types::PodToGsSubscriber;
 use crate::ethernet::types::RX_BUFFER_SIZE;
+use crate::ethernet::types::SOCKET_KEEP_ALIVE;
 use crate::ethernet::types::TX_BUFFER_SIZE;
 
 /// Struct used to communicate over ethernet with the GS.
@@ -228,16 +230,23 @@ impl GsMaster {
 
             match self.socket.connect(remote).await {
                 Ok(()) => {
-                    debug!("socket connected, state={}, endpoint={}", self.socket.state(), self.socket.remote_endpoint());
+                    debug!(
+                        "socket connected, state={}, endpoint={}",
+                        self.socket.state(),
+                        self.socket.remote_endpoint()
+                    );
                     break;
-                },
+                }
                 Err(ConnectError::InvalidState) => {
                     error!("Connect Error Invalid State (already connected)");
                     break;
                 }
                 Err(e) => {
-                    debug!("Connect error (probably waiting for the GS server to start): {}", e);
-                    // Don't remove this timer! 
+                    debug!(
+                        "Connect error (probably waiting for the GS server to start): {}",
+                        e
+                    );
+                    // Don't remove this timer!
                     counter = counter.wrapping_add(1);
                     if counter.rem(100) == 0 {
                         warn!("trying to connect. state={}", self.socket.state());
@@ -275,7 +284,10 @@ impl GsMaster {
             })
             .await;
         while self.socket.state() == State::Closed {
-            warn!("waiting for network stack state to update. state={}", self.socket.state());
+            warn!(
+                "waiting for network stack state to update. state={}",
+                self.socket.state()
+            );
             Timer::after_millis(5).await;
         }
         info!("connected, endpoint={:?}", self.socket.remote_endpoint())

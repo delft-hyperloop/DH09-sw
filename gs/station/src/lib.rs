@@ -104,5 +104,5 @@ pub fn state_to_string(state: u64) -> String {
 }
 
 pub fn socket() -> std::net::SocketAddr {
-    unsafe { std::net::SocketAddr::new(std::net::IpAddr::from([0, 0, 0, 0]), GS_IP_ADDRESS.1) }
+    std::net::SocketAddr::new(std::net::IpAddr::from([0, 0, 0, 0]), GS_IP_ADDRESSES[0].1)
 }

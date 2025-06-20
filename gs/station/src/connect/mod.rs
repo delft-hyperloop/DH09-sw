@@ -5,9 +5,9 @@ mod tcp_writer;
 
 use anyhow::Result;
 use gslib::socket;
-use gslib::ProcessedData;
 use gslib::Info;
 use gslib::Message;
+use gslib::ProcessedData;
 use tokio::net::TcpListener;
 use tokio::net::TcpStream;
 use tokio::task::JoinHandle;

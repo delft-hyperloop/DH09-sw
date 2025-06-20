@@ -1,5 +1,5 @@
 [gs]
-ip = [192,168,1,138]
+ip = [192,168,1,208]
 force = true 
 port = 6949
 buffer_size = 1460 # this is the MAXIMUM size of messages transmitted, in bytes.

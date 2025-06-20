@@ -1,6 +1,7 @@
 //! The logic behind ethernet. Made using an FSM that checks the state of the
 //! socket used for communications.
 
+use core::ops::Rem;
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_net::tcp::ConnectError;
@@ -14,7 +15,7 @@ use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::InterruptHandler;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::interrupt;
-use embassy_time::Instant;
+use embassy_time::{Duration, Instant};
 use embassy_time::Timer;
 use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
@@ -27,7 +28,7 @@ use lib::config::DATA_HASH;
 use lib::Datapoint;
 use static_cell::StaticCell;
 
-use crate::ethernet::types::EthDevice;
+use crate::ethernet::types::{EthDevice, SOCKET_KEEP_ALIVE,};
 use crate::ethernet::types::EthPeripherals;
 use crate::ethernet::types::GsToPodMessage;
 use crate::ethernet::types::GsToPodPublisher;
@@ -176,8 +177,10 @@ impl GsMaster {
     /// - `CLOSED` represents no connection state at all
     pub async fn run(&mut self) -> ! {
         info!("Running the ethernet fsm");
-        
-        self.connect(false).await;
+
+        info!("Connecting to the GS");
+        self.connect().await;
+        info!("Connected to the GS");
 
         loop {
             if self.should_reconnect {
@@ -211,20 +214,28 @@ impl GsMaster {
 
     /// Makes the initial connection with the GS. If successful, it sends the
     /// hashes for the config, commands, and data files to the GS.
-    async fn connect(&mut self, from_reconnection: bool) {
-        if !from_reconnection {
-            info!("Connecting to the GS");
-        }
+    async fn connect(&mut self) {
+        // configure socket
+        self.socket.set_timeout(Some(SOCKET_KEEP_ALIVE * 2));
+        self.socket.set_keep_alive(Some(SOCKET_KEEP_ALIVE));
         loop {
+            let mut counter = 0usize;
             match self.socket.connect(self.remote).await {
-                Ok(()) => break,
+                Ok(()) => {
+                    debug!("socket connected, state={}, endpoint={}", self.socket.state(), self.socket.remote_endpoint());
+                    break;
+                },
                 Err(ConnectError::InvalidState) => {
                     error!("Connect Error Invalid State (already connected)");
                     break;
                 }
                 Err(e) => {
-                    trace!("Connect error (probably waiting for the GS server to start): {}", e);
+                    debug!("Connect error (probably waiting for the GS server to start): {}", e);
                     // Don't remove this timer! 
+                    counter = counter.wrapping_add(1);
+                    if counter.rem(200) == 0 {
+                        warn!("trying to connect. state={}", self.socket.state());
+                    }
                     Timer::after_millis(5).await;
                 }
             }
@@ -233,7 +244,7 @@ impl GsMaster {
             Instant::now().as_ticks()
         }
 
-        debug!("Handshaking");
+        debug!("handshaking (sending hashes)");
         self.tx_transmitter
             .send(PodToGsMessage {
                 dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
@@ -255,9 +266,10 @@ impl GsMaster {
             })
             .await;
         while self.socket.state() == State::Closed {
-            warn!("waiting for the GS to open the server. state={}", self.socket.state());
+            warn!("waiting for network stack state to update. state={}", self.socket.state());
             Timer::after_millis(5).await;
         }
+        info!("connected, endpoint={:?}", self.socket.remote_endpoint())
     }
 
     /// Reconnects to the GS if the connection drops by creating a new socket.
@@ -279,7 +291,7 @@ impl GsMaster {
         }
 
         // Connect to the GS
-        self.connect(true).await;
+        self.connect().await;
         self.should_reconnect = false;
     }
 
@@ -342,7 +354,7 @@ impl GsMaster {
         // buffer.
         let read_result = self.socket.read_exact(&mut buf).await;
 
-        debug!("Read result: {}", &read_result);
+        trace!("reading from tcp socket: {}", &read_result);
 
         match read_result {
             Ok(()) => {}

@@ -15,7 +15,7 @@ use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::InterruptHandler;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::interrupt;
-use embassy_time::{Duration, Instant};
+use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
@@ -42,7 +42,7 @@ use crate::ethernet::types::TX_BUFFER_SIZE;
 pub struct GsMaster {
     stack: Stack<'static>,
     socket: TcpSocket<'static>,
-    remote: (Ipv4Address, u16),
+    remotes: [(Ipv4Address, u16); config::IP_ADDRESS_COUNT],
     tx_receiver: PodToGsSubscriber<'static>,
     rx_transmitter: GsToPodPublisher<'static>,
     tx_transmitter: PodToGsPublisher<'static>,
@@ -77,7 +77,7 @@ impl GsMaster {
         // Get an IPv4 address for the pod
         let config = embassy_net::Config::dhcpv4(Default::default());
         // Get the IPv4 address of the GS
-        let remote = get_remote_endpoint();
+        let remotes = get_remote_endpoints();
         // Random seed
         let seed: u64 = 0x1234567890ABCDEF;
 
@@ -126,7 +126,7 @@ impl GsMaster {
         Self {
             stack,
             socket,
-            remote,
+            remotes,
             tx_receiver,
             rx_transmitter,
             tx_transmitter,
@@ -218,9 +218,15 @@ impl GsMaster {
         // configure socket
         self.socket.set_timeout(Some(SOCKET_KEEP_ALIVE * 2));
         self.socket.set_keep_alive(Some(SOCKET_KEEP_ALIVE));
+
+        let mut index: usize = 0;
         loop {
             let mut counter = 0usize;
-            match self.socket.connect(self.remote).await {
+
+            // Try to connect to a different IP address every 500 ms
+            let remote = self.remotes[index];
+
+            match self.socket.connect(remote).await {
                 Ok(()) => {
                     debug!("socket connected, state={}, endpoint={}", self.socket.state(), self.socket.remote_endpoint());
                     break;
@@ -233,8 +239,11 @@ impl GsMaster {
                     debug!("Connect error (probably waiting for the GS server to start): {}", e);
                     // Don't remove this timer! 
                     counter = counter.wrapping_add(1);
-                    if counter.rem(200) == 0 {
+                    if counter.rem(100) == 0 {
                         warn!("trying to connect. state={}", self.socket.state());
+
+                        // Switch to a different IP address
+                        index = (index + 1) % config::IP_ADDRESS_COUNT;
                     }
                     Timer::after_millis(5).await;
                 }
@@ -379,13 +388,10 @@ impl GsMaster {
     }
 }
 
-// TODO: in the future, this should support multiple addresses or discover the
-//       address of a groundstation
 /// get ground station [`Ipv4Address`]
-fn get_remote_endpoint() -> (Ipv4Address, u16) {
-    // SAFETY: read-only static defined at compile time
-    let (oct, port) = unsafe { config::GS_IP_ADDRESS };
-    (Ipv4Address::new(oct[0], oct[1], oct[2], oct[3]), port)
+fn get_remote_endpoints() -> [(Ipv4Address, u16); config::IP_ADDRESS_COUNT] {
+    let ips = config::GS_IP_ADDRESSES;
+    ips.map(|x| (Ipv4Address::new(x.0[0], x.0[1], x.0[2], x.0[3]), x.1))
 }
 
 /// Task that runs the network stack

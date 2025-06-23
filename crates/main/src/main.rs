@@ -9,7 +9,6 @@ use defmt_rtt as _;
 use embassy_executor::Spawner;
 use embassy_stm32::bind_interrupts;
 use embassy_stm32::can;
-use embassy_stm32::can::frame::Header;
 use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::{self};
@@ -19,8 +18,6 @@ use embassy_stm32::gpio::Speed;
 use embassy_stm32::peripherals;
 use embassy_stm32::peripherals::*;
 use embassy_time::Timer;
-use embedded_can::Id;
-use embedded_can::StandardId;
 use fsm::FSM;
 use lib::config::Datatype;
 use lib::Datapoint;
@@ -35,7 +32,6 @@ use main::comms_tasks::forward_fsm_to_gs;
 use main::comms_tasks::forward_gs_to_can2;
 use main::comms_tasks::forward_gs_to_fsm;
 use main::comms_tasks::log_can2_on_gs;
-use main::comms_tasks::send_random_msg_continuously;
 use main::ethernet;
 use main::ethernet::logic::GsMaster;
 use main::ethernet::types::EthPeripherals;
@@ -182,9 +178,11 @@ async fn main(spawner: Spawner) -> ! {
     info!("CAN Configured");
     defmt::println!("CAN Configured");
 
-    spawner.spawn(send_random_msg_continuously(
-        can2.new_sender(),
-    )).unwrap();
+    // Used to test CAN
+    // spawner.spawn(send_random_msg_continuously(
+    //     can2.new_sender(),
+    // )).unwrap();
+    
     spawner
         .spawn(run_fsm(
             event_receiver_fsm,

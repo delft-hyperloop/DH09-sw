@@ -3,7 +3,8 @@ import {PlotBuffer} from "$lib/util/PlotBuffer";
 import { detailTabSet, VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
 import {invoke} from "@tauri-apps/api/tauri";
 import { debugModeActive, logsPanelSize, logsScrollAreaSize, logsVisible } from '$lib/stores/state';
-import { appWindow } from '@tauri-apps/api/window';
+import { appWindow } from '@tauri-apps/api/window'
+
 const MAX_VALUE = 4_294_967_295;
 
 const tempParse: dataConvFun<number> = (data: number) => {

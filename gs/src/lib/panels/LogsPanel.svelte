@@ -3,9 +3,17 @@
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
-    import { bigErrorStatus, ErrorStatus, logsPanelSize, logsVisible } from '$lib/stores/state';
+    import {
+        bigErrorStatus,
+        ErrorStatus,
+        logsPanelSize,
+        logsScrollAreaSize,
+        logsVisible,
+    } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { View, ViewOff } from 'carbon-icons-svelte';
+    import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
+    import { invoke } from '@tauri-apps/api/tauri';
 
     let unlistens: UnlistenFn[] = [];
     let logContainer: HTMLElement;
@@ -103,6 +111,14 @@
                 }
             }
         );
+
+        unlistens[5] = await listen(EventChannel.STATUS, async (event: {payload: string}) => {
+            const message:string[] = event.payload.split(";");
+            if (message[0] === "Status: ConnectionClosedByClient" || event.payload === "ConnectionClosedByServer" || event.payload === "ConnectionDropped" || event.payload === "FailedToReadFromConnection") {
+                await invoke("disconnect");
+                await invoke("connect_to_pod");
+            }
+        })
 
         logContainer.addEventListener('scroll', () => {
             // User has scrolled if they're not at the very top

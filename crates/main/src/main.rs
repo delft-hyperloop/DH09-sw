@@ -86,8 +86,9 @@ async fn run_fsm(
     event_receiver: EventReceiver,
     event_sender2: EventSender,
     event_sender_gs: EventSender,
+    sdc_pin: Output<'static>
 ) {
-    let mut fsm = FSM::new(event_receiver, event_sender2, event_sender_gs).await;
+    let mut fsm = FSM::new(event_receiver, event_sender2, event_sender_gs, sdc_pin).await;
     fsm.run().await;
 }
 
@@ -497,6 +498,7 @@ async fn main(spawner: Spawner) -> ! {
         //
     }
     let p = embassy_stm32::init(config);
+    let sdc_pin = Output::new(p.PB0, Level::High, Speed::Medium);
 
     // The event channel that will be used to transmit events to the FSM.
     let event_channel_fsm: &mut EventChannel = EVENT_CHANNEL_FSM.init(EventChannel::new());
@@ -544,6 +546,7 @@ async fn main(spawner: Spawner) -> ! {
             event_receiver_fsm,
             event_sender_can2,
             event_sender_fsm_to_gs,
+            sdc_pin,
         ))
         .unwrap();
 

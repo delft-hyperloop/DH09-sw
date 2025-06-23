@@ -1,7 +1,8 @@
 //! This module contains the struct used for the Main FSM.
 
-use core::fmt::{Debug, Formatter};
-use defmt::info;
+use core::fmt::Debug;
+use core::fmt::Formatter;
+
 use embassy_stm32::gpio::Output;
 use lib::Event;
 use lib::EventReceiver;
@@ -99,10 +100,10 @@ impl FSM {
         match (self.state, event) {
             (_, Event::Emergency { emergency_type }) => {
                 self.transition(States::Fault).await;
-                
+
                 // Pull down the SDC to trigger an emergency
                 self.sdc_pin.set_low();
-                info!("Pulled down SDC!!");
+                defmt::info!("Pulled down SDC!!");
 
                 // If going in emergency state, send messages over CAN and to the groundstation
                 self.event_sender2

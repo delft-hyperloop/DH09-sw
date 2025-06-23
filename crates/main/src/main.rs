@@ -86,7 +86,7 @@ async fn run_fsm(
     event_receiver: EventReceiver,
     event_sender2: EventSender,
     event_sender_gs: EventSender,
-    sdc_pin: Output<'static>
+    sdc_pin: Output<'static>,
 ) {
     let mut fsm = FSM::new(event_receiver, event_sender2, event_sender_gs, sdc_pin).await;
     fsm.run().await;

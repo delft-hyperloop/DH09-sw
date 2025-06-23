@@ -79,10 +79,18 @@
             console.log(message)
             console.log(`bg-${message[1]}-600`)
 
-            toastStore.trigger({
-                message: message[0],
-                background: `bg-surface-600` || "bg-surface-600",
-            });
+            if (message[0].includes("mismatch")) {
+                toastStore.trigger({
+                    message: message[0],
+                    background: 'bg-error-400',
+                    autohide: false,
+                });
+            } else {
+                toastStore.trigger({
+                    message: message[0],
+                    background: `bg-surface-600` || 'bg-surface-600',
+                });
+            }
 
             switch (message[0]) {
             case "Unsafe":

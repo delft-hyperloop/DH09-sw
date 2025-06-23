@@ -75,8 +75,8 @@
         "Idle",
         "Precharge",
         "HV On",
-        "Discharge",
         "Failure",
+        "Discharge",
     ]
 
     $: tableBatteryVitals = [

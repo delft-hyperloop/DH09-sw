@@ -3,10 +3,17 @@
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
-    import { bigErrorStatus, ErrorStatus, logsPanelSize, logsScrollAreaSize, logsVisible } from '$lib/stores/state';
+    import {
+        bigErrorStatus,
+        ErrorStatus,
+        logsPanelSize,
+        logsScrollAreaSize,
+        logsVisible,
+    } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { View, ViewOff } from 'carbon-icons-svelte';
     import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
+    import { invoke } from '@tauri-apps/api/tauri';
 
     let unlistens: UnlistenFn[] = [];
     let logContainer: HTMLElement;
@@ -73,8 +80,8 @@
             console.log(`bg-${message[1]}-600`)
 
             toastStore.trigger({
-            message: message[0],
-            background: `bg-surface-600` || "bg-surface-600",
+                message: message[0],
+                background: `bg-surface-600` || "bg-surface-600",
             });
 
             switch (message[0]) {
@@ -90,7 +97,20 @@
         unlistens[2] = await registerChannel(EventChannel.WARNING, 'WARNING');
         unlistens[3] = await registerChannel(EventChannel.ERROR, 'ERROR');
 
-        unlistens[4] = await listen("clear_logs", () => clearLogs());
+        unlistens[4] = await listen('shortcut_channel', (event: { payload: string }) => {
+                if (event.payload === 'ClearLogs') {
+                    clearLogs();
+                }
+            }
+        );
+
+        unlistens[5] = await listen(EventChannel.STATUS, async (event: {payload: string}) => {
+            const message:string[] = event.payload.split(";");
+            if (message[0] === "Status: ConnectionClosedByClient" || event.payload === "ConnectionClosedByServer" || event.payload === "ConnectionDropped" || event.payload === "FailedToReadFromConnection") {
+                await invoke("disconnect");
+                await invoke("connect_to_pod");
+            }
+        })
 
         logContainer.addEventListener('scroll', () => {
             userHasScrolled = logContainer.scrollTop < logContainer.scrollHeight - logContainer.clientHeight;

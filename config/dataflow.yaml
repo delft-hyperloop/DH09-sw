@@ -2219,6 +2219,10 @@ commands:
     id: 0x192
   - name: 'RearmSDC'
     id: 0x1B6
+  - name: 'ConnectionEstablished'
+    id: 0x206
+  - name: 'ConnectionClosed'
+    id: 0x207
 
 beckhoff:
   task-period: 10 # period in ms

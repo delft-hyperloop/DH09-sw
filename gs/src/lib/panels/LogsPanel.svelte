@@ -4,7 +4,7 @@
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
     import {
-        bigErrorStatus,
+        bigErrorStatus, connectedToMainPCB,
         ErrorStatus,
         logsPanelSize,
         logsScrollAreaSize,
@@ -12,7 +12,7 @@
     } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { View, ViewOff } from 'carbon-icons-svelte';
-    import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
+    import { util, VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
     import { invoke } from '@tauri-apps/api/tauri';
 
     let unlistens: UnlistenFn[] = [];
@@ -61,6 +61,13 @@
             logsPanelSize.set(5);
         }
     }
+
+    let connectionClosedMessages = [
+        "ConnectionClosedByClient",
+        "ConnectionClosedByServer",
+        "ConnectionDropped",
+        "FailedToReadFromConnection",
+    ];
 
     onMount(async () => {
         unlistens[0] = await registerChannel(EventChannel.INFO, 'INFO');
@@ -114,9 +121,22 @@
 
         unlistens[5] = await listen(EventChannel.STATUS, async (event: {payload: string}) => {
             const message:string[] = event.payload.split(";");
-            if (message[0] === "Status: ConnectionClosedByClient" || event.payload === "ConnectionClosedByServer" || event.payload === "ConnectionDropped" || event.payload === "FailedToReadFromConnection") {
+            if (message[0] === "Status: ConnectionClosedByClient" ||
+                message[0] === "Status: ConnectionClosedByServer" ||
+                message[0] === "Status: ConnectionDropped" ||
+                message[0] === "Status: FailedToReadFromConnection")
+            {
                 await invoke("disconnect");
                 await invoke("connect_to_pod");
+                connectedToMainPCB.set(false);
+            } else if (message[0].split(":")[1].trim() === "ConnectionEstablished") {
+                await invoke('send_command', {cmdName: "ConnectionEstablished", val: 0}).then(() => {
+                    console.log(`Command ConnectionEstablished sent`);
+                }).catch((e) => {
+                    console.error(`Error sending command ConnectionEstablished: ${e}`);
+                });
+                util.log(`Command ConnectionEstablished sent`, EventChannel.INFO);
+                connectedToMainPCB.set(true);
             }
         })
 

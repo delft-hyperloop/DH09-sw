@@ -6,9 +6,10 @@ use defmt::*;
 use embassy_stm32::gpio::Output;
 use embassy_sync::pubsub::WaitResult;
 use embassy_time::Instant;
+use embassy_time::Timer;
+use embedded_can::Frame;
 use embedded_can::Id;
 use embedded_can::StandardId;
-use embedded_can::Frame;
 use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
@@ -18,7 +19,6 @@ use lib::Datapoint;
 use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
-use embassy_time::Timer;
 
 use crate::can::can2;
 use crate::ethernet;
@@ -85,7 +85,7 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::PropulsionOff(_) => Event::Cruise,
 
         // Control commands
-        Command::SystemCheck(_) => todo!(),
+        Command::SystemCheck(_) => Event::StartSystemCheck,
         Command::Shutdown(_) => Event::ShutDown,
         Command::RearmSDC(_) => Event::EnterDemo,
 
@@ -95,6 +95,8 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::ResetLevitation(_) => todo!(),
         Command::ResetPowertrain(_) => todo!(),
         Command::ResetPropulsion(_) => todo!(),
+
+        Command::ConnectionEstablished(_) => Event::ConnectToGS,
 
         // TODO: Acknowledgements
         // Command::FSM
@@ -317,7 +319,8 @@ pub async fn log_can2_on_gs(
 #[embassy_executor::task]
 pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
     loop {
-        let frame = Frame::new(Id::Standard(StandardId::new(826u16).unwrap()), &[1u8; 6]).expect("Invalid frame");
+        let frame = Frame::new(Id::Standard(StandardId::new(826u16).unwrap()), &[1u8; 6])
+            .expect("Invalid frame");
 
         can_tx
             .send(lib::can::can2::CanEnvelope::new_from_frame(frame))

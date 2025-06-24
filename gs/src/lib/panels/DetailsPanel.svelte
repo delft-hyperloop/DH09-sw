@@ -15,7 +15,6 @@
         EventChannel,
     } from '$lib';
     import {
-        connectedToMainPCB, connectionAcknowledged,
         debugModeActive,
         emsTempsAcknowledged,
         hemsTempsAcknowledged,

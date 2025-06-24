@@ -218,9 +218,6 @@
                         {/if}
                         <Command
                             cmd="SystemCheck"
-                            dependency={inStateSystemCheck}
-                            dependencyTitle="Not in System Check"
-                            dependencyMessage="The pod must be in the System Check state to perform a system check!"
                             icon={SettingsCheck}
                         />
                         {#if !$inStateHVOn}

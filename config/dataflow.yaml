@@ -2223,6 +2223,12 @@ commands:
     id: 0x206
   - name: 'ConnectionClosed'
     id: 0x207
+  - name: 'MockPtAck'
+    id: 0x208
+  - name: 'MockLeviAck'
+    id: 0x209
+  - name: 'MockPropAck'
+    id: 0x210
 
 beckhoff:
   task-period: 10 # period in ms

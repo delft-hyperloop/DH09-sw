@@ -37,6 +37,7 @@ pub async fn get_messages_from_tcp(
                 message_transmitter
                     .send(Message::Error(format!("Error reading from socket: {}", e)))?;
                 message_transmitter.send(Message::Status(Info::ConnectionClosedByClient))?;
+                break;
             },
         }
     }

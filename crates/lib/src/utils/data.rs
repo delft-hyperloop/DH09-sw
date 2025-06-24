@@ -11,8 +11,6 @@ pub enum Event {
     ConnectToGS,
     /// Start system check
     StartSystemCheck,
-    /// The System was checked successfully
-    SystemCheckSuccess,
     /// Enters `Idle` state from `Discharge` state
     EnterIdle,
     /// Starts the pre-charging process
@@ -76,6 +74,12 @@ pub enum Event {
     PowertrainAck,
     /// Acknowledgement for levi fault clear
     ClearFaultAckLevi,
+    /// Acknowledgement that levi passed the system check
+    LeviSystemCheckSuccess,
+    /// Acknowledgement that propulsion passed the system check
+    PropSystemCheckSuccess,
+    /// Acknowledgement that powertrain passed the system check
+    PowertrainSystemCheckSuccess,
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]

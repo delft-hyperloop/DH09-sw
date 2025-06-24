@@ -5,7 +5,7 @@
     import { getModalStore } from '@skeletonlabs/skeleton';
     import { MODAL_SETTINGS } from '$lib/types';
     import { modalBody, modalTitle } from '$lib/stores/data';
-    import { overrideDependencies } from '$lib/stores/state';
+    import { connectedToMainPCB, overrideDependencies } from '$lib/stores/state';
 
     export let className: string = '';
     export let cmd: NamedCommand;
@@ -22,6 +22,13 @@
     let modalStore = getModalStore();
 
     let send = async () => {
+        if (!$connectedToMainPCB) {
+            modalTitle.set("Not connected to the pod!");
+            modalBody.set("Can't send commands without being connected to the pod!");
+            modalStore.trigger(MODAL_SETTINGS);
+            return;
+        }
+
         if (!$overrideDependencies && dependency && !$dependency) {
             modalTitle.set(dependencyTitle);
             modalBody.set(dependencyMessage);

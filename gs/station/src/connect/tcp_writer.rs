@@ -1,3 +1,4 @@
+use gslib::Info;
 use gslib::Message;
 use gslib::Message::Error;
 use gslib::HEARTBEAT;
@@ -30,6 +31,7 @@ pub async fn transmit_commands_to_tcp(
                     status_transmitter
                         .send(Error(format!("Error sending keepalive over tcp: {:?}", e)))
                         .unwrap();
+                    status_transmitter.send(Message::Status(Info::ConnectionClosedByClient))?;
                     break;
                 },
             }
@@ -60,6 +62,7 @@ pub async fn transmit_commands_to_tcp(
                         status_transmitter
                             .send(Error(format!("Error sending command over tcp: {:?}", e)))
                             .expect("message channel closed");
+                        status_transmitter.send(Message::Status(Info::ConnectionClosedByClient))?;
                         break;
                     },
                 }

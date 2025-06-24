@@ -94,16 +94,18 @@ pub fn tauri_main(backend: Backend) {
                             ss.emit_all(STATUS_CHANNEL, "Emergency Brake triggered!;red").unwrap();
                         })
                         .expect("Could not register shortcut");
-                        
+
                         let ss = s.clone();
                         sh.register("C", move || {
                             ss.emit_all(SHORTCUT_CHANNEL, "ClearLogs").unwrap();
-                        }).expect("Could not register shortcut");
-                        
+                        })
+                        .expect("Could not register shortcut");
+
                         let ss = s.clone();
                         sh.register("M", move || {
                             ss.emit_all(SHORTCUT_CHANNEL, "Maximize").unwrap();
-                        }).expect("Could not register shortcut");
+                        })
+                        .expect("Could not register shortcut");
 
                         let ss = s.clone();
                         sh.register("C", move || {

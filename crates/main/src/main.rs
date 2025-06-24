@@ -103,7 +103,6 @@ async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
     }
 }
 
-
 /// Run the GsMaster
 #[embassy_executor::task]
 async fn run_gs_master(gs_master: &'static mut GsMaster) -> ! {
@@ -182,7 +181,7 @@ async fn main(spawner: Spawner) -> ! {
     // spawner.spawn(send_random_msg_continuously(
     //     can2.new_sender(),
     // )).unwrap();
-    
+
     spawner
         .spawn(run_fsm(
             event_receiver_fsm,

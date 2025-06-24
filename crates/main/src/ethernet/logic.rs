@@ -8,7 +8,8 @@ use embassy_executor::Spawner;
 use embassy_net::tcp::ConnectError;
 use embassy_net::tcp::State;
 use embassy_net::tcp::TcpSocket;
-use embassy_net::{Config, Ipv4Address};
+use embassy_net::Config;
+use embassy_net::Ipv4Address;
 use embassy_net::Stack;
 use embassy_net::StackResources;
 use embassy_stm32::eth::Ethernet;
@@ -83,18 +84,17 @@ impl GsMaster {
     ) -> Self {
         // Get the mac address of the pod
         let mac_addr = lib::config::POD_MAC_ADDRESS;
-        
-        
+
         // Get an IPv4 address for the pod
         let config = Config::dhcpv4(Default::default());
-        
+
         // static IPv4 address
         // let config = Config::ipv4_static(embassy_net::StaticConfigV4 {
         //     address: Ipv4Cidr::new(Ipv4Address::new(192, 168, 0, 69), 24),
         //     gateway: None,
         //     dns_servers: Default::default(),
         // });
-        
+
         // Get the IPv4 address of the GS
         let remotes = get_remote_endpoints();
         // Random seed
@@ -242,9 +242,10 @@ impl GsMaster {
         loop {
             let mut counter = 0usize;
 
-            // Try to connect to a different IP address every 5 ms TODO: Change from hardcoded to index
+            // Try to connect to a different IP address every 5 ms TODO: Change from
+            //                                                      hardcoded to index
             let remote = self.remotes[0];
-            info!("Trying to connect to {:?}", remote);
+            // info!("Trying to connect to {:?}", remote);
 
             match self.socket.connect(remote).await {
                 Ok(()) => {
@@ -267,8 +268,12 @@ impl GsMaster {
                     // Don't remove this timer!
                     counter = counter.wrapping_add(1);
                     if counter.rem(200) == 0 {
-                        // TODO: Send emergency message to pull down sdc?
-                        warn!("Couldn't connect to GS. Pulling down SDC. socket state={}", self.socket.state());
+                        // TODO: Send emergency message to pull down sdc and set FSM to
+                        //      disconnected?
+                        warn!(
+                            "Couldn't connect to GS. Pulling down SDC. socket state={}",
+                            self.socket.state()
+                        );
                     }
                     // Switch to a different IP address
                     index = (index + 1) % config::IP_ADDRESS_COUNT;
@@ -316,8 +321,10 @@ impl GsMaster {
 
         // flush whatever was still written to the socket
         self.socket.flush().await.expect("couldn't flush socket");
+        
+        // This closes the connection, which may not be necessary?
         // close the socket
-        self.socket.abort();
+        // self.socket.abort();
 
         // SAFETY: replace the socket in memory with a new socket.
         unsafe {

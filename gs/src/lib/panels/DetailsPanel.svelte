@@ -86,6 +86,115 @@
     //     }
     // })
 
+    let emsTemps = [
+        storeManager.getWritable("TempEMS1"),
+        storeManager.getWritable("TempEMS2"),
+        storeManager.getWritable("TempEMS3"),
+        storeManager.getWritable("TempEMS4"),
+        storeManager.getWritable("TempEMS5"),
+        storeManager.getWritable("TempEMS6"),
+        storeManager.getWritable("TempEMS7"),
+        storeManager.getWritable("TempEMS8"),
+    ]
+    let hemsTemps = [
+        storeManager.getWritable("TempHEMS1"),
+        storeManager.getWritable("TempHEMS2"),
+        storeManager.getWritable("TempHEMS3"),
+        storeManager.getWritable("TempHEMS4"),
+        storeManager.getWritable("TempHEMS5"),
+        storeManager.getWritable("TempHEMS6"),
+        storeManager.getWritable("TempHEMS7"),
+        storeManager.getWritable("TempHEMS8"),
+    ]
+    let leftMotorTemps = [
+        storeManager.getWritable("TempMotorLeft0"),
+        storeManager.getWritable("TempMotorLeft1"),
+        storeManager.getWritable("TempMotorLeft2"),
+        storeManager.getWritable("TempMotorLeft3"),
+        storeManager.getWritable("TempMotorLeft4"),
+        storeManager.getWritable("TempMotorLeft5"),
+        storeManager.getWritable("TempMotorLeft6"),
+        storeManager.getWritable("TempMotorLeft7"),
+    ]
+    let rightMotorTemps = [
+        storeManager.getWritable("TempMotorRight0"),
+        storeManager.getWritable("TempMotorRight1"),
+        storeManager.getWritable("TempMotorRight2"),
+        storeManager.getWritable("TempMotorRight3"),
+        storeManager.getWritable("TempMotorRight4"),
+        storeManager.getWritable("TempMotorRight5"),
+        storeManager.getWritable("TempMotorRight6"),
+        storeManager.getWritable("TempMotorRight7"),
+    ]
+
+    leftMotorTemps.forEach((store) => {
+        store.subscribe((value) => {
+            if (value.value >= 60 && $leftMotorTempsAcknowledged) {
+                leftMotorTempsAcknowledged.set(false);
+                toastStore.trigger({
+                    message: "Temperature on the left motor is too high!",
+                    background: "bg-error-400",
+                    autohide: false,
+                    callback: response => {
+                        if (response.status == 'closed') {
+                            leftMotorTempsAcknowledged.set(true);
+                        }
+                    },
+                });
+            }
+        })
+    });
+    rightMotorTemps.forEach((store) => {
+        store.subscribe((value) => {
+            if (value.value >= 60 && $rightMotorTempsAcknowledged) {
+                rightMotorTempsAcknowledged.set(false);
+                toastStore.trigger({
+                    message: "Temperature on the right motor is too high!",
+                    background: "bg-error-400",
+                    autohide: false,
+                    callback: response => {
+                        if (response.status == 'closed') {
+                            rightMotorTempsAcknowledged.set(true);
+                        }
+                    },
+                });
+            }
+        })
+    });
+    emsTemps.forEach((store) => {
+        store.subscribe((value) => {
+            if (value.value >= 60 && $emsTempsAcknowledged) {
+                emsTempsAcknowledged.set(false);
+                toastStore.trigger({
+                    message: "Temperature on EMS is too high!",
+                    background: "bg-error-400",
+                    autohide: false,
+                    callback: response => {
+                        if (response.status == 'closed') {
+                            emsTempsAcknowledged.set(true);
+                        }
+                    },
+                });
+            }
+        })
+    });
+    hemsTemps.forEach((store) => {
+        store.subscribe((value) => {
+            if (value.value >= 60 && $hemsTempsAcknowledged) {
+                hemsTempsAcknowledged.set(false);
+                toastStore.trigger({
+                    message: "Temperature on HEMS is too high!",
+                    background: "bg-error-400",
+                    autohide: false,
+                    callback: response => {
+                        if (response.status == 'closed') {
+                            hemsTempsAcknowledged.set(true);
+                        }
+                    },
+                });
+            }
+        })
+    });
     propInitFault1.subscribe((history) => {
         if (history.length === 0) return;
         const latest = history[0];

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onDestroy, onMount } from 'svelte';
     import { GrandDataDistributor } from '$lib';
-    import { showcaseStateCounter, showcasingStates } from '$lib/stores/state';
+    import { connectedToMainPCB, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
 
     let boot: SVGGElement;              // 0
     let connectedToGS: SVGGElement;     // 1
@@ -69,6 +69,8 @@
 
             if ($showcasingStates) {
                 turn_on(allStates[$showcaseStateCounter], $showcaseStateCounter);
+            } else if (!$connectedToMainPCB) {
+                turn_on(allStates[0], 0);
             } else {
                 turn_on(allStates[$fsmState.value % allStates.length], $fsmState.value);
             }

@@ -146,7 +146,6 @@ impl FSM {
                     Event::Emergency { emergency_type: _ } | Event::Fault => Some(States::Fault),
                     Event::ResetFSM => Some(States::Boot),
                     Event::FaultFixed => Some(States::SystemCheck),
-                    Event::ConnectToGS => Some(States::ConnectedToGS),
                     Event::StartSystemCheck => Some(States::SystemCheck),
                     Event::SystemCheckSuccess => Some(States::Idle),
                     Event::StartPreCharge => Some(States::PreCharge),
@@ -203,6 +202,10 @@ impl FSM {
     async fn call_entry_method(&self, state: States) {
         match state {
             States::Fault => enter_fault().await,
+            States::Boot => {
+                // Reset PCB here
+                // SEND extra "restarting..." msg to gs
+            }
             _ => {}
         }
     }

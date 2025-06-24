@@ -115,3 +115,17 @@ export const MODAL_SETTINGS: ModalSettings = {
     component: 'alertModal',
     type: 'component',
 }
+
+export const STALE_DATA_TICKS = 10;
+export const VIEWPORT_HEIGHT_NORMALIZING_VALUE = 24;
+
+export enum PTCErrorCode {
+    NONE = 0x00,
+    SDC_TRIGGERED = 0x01,
+    IMD_TRIGGERED = 0x02,
+    CONTACT_MISMATCH = 0x04,
+    PRECHARGE_FAILURE = 0x08,
+    FDCAN_FAILED = 0x10,
+    OVERVOLTAGE = 0x20,
+    BMS_FAIL = 0x40,
+}

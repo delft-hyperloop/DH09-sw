@@ -29,11 +29,15 @@
         Meter,
         RightPanelClose,
         ConnectionSignal,
-        ConnectionSignalOff
+        ConnectionSignalOff,
+        SendAlt,
+        StopFilled,
+        Password
     } from 'carbon-icons-svelte';
     import type { SvelteComponent } from 'svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
+    import { PTCErrorCode } from '$lib/types';
 
     let width: number;
 
@@ -48,6 +52,10 @@
 
     const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
+
+    $: ptcFaultMessages = Object.entries(PTCErrorCode)
+        .filter(([key, value]) => typeof value === 'number' && ($ptcFault.value & value) !== 0)
+        .map(([key]) => key.replace(/_/g, ' '));
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -172,7 +180,7 @@
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
-                            <span>PT Controller Fault: {$ptcFault.value}</span>
+                            <span>PT Controller Fault: {ptcFaultMessages.length > 0 ? ptcFaultMessages.join(', ') : 'None'}</span>
                             <span>IMD: &ltstatus&gt</span>
                         </div>
                     </div>

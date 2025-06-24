@@ -65,9 +65,9 @@ static mut RX_BUFFER: [u8; RX_BUFFER_SIZE] = [0; RX_BUFFER_SIZE];
 /// Buffer used by the TCP stack when transmitting
 static mut TX_BUFFER: [u8; TX_BUFFER_SIZE] = [0; TX_BUFFER_SIZE];
 
-/// Buffer used to retransmit a message that failed to transmit because of a
-/// connection reset error
-static mut TX_BYTES: [u8; 20] = [0; 20];
+// /// Buffer used to retransmit a message that failed to transmit because of a
+// /// connection reset error
+// static mut TX_BYTES: [u8; 20] = [0; 20];
 
 impl GsMaster {
     /// Initializes the TCP stack and spawns a task for its runner.
@@ -242,9 +242,9 @@ impl GsMaster {
         loop {
             let mut counter = 0usize;
 
-            // Try to connect to a different IP address every 5 ms TODO: Change from
-            //                                                      hardcoded to index
-            let remote = self.remotes[0];
+            // Try to connect to a different IP address every time the socket can't reach
+            // the server
+            let remote = self.remotes[index];
             // info!("Trying to connect to {:?}", remote);
 
             match self.socket.connect(remote).await {
@@ -268,8 +268,8 @@ impl GsMaster {
                     // Don't remove this timer!
                     counter = counter.wrapping_add(1);
                     if counter.rem(200) == 0 {
-                        // TODO: Send emergency message to pull down sdc and set FSM to
-                        //      disconnected?
+                        // TODO: Send emergency message to pull down sdc if not the first time
+                        // connecting and set FSM to      disconnected?
                         warn!(
                             "Couldn't connect to GS. Pulling down SDC. socket state={}",
                             self.socket.state()
@@ -321,7 +321,7 @@ impl GsMaster {
 
         // flush whatever was still written to the socket
         self.socket.flush().await.expect("couldn't flush socket");
-        
+
         // This closes the connection, which may not be necessary?
         // close the socket
         // self.socket.abort();
@@ -329,6 +329,8 @@ impl GsMaster {
         // SAFETY: replace the socket in memory with a new socket.
         unsafe {
             core::ptr::drop_in_place(&mut self.socket as *mut TcpSocket<'_>);
+            RX_BUFFER = [0; RX_BUFFER_SIZE];
+            TX_BUFFER = [0; TX_BUFFER_SIZE];
             core::ptr::write(
                 &mut self.socket as *mut TcpSocket<'_>,
                 TcpSocket::new(self.stack, &mut RX_BUFFER, &mut TX_BUFFER),
@@ -344,32 +346,28 @@ impl GsMaster {
     /// it saves the bytes it was supposed to send in `TX_BYTES` and reattempts
     /// to send them in the next call.
     async fn transmit(&mut self) {
-        if self.tx_failed {
-            let mut buf: [u8; 20] = [0; 20];
-            unsafe {
-                buf.copy_from_slice(&TX_BYTES);
-            }
-            let tx_result = self.socket.write_all(&buf).await;
-
-            match tx_result {
-                Ok(()) => {
-                    self.tx_failed = false;
-                }
-                Err(embassy_net::tcp::Error::ConnectionReset) => {
-                    self.should_reconnect = true;
-                }
-            }
-
-            return;
-        }
+        // if self.tx_failed {
+        //     let mut buf: [u8; 20] = [0; 20];
+        //     unsafe {
+        //         buf.copy_from_slice(&TX_BYTES);
+        //     }
+        //     let tx_result = self.socket.write_all(&buf).await;
+        //
+        //     match tx_result {
+        //         Ok(()) => {
+        //             self.tx_failed = false;
+        //         }
+        //         Err(embassy_net::tcp::Error::ConnectionReset) => {
+        //             self.should_reconnect = true;
+        //         }
+        //     }
+        //
+        //     return;
+        // }
 
         let msg = self.tx_receiver.receive().await;
 
         let buf = msg.dp.as_bytes();
-        unsafe {
-            // Copy buf into TX_BYTES
-            TX_BYTES.copy_from_slice(&buf);
-        }
 
         let tx_result = self.socket.write_all(&buf).await;
 

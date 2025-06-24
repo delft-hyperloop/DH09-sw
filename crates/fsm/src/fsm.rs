@@ -10,6 +10,7 @@ use lib::EventSender;
 use lib::States;
 
 use crate::entry_methods::enter_fault;
+use crate::{CheckedSystem, CheckedSystems};
 
 /// The struct for the `MainFSM`
 pub struct FSM {
@@ -19,8 +20,11 @@ pub struct FSM {
     event_receiver: EventReceiver,
     /// Object used to send message over the second CAN bus
     event_sender2: EventSender,
-    /// Object used to send messages to the groundstations
+    /// Object used to send messages to the ground station
     event_sender_gs: EventSender,
+    /// The systems that should be checked in the `SystemCheck` state
+    systems: CheckedSystems,
+    rearm_sdc_pin: Output<'static>,
     /// The pin used to trigger the shutdown circuit
     sdc_pin: Output<'static>,
 }
@@ -49,6 +53,7 @@ impl FSM {
         event_receiver: EventReceiver,
         event_sender2: EventSender,
         event_sender_gs: EventSender,
+        rearm_sdc_pin: Output<'static>,
         sdc_pin: Output<'static>,
     ) -> Self {
         Self {
@@ -56,7 +61,13 @@ impl FSM {
             event_receiver,
             event_sender2,
             event_sender_gs,
-            sdc_pin,
+            systems: CheckedSystems {
+                powertrain: false,
+                levitation: false,
+                propulsion: false,
+            },
+            rearm_sdc_pin,
+            sdc_pin
         }
     }
 
@@ -122,7 +133,11 @@ impl FSM {
             (States::ConnectedToGS, Event::StartSystemCheck) => {
                 self.transition(States::SystemCheck).await
             }
-            (States::SystemCheck, Event::SystemCheckSuccess) => self.transition(States::Idle).await,
+
+            (States::SystemCheck, Event::PropSystemCheckSuccess) => self.add_system_check(CheckedSystem::Propulsion).await,
+            (States::SystemCheck, Event::PowertrainSystemCheckSuccess) => self.add_system_check(CheckedSystem::Powertrain).await,
+            (States::SystemCheck, Event::LeviSystemCheckSuccess) => self.add_system_check(CheckedSystem::Levitation).await,
+
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
             (States::PreCharge, Event::Activate) => self.transition(States::Active).await,
             (States::Active, Event::Charge) => self.transition(States::Charging).await,
@@ -147,7 +162,6 @@ impl FSM {
                     Event::ResetFSM => Some(States::Boot),
                     Event::FaultFixed => Some(States::SystemCheck),
                     Event::StartSystemCheck => Some(States::SystemCheck),
-                    Event::SystemCheckSuccess => Some(States::Idle),
                     Event::StartPreCharge => Some(States::PreCharge),
                     Event::Activate => Some(States::Active),
                     Event::Charge => Some(States::Charging),
@@ -178,6 +192,32 @@ impl FSM {
         self.state
     }
 
+    /// Marks one of the subsystems as checked while in the `SystemCheck` state.
+    /// If all of them are checked, marks them as false for the next system check and transitions to the `Idle` state.
+    async fn add_system_check(&mut self, system: CheckedSystem) {
+        match system {
+            CheckedSystem::Levitation => {
+                self.systems.levitation = true;
+                self.event_sender_gs.send(Event::LeviSystemCheckSuccess).await;
+            }
+            CheckedSystem::Powertrain => {
+                self.systems.powertrain = true;
+                self.event_sender_gs.send(Event::PowertrainSystemCheckSuccess).await;
+            }
+            CheckedSystem::Propulsion => {
+                self.systems.propulsion = true;
+                self.event_sender_gs.send(Event::PropSystemCheckSuccess).await;
+            }
+        }
+
+        if self.systems.propulsion && self.systems.levitation && self.systems.powertrain {
+            self.transition(States::Idle).await;
+            self.systems.levitation = false;
+            self.systems.propulsion = false;
+            self.systems.powertrain = false;
+        }
+    }
+
     /// Transitions the FSM to a new state while executing the
     /// former state's exit method and the new state's entry method.
     async fn transition(&mut self, new_state: States) {
@@ -199,12 +239,15 @@ impl FSM {
 
     /// Matches a state with its entry method and executes it. Should be called
     /// whenever a transition happens.
-    async fn call_entry_method(&self, state: States) {
+    async fn call_entry_method(&mut self, state: States) {
         match state {
             States::Fault => enter_fault().await,
             States::Boot => {
                 // Reset PCB here
                 // SEND extra "restarting..." msg to gs
+                self.systems.propulsion = false;
+                self.systems.levitation = false;
+                self.systems.powertrain = false;
             }
             _ => {}
         }

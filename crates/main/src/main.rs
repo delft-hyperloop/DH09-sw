@@ -31,12 +31,12 @@ use main::comms_tasks::forward_fsm_events_to_can2;
 use main::comms_tasks::forward_fsm_to_gs;
 use main::comms_tasks::forward_gs_to_can2;
 use main::comms_tasks::forward_gs_to_fsm;
+use main::comms_tasks::gs_heartbeat;
 use main::comms_tasks::log_can2_on_gs;
 use main::ethernet;
 use main::ethernet::logic::GsMaster;
 use main::ethernet::types::EthPeripherals;
 use main::ethernet::types::GsComms;
-use main::ethernet::types::PodToGsMessage;
 use panic_probe as _;
 use static_cell::StaticCell;
 
@@ -78,29 +78,11 @@ async fn run_fsm(
     event_receiver: EventReceiver,
     event_sender2: EventSender,
     event_sender_gs: EventSender,
-    sdc_pin: Output<'static>,
+    mut rearm_sdc_pin: Output<'static>,
+    mut sdc_pin: Output<'static>,
 ) {
-    let mut fsm = FSM::new(event_receiver, event_sender2, event_sender_gs, sdc_pin).await;
+    let mut fsm = FSM::new(event_receiver, event_sender2, event_sender_gs, rearm_sdc_pin, sdc_pin).await;
     fsm.run().await;
-}
-
-#[embassy_executor::task]
-async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
-    let mut value = 1;
-    loop {
-        // info!("Sending heartbeat");
-        gs_tx
-            .send(PodToGsMessage {
-                dp: Datapoint::new(
-                    Datatype::FrontendHeartbeating,
-                    value,
-                    embassy_time::Instant::now().as_ticks(),
-                ),
-            })
-            .await;
-        value = !value;
-        Timer::after_millis(100).await;
-    }
 }
 
 /// Run the GsMaster
@@ -145,7 +127,6 @@ async fn main(spawner: Spawner) -> ! {
         //
     }
     let p = embassy_stm32::init(config);
-    let sdc_pin = Output::new(p.PB0, Level::High, Speed::Medium);
 
     // The event channel that will be used to transmit events to the FSM.
     let event_channel_fsm: &mut EventChannel = EVENT_CHANNEL_FSM.init(EventChannel::new());
@@ -182,11 +163,15 @@ async fn main(spawner: Spawner) -> ! {
     //     can2.new_sender(),
     // )).unwrap();
 
+    let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
+    let sdc_pin = Output::new(p.PB0, Level::High, Speed::Medium);
+
     spawner
         .spawn(run_fsm(
             event_receiver_fsm,
             event_sender_can2,
             event_sender_fsm_to_gs,
+            rearm_sdc_pin,
             sdc_pin,
         ))
         .unwrap();
@@ -235,11 +220,9 @@ async fn main(spawner: Spawner) -> ! {
 
     unwrap!(spawner.spawn(run_gs_master(gs_master)));
 
-    let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
     unwrap!(spawner.spawn(forward_gs_to_fsm(
         gs_comms.rx_receiver(),
         event_sender_gs_to_fsm,
-        rearm_sdc_pin,
     )));
 
     unwrap!(spawner.spawn(forward_gs_to_can2(

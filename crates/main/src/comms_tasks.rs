@@ -33,7 +33,6 @@ use crate::ethernet::types::PodToGsMessage;
 pub async fn forward_gs_to_fsm(
     mut gs_rx: ethernet::types::GsToPodSubscriber<'static>,
     event_sender: EventSender,
-    mut rearm_output: Output<'static>,
 ) {
     loop {
         let msg = gs_rx.next_message_pure().await;
@@ -46,13 +45,14 @@ pub async fn forward_gs_to_fsm(
             Event::NoEvent => {}
             Event::EnterDemo => {
                 // Pull pin high
-                rearm_output.set_high();
+                // TODO: Move this inside the fsm
+                // rearm_output.set_high();
 
                 embassy_time::Timer::after_millis(100).await;
                 event_sender.send(event).await;
 
                 // Pull pin low
-                rearm_output.set_low();
+                // rearm_output.set_low();
             }
             _ => event_sender.send(event).await,
         }
@@ -97,6 +97,11 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::ResetPropulsion(_) => todo!(),
 
         Command::ConnectionEstablished(_) => Event::ConnectToGS,
+
+        // TODO: Replace these with the actual CAN commands
+        Command::MockLeviAck(_) => Event::LeviSystemCheckSuccess,
+        Command::MockPropAck(_) => Event::PropSystemCheckSuccess,
+        Command::MockPtAck(_) => Event::PowertrainSystemCheckSuccess,
 
         // TODO: Acknowledgements
         // Command::FSM
@@ -327,6 +332,26 @@ pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
             .await;
         info!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SENDING");
 
+        Timer::after_millis(100).await;
+    }
+}
+
+/// Sends a heartbeat to the ground station every 100 ms
+#[embassy_executor::task]
+pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
+    let mut value = 1;
+    loop {
+        // info!("Sending heartbeat");
+        gs_tx
+            .send(PodToGsMessage {
+                dp: Datapoint::new(
+                    Datatype::FrontendHeartbeating,
+                    value,
+                    embassy_time::Instant::now().as_ticks(),
+                ),
+            })
+            .await;
+        value = !value;
         Timer::after_millis(100).await;
     }
 }

@@ -89,7 +89,7 @@ export class GrandDataDistributor {
      */
     protected processData(data: Datapoint[]) {
         data.forEach((datapoint) => {
-            this.StoreManager.updateStore(datapoint.datatype, new Date().getTime(), datapoint.style, datapoint.units, datapoint.value);
+            this.StoreManager.updateStore(datapoint.datatype, datapoint.timestamp, datapoint.style, datapoint.units, datapoint.value);
         });
     }
 

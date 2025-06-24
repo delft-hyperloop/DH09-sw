@@ -3,10 +3,9 @@
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
-    import { bigErrorStatus, ErrorStatus, logsPanelSize, logsScrollAreaSize, logsVisible } from '$lib/stores/state';
+    import { bigErrorStatus, ErrorStatus, logsPanelSize, logsVisible } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { View, ViewOff } from 'carbon-icons-svelte';
-    import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
 
     let unlistens: UnlistenFn[] = [];
     let logContainer: HTMLElement;
@@ -36,14 +35,14 @@
       return listen(channel, (event: {payload: string}) => {
           if (logs.length > logsCountUpperLimit) {
               logs = logs.toSpliced(0, logsCutAmount);
-
           }
-          logs = [...logs, {message: event.payload, log_type, timestamp: Date.now().valueOf()}]
+          logs = [{message: event.payload, log_type, timestamp: Date.now().valueOf()}, ...logs]
       });
     }
 
     function clearLogs() {
         logs = []
+        userHasScrolled = false; // Reset scroll state when clearing
     }
 
     function toggleLogsVisibility() {
@@ -63,7 +62,7 @@
                 logs = logs.toSpliced(0, logsCutAmount);
             }
 
-            logs = [...logs, {message: event.payload.split(';')[0], log_type: 'STATUS', timestamp: Date.now().valueOf()}]
+            logs = [{message: event.payload.split(';')[0], log_type: 'STATUS', timestamp: Date.now().valueOf()}, ...logs]
 
             console.log("received smth", event.payload)
 
@@ -81,7 +80,7 @@
             } else {
                 toastStore.trigger({
                     message: message[0],
-                    background: `bg-surface-600` || 'bg-surface-600',
+                    background: 'bg-surface-600',
                 });
             }
 
@@ -101,33 +100,25 @@
         unlistens[4] = await listen("clear_logs", () => clearLogs());
 
         logContainer.addEventListener('scroll', () => {
-            userHasScrolled = logContainer.scrollTop < logContainer.scrollHeight - logContainer.clientHeight;
+            // User has scrolled if they're not at the very top
+            userHasScrolled = logContainer.scrollTop > 10; // Small threshold to account for minor scroll variations
         });
     });
 
-    onDestroy(() =>
-        unlistens.forEach(u => u())
-    );
+    onDestroy(() => {
+        unlistens.forEach(u => u());
+    });
 
     afterUpdate(() => {
-        if (!userHasScrolled) logContainer.scrollTop = logContainer.scrollHeight;
-    });
-
-    function updateLogsPanelHeight() {
-        logsScrollAreaSize.set($logsPanelSize - ($logsPanelSize * 0.05 + 4.5) + window.innerHeight / VIEWPORT_HEIGHT_NORMALIZING_VALUE * 10 - 10);
-    }
-
-    onMount(() => {
-        updateLogsPanelHeight();
-        window.addEventListener('resize', updateLogsPanelHeight);
-    });
-
-    onDestroy(() => {
-        window.removeEventListener('resize', updateLogsPanelHeight);
+        // Only auto-scroll to top if user hasn't manually scrolled away from the top
+        // This keeps new messages visible at the top
+        if (!userHasScrolled) {
+            logContainer.scrollTop = 0;
+        }
     });
 </script>
 
-<div class="h-full">
+<div class="h-full grid grid-rows-[auto_1fr]">
     <AppBar padding="p-3" background="bg-surface-700 text-surface-50 ">
         <svelte:fragment slot="lead">
             <button class="text-sm" on:click={toggleLogsVisibility}>
@@ -143,22 +134,15 @@
             <button class="btn rounded-lg text-sm" on:click={clearLogs}>
                 Clear Logs
             </button>
-            <button class="line-through" class:active={filters['STATUS']} on:click={() => toggleFilter('STATUS')}>
-                STATUS
+            {#each Object.keys(filters) as type}
+            <button class="line-through" class:active={filters[type]} on:click={() => toggleFilter(type)}>
+                {type}
             </button>
-            <button class="line-through" class:active={filters['INFO']} on:click={() => toggleFilter('INFO')}>
-                INFO
-            </button>
-            <button class="line-through" class:active={filters['WARNING']} on:click={() => toggleFilter('WARNING')}>
-                WARNING
-            </button>
-            <button class="line-through" class:active={filters['ERROR']} on:click={() => toggleFilter('ERROR')}>
-                ERROR
-            </button>
+            {/each}
         </svelte:fragment>
     </AppBar>
 
-    <div class="p-1 overflow-y-auto" bind:this={logContainer} style="height: {$logsScrollAreaSize}vh;">
+    <div class="p-1 overflow-y-auto" bind:this={logContainer}>
         {#each filteredLogs as log}
             <div class="flex items-center">
                 <p class="{colours.get(log.log_type)}"><span class="font-mono font-light">[{log.timestamp}]</span>{log.message}</p>

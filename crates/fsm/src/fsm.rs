@@ -1,5 +1,9 @@
 //! This module contains the struct used for the Main FSM.
 
+use core::fmt::Debug;
+use core::fmt::Formatter;
+
+use embassy_stm32::gpio::Output;
 use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
@@ -8,7 +12,6 @@ use lib::States;
 use crate::entry_methods::enter_fault;
 
 /// The struct for the `MainFSM`
-#[derive(Debug, Copy, Clone)]
 pub struct FSM {
     /// The state in which the pod is in
     state: States,
@@ -18,6 +21,14 @@ pub struct FSM {
     event_sender2: EventSender,
     /// Object used to send messages to the groundstations
     event_sender_gs: EventSender,
+    /// The pin used to trigger the shutdown circuit
+    sdc_pin: Output<'static>,
+}
+
+impl Debug for FSM {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        write!(f, "FSM in state {:?}", self.state)
+    }
 }
 
 impl FSM {
@@ -38,12 +49,14 @@ impl FSM {
         event_receiver: EventReceiver,
         event_sender2: EventSender,
         event_sender_gs: EventSender,
+        sdc_pin: Output<'static>,
     ) -> Self {
         Self {
             state: States::Boot,
             event_receiver,
             event_sender2,
             event_sender_gs,
+            sdc_pin,
         }
     }
 
@@ -87,6 +100,10 @@ impl FSM {
         match (self.state, event) {
             (_, Event::Emergency { emergency_type }) => {
                 self.transition(States::Fault).await;
+
+                // Pull down the SDC to trigger an emergency
+                self.sdc_pin.set_low();
+                defmt::info!("Pulled down SDC!!");
 
                 // If going in emergency state, send messages over CAN and to the groundstation
                 self.event_sender2

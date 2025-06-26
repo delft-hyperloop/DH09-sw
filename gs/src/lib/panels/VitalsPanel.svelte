@@ -44,9 +44,9 @@
     const storeManager = GrandDataDistributor.getInstance().stores;
     const lvBattery = storeManager.getWritable("BMSVoltageLow");
     const hvBattery = storeManager.getWritable("BMSVoltageHigh");
-    const fsmState = storeManager.getWritable("FSMState");
-    const ptcState = storeManager.getWritable("PTCState");
-    const ptcFault = storeManager.getWritable("PTCNonCriticalFault");
+    const fsmStateStore = storeManager.getWritable("FSMState");
+    const ptcStateStore = storeManager.getWritable("PTCState");
+    const ptcFaultStore = storeManager.getWritable("PTCNonCriticalFault");
     const localization = storeManager.getWritable("Localization");
     const velocity = storeManager.getWritable("Velocity");
 
@@ -54,7 +54,7 @@
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
 
     $: ptcFaultMessages = Object.entries(PTCErrorCode)
-        .filter(([key, value]) => typeof value === 'number' && ($ptcFault.value & value) !== 0)
+        .filter(([key, value]) => typeof value === 'number' && ($ptcFaultStore[0]?.value & value) !== 0)
         .map(([key]) => key.replace(/_/g, ' '));
 
     const toastStore = getToastStore();
@@ -151,8 +151,8 @@
             </button>
             <span style="writing-mode: vertical-lr" class="font-medium">Vitals Panel</span>
             <div class="flex flex-col gap-4">
-                <Battery fill="#3b669c" orientation="vertical" height={55} perc={Number($lvBattery.value)}/>
-                <Battery fill="#723f9c" orientation="vertical" height={55} perc={Number($hvBattery.value)}/>
+                <Battery fill="#3b669c" orientation="vertical" height={55} perc={Number($lvBattery.values)}/>
+                <Battery fill="#723f9c" orientation="vertical" height={55} perc={Number($hvBattery.values)}/>
             </div>
         </div>
     {:else}
@@ -171,15 +171,15 @@
                         </div>
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
                             <span>LV:</span>
-                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>
+                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.values)}/>
                             <span>Total: <Store datatype="BMSVoltageLow" /></span>
 
                             <span>HV:</span>
-                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
+                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.values)}/>
                             <span>Total: <Store datatype="BMSVoltageHigh" /></span>
                         </div>
                         <div class="flex flex-col gap-4">
-                            <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
+                            <span>PT Controller State: {ptcStates[$ptcStateStore[0]?.value]}</span>
                             <span>PT Controller Fault: {ptcFaultMessages.length > 0 ? ptcFaultMessages.join(', ') : 'None'}</span>
                             <span>IMD: &ltstatus&gt</span>
                         </div>
@@ -196,7 +196,7 @@
 <!--                </Tile>-->
                 <Tile
                     bgToken={800}
-                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
+                    containerClass="col-span-2 {($fsmStateStore[0]?.value === 13 || $showcaseStateCounter === 13) && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
                     <MainFSM/>
                 </Tile>
                 <Tile

@@ -27,6 +27,9 @@
         propChartStore,
         showcaseStateCounter,
         showcasingStates,
+        inStateHVOn,
+        GreenHVALTurnedOn,
+        RedHVALTurnedOn
     } from '$lib/stores/state';
     import { initProcedures, lastHeartbeatTimestamp } from '$lib/stores/data';
     import { onDestroy, onMount } from 'svelte';
@@ -1000,6 +1003,18 @@
         GrandDataDistributor.getInstance().kill();
         (await unlisten)();
     });
+
+    $: {
+        if ($inStateHVOn) {
+            GreenHVALTurnedOn.set(false);
+            RedHVALTurnedOn.set(true);
+        } else {
+            GreenHVALTurnedOn.set(true);
+            RedHVALTurnedOn.set(false);
+        }
+    }
+
+    $: console.log('inStateHVOn:', $inStateHVOn);
 </script>
 
 <div class="flex flex-col w-screen h-screen max-h-screen overflow-hidden">

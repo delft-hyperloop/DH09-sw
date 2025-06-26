@@ -3,8 +3,7 @@
     import VitalsPanel from "$lib/panels/VitalsPanel.svelte";
     import DetailsPanel from "$lib/panels/DetailsPanel.svelte";
     import LogsPanel from "$lib/panels/LogsPanel.svelte";
-    import { logsPanelSize, logsScrollAreaSize, logsVisible } from '$lib/stores/state';
-    import { VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
+    import { logsPanelSize, logsVisible } from '$lib/stores/state';
 </script>
 
 <main class="w-full flex-grow border-t border-black overflow-auto">
@@ -15,7 +14,6 @@
         <Pane minSize={50} class="bg-surface-900">
             <Splitpanes horizontal={true} theme="modern-theme-logs" dblClickSplitter={false} on:resize={(event) => {
                 logsPanelSize.set(event.detail[1].size);
-                logsScrollAreaSize.set($logsPanelSize - ($logsPanelSize * 0.05 + 4.5) + window.innerHeight / VIEWPORT_HEIGHT_NORMALIZING_VALUE * 10 - 10);
                 if (event.detail[1].size === 5) {
                     logsVisible.set(false);
                 } else {

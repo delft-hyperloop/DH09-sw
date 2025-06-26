@@ -89,7 +89,7 @@ export class GrandDataDistributor {
      */
     protected processData(data: Datapoint[]) {
         data.forEach((datapoint) => {
-            this.StoreManager.updateStore(datapoint.datatype, new Date().getTime(), datapoint.style, datapoint.units, datapoint.value);
+            this.StoreManager.updateStore(datapoint.datatype, datapoint.timestamp, datapoint.style, datapoint.units, datapoint.value);
         });
     }
 
@@ -105,21 +105,27 @@ export class GrandDataDistributor {
  * The StoreManager class is responsible for managing the data stores
  */
 class StoreManager {
-    private stores: Map<string, Writable<Store<any>>>;
+    private stores: Map<string, Writable<Store<any>[]>>;
+    private processFunctions: Map<string, dataConvFun<any>>;
 
     constructor() {
         this.stores = new Map();
+        this.processFunctions = new Map();
     }
 
     /**
      * Register a store
      * @param name - the name of the store
-     * @param initial
-     * @param initialUnits
+     * @param initial - the initial value of the store
      * @param processFunction - the function to process the data
+     * @param initialUnits - the units of the store
      */
     public registerStore<T>(name: NamedDatatype, initial: T, processFunction?: dataConvFun<T>, initialUnits?:string) {
-        this.stores.set(name, writable<Store<T>>(new Store(initial, '', initialUnits || '', 0, processFunction)));
+        const initialStore = new Store(initial, '', initialUnits || '', new Date().getTime(), (d) => d as unknown as T);
+        this.stores.set(name, writable<Store<T>[]>([initialStore]));
+        if (processFunction) {
+            this.processFunctions.set(name, processFunction);
+        }
     }
 
     /**
@@ -133,17 +139,28 @@ class StoreManager {
     public updateStore(name: NamedDatatype, timestamp:number, style:string, units:string, data: number) {
         const store = this.stores.get(name);
         if (store) {
-            const storeVal = get(store);
-            store.set(new Store(storeVal.processFunction(data, storeVal.value), style, units, timestamp, storeVal.processFunction))
+            const processFunction = this.processFunctions.get(name) || ((d) => d);
+            const history = get(store);
+            const latestValue = history.length > 0 ? history[0].value : undefined;
+
+            const newValue = processFunction(data, latestValue);
+            const newHistory = [new Store(newValue, style, units, timestamp, (d) => d), ...history];
+
+            if (newHistory.length > 10) {
+                newHistory.pop();
+            }
+
+            store.set(newHistory);
         }
     }
 
     public getValue(name: NamedDatatype):any {
         if (!this.stores.has(name)) throw new Error(`Store with name ${name} does not exist`);
-        return get(this.stores.get(name)!).value;
+        const history = get(this.stores.get(name)!);
+        return history.length > 0 ? history[0].value : undefined;
     }
 
-    public getWritable(name: NamedDatatype):Writable<Store<any>> {
+    public getWritable(name: NamedDatatype):Writable<Store<any>[]> {
         if (!this.stores.has(name)) throw new Error(`Store with name ${name} does not exist`);
         return this.stores.get(name)!;
     }

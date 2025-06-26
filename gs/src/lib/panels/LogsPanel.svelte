@@ -98,7 +98,12 @@
         unlistens[2] = await registerChannel(EventChannel.WARNING, 'WARNING');
         unlistens[3] = await registerChannel(EventChannel.ERROR, 'ERROR');
 
-        unlistens[4] = await listen("clear_logs", () => clearLogs());
+        unlistens[4] = await listen('shortcut_channel', (event: { payload: string }) => {
+                if (event.payload === 'ClearLogs') {
+                    clearLogs();
+                }
+            }
+        );
 
         logContainer.addEventListener('scroll', () => {
             userHasScrolled = logContainer.scrollTop < logContainer.scrollHeight - logContainer.clientHeight;

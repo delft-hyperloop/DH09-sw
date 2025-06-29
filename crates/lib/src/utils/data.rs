@@ -16,7 +16,7 @@ pub enum Event {
     /// Starts the pre-charging process
     StartPreCharge,
     /// Will turn on high voltage while SDC is closed and brakes are deployed
-    Activate,
+    HVOnAck,
     /// Enters the demo state armed brakes, SDC still closed
     EnterDemo,
     /// Starts levitating
@@ -80,6 +80,8 @@ pub enum Event {
     PropSystemCheckSuccess,
     /// Acknowledgement that powertrain passed the system check
     PowertrainSystemCheckSuccess,
+    /// Sends its state to the Ground Station
+    RequestFSMState,
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]

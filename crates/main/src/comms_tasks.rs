@@ -59,6 +59,7 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::EmergencyBrake(_) => Event::Emergency {
             emergency_type: lib::EmergencyType::GeneralEmergency,
         },
+        Command::RequestFsmState(_) => Event::RequestFSMState,
 
         // HV commands
         Command::StartHV(_) => Event::StartPreCharge,
@@ -90,9 +91,8 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::MockLeviAck(_) => Event::LeviSystemCheckSuccess,
         Command::MockPropAck(_) => Event::PropSystemCheckSuccess,
         Command::MockPtAck(_) => Event::PowertrainSystemCheckSuccess,
+        Command::MockHVOn(_) => Event::HVOnAck,
 
-        // TODO: Acknowledgements
-        // Command::FSM
         _ => Event::NoEvent,
     }
 }
@@ -191,6 +191,12 @@ pub async fn forward_can2_messages_to_fsm(
             Id::Extended(_e) => todo!("Nuh-uh"),
             Id::Standard(s) => s.as_raw(),
         };
+
+        // If it gets a ptc logs message from the powertrain controller with state HV
+        // on, send ack to fsm
+        if id == 1251 && envelope.payload()[0] == 3 {
+            event_sender.send(Event::HVOnAck).await;
+        }
 
         let fsm_event = lib::config::event_for_can_2_id(id as u32);
 

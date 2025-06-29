@@ -29,6 +29,7 @@ use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
 use lib::config;
+use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
@@ -68,6 +69,9 @@ pub struct GsMaster {
     tx_transmitter: PodToGsPublisher<'static>,
     /// Flag that triggers a reconnection (creates a new socket)
     should_reconnect: bool,
+    /// Counts the amount of times it reset the connection. If >= 5, trigger
+    /// emergency
+    reset_counter: i16,
 }
 
 impl Debug for GsMaster {
@@ -167,6 +171,7 @@ impl GsMaster {
             rx_transmitter,
             tx_transmitter,
             should_reconnect: false,
+            reset_counter: 0,
         }
     }
 
@@ -336,11 +341,21 @@ impl GsMaster {
                         dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
                     })
                     .await;
+                self.reset_counter = 0;
                 info!("connected, endpoint={:?}", self.socket.remote_endpoint());
+
+                // Ask FSM to send its state again
+                self.rx_transmitter
+                    .publish(GsToPodMessage {
+                        command: Command::RequestFsmState(0),
+                    })
+                    .await;
             }
             Err(e) => {
                 warn!("Timeout for sending hashes has expired with error {:?}! Triggering a reconnection!", e);
                 self.should_reconnect = true;
+                // TODO: finish this
+                self.reset_counter += 1;
             }
         }
 

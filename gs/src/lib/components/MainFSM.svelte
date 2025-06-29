@@ -1,7 +1,14 @@
 <script lang="ts">
     import { onDestroy, onMount } from 'svelte';
     import { GrandDataDistributor } from '$lib';
-    import { connectedToMainPCB, showcaseStateCounter, showcasingStates } from '$lib/stores/state';
+    import {
+        connectedToMainPCB, inStateAccelerating,
+        inStateActive,
+        inStateLevitating,
+        showcaseStateCounter,
+        showcasingStates,
+    } from '$lib/stores/state';
+    import { inStateConnectedToGS, inStateDemo, inStateIdle } from '$lib/stores/state.js';
 
     let boot: SVGGElement;              // 0
     let connectedToGS: SVGGElement;     // 1
@@ -21,6 +28,16 @@
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     const fsmState = storeManager.getWritable("FSMState");
+
+    fsmState.subscribe((store) => {
+        let index = store.value;
+        inStateConnectedToGS.set(index === 1);
+        inStateIdle.set(index === 3);
+        inStateActive.set(index === 5);
+        inStateDemo.set(index === 6);
+        inStateLevitating.set(index === 7);
+        inStateAccelerating.set(index === 8);
+    })
 
     function turn_on(state:SVGGElement, index: number) {
         if (!state || !state.style) return;

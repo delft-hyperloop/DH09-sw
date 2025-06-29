@@ -1,16 +1,20 @@
 //! This module contains the struct used for the Main FSM.
 
+use core::fmt::Debug;
+use core::fmt::Formatter;
+
 use embassy_stm32::gpio::Output;
+use embassy_time::Timer;
 use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
 use lib::States;
 
 use crate::entry_methods::enter_fault;
-use crate::{CheckedSystem, CheckedSystems};
+use crate::CheckedSystem;
+use crate::CheckedSystems;
 
 /// The struct for the `MainFSM`
-// #[derive(Debug, Copy, Clone)]
 pub struct FSM {
     /// The state in which the pod is in
     state: States,
@@ -22,8 +26,16 @@ pub struct FSM {
     event_sender_gs: EventSender,
     /// The systems that should be checked in the `SystemCheck` state
     systems: CheckedSystems,
+    /// The pin on the main PCB used for rearming the sdc
     rearm_sdc_pin: Output<'static>,
+    /// The pin on the main PCB used for controlling the sdc
     sdc_pin: Output<'static>,
+}
+
+impl Debug for FSM {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        write!(f, "FSM {{ state: {:?}}}", self.state)
+    }
 }
 
 impl FSM {
@@ -58,7 +70,7 @@ impl FSM {
                 propulsion: false,
             },
             rearm_sdc_pin,
-            sdc_pin
+            sdc_pin,
         }
     }
 
@@ -113,7 +125,10 @@ impl FSM {
             }
             (_, Event::Fault) => self.transition(States::Fault).await,
 
-            (_, Event::ResetFSM) => self.transition(States::Boot).await,
+            (_, Event::ResetFSM) => {
+                self.transition(States::Boot).await;
+                cortex_m::peripheral::SCB::sys_reset();
+            },
 
             (States::Fault, Event::FaultFixed) => self.transition(States::SystemCheck).await,
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,
@@ -121,15 +136,28 @@ impl FSM {
                 self.transition(States::SystemCheck).await
             }
 
-            (States::SystemCheck, Event::PropSystemCheckSuccess) => self.add_system_check(CheckedSystem::Propulsion).await,
-            (States::SystemCheck, Event::PowertrainSystemCheckSuccess) => self.add_system_check(CheckedSystem::Powertrain).await,
-            (States::SystemCheck, Event::LeviSystemCheckSuccess) => self.add_system_check(CheckedSystem::Levitation).await,
+            (States::SystemCheck, Event::PropSystemCheckSuccess) => {
+                self.add_system_check(CheckedSystem::Propulsion).await
+            }
+            (States::SystemCheck, Event::PowertrainSystemCheckSuccess) => {
+                self.add_system_check(CheckedSystem::Powertrain).await
+            }
+            (States::SystemCheck, Event::LeviSystemCheckSuccess) => {
+                self.add_system_check(CheckedSystem::Levitation).await
+            }
 
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
             (States::PreCharge, Event::Activate) => self.transition(States::Active).await,
             (States::Active, Event::Charge) => self.transition(States::Charging).await,
             (States::Charging, Event::StopCharge) => self.transition(States::Active).await,
-            (States::Active, Event::EnterDemo) => self.transition(States::Demo).await,
+            (States::Active, Event::EnterDemo) => {
+                self.sdc_pin.set_high();
+                Timer::after_millis(100).await;
+                self.transition(States::Demo).await;
+                self.rearm_sdc_pin.set_high();
+                Timer::after_millis(100).await;
+                self.rearm_sdc_pin.set_low();
+            }
             (States::Demo, Event::Discharge) => self.transition(States::Discharge).await,
             (States::Demo, Event::Levitate) => self.transition(States::Levitating).await,
             (States::Levitating, Event::StopLevitating) => self.transition(States::Demo).await,
@@ -180,20 +208,27 @@ impl FSM {
     }
 
     /// Marks one of the subsystems as checked while in the `SystemCheck` state.
-    /// If all of them are checked, marks them as false for the next system check and transitions to the `Idle` state.
+    /// If all of them are checked, marks them as false for the next system
+    /// check and transitions to the `Idle` state.
     async fn add_system_check(&mut self, system: CheckedSystem) {
         match system {
-            CheckedSystem::Levitation => { 
+            CheckedSystem::Levitation => {
                 self.systems.levitation = true;
-                self.event_sender_gs.send(Event::LeviSystemCheckSuccess).await;
+                self.event_sender_gs
+                    .send(Event::LeviSystemCheckSuccess)
+                    .await;
             }
             CheckedSystem::Powertrain => {
                 self.systems.powertrain = true;
-                self.event_sender_gs.send(Event::PowertrainSystemCheckSuccess).await;
+                self.event_sender_gs
+                    .send(Event::PowertrainSystemCheckSuccess)
+                    .await;
             }
             CheckedSystem::Propulsion => {
                 self.systems.propulsion = true;
-                self.event_sender_gs.send(Event::PropSystemCheckSuccess).await;
+                self.event_sender_gs
+                    .send(Event::PropSystemCheckSuccess)
+                    .await;
             }
         }
 

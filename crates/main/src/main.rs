@@ -19,8 +19,6 @@ use embassy_stm32::peripherals;
 use embassy_stm32::peripherals::*;
 use embassy_time::Timer;
 use fsm::FSM;
-use lib::config::Datatype;
-use lib::Datapoint;
 use lib::EventChannel;
 use lib::EventReceiver;
 use lib::EventSender;
@@ -33,7 +31,6 @@ use main::comms_tasks::forward_gs_to_can2;
 use main::comms_tasks::forward_gs_to_fsm;
 use main::comms_tasks::gs_heartbeat;
 use main::comms_tasks::log_can2_on_gs;
-use main::ethernet;
 use main::ethernet::logic::GsMaster;
 use main::ethernet::types::EthPeripherals;
 use main::ethernet::types::GsComms;
@@ -70,7 +67,9 @@ static EVENT_CHANNEL_CAN2: static_cell::StaticCell<EventChannel> = static_cell::
 /// priority channel for events from the fsm to the gs
 static EVENT_CHANNEL_GS: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 
+/// struct that runs the ethernet stack for connecting to the ground station
 static GS_MASTER: StaticCell<GsMaster> = StaticCell::new();
+/// struct for the channels used for communicating with the GsMaster
 static GS_COMMS: StaticCell<GsComms> = StaticCell::new();
 
 #[embassy_executor::task]
@@ -78,10 +77,17 @@ async fn run_fsm(
     event_receiver: EventReceiver,
     event_sender2: EventSender,
     event_sender_gs: EventSender,
-    mut rearm_sdc_pin: Output<'static>,
-    mut sdc_pin: Output<'static>,
+    rearm_sdc_pin: Output<'static>,
+    sdc_pin: Output<'static>,
 ) {
-    let mut fsm = FSM::new(event_receiver, event_sender2, event_sender_gs, rearm_sdc_pin, sdc_pin).await;
+    let mut fsm = FSM::new(
+        event_receiver,
+        event_sender2,
+        event_sender_gs,
+        rearm_sdc_pin,
+        sdc_pin,
+    )
+    .await;
     fsm.run().await;
 }
 
@@ -162,7 +168,7 @@ async fn main(spawner: Spawner) -> ! {
     // spawner.spawn(send_random_msg_continuously(
     //     can2.new_sender(),
     // )).unwrap();
-    
+
     let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
     let sdc_pin = Output::new(p.PB0, Level::High, Speed::Medium);
 

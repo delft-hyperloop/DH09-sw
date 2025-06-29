@@ -26,7 +26,6 @@
         propChartStore,
         showcaseStateCounter,
         showcasingStates,
-        inStateHVOn,
         GreenHVALTurnedOn,
         RedHVALTurnedOn
     } from '$lib/stores/state';
@@ -990,18 +989,6 @@
         GrandDataDistributor.getInstance().kill();
         (await unlisten)();
     });
-
-    $: {
-        if ($inStateHVOn) {
-            GreenHVALTurnedOn.set(false);
-            RedHVALTurnedOn.set(true);
-        } else {
-            GreenHVALTurnedOn.set(true);
-            RedHVALTurnedOn.set(false);
-        }
-    }
-
-    $: console.log('inStateHVOn:', $inStateHVOn);
 </script>
 
 <div class="flex flex-col w-screen h-screen max-h-screen overflow-hidden">

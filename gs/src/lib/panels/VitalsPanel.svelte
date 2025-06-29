@@ -19,7 +19,6 @@
         connectedToMainPCB,
         debugModeActive,
         inStateAccelerating,
-        inStateConnectedToGS,
         inStateLevitating,
         showcaseStateCounter,
         showcasingStates,
@@ -37,9 +36,6 @@
         RightPanelClose,
         ConnectionSignal,
         ConnectionSignalOff,
-        SendAlt,
-        StopFilled,
-        Password
     } from 'carbon-icons-svelte';
     import type { SvelteComponent } from 'svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
@@ -55,8 +51,6 @@
     const fsmStateStore = storeManager.getWritable("FSMState");
     const ptcStateStore = storeManager.getWritable("PTCState");
     const ptcFaultStore = storeManager.getWritable("PTCNonCriticalFault");
-    const localization = storeManager.getWritable("Localization");
-    const velocity = storeManager.getWritable("Velocity");
 
     const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
@@ -257,7 +251,7 @@
                             cmd="SystemCheck"
                             icon={SettingsCheck}
                         />
-                        {#if $fsmState.value < 5}
+                        {#if $fsmStateStore[0].value < 5}
                             <Command
                                 cmd="StartHV"
                                 text="Start HV"

@@ -128,8 +128,10 @@
     ]
 
     leftMotorTemps.forEach((store) => {
-        store.subscribe((value) => {
-            if (value.value >= 60 && $leftMotorTempsAcknowledged) {
+        store.subscribe((history) => {
+            if (history.length === 0) return;
+            const latest = history[0];
+            if (latest.value >= 60 && $leftMotorTempsAcknowledged) {
                 leftMotorTempsAcknowledged.set(false);
                 toastStore.trigger({
                     message: "Temperature on the left motor is too high!",
@@ -145,8 +147,10 @@
         })
     });
     rightMotorTemps.forEach((store) => {
-        store.subscribe((value) => {
-            if (value.value >= 60 && $rightMotorTempsAcknowledged) {
+        store.subscribe((history) => {
+            if (history.length === 0) return;
+            const latest = history[0];
+            if (latest.value >= 60 && $rightMotorTempsAcknowledged) {
                 rightMotorTempsAcknowledged.set(false);
                 toastStore.trigger({
                     message: "Temperature on the right motor is too high!",
@@ -162,8 +166,10 @@
         })
     });
     emsTemps.forEach((store) => {
-        store.subscribe((value) => {
-            if (value.value >= 60 && $emsTempsAcknowledged) {
+        store.subscribe((history) => {
+            if (history.length === 0) return;
+            const latest = history[0];
+            if (latest.value >= 60 && $emsTempsAcknowledged) {
                 emsTempsAcknowledged.set(false);
                 toastStore.trigger({
                     message: "Temperature on EMS is too high!",
@@ -179,8 +185,10 @@
         })
     });
     hemsTemps.forEach((store) => {
-        store.subscribe((value) => {
-            if (value.value >= 60 && $hemsTempsAcknowledged) {
+        store.subscribe((history) => {
+            if (history.length === 0) return;
+            const latest = history[0];
+            if (latest.value >= 60 && $hemsTempsAcknowledged) {
                 hemsTempsAcknowledged.set(false);
                 toastStore.trigger({
                     message: "Temperature on HEMS is too high!",

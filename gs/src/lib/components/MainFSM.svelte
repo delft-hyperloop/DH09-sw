@@ -2,9 +2,9 @@
     import { onDestroy, onMount } from 'svelte';
     import { GrandDataDistributor } from '$lib';
     import {
-        connectedToMainPCB, inStateAccelerating,
+        connectedToMainPCB, GreenHVALTurnedOn, inStateAccelerating,
         inStateActive,
-        inStateLevitating,
+        inStateLevitating, RedHVALTurnedOn,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
@@ -30,13 +30,23 @@
     const fsmState = storeManager.getWritable("FSMState");
 
     fsmState.subscribe((store) => {
-        let index = store.value;
+        if (store.length === 0) return;
+        let index = store[0].value;
         inStateConnectedToGS.set(index === 1);
         inStateIdle.set(index === 3);
         inStateActive.set(index === 5);
         inStateDemo.set(index === 6);
         inStateLevitating.set(index === 7);
         inStateAccelerating.set(index === 8);
+        if (index >= 5) {
+            GreenHVALTurnedOn.set(false);
+            RedHVALTurnedOn.set(true);
+        } else {
+            GreenHVALTurnedOn.set(true);
+            RedHVALTurnedOn.set(false);
+        }
+
+        console.log(`FSM in state ${index}`);
     })
 
     function turn_on(state:SVGGElement, index: number) {
@@ -89,7 +99,7 @@
             } else if (!$connectedToMainPCB) {
                 turn_on(allStates[0], 0);
             } else {
-                turn_on(allStates[$fsmState.value % allStates.length], $fsmState.value);
+                turn_on(allStates[$fsmState[0].value % allStates.length], $fsmState[0].value);
             }
         }, 100)
 

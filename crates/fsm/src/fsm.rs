@@ -115,6 +115,9 @@ impl FSM {
             (_, Event::Emergency { emergency_type }) => {
                 self.transition(States::Fault).await;
 
+                // Trigger emergency using the sdc
+                self.sdc_pin.set_low();
+
                 // If going in emergency state, send messages over CAN and to the groundstation
                 self.event_sender2
                     .send(Event::Emergency { emergency_type })
@@ -124,6 +127,11 @@ impl FSM {
                     .await;
             }
             (_, Event::Fault) => self.transition(States::Fault).await,
+            (_, Event::RequestFSMState) => {
+                self.event_sender_gs
+                    .send(Event::FSMTransition(self.state as u8))
+                    .await
+            }
 
             (_, Event::ResetFSM) => {
                 self.transition(States::Boot).await;
@@ -147,7 +155,7 @@ impl FSM {
             }
 
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
-            (States::PreCharge, Event::Activate) => self.transition(States::Active).await,
+            (States::PreCharge, Event::HVOnAck) => self.transition(States::Active).await,
             (States::Active, Event::Charge) => self.transition(States::Charging).await,
             (States::Charging, Event::StopCharge) => self.transition(States::Active).await,
             (States::Active, Event::EnterDemo) => {
@@ -178,7 +186,7 @@ impl FSM {
                     Event::FaultFixed => Some(States::SystemCheck),
                     Event::StartSystemCheck => Some(States::SystemCheck),
                     Event::StartPreCharge => Some(States::PreCharge),
-                    Event::Activate => Some(States::Active),
+                    Event::HVOnAck => Some(States::Active),
                     Event::Charge => Some(States::Charging),
                     Event::StopCharge => Some(States::Active),
                     Event::EnterDemo => Some(States::Demo),

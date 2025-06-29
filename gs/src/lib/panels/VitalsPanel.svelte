@@ -1,5 +1,14 @@
 <script lang="ts">
-    import { Battery, TileGrid, Tile, Command, GrandDataDistributor, Store, TauriCommand, serverStatus } from '$lib';
+    import {
+        Battery,
+        TileGrid,
+        Tile,
+        Command,
+        GrandDataDistributor,
+        Store,
+        TauriCommand,
+        serverStatus,
+    } from '$lib';
     import { AppBar, getToastStore } from '@skeletonlabs/skeleton';
     import {invoke} from "@tauri-apps/api/tauri";
     import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
@@ -10,10 +19,8 @@
         connectedToMainPCB,
         debugModeActive,
         inStateAccelerating,
-        inStateCruising,
-        inStateHVOn,
+        inStateConnectedToGS,
         inStateLevitating,
-        inStateSystemCheck,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
@@ -34,6 +41,7 @@
     import type { SvelteComponent } from 'svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
+    import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
 
     let width: number;
 
@@ -58,6 +66,8 @@
         });
         serverStatus.set(true);
     };
+
+    let hovering_over_debug_commands: boolean = false;
 
     const handleFailure = (error:string) => {
         toastStore.trigger({
@@ -102,6 +112,24 @@
         ["HEMS D1", DE.Alpha1, "[-10,10] A", "HEMS D2", DE.Alpha1, "[-10,10] A"],
         ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
     ]
+
+    async function sendSystemCheckMocks() {
+        await invoke('send_command', {cmdName: "MockPtAck", val: 0}).then(() => {
+            console.log(`Command MockPtAck sent`);
+        }).catch((e) => {
+            console.error(`Error sending command MockPtAck: ${e}`);
+        });
+        await invoke('send_command', {cmdName: "MockLeviAck", val: 0}).then(() => {
+            console.log(`Command MockLeviAck sent`);
+        }).catch((e) => {
+            console.error(`Error sending command MockLeviAck: ${e}`);
+        });
+        await invoke('send_command', {cmdName: "MockPropAck", val: 0}).then(() => {
+            console.log(`Command MockPropAck sent`);
+        }).catch((e) => {
+            console.error(`Error sending command MockPropAck: ${e}`);
+        });
+    }
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
@@ -220,20 +248,39 @@
                             cmd="SystemCheck"
                             icon={SettingsCheck}
                         />
-                        {#if !$inStateHVOn}
-                            <Command cmd="StartHV" text="Start HV" icon={Flash}/>
+                        {#if $fsmState.value < 5}
+                            <Command
+                                cmd="StartHV"
+                                text="Start HV"
+                                icon={Flash}
+                                dependency={inStateIdle}
+                                dependencyTitle="Wrong State!"
+                                dependencyMessage="The pod should be in the Idle state to turn on high voltage!"
+                            />
                         {:else}
                             <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
                         {/if}
                         <Command cmd="RearmSDC" text="Rearm SDC" icon={QComposerEdit}/>
                         <Command cmd="RetractBrakes" icon={RightPanelClose}/>
                         {#if !$inStateLevitating}
-                            <Command cmd="LevitationOn" icon={StartLevitatingIcon}/>
+                            <Command
+                                cmd="LevitationOn"
+                                icon={StartLevitatingIcon}
+                                dependency={inStateDemo}
+                                dependencyMessage="The pod should be in the Demo state to start levitating!"
+                                dependencyTitle="Wrong State!"
+                            />
                         {:else}
                             <Command cmd="LevitationOff" icon={StopLevitatingIcon}/>
                         {/if}
                         {#if !$inStateAccelerating}
-                            <Command cmd="PropulsionOn" icon={Meter}/>
+                            <Command
+                                cmd="PropulsionOn"
+                                icon={Meter}
+                                dependency={inStateLevitating}
+                                dependencyTitle="Wrong State!"
+                                dependencyMessage="The pod should be in the Levitating state to turn on the motor!"
+                            />
                         {:else}
                             <Command cmd="PropulsionOff" icon={Meter} iconClass="scale-x-[-1]"/>
                         {/if}
@@ -257,21 +304,30 @@
                     </div>
                 </Tile>
                 {#if $debugModeActive}
+                    <Tile containerClass="col-span-full bg-surface-800" bgToken={700}>
+                        <button on:click={sendSystemCheckMocks} class="btn rounded-md font-number font-medium text-wrap flex-wrap bg-primary-500 text-surface-900">
+                            Pass System Check
+                        </button>
+                    </Tile>
+                    <span class="text-3xl col-span-full">Please try to use the FSM instead of these commands!!! Don't make Harry cry!</span>
                     <Tile bgToken={700} containerClass="col-span-2 bg-surface-800" heading="Propulsion FSM Update Commands" headingOnLeft={true}>
-                        <div class="flex gap-4 flex-wrap">
+                        <button on:mouseenter={() => {hovering_over_debug_commands = true}} on:mouseleave={() => {hovering_over_debug_commands = false}} disabled class="flex gap-4 flex-wrap">
                             <Command cmd="FSMUpdate" text="Initialization" val={200} className="py-3 bg-primary-500 text-surface-900"/>
                             <Command cmd="FSMUpdate" text="Idle" val={201}/>
                             <Command cmd="FSMUpdate" text="Running" val={202}/>
                             <Command cmd="FSMUpdate" text="Braking" val={203}/>
-                        </div>
+                        </button>
                     </Tile>
                     <Tile bgToken={700} containerClass="col-span-2 bg-surface-800" heading="Powertrain FSM Update Commands" headingOnLeft={true}>
-                        <div class="flex gap-4 flex-wrap">
+                        <button on:mouseenter={() => {hovering_over_debug_commands = true}} on:mouseleave={() => {hovering_over_debug_commands = false}} disabled  class="flex gap-4 flex-wrap">
                             <Command cmd="FSMUpdate" text="HV On" val={4} className="py-3 bg-primary-500 text-surface-900"/>
                             <Command cmd="FSMUpdate" text="Idle" val={11}/>
                             <Command cmd="FSMUpdate" text="Reset Fault from Precharge Fault" val={3}/>
-                        </div>
+                        </button>
                     </Tile>
+                {/if}
+                {#if hovering_over_debug_commands}
+                    <span>😭</span>
                 {/if}
             </TileGrid>
         </div>

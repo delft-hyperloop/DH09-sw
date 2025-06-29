@@ -2229,6 +2229,10 @@ commands:
     id: 0x209
   - name: 'MockPropAck'
     id: 0x210
+  - name: 'MockHVOn'
+    id: 0x211
+  - name: 'RequestFsmState'
+    id: 0x212
 
 beckhoff:
   task-period: 10 # period in ms

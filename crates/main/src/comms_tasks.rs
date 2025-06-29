@@ -3,7 +3,6 @@
 
 use defmt::todo;
 use defmt::*;
-use embassy_stm32::gpio::Output;
 use embassy_sync::pubsub::WaitResult;
 use embassy_time::Instant;
 use embassy_time::Timer;
@@ -43,17 +42,6 @@ pub async fn forward_gs_to_fsm(
         // TODO: Turn off High Voltage in case of emergency!
         match event {
             Event::NoEvent => {}
-            Event::EnterDemo => {
-                // Pull pin high
-                // TODO: Move this inside the fsm
-                // rearm_output.set_high();
-
-                embassy_time::Timer::after_millis(100).await;
-                event_sender.send(event).await;
-
-                // Pull pin low
-                // rearm_output.set_low();
-            }
             _ => event_sender.send(event).await,
         }
     }

@@ -1,5 +1,6 @@
 //! Types for the ethernet logic
 
+use core::fmt::{Debug, Formatter};
 use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::peripherals::ETH;
@@ -58,8 +59,23 @@ pub type EthDevice = Ethernet<'static, ETH, GenericPhy>;
 /// Struct used to store the communication channels between the GsMaster and the
 /// outside
 pub struct GsComms {
+    /// The channel used to receive commands from the pod
     pub(crate) rx_channel: GsToPodChannel,
+    /// The channel used to send datapoints to the pod
     pub(crate) tx_channel: PodToGsChannel,
+}
+
+impl Debug for GsComms {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        // idk wtf to write other than this good luck bro
+        write!(f, "GsComms")
+    }
+}
+
+impl Default for GsComms {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl GsComms {
@@ -146,4 +162,10 @@ pub struct EthPeripherals {
     pub pb13: Peri<'static, PB13>,
     /// todo
     pub pb11: Peri<'static, PB11>,
+}
+
+impl Debug for EthPeripherals {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        write!(f, "EthPeripherals")
+    }
 }

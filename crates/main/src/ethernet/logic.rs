@@ -1,8 +1,10 @@
 //! The logic behind ethernet. Made using an FSM that checks the state of the
 //! socket used for communications.
 
+use core::fmt::Debug;
 use core::ops::Rem;
 
+use cortex_m::peripheral::SCB;
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_net::tcp::ConnectError;
@@ -17,8 +19,12 @@ use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::InterruptHandler;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::interrupt;
+use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::mutex::Mutex;
+use embassy_time::Duration;
 use embassy_time::Instant;
 use embassy_time::Timer;
+use embassy_time::WithTimeout;
 use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
@@ -41,24 +47,35 @@ use crate::ethernet::types::RX_BUFFER_SIZE;
 use crate::ethernet::types::SOCKET_KEEP_ALIVE;
 use crate::ethernet::types::TX_BUFFER_SIZE;
 
+/// Boolean used to check if the hashes have been sent or not.
+/// Shared between the `timeout_for_sending_hashes` task and the `connect`
+/// method from the `GsMaster`
+static HASH_TIMEOUT_FLAG: Mutex<CriticalSectionRawMutex, bool> = Mutex::new(false);
+
 /// Struct used to communicate over ethernet with the GS.
 pub struct GsMaster {
+    /// The TCP stack used to create new sockets
     stack: Stack<'static>,
+    /// The socket used for communicating with the ground station
     socket: TcpSocket<'static>,
+    /// The IP addresses that the socket should try to connect to
     remotes: [(Ipv4Address, u16); config::IP_ADDRESS_COUNT],
+    /// Receiver for the transmission channel
     tx_receiver: PodToGsSubscriber<'static>,
+    /// Transmitter for the receiving channel
     rx_transmitter: GsToPodPublisher<'static>,
+    /// Transmitter for the transmission channel
     tx_transmitter: PodToGsPublisher<'static>,
+    /// Flag that triggers a reconnection (creates a new socket)
     should_reconnect: bool,
-    tx_failed: bool,
 }
 
-// impl Debug for GsMaster {
-//     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-//         let ep = self.socket.remote_endpoint().unwrap();
-//         write!(f, "GsMaster with socket {:?}:{:?}", ep.addr, ep.port)
-//     }
-// }
+impl Debug for GsMaster {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let ep = self.socket.remote_endpoint().unwrap();
+        core::write!(f, "GsMaster with socket {:?}:{:?}", ep.addr, ep.port)
+    }
+}
 
 /// Buffer used by the TCP stack when receiving
 static mut RX_BUFFER: [u8; RX_BUFFER_SIZE] = [0; RX_BUFFER_SIZE];
@@ -150,7 +167,6 @@ impl GsMaster {
             rx_transmitter,
             tx_transmitter,
             should_reconnect: false,
-            tx_failed: false,
         }
     }
 
@@ -285,39 +301,60 @@ impl GsMaster {
         }
 
         debug!("handshaking (sending hashes)");
-        self.tx_transmitter
+
+        // Spawns the task that checks if the hashes have been sent in less than a
+        // second. If not, it performs a hardware reset (related to the bug where it
+        // only sends a connection established message, but can't send or transmit
+        // anything)
+        // unwrap!(self.spawner.spawn(hardware_reset_timeout()));
+
+        // Sends the hash messages to the ground station. If the first one doesn't get
+        // sent in 200 milliseconds, it triggers a reconnection (related to the bug
+        // where it only sends a connection established message, but can't send
+        // or transmit anything)
+        match self
+            .tx_transmitter
             .send(PodToGsMessage {
                 dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
             })
-            .await;
-        self.tx_transmitter
-            .send(PodToGsMessage {
-                dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
-            })
-            .await;
-        self.tx_transmitter
-            .send(PodToGsMessage {
-                dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
-            })
-            .await;
-        self.tx_transmitter
-            .send(PodToGsMessage {
-                dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
-            })
-            .await;
-        while self.socket.state() == State::Closed {
-            warn!(
-                "waiting for network stack state to update. state={}",
-                self.socket.state()
-            );
-            Timer::after_millis(5).await;
+            .with_timeout(Duration::from_millis(200))
+            .await
+        {
+            Ok(_) => {
+                self.tx_transmitter
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
+                    })
+                    .await;
+                self.tx_transmitter
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
+                    })
+                    .await;
+                self.tx_transmitter
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
+                    })
+                    .await;
+                info!("connected, endpoint={:?}", self.socket.remote_endpoint());
+            }
+            Err(e) => {
+                warn!("Timeout for sending hashes has expired with error {:?}! Triggering a reconnection!", e);
+                self.should_reconnect = true;
+            }
         }
-        info!("connected, endpoint={:?}", self.socket.remote_endpoint())
+
+        // let mut mutex_lock = HASH_TIMEOUT_FLAG.lock().await;
+        // *mutex_lock = true;
+        // core::mem::drop(mutex_lock);
     }
 
     /// Reconnects to the GS if the connection drops by creating a new socket.
     async fn reconnect(&mut self) {
         info!("Reconnecting to the GS");
+
+        // Performs a hardware reset instead of making a new socket
+        // SCB::sys_reset()
 
         // flush whatever was still written to the socket
         self.socket.flush().await.expect("couldn't flush socket");
@@ -346,25 +383,6 @@ impl GsMaster {
     /// it saves the bytes it was supposed to send in `TX_BYTES` and reattempts
     /// to send them in the next call.
     async fn transmit(&mut self) {
-        // if self.tx_failed {
-        //     let mut buf: [u8; 20] = [0; 20];
-        //     unsafe {
-        //         buf.copy_from_slice(&TX_BYTES);
-        //     }
-        //     let tx_result = self.socket.write_all(&buf).await;
-        //
-        //     match tx_result {
-        //         Ok(()) => {
-        //             self.tx_failed = false;
-        //         }
-        //         Err(embassy_net::tcp::Error::ConnectionReset) => {
-        //             self.should_reconnect = true;
-        //         }
-        //     }
-        //
-        //     return;
-        // }
-
         let msg = self.tx_receiver.receive().await;
 
         let buf = msg.dp.as_bytes();
@@ -372,12 +390,9 @@ impl GsMaster {
         let tx_result = self.socket.write_all(&buf).await;
 
         match tx_result {
-            Ok(()) => {
-                self.tx_failed = false;
-            }
+            Ok(()) => {}
             Err(embassy_net::tcp::Error::ConnectionReset) => {
                 self.should_reconnect = true;
-                self.tx_failed = true;
             }
         }
     }
@@ -433,4 +448,18 @@ fn get_remote_endpoints() -> [(Ipv4Address, u16); config::IP_ADDRESS_COUNT] {
 async fn eth_task(mut runner: embassy_net::Runner<'static, EthDevice>) -> ! {
     info!("Running the TCP stack");
     runner.run().await
+}
+
+/// Task that triggers a hardware reset 1 second after it gets spawned.
+#[allow(dead_code)]
+#[embassy_executor::task]
+async fn hardware_reset_timeout() {
+    info!("Starting watchdog for hashes");
+
+    Timer::after_secs(1).await;
+    let mut mutex_lock = HASH_TIMEOUT_FLAG.lock().await;
+    if !*mutex_lock {
+        SCB::sys_reset()
+    }
+    *mutex_lock = false;
 }

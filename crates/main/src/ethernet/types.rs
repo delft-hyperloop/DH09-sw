@@ -1,6 +1,8 @@
 //! Types for the ethernet logic
 
-use core::fmt::{Debug, Formatter};
+use core::fmt::Debug;
+use core::fmt::Formatter;
+
 use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::peripherals::ETH;

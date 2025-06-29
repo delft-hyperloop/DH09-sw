@@ -128,7 +128,7 @@ impl FSM {
             (_, Event::ResetFSM) => {
                 self.transition(States::Boot).await;
                 cortex_m::peripheral::SCB::sys_reset();
-            },
+            }
 
             (States::Fault, Event::FaultFixed) => self.transition(States::SystemCheck).await,
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,

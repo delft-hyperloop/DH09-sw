@@ -71,7 +71,6 @@ fn match_cmd_to_event(command: Command) -> Event {
 
         // Propulsion commands
         Command::PropulsionOn(_) => Event::Accelerate,
-        Command::PropulsionOff(_) => Event::Cruise,
 
         // Control commands
         Command::SystemCheck(_) => Event::StartSystemCheck,

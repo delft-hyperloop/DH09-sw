@@ -81,13 +81,8 @@ doc = "Pod is accelerating"
 index = 8
 
 [[FSMState]]
-state = "Cruising"
-doc = "Pod is cruising"
-index = 9
-
-[[FSMState]]
 state = "Braking"
-doc = "Pod is braking"
+doc = "Pod is braking with the engine"
 index = 10
 
 [[FSMState]]

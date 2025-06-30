@@ -72,7 +72,7 @@ const parseShortCut = async (shortcut:string, debugMode: boolean, logsAreVisible
             logsScrollAreaSize.set(5 - (5 * 0.05 + 4.5) + window.innerHeight / VIEWPORT_HEIGHT_NORMALIZING_VALUE * 10 - 10);
         }
     } else if (tabMatch) {
-        const tab = Math.min(Number(tabMatch[1]), 7 + (debugMode ? 1 : 0));
+        const tab = Math.min(Number(tabMatch[1]), 6 + (debugMode ? 1 : 0));
         detailTabSet.set(Number(tab) - 1);
     } else if (shortcut === "emergency_brake") {
         console.log("Emergency brake");

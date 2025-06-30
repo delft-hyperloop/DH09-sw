@@ -11,14 +11,12 @@ pub enum Event {
     ConnectToGS,
     /// Start system check
     StartSystemCheck,
-    /// The System was checked successfully
-    SystemCheckSuccess,
     /// Enters `Idle` state from `Discharge` state
     EnterIdle,
     /// Starts the pre-charging process
     StartPreCharge,
     /// Will turn on high voltage while SDC is closed and brakes are deployed
-    Activate,
+    HVOnAck,
     /// Enters the demo state armed brakes, SDC still closed
     EnterDemo,
     /// Starts levitating
@@ -27,9 +25,7 @@ pub enum Event {
     StopLevitating,
     /// Starts accelerating
     Accelerate,
-    /// Stops accelerating
-    Cruise,
-    /// Deploys brakes
+    /// Brakes with the motor
     Brake,
     /// Used for transitioning from braking to levitating when the speed of the
     /// pod is 0
@@ -62,6 +58,28 @@ pub enum Event {
     /// Event sent by the FSM whenever a transition fails
     /// - `u8`: The state in which the FSM didn't transition.
     TransitionFail(u8),
+    /// Acknowledgement received from levi that their FSM also transitioned to
+    /// new state
+    LeviAck,
+    /// Acknowledgement received from the first propulsion motor that their FSM
+    /// also transitioned to new state
+    PropulsionAck1,
+    /// Acknowledgement received from the second propulsion motor that their FSM
+    /// also transitioned to new state
+    PropulsionAck2,
+    /// Acknowledgement received from powertrain that their FSM also
+    /// transitioned to new state
+    PowertrainAck,
+    /// Acknowledgement for levi fault clear
+    ClearFaultAckLevi,
+    /// Acknowledgement that levi passed the system check
+    LeviSystemCheckSuccess,
+    /// Acknowledgement that propulsion passed the system check
+    PropSystemCheckSuccess,
+    /// Acknowledgement that powertrain passed the system check
+    PowertrainSystemCheckSuccess,
+    /// Sends its state to the Ground Station
+    RequestFSMState,
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]

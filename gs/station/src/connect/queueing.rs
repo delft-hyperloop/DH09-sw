@@ -2,8 +2,8 @@ use std::collections::VecDeque;
 
 use gslib::Datapoint;
 
-use crate::battery::DataSender;
 use crate::connect::handle_incoming_data::handle_incoming_data;
+use crate::connect::DataSender;
 use crate::CommandSender;
 use crate::MessageSender;
 
@@ -19,8 +19,6 @@ use crate::MessageSender;
 pub async fn parse(
     parsing_buffer: &mut VecDeque<u8>,
     msg_sender: MessageSender,
-    cmd_sender: CommandSender,
-    data_sender: DataSender,
 ) -> anyhow::Result<()> {
     while let Some(p) = parsing_buffer.front() {
         if *p == 0xFF {
@@ -33,13 +31,7 @@ pub async fn parse(
                 // x.reverse();
                 // tx.send(Message::Info(format!("[TRACE] received: {:?}", x))).unwrap();
                 //msg_sender.send(Message::Data(Datapoint::from_bytes(&x)))?;
-                handle_incoming_data(
-                    Datapoint::from_bytes(&x),
-                    msg_sender.clone(),
-                    cmd_sender.clone(),
-                    data_sender.clone(),
-                )
-                .await?;
+                handle_incoming_data(Datapoint::from_bytes(&x), msg_sender.clone()).await?;
             }
         } else {
             parsing_buffer.pop_front();

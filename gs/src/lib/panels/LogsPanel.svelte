@@ -3,9 +3,17 @@
     import {listen, type UnlistenFn} from "@tauri-apps/api/event";
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
-    import { bigErrorStatus, ErrorStatus, logsPanelSize, logsVisible } from '$lib/stores/state';
+    import {
+        bigErrorStatus, connectedToMainPCB,
+        ErrorStatus,
+        logsPanelSize,
+        logsScrollAreaSize,
+        logsVisible,
+    } from '$lib/stores/state';
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { View, ViewOff } from 'carbon-icons-svelte';
+    import { util, VIEWPORT_HEIGHT_NORMALIZING_VALUE } from '$lib';
+    import { invoke } from '@tauri-apps/api/tauri';
 
     let unlistens: UnlistenFn[] = [];
     let logContainer: HTMLElement;
@@ -54,6 +62,13 @@
         }
     }
 
+    let connectionClosedMessages = [
+        "ConnectionClosedByClient",
+        "ConnectionClosedByServer",
+        "ConnectionDropped",
+        "FailedToReadFromConnection",
+    ];
+
     onMount(async () => {
         unlistens[0] = await registerChannel(EventChannel.INFO, 'INFO');
 
@@ -71,7 +86,7 @@
             console.log(message)
             console.log(`bg-${message[1]}-600`)
 
-            if (message[0].includes("Failed")) {
+            if (message[0].includes("Failed") || message[0].includes("mismatch")) {
                 toastStore.trigger({
                     message: message[0],
                     background: 'bg-error-400',
@@ -103,6 +118,27 @@
                 }
             }
         );
+
+        unlistens[5] = await listen(EventChannel.STATUS, async (event: {payload: string}) => {
+            const message:string[] = event.payload.split(";");
+            if (message[0] === "Status: ConnectionClosedByClient" ||
+                message[0] === "Status: ConnectionClosedByServer" ||
+                message[0] === "Status: ConnectionDropped" ||
+                message[0] === "Status: FailedToReadFromConnection")
+            {
+                await invoke("disconnect");
+                await invoke("connect_to_pod");
+                connectedToMainPCB.set(false);
+            } else if (message[0].split(":")[1].trim() === "ConnectionEstablished") {
+                await invoke('send_command', {cmdName: "ConnectionEstablished", val: 0}).then(() => {
+                    console.log(`Command ConnectionEstablished sent`);
+                }).catch((e) => {
+                    console.error(`Error sending command ConnectionEstablished: ${e}`);
+                });
+                util.log(`Command ConnectionEstablished sent`, EventChannel.INFO);
+                connectedToMainPCB.set(true);
+            }
+        })
 
         logContainer.addEventListener('scroll', () => {
             // User has scrolled if they're not at the very top

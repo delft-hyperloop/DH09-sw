@@ -23,9 +23,8 @@ use std::fs;
 use std::path::Path;
 
 use anyhow::Result;
-use goose_utils::check_config;
 use goose_utils::fsm_states::FSMState;
-use goose_utils::ip::configure_gs_ip;
+use goose_utils::hash_config;
 use serde::Deserialize;
 /*
    BUILD CONFIGURATION
@@ -42,8 +41,7 @@ struct Config {
 
 #[derive(Debug, Deserialize)]
 struct GS {
-    ip: [u8; 4],
-    force: bool,
+    ips: Vec<[u8; 4]>,
     port: u16,
     buffer_size: usize,
     timeout: u64,
@@ -101,14 +99,11 @@ fn main() -> Result<()> {
     let df = std::fs::read_to_string(DATAFLOW_PATH)?;
     let df = goose_utils::dataflow::parse_from(&df);
 
-    content.push_str(&check_config(EVENTS_PATH, CONFIG_PATH)?);
+    // content.push_str(&check_config(DATAFLOW_PATH, )?);
+    content.push_str(&hash_config(CONFIG_PATH)?);
 
     content.push_str(&configure_ip(&config));
-    content.push_str(&configure_gs_ip(
-        config.gs.ip,
-        config.gs.port,
-        config.gs.force,
-    )?);
+    content.push_str(&configure_gs_ips(&config.gs.ips, config.gs.port));
     content.push_str(&configure_pod(&config));
     content.push_str(&configure_internal(&config));
     let commands = goose_utils::dataflow::collect_commands(&df);
@@ -187,7 +182,7 @@ fn configure_pod(config: &Config) -> String {
         config.pod.net.ip[3],
         config.pod.net.port
     )
-        + &format!("\npub const USE_DHCP: bool = {}\n;", config.pod.net.dhcp)
+        + &format!("\npub const USE_DHCP: bool = {};\n", config.pod.net.dhcp)
         //     + &*format!(
         //     "pub static POD_UDP_IP_ADDRESS: ([u8;4],u16) = ([{},{},{},{}],{});\n",
         //     config.pod.net.ip[0],
@@ -313,5 +308,25 @@ impl States {{
             .map(|x| format!("\t\t\t{} => States::{}", x.index, x.state))
             .collect::<Vec<String>>()
             .join(",\n")
+    )
+}
+
+/// Generates the IPv4 addresses from the provided list of (IP, port) tuples
+fn configure_gs_ips(ips: &Vec<[u8; 4]>, port: u16) -> String {
+    let mut result: String = String::from("");
+
+    for ip in ips {
+        result.push_str(&format!(
+            "\t([{}, {}, {}, {}], {}),\n",
+            ip[0], ip[1], ip[2], ip[3], port
+        ));
+    }
+
+    format!(
+        "\npub const IP_ADDRESS_COUNT: usize = {};\npub const GS_IP_ADDRESSES: [([u8;4], u16); {}] = [\n\
+        {}\n];\n\n",
+        ips.len(),
+        ips.len(),
+        result
     )
 }

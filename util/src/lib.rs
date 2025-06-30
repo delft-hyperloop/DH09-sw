@@ -1,5 +1,3 @@
-#![feature(let_chains)]
-
 use std::cmp::min;
 use std::collections::HashSet;
 use std::fs::read_to_string;
@@ -15,14 +13,21 @@ pub mod fsm_states;
 pub mod info;
 pub mod ip;
 pub mod limits;
-
-// mod shared;
 use anyhow::Result;
 
-pub fn check_config(ep: &str, conf: &str) -> Result<String> {
+/// Checks if there are duplicate IDs in the datatypes. Obsolete since we
+/// don't use events with IDs or commands/datatypes in files other than
+/// dataflow.yaml, which are parsed somewhere else.
+///
+/// -`dp`: datatypes path
+/// -`cp`: commands path
+/// -`conf`: config path
+pub fn check_config(dp: &str, cp: &str, conf: &str) -> Result<String> {
     let mut items = vec![];
-    let e = events::get_event_items(ep)?;
-    items.extend(&e);
+    let d = datatypes::get_data_items(dp)?;
+    let c = commands::get_command_items(cp)?;
+    items.extend(&d);
+    items.extend(&c);
     let mut seen = HashSet::new();
     let mut seen_names = HashSet::new();
     for (id, name) in &items {
@@ -54,10 +59,18 @@ pub fn check_config(ep: &str, conf: &str) -> Result<String> {
             });
             panic!(
                 "\nDuplicate entry found:\n1: {} {}->{} \n2: {} {}->{}\n",
-                category(&e.iter().map(|x| x.0).collect::<Vec<u16>>(), *id),
+                category(
+                    &d.iter().map(|x| x.0).collect::<Vec<u16>>(),
+                    &c.iter().map(|x| x.0).collect::<Vec<u16>>(),
+                    *id
+                ),
                 name,
                 format_args!("{:#05x}", id),
-                category(&e.iter().map(|x| x.0).collect::<Vec<u16>>(), other.0),
+                category(
+                    &d.iter().map(|x| x.0).collect::<Vec<u16>>(),
+                    &c.iter().map(|x| x.0).collect::<Vec<u16>>(),
+                    other.0
+                ),
                 other.1,
                 format_args!("{:#05x}", other.0),
             );
@@ -65,11 +78,10 @@ pub fn check_config(ep: &str, conf: &str) -> Result<String> {
     }
 
     let cs = read_to_string(conf)?;
-    let cs = cs.lines().collect::<Vec<_>>();
     let mut hasher = DefaultHasher::new();
     cs.hash(&mut hasher);
     let hash = hasher.finish();
-    Ok(format!("\npub const CONFIG_HASH: u64 = {hash};\n"))
+    Ok(format!("\npub const CONFIG_HASH: u64 = {};\n", hash))
 }
 
 fn nearest_id(id: u16, ids: &[u16]) -> u16 {
@@ -86,9 +98,21 @@ fn nearest_id(id: u16, ids: &[u16]) -> u16 {
     panic!("There are no more available ids!")
 }
 
-fn category(e: &[u16], i: u16) -> String {
-    if e.contains(&i) {
-        "[[Event]]".into()
+/// Makes a hash from the config file and returns the value formatted as a
+/// constant
+pub fn hash_config(conf: &str) -> Result<String> {
+    let cs = read_to_string(conf)?;
+    let mut hasher = DefaultHasher::new();
+    cs.hash(&mut hasher);
+    let hash = hasher.finish();
+    Ok(format!("\npub const CONFIG_HASH: u64 = {};\n", hash))
+}
+
+fn category(d: &[u16], c: &[u16], i: u16) -> String {
+    if d.contains(&i) {
+        "[[Datatype]]".into()
+    } else if c.contains(&i) {
+        "[[Command]]".into()
     } else {
         unreachable!("This ID had to come from somewhere...")
     }

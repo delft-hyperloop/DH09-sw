@@ -1194,6 +1194,8 @@ message-processing:
     can:
       id: 0x36C
       bus: can2
+    fsm:
+      event: 'PropulsionAck1'
     datapoint-conversion:
       - datapoint:
           name: 'FSMAckProp1'
@@ -1208,6 +1210,8 @@ message-processing:
     can:
       id: 0x36D
       bus: can2
+    fsm:
+      event: 'PropulsionAck2'
     datapoint-conversion:
       - datapoint:
           name: 'FSMAckProp2'
@@ -1222,6 +1226,8 @@ message-processing:
     can:
       id: 0x385
       bus: can2
+    fsm:
+      event: 'LeviAck'
     datapoint-conversion:
       - datapoint:
           name: 'FSMAckLevi'
@@ -1236,6 +1242,8 @@ message-processing:
     can:
       id: 0x386
       bus: can2
+    fsm:
+      event: 'ClearFaultAckLevi'
     datapoint-conversion:
       - datapoint:
           name: 'ClearFaultAckLevi'
@@ -1347,6 +1355,8 @@ message-processing:
     can:
       id: 0x389
       bus: can2
+    fsm:
+      event: 'LeviAck'
     datapoint-conversion:
       - datapoint:
           name: 'LeviFSMStateChanged'
@@ -2103,6 +2113,8 @@ message-processing:
           conversion: 'gs_2p_float:f32'
 
 commands:
+  - name: 'SendHashes'
+    id: 0x888
   - name: 'LeviDropdown'
     id: 0x1BA
     can:
@@ -2225,6 +2237,20 @@ commands:
     id: 0x192
   - name: 'RearmSDC'
     id: 0x1B6
+  - name: 'ConnectionEstablished'
+    id: 0x206
+  - name: 'ConnectionClosed'
+    id: 0x207
+  - name: 'MockPtAck'
+    id: 0x208
+  - name: 'MockLeviAck'
+    id: 0x209
+  - name: 'MockPropAck'
+    id: 0x210
+  - name: 'MockHVOn'
+    id: 0x211
+  - name: 'RequestFsmState'
+    id: 0x212
 
 beckhoff:
   task-period: 10 # period in ms

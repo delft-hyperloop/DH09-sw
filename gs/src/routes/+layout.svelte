@@ -17,7 +17,6 @@
     } from '@skeletonlabs/skeleton';
     import {
         chartStore,
-        connectedToMainPCB,
         debugModeActive,
         inDropdown,
         latestTimestamp,
@@ -27,11 +26,10 @@
         propChartStore,
         showcaseStateCounter,
         showcasingStates,
-        inStateHVOn,
         GreenHVALTurnedOn,
         RedHVALTurnedOn
     } from '$lib/stores/state';
-    import { initProcedures, lastHeartbeatTimestamp } from '$lib/stores/data';
+    import { initProcedures } from '$lib/stores/data';
     import { onDestroy, onMount } from 'svelte';
     import { listen } from '@tauri-apps/api/event';
     import { parseShortCut } from '$lib/util/parsers';
@@ -969,18 +967,6 @@
 
     let firstPass: boolean = true;
 
-    setInterval(() => {
-        if (!firstPass) {
-            let now = Date.now();
-            if (now - $lastHeartbeatTimestamp > 500) {
-                connectedToMainPCB.set(false);
-            } else {
-                connectedToMainPCB.set(true);
-            }
-        }
-        firstPass = false;
-    }, 500);
-
     onMount(() => {
         setInterval(async () => {
             if ($showcasingStates) {
@@ -1003,18 +989,6 @@
         GrandDataDistributor.getInstance().kill();
         (await unlisten)();
     });
-
-    $: {
-        if ($inStateHVOn) {
-            GreenHVALTurnedOn.set(false);
-            RedHVALTurnedOn.set(true);
-        } else {
-            GreenHVALTurnedOn.set(true);
-            RedHVALTurnedOn.set(false);
-        }
-    }
-
-    $: console.log('inStateHVOn:', $inStateHVOn);
 </script>
 
 <div class="flex flex-col w-screen h-screen max-h-screen overflow-hidden">

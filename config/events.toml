@@ -1,275 +1,99 @@
 [[Event]]
-name = "DefaultEvent"
-id = 0x02
-priority = 0
+name = "NoEvent"
+doc = "No event happened"
 
 [[Event]]
-name = "Heartbeating"
-id = 0x420
-priority = 1
+name = "ConnectToGS"
+doc = "Connection to the Ground Station has been established"
 
 [[Event]]
-name = "EmergencyBraking"
-id = 0xaB
-priority = 10
-
-
-# ####################
-# FSM Internal events.
+name = "StartSystemCheck"
+doc = "Start system check"
 
 [[Event]]
-name = "ValueOutOfBounds"
-id = 0x7ff
-priority = 1
+name = "SystemCheckSuccess"
+doc = "System was checked successfully"
 
 [[Event]]
-name = "EndOfTrackTriggeredEvent"
-id = 0x121
-priority = 0
+name = "EnterIdle"
+doc = "Enters `Idle` state from `Discharge` state"
 
 [[Event]]
-name = "BootingCompleteEvent"
-id = 0xa1
-priority = 0
+name = "StartPreCharge"
+doc = "Starts the pre-charging process"
 
 [[Event]]
-name = "BootingFailedEvent"
-id = 0xa2
-priority = 0
+name = "Activate"
+doc = "Will turn on high voltage while SDC is closed and brakes are deployed"
 
 [[Event]]
-name = "ConnectionEstablishedEvent"
-id = 0xa3
-priority = 0
+name = "EnterDemo"
+doc = "Enters the demo state armed brakes, SDC still closed"
 
 [[Event]]
-name = "ConnectionEstablishFailed"
-id = 0xa4
-priority = 0
+name = "Levitate"
+doc = "Starts levitating"
 
 [[Event]]
-name = "ConnectionLossEvent"
-id = 0xaC
-priority = 1
+name = "StopLevitating"
+doc = "Stops levitating"
 
 [[Event]]
-name = "LVPropulsionReadyEvent"
-id = 0x3e1
-priority = 0
+name = "Accelerate"
+doc = "Starts accelerating until it reaches the target speed"
 
 [[Event]]
-name = "LVPowertrainReadyEvent"
-id = 0xaF
-priority = 0
+name = "Cruise"
+doc = "Stops accelerating"
 
 [[Event]]
-name = "HVPowertrainReadyEvent"
-id = 0xb3
-priority = 0
-
-# ###################################
-# User commands for the run procedure
+name = "Brake"
+doc = "Deploys brakes"
 
 [[Event]]
-name = "RunStarting"
-id = 0xb9
-priority = 1
+name = "Stopped"
+doc = "Used for transitioning from braking to levitating when the speed of the pod is 0"
 
 [[Event]]
-name = "ContinueRunEvent"
-id = 0xbd
-priority = 1
+name = "Discharge"
+doc = "Starts discharging the high voltage batteries"
 
 [[Event]]
-name = "SystemResetCommand"
-id = 0xbE
-priority = 0
+name = "ShutDown"
+doc = "Shuts down the pod"
 
 [[Event]]
-name = "ArmBrakesCommand"
-id = 0xb0
-priority = 0
+name = "Charge"
+doc = "Pod should start charging"
 
 [[Event]]
-name = "TurnOnHVCommand"
-id = 0xb1
-priority = 0
+name = "StopCharge"
+doc = "Pod should stop charging"
 
 [[Event]]
-name = "TurnOffHVCommand"
-id = 0xb2
-priority = 0
+name = "ResetFSM"
+doc = "Resets the FSM to the `Boot` state"
 
 [[Event]]
-id = 0x427
-name = "ReConfigureCommand"
-priority = 0
+name = "StopFSM"
+doc = "Stops the FSM"
 
 [[Event]]
-id = 0x429
-name = "DcTurnedOn"
-priority = 1
+name = "Fault"
+doc = "Fault happened"
 
 [[Event]]
-id = 0x42a
-name = "DcTurnedOff"
-priority = 1
-
-# ###########################################
-# Events that carry configuration information
+name = "Emergency"
+doc = "Emergency event that must trigger the emergency braking system"
 
 [[Event]]
-id = 0x422
-name = "SettingSpeeds"
-priority = 0
-params = "u64"
+name = "FaultFixed"
+doc = "Used to transition from `Fault` to `SystemCheck` when the fault is fixed and no reboot is required"
 
 [[Event]]
-name = "SettingOverrides"
-id = 0x426
-priority = 0
-params = "u64"
-
-# ###########################################
-# Events triggered by the Localisation system
+name = "HighVoltageOnCanRelay"
+doc = ""
 
 [[Event]]
-name = "EndOfTrackReached"
-id = 0xc0
-priority = 5
-
-[[Event]]
-name = "BrakingPointReached"
-id = 0x509
-priority = 0
-
-[[Event]]
-name = "DirectionChangedEvent"
-id = 0xbC
-priority = 0
-
-# #######################
-# Other Sensor Hub events
-
-[[Event]]
-name = "PodDropSwitchTriggered"
-id = 0xbF
-priority = 5
-
-# ########################################
-# Events triggered by Levitation subsystem
-
-[[Event]]
-id = 0x423
-name = "LeviLaunchingEvent"
-priority = 0
-
-[[Event]]
-id = 0x424
-name = "LeviLandingEvent"
-priority = 0
-
-# #####################################################
-# Status-related events triggered by the ground station
-
-[[Event]]
-name = "LVLevitationReadyEvent"
-id = 0xaD
-priority = 0
-
-# ####################
-# Generic error events
-
-[[Event]]
-name = "LevitationErrorEvent"
-id = 0xa8
-priority = 4
-
-[[Event]]
-name = "PropulsionErrorEvent"
-id = 0xa9
-priority = 3
-
-[[Event]]
-name = "PowertrainErrorEvent"
-id = 0xaA
-priority = 2
-
-# #############################################
-# Debug events.
-# usually triggered by the `EmitEvent` command,
-# NOT TO BE USED IN DEMONSTRATION
-
-
-[[Event]]
-id = 666
-name = "PreventBrakingComm"
-priority = 1
-
-[[Event]]
-id = 667
-name = "EnableBrakingComm"
-priority = 1
-
-[[Event]]
-id = 0x428
-name = "SetCurrentSpeedCommand"
-priority = 0
-params = "u64"
-
-[[Event]]
-name = "EnablePropulsionCommand"
-id = 0x3e2
-priority = 0
-
-[[Event]]
-name = "DisablePropulsionCommand"
-id = 0x3e3
-priority = 1
-
-# [[Event]]
-# name = "Crying"
-# id = 1281
-# priority = 8 
-#
-
-[[Event]]
-name = "FinishPrecharge"
-id = 1000
-priority = 2
-
-[[Event]]
-name = "HvLevitationBelowBms"
-id = 1001
-priority = 1
-
-[[Event]]
-name = "HvLevitationAboveBms"
-id = 1002
-priority = 1
-
-[[Event]]
-name = "CygnusesVaryingVoltages"
-id = 1003
-priority = 1
-
-[[Event]]
-name = "PrechargeAbort"
-id = 1004
-priority = 1
-
-[[Event]]
-name = "LeviLedOn"
-id = 1005
-priority = 0
-
-[[Event]]
-name = "LeviLedOff"
-id = 1006
-priority = 0
-
-[[Event]]
-name = "LeviConnected"
-id = 1007
-priority = 1 
-
+name = "FSMTransition"
+doc = "Event sent when transitioning. Used to send the `FSMUpdate` CAN message."

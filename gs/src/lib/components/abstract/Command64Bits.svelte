@@ -4,6 +4,8 @@
     import { writable, type Writable } from 'svelte/store';
     import { getModalStore } from '@skeletonlabs/skeleton';
     import { MODAL_SETTINGS } from '$lib/types';
+    import { connectedToMainPCB } from '$lib/stores/state';
+    import { modalBody, modalTitle } from '$lib/stores/data';
 
     export let className: string = '';
     export let cmd: NamedCommand;
@@ -18,6 +20,13 @@
     let modalStore = getModalStore();
 
     let send = async () => {
+        if (!$connectedToMainPCB) {
+            modalTitle.set("Not connected to the pod!");
+            modalBody.set("Can't send commands without being connected to the pod!");
+            modalStore.trigger(MODAL_SETTINGS);
+            return;
+        }
+
         if (dependency && !$dependency) {
             MODAL_SETTINGS.body = dependencyMessage;
             MODAL_SETTINGS.title = dependencyTitle;

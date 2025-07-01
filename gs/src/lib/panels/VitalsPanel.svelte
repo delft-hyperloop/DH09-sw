@@ -18,7 +18,7 @@
     import {
         connectedToMainPCB,
         debugModeActive,
-        inStateAccelerating,
+        inStateAccelerating, inStateCharging,
         inStateConnectedToGS,
         inStateLevitating,
         showcaseStateCounter,
@@ -30,13 +30,13 @@
         WifiOff,
         Flash,
         FlashOff,
-        QComposerEdit,
+        ChargingStation,
         Reset,
         SettingsCheck,
         Meter,
         RightPanelClose,
         ConnectionSignal,
-        ConnectionSignalOff
+        ConnectionSignalOff, StopOutline,
     } from 'carbon-icons-svelte';
     import type { SvelteComponent } from 'svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
@@ -261,7 +261,6 @@
                             <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
                         {/if}
                         <Command cmd="RearmSDC" text="Rearm SDC" icon={RightPanelClose}/>
-<!--                        <Command cmd="RetractBrakes" icon={RightPanelClose}/>-->
                         {#if !$inStateLevitating}
                             <Command
                                 cmd="LevitationOn"
@@ -283,6 +282,11 @@
                             />
                         {:else}
                             <Command cmd="MotorBrake" icon={Meter} iconClass="scale-x-[-1]"/>
+                        {/if}
+                        {#if !$inStateCharging}
+                            <Command cmd="Charge" icon={ChargingStation}/>
+                        {:else}
+                            <Command cmd="StopCharge" icon={StopOutline}/>
                         {/if}
                         <Command cmd="SystemReset" icon={Reset}/>
                     </div>

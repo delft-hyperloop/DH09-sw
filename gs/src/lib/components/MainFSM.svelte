@@ -3,7 +3,7 @@
     import { GrandDataDistributor } from '$lib';
     import {
         connectedToMainPCB, inStateAccelerating,
-        inStateActive,
+        inStateActive, inStateCharging,
         inStateLevitating,
         showcaseStateCounter,
         showcasingStates,
@@ -73,12 +73,13 @@
 
     fsmState.subscribe((store) => {
         let index = store.value;
-        inStateConnectedToGS.set(index === 1);
-        inStateIdle.set(index === 3);
-        inStateActive.set(index === 5);
-        inStateDemo.set(index === 6);
-        inStateLevitating.set(index === 7);
-        inStateAccelerating.set(index === 8);
+        inStateConnectedToGS.set(index === connectedToGS.index);
+        inStateIdle.set(index === idle.index);
+        inStateActive.set(index === active.index);
+        inStateDemo.set(index === demo.index);
+        inStateLevitating.set(index === levitating.index);
+        inStateAccelerating.set(index === accelerating.index);
+        inStateCharging.set(index === charging.index);
 
         if (index === 9) {
             console.error("FSM in state 9!");

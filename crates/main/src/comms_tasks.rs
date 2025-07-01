@@ -64,6 +64,8 @@ fn match_cmd_to_event(command: Command) -> Event {
         // HV commands
         Command::StartHV(_) => Event::StartPreCharge,
         Command::StopHV(_) => Event::Discharge,
+        Command::Charge(_) => Event::Charge,
+        Command::StopCharge(_) => Event::StopCharge,
 
         // Levi commands
         Command::LevitationOn(_) => Event::Levitate,
@@ -200,6 +202,8 @@ pub async fn forward_can2_messages_to_fsm(
             event_sender.send(Event::HVOnAck).await;
         }
 
+        // Check if the velocity is 0, which means that the pod is not moving (used for
+        // transitioning from the braking state to the levitating state)
         if id == 826 && i16::from_be_bytes([payload[4], payload[5]]) == 0 {
             event_sender.send(Event::Stopped).await;
         }

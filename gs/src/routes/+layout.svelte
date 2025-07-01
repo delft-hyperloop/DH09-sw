@@ -947,7 +947,7 @@
     onMount(() => {
         setInterval(async () => {
             if ($showcasingStates) {
-                showcaseStateCounter.set(($showcaseStateCounter + 1) % 2);
+                showcaseStateCounter.set(($showcaseStateCounter + 1) % 14);
             }
             if ($inDropdown) {
                 let val = 0;

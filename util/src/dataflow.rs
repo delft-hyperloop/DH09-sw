@@ -273,6 +273,15 @@ pub struct DatapointSpec {
     pub name: String,
     pub id: u16,
 
+    #[serde(default)]
+    pub lower: Option<f64>,
+    #[serde(default)]
+    pub upper: Option<f64>,
+    #[serde(default)]
+    pub stale_after: Option<f64>,
+    #[serde(default)]
+    pub critical: Option<bool>,
+
     pub store: Option<StoreInfo>,
 }
 
@@ -465,6 +474,8 @@ pub fn collect_data_types(df: &DataflowSpec) -> crate::datatypes::Config {
                 display_units: dpc.display_units.clone(),
                 priority: None,
                 store: dpc.datapoint.store.clone(),
+                stale_after: dpc.datapoint.stale_after.map(|v| v as u64),
+                critical: dpc.datapoint.critical,
             });
         }
     }
@@ -477,6 +488,8 @@ pub fn collect_data_types(df: &DataflowSpec) -> crate::datatypes::Config {
             display_units: None,
             priority: sd.priority,
             store: sd.datapoint.store.clone(),
+            stale_after: sd.datapoint.stale_after.map(|v| v as u64),
+            critical: sd.datapoint.critical,
         });
     }
 
@@ -1076,6 +1089,42 @@ export const NamedDatatypeValues = ["#
             writeln!(&mut code, ");").unwrap();
         }
     }
+
+    // Add DatapointProperties export
+    writeln!(
+        &mut code,
+        r#"
+export const DatapointProperties: Record<NamedDatatype, {{
+    lower: number | null,
+    upper: number | null,
+    stale_after: number | null,
+    critical: boolean | null
+}}> = {{"#
+    ).unwrap();
+
+    fn limit_to_ts_value(limit: &Limit) -> String {
+        match limit {
+            Limit::No => "null".to_string(),
+            Limit::Single(x) => x.to_string(),
+            Limit::Multiple(_) => "null".to_string(), // or handle as needed
+        }
+    }
+
+    for (i, d) in dt.Datatype.iter().enumerate() {
+        if i != 0 {
+            write!(&mut code, ",\n").unwrap();
+        }
+        write!(
+            &mut code,
+            "\"{}\": {{ lower: {}, upper: {}, stale_after: {}, critical: {} }}",
+            d.name,
+            limit_to_ts_value(&d.lower),
+            limit_to_ts_value(&d.upper),
+            d.stale_after.map_or("null".to_string(), |v| v.to_string()),
+            d.critical.map_or("null".to_string(), |v| v.to_string()),
+        ).unwrap();
+    }
+    writeln!(&mut code, "\n}};\n").unwrap();
 
     code
 }

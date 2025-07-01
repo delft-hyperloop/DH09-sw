@@ -27,6 +27,8 @@ pub struct Datatype {
     pub display_units: Option<String>,
     pub priority: Option<usize>,
     pub store: Option<StoreInfo>,
+    pub stale_after: Option<u64>,
+    pub critical: Option<bool>,
 }
 
 #[derive(Deserialize, Hash, Debug, Clone)]

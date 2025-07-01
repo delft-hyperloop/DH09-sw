@@ -198,6 +198,8 @@ standard-datapoints:
       id: 0x202
       store:
         default: 0
+      stale_after: 10
+      critical: false
 
   - datapoint:
       name: 'FSMTransitionFail'
@@ -231,6 +233,10 @@ message-processing:
         getter: 'u8[0..1]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
+        lower: 0
+        upper: 80
+        stale_after: 3
+        critical: true
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
@@ -247,6 +253,10 @@ message-processing:
         getter: 'u8[1..2]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
+        lower: 0
+        upper: 80
+        stale_after: 3
+        critical: true
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
@@ -263,9 +273,12 @@ message-processing:
         getter: 'u8[2..3]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
+        lower: 0
+        upper: 80
+        stale_after: 3
+        critical: true
         gs:
           conversion: 'gs_2p_float:f32'
-
       - datapoint:
           name: 'TempMotorLeft3'
           id: 0x4B3
@@ -280,9 +293,12 @@ message-processing:
         getter: 'u8[3..4]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
+        lower: 0
+        upper: 80
+        stale_after: 3
+        critical: true
         gs:
           conversion: 'gs_2p_float:f32'
-
       - datapoint:
           name: 'TempMotorLeft4'
           id: 0x4B4
@@ -297,9 +313,12 @@ message-processing:
         getter: 'u8[4..5]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
+        lower: 0
+        upper: 80
+        stale_after: 3
+        critical: true
         gs:
           conversion: 'gs_2p_float:f32'
-
       - datapoint:
           name: 'TempMotorLeft5'
           id: 0x4B5
@@ -314,6 +333,10 @@ message-processing:
         getter: 'u8[5..6]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
+        lower: 0
+        upper: 80
+        stale_after: 3
+        critical: true
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
@@ -330,6 +353,10 @@ message-processing:
         getter: 'u8[6..7]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
+        lower: 0
+        upper: 80
+        stale_after: 3
+        critical: true
         gs:
           conversion: 'gs_2p_float:f32'
       - datapoint:
@@ -346,6 +373,10 @@ message-processing:
         getter: 'u8[7..8]'
         can-conversion: 'decode_temperature:u8->f32'
         display-units: '°C'
+        lower: 0
+        upper: 80
+        stale_after: 3
+        critical: true
         gs:
           conversion: 'gs_2p_float:f32'
   - name: 'TempMotorRight'
@@ -356,6 +387,10 @@ message-processing:
       - datapoint:
           name: 'TempMotorRight0'
           id: 0x520
+          lower: 0
+          upper: 80
+          stale_after: 3
+          critical: true
           store:
             default: 0
             callback: |
@@ -372,6 +407,10 @@ message-processing:
       - datapoint:
           name: 'TempMotorRight1'
           id: 0x50A
+          lower: ~
+          upper: ~
+          stale_after: ~
+          critical: false
           store:
             default: 0
             callback: |
@@ -388,6 +427,10 @@ message-processing:
       - datapoint:
           name: 'TempMotorRight2'
           id: 0x50B
+          lower: ~
+          upper: ~
+          stale_after: ~
+          critical: false
           store:
             default: 0
             callback: |
@@ -405,6 +448,10 @@ message-processing:
       - datapoint:
           name: 'TempMotorRight3'
           id: 0x50C
+          lower: ~
+          upper: ~
+          stale_after: ~
+          critical: false
           store:
             default: 0
             callback: |
@@ -422,6 +469,10 @@ message-processing:
       - datapoint:
           name: 'TempMotorRight4'
           id: 0x50D
+          lower: ~
+          upper: ~
+          stale_after: ~
+          critical: false
           store:
             default: 0
             callback: |
@@ -439,6 +490,10 @@ message-processing:
       - datapoint:
           name: 'TempMotorRight5'
           id: 0x50E
+          lower: ~
+          upper: ~
+          stale_after: ~
+          critical: false
           store:
             default: 0
             callback: |
@@ -456,6 +511,10 @@ message-processing:
       - datapoint:
           name: 'TempMotorRight6'
           id: 0x50F
+          lower: ~
+          upper: ~
+          stale_after: ~
+          critical: false
           store:
             default: 0
             callback: |
@@ -472,6 +531,10 @@ message-processing:
       - datapoint:
           name: 'TempMotorRight7'
           id: 0x555
+          lower: ~
+          upper: ~
+          stale_after: ~
+          critical: false
           store:
             default: 0
             callback: |
@@ -511,6 +574,10 @@ message-processing:
       - datapoint:
           name: 'IMDWarnings'
           id: 0x3A5
+          lower: 0
+          upper: 1
+          stale_after: 1
+          critical: true
           store:
             default: 0
         getter: 'u8[2..3]'
@@ -520,6 +587,10 @@ message-processing:
       - datapoint:
           name: 'Errors'
           id: 0x3A6
+          lower: 0
+          upper: 1
+          stale_after: 1
+          critical: true
           store:
             default: 0
         getter: 'u8[3..4]'
@@ -535,7 +606,12 @@ message-processing:
     datapoint-conversion:
       - datapoint:
           name: 'BMSVoltageHigh'
-          id: 0x3A1
+          id: 0x123
+          lower: 360
+          upper: 420
+          stale_after: 2
+          critical: true
+          gs: BMSVoltageHigh
           store:
             default: 0
             callback: |
@@ -555,6 +631,10 @@ message-processing:
       - datapoint:
           name: 'BMSVoltageLow'
           id: 0x19D
+          lower: 280
+          upper: 360
+          stale_after: 2
+          critical: true
           store:
             default: 0
             callback: |
@@ -574,6 +654,10 @@ message-processing:
       - datapoint:
           name: 'BMSTemperatureHigh'
           id: 0x3A2
+          lower: 0
+          upper: 80
+          stale_after: 3
+          critical: true
           store:
             default: 0
             callback: |
@@ -587,9 +671,16 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+        limits:
+          upper: { warn: 80, err: 0 }
+          lower: { warn: 0, err: 0 }
       - datapoint:
           name: 'BMSTemperatureLow'
           id: 0x19E
+          lower: 0
+          upper: 80
+          stale_after: 3
+          critical: true
           store:
             default: 0
             callback: |
@@ -603,6 +694,9 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+        limits:
+          upper: { warn: 80, err: 0 }
+          lower: { warn: 0, err: 0 }
   - name: 'BMSLog2'
     can:
       id: 0x4E5
@@ -630,6 +724,10 @@ message-processing:
       - datapoint:
           name: 'IPack'
           id: 0x3A6
+          lower: -200
+          upper: 200
+          stale_after: 2
+          critical: true
           store:
             default: 0
             callback: |
@@ -670,6 +768,10 @@ message-processing:
       - datapoint:
           name: 'LV_BMS_VoltageHigh'
           id: 0x4E61
+          lower: 10
+          upper: 16
+          stale_after: 3
+          critical: true
           store:
             default: 0
         getter: 'u16[0..2]'
@@ -680,6 +782,10 @@ message-processing:
       - datapoint:
           name: 'LV_BMS_VoltageLow'
           id: 0x4E62
+          lower: 10
+          upper: 16
+          stale_after: 3
+          critical: true
           store:
             default: 0
         getter: 'u16[2..4]'
@@ -690,6 +796,10 @@ message-processing:
       - datapoint:
           name: 'LV_BMS_TemperatureHigh'
           id: 0x4E63
+          lower: 0
+          upper: 80
+          stale_after: 3
+          critical: true
           store:
             default: 0
         getter: 'u16[4..6]'
@@ -700,6 +810,10 @@ message-processing:
       - datapoint:
           name: 'LV_BMS_TemperatureLow'
           id: 0x4E64
+          lower: 0
+          upper: 80
+          stale_after: 3
+          critical: true
           store:
             default: 0
         getter: 'u16[6..8]'
@@ -1532,98 +1646,98 @@ message-processing:
         display-units: 'V'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'LVBattTemps1'
+  - name: 'LVBattVoltages10'
     can:
       id: 0x4F2
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LV_Batt_T1'
+          name: 'LV_Batt_V73'
           id: 0x4F21
           store:
             default: 0
         getter: 'i8[0..1]'
         can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        display-units: 'V'
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T2'
+          name: 'LV_Batt_V74'
           id: 0x4F22
           store:
             default: 0
         getter: 'i8[1..2]'
         can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        display-units: 'V'
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T3'
+          name: 'LV_Batt_V75'
           id: 0x4F23
           store:
             default: 0
         getter: 'i8[2..3]'
         can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        display-units: 'V'
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T4'
+          name: 'LV_Batt_V76'
           id: 0x4F24
           store:
             default: 0
         getter: 'i8[3..4]'
         can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        display-units: 'V'
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T5'
+          name: 'LV_Batt_V77'
           id: 0x4F25
           store:
             default: 0
         getter: 'i8[4..5]'
         can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        display-units: 'V'
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T6'
+          name: 'LV_Batt_V78'
           id: 0x4F26
           store:
             default: 0
         getter: 'i8[5..6]'
         can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        display-units: 'V'
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T7'
+          name: 'LV_Batt_V79'
           id: 0x4F27
           store:
             default: 0
         getter: 'i8[6..7]'
         can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        display-units: 'V'
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T8'
+          name: 'LV_Batt_V80'
           id: 0x4F28
           store:
             default: 0
         getter: 'i8[7..8]'
         can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        display-units: 'V'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'LVBattTemps2'
+  - name: 'LVBattTemps1'
     can:
       id: 0x4F3
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LV_Batt_T9'
+          name: 'LV_Batt_T1'
           id: 0x4F31
           store:
             default: 0
@@ -1633,7 +1747,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T10'
+          name: 'LV_Batt_T2'
           id: 0x4F32
           store:
             default: 0
@@ -1643,7 +1757,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T11'
+          name: 'LV_Batt_T3'
           id: 0x4F33
           store:
             default: 0
@@ -1653,7 +1767,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T12'
+          name: 'LV_Batt_T4'
           id: 0x4F34
           store:
             default: 0
@@ -1663,7 +1777,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T13'
+          name: 'LV_Batt_T5'
           id: 0x4F35
           store:
             default: 0
@@ -1673,7 +1787,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T14'
+          name: 'LV_Batt_T6'
           id: 0x4F36
           store:
             default: 0
@@ -1683,7 +1797,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T15'
+          name: 'LV_Batt_T7'
           id: 0x4F37
           store:
             default: 0
@@ -1693,7 +1807,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T16'
+          name: 'LV_Batt_T8'
           id: 0x4F38
           store:
             default: 0
@@ -1702,13 +1816,13 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'LVBattTemps3'
+  - name: 'LVBattTemps2'
     can:
       id: 0x4F4
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LV_Batt_T17'
+          name: 'LV_Batt_T9'
           id: 0x4F41
           store:
             default: 0
@@ -1718,7 +1832,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T18'
+          name: 'LV_Batt_T10'
           id: 0x4F42
           store:
             default: 0
@@ -1728,7 +1842,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T19'
+          name: 'LV_Batt_T11'
           id: 0x4F43
           store:
             default: 0
@@ -1738,7 +1852,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T20'
+          name: 'LV_Batt_T12'
           id: 0x4F44
           store:
             default: 0
@@ -1748,7 +1862,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T21'
+          name: 'LV_Batt_T13'
           id: 0x4F45
           store:
             default: 0
@@ -1758,7 +1872,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T22'
+          name: 'LV_Batt_T14'
           id: 0x4F46
           store:
             default: 0
@@ -1768,7 +1882,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T23'
+          name: 'LV_Batt_T15'
           id: 0x4F47
           store:
             default: 0
@@ -1778,7 +1892,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T24'
+          name: 'LV_Batt_T16'
           id: 0x4F48
           store:
             default: 0
@@ -1787,13 +1901,13 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'LVBattTemps4'
+  - name: 'LVBattTemps3'
     can:
       id: 0x4F5
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LV_Batt_T25'
+          name: 'LV_Batt_T17'
           id: 0x4F51
           store:
             default: 0
@@ -1803,7 +1917,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T26'
+          name: 'LV_Batt_T18'
           id: 0x4F52
           store:
             default: 0
@@ -1813,7 +1927,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T27'
+          name: 'LV_Batt_T19'
           id: 0x4F53
           store:
             default: 0
@@ -1823,7 +1937,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T28'
+          name: 'LV_Batt_T20'
           id: 0x4F54
           store:
             default: 0
@@ -1833,7 +1947,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T29'
+          name: 'LV_Batt_T21'
           id: 0x4F55
           store:
             default: 0
@@ -1843,7 +1957,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T30'
+          name: 'LV_Batt_T22'
           id: 0x4F56
           store:
             default: 0
@@ -1853,7 +1967,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T31'
+          name: 'LV_Batt_T23'
           id: 0x4F57
           store:
             default: 0
@@ -1863,7 +1977,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T32'
+          name: 'LV_Batt_T24'
           id: 0x4F58
           store:
             default: 0
@@ -1872,13 +1986,13 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'LVBattTemps5'
+  - name: 'LVBattTemps4'
     can:
       id: 0x4F6
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LV_Batt_T33'
+          name: 'LV_Batt_T25'
           id: 0x4F61
           store:
             default: 0
@@ -1888,7 +2002,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T34'
+          name: 'LV_Batt_T26'
           id: 0x4F62
           store:
             default: 0
@@ -1898,7 +2012,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T35'
+          name: 'LV_Batt_T27'
           id: 0x4F63
           store:
             default: 0
@@ -1908,7 +2022,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T36'
+          name: 'LV_Batt_T28'
           id: 0x4F64
           store:
             default: 0
@@ -1918,7 +2032,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T37'
+          name: 'LV_Batt_T29'
           id: 0x4F65
           store:
             default: 0
@@ -1928,7 +2042,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T38'
+          name: 'LV_Batt_T30'
           id: 0x4F66
           store:
             default: 0
@@ -1938,7 +2052,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T39'
+          name: 'LV_Batt_T31'
           id: 0x4F67
           store:
             default: 0
@@ -1948,7 +2062,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T40'
+          name: 'LV_Batt_T32'
           id: 0x4F68
           store:
             default: 0
@@ -1957,13 +2071,13 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'LVBattTemps6'
+  - name: 'LVBattTemps5'
     can:
       id: 0x4F7
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LV_Batt_T41'
+          name: 'LV_Batt_T33'
           id: 0x4F71
           store:
             default: 0
@@ -1973,7 +2087,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T42'
+          name: 'LV_Batt_T34'
           id: 0x4F72
           store:
             default: 0
@@ -1983,7 +2097,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T43'
+          name: 'LV_Batt_T35'
           id: 0x4F73
           store:
             default: 0
@@ -1993,7 +2107,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T44'
+          name: 'LV_Batt_T36'
           id: 0x4F74
           store:
             default: 0
@@ -2003,7 +2117,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T45'
+          name: 'LV_Batt_T37'
           id: 0x4F75
           store:
             default: 0
@@ -2013,7 +2127,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T46'
+          name: 'LV_Batt_T38'
           id: 0x4F76
           store:
             default: 0
@@ -2023,7 +2137,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T47'
+          name: 'LV_Batt_T39'
           id: 0x4F77
           store:
             default: 0
@@ -2033,7 +2147,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T48'
+          name: 'LV_Batt_T40'
           id: 0x4F78
           store:
             default: 0
@@ -2042,13 +2156,13 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'LVBattTemps7'
+  - name: 'LVBattTemps6'
     can:
       id: 0x4F8
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LV_Batt_T49'
+          name: 'LV_Batt_T41'
           id: 0x4F81
           store:
             default: 0
@@ -2058,7 +2172,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T50'
+          name: 'LV_Batt_T42'
           id: 0x4F82
           store:
             default: 0
@@ -2068,7 +2182,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T51'
+          name: 'LV_Batt_T43'
           id: 0x4F83
           store:
             default: 0
@@ -2078,7 +2192,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T52'
+          name: 'LV_Batt_T44'
           id: 0x4F84
           store:
             default: 0
@@ -2088,7 +2202,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T53'
+          name: 'LV_Batt_T45'
           id: 0x4F85
           store:
             default: 0
@@ -2098,7 +2212,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T54'
+          name: 'LV_Batt_T46'
           id: 0x4F86
           store:
             default: 0
@@ -2108,7 +2222,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T55'
+          name: 'LV_Batt_T47'
           id: 0x4F87
           store:
             default: 0
@@ -2118,7 +2232,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T56'
+          name: 'LV_Batt_T48'
           id: 0x4F88
           store:
             default: 0
@@ -2127,13 +2241,13 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'LVBattTemps8'
+  - name: 'LVBattTemps7'
     can:
       id: 0x4F9
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LV_Batt_T57'
+          name: 'LV_Batt_T49'
           id: 0x4F91
           store:
             default: 0
@@ -2143,7 +2257,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T58'
+          name: 'LV_Batt_T50'
           id: 0x4F92
           store:
             default: 0
@@ -2153,7 +2267,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T59'
+          name: 'LV_Batt_T51'
           id: 0x4F93
           store:
             default: 0
@@ -2163,7 +2277,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T60'
+          name: 'LV_Batt_T52'
           id: 0x4F94
           store:
             default: 0
@@ -2173,7 +2287,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T61'
+          name: 'LV_Batt_T53'
           id: 0x4F95
           store:
             default: 0
@@ -2183,7 +2297,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T62'
+          name: 'LV_Batt_T54'
           id: 0x4F96
           store:
             default: 0
@@ -2193,7 +2307,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T63'
+          name: 'LV_Batt_T55'
           id: 0x4F97
           store:
             default: 0
@@ -2203,7 +2317,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T64'
+          name: 'LV_Batt_T56'
           id: 0x4F98
           store:
             default: 0
@@ -2212,13 +2326,13 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_i16:i16'
-  - name: 'LVBattTemps9'
+  - name: 'LVBattTemps8'
     can:
       id: 0x4FA
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LV_Batt_T65'
+          name: 'LV_Batt_T57'
           id: 0x4FA1
           store:
             default: 0
@@ -2228,7 +2342,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T66'
+          name: 'LV_Batt_T58'
           id: 0x4FA2
           store:
             default: 0
@@ -2238,7 +2352,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T67'
+          name: 'LV_Batt_T59'
           id: 0x4FA3
           store:
             default: 0
@@ -2248,7 +2362,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T68'
+          name: 'LV_Batt_T60'
           id: 0x4FA4
           store:
             default: 0
@@ -2258,7 +2372,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T69'
+          name: 'LV_Batt_T61'
           id: 0x4FA5
           store:
             default: 0
@@ -2268,7 +2382,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T70'
+          name: 'LV_Batt_T62'
           id: 0x4FA6
           store:
             default: 0
@@ -2278,7 +2392,7 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T71'
+          name: 'LV_Batt_T63'
           id: 0x4FA7
           store:
             default: 0
@@ -2288,8 +2402,178 @@ message-processing:
         gs:
           conversion: 'gs_i16:i16'
       - datapoint:
-          name: 'LV_Batt_T72'
+          name: 'LV_Batt_T64'
           id: 0x4FA8
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps9'
+    can:
+      id: 0x4FB
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T65'
+          id: 0x4FB1
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T66'
+          id: 0x4FB2
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T67'
+          id: 0x4FB3
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T68'
+          id: 0x4FB4
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T69'
+          id: 0x4FB5
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T70'
+          id: 0x4FB6
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T71'
+          id: 0x4FB7
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T72'
+          id: 0x4FB8
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps10'
+    can:
+      id: 0x4FC
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T73'
+          id: 0x4FC1
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T74'
+          id: 0x4FC2
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T75'
+          id: 0x4FC3
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T76'
+          id: 0x4FC4
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T77'
+          id: 0x4FC5
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T78'
+          id: 0x4FC6
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T79'
+          id: 0x4FC7
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T80'
+          id: 0x4FC8
           store:
             default: 0
         getter: 'i8[7..8]'
@@ -2395,8 +2679,18 @@ message-processing:
       - datapoint:
           name: 'PPEmergency1'
           id: 0x04
+          lower: 0
+          upper: 1
+          stale_after: 1
+          critical: true
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("BMS Logs")!.addEntry(2, curr);
+                  return curr;
+              }
         getter: 'u8[0..1]'
         can-conversion: 'identity_u8:u8->u8'
         gs:
@@ -2409,6 +2703,10 @@ message-processing:
       - datapoint:
           name: 'PPEmergency2'
           id: 0x003
+          lower: 0
+          upper: 1
+          stale_after: 1
+          critical: true
           store:
             default: 0
         getter: 'u8[0..1]'
@@ -2423,6 +2721,10 @@ message-processing:
       - datapoint:
           name: 'PTCError'
           id: 0x331
+          lower: 0
+          upper: 1
+          stale_after: 1
+          critical: true
           store:
             default: 0
         getter: 'u8[0..1]'
@@ -2432,6 +2734,10 @@ message-processing:
       - datapoint:
           name: 'BMSError'
           id: 0x332
+          lower: 0
+          upper: 1
+          stale_after: 1
+          critical: true
           store:
             default: 0
         getter: 'u8[1..2]'
@@ -3791,6 +4097,7 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
+
 
 commands:
   - name: 'SendHashes'

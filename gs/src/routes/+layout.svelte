@@ -648,6 +648,10 @@
         }
     );
 
+    gdd.stores.registerStore<number>("LeviSystemCheckResponse", 0);
+
+    gdd.stores.registerStore<number>("PtSystemCheckResponse", 0);
+
     gdd.stores.registerStore<number>("LeviFault", 0);
 
     gdd.stores.registerStore<number>("LeviHeartbeat", 0);

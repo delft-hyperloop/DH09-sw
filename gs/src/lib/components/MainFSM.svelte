@@ -136,8 +136,6 @@
                         turn_on(s);
                     }
                 })
-            } else if (!$connectedToMainPCB) {
-                turn_on(allStates[0]);
             } else {
                 allStates.forEach((s) => {
                     if (s.index === $fsmState.value) {

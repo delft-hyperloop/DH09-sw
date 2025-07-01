@@ -30,7 +30,6 @@ use main::comms_tasks::forward_fsm_to_gs;
 use main::comms_tasks::forward_gs_to_can2;
 use main::comms_tasks::forward_gs_to_fsm;
 use main::comms_tasks::gs_heartbeat;
-use main::comms_tasks::log_can2_on_gs;
 use main::ethernet::logic::GsMaster;
 use main::ethernet::types::EthPeripherals;
 use main::ethernet::types::GsComms;
@@ -249,10 +248,10 @@ async fn main(spawner: Spawner) -> ! {
 
     unwrap!(spawner.spawn(gs_heartbeat(gs_comms.tx_publisher())));
 
-    unwrap!(spawner.spawn(log_can2_on_gs(
-        gs_comms.tx_publisher(),
-        can2.new_subscriber()
-    )));
+    // unwrap!(spawner.spawn(log_can2_on_gs(
+    //     gs_comms.tx_publisher(),
+    //     can2.new_subscriber()
+    // )));
 
     loop {
         Timer::after_millis(100).await;

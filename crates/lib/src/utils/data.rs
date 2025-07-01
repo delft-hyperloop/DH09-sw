@@ -74,10 +74,16 @@ pub enum Event {
     ClearFaultAckLevi,
     /// Acknowledgement that levi passed the system check
     LeviSystemCheckSuccess,
-    /// Acknowledgement that propulsion passed the system check
-    PropSystemCheckSuccess,
-    /// Acknowledgement that powertrain passed the system check
-    PowertrainSystemCheckSuccess,
+    /// Levi failed the system check
+    LeviSystemCheckFailure,
+    /// Acknowledgement that propulsion motor 1 passed the system check
+    Prop1SystemCheckSuccess,
+    /// Propulsion motor 1 failed the system check
+    Prop1SystemCheckFailure,
+    /// Acknowledgement that propulsion motor 2 passed the system check
+    Prop2SystemCheckSuccess,
+    /// Propulsion motor 2 failed the system check
+    Prop2SystemCheckFailure,
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]

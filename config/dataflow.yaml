@@ -1305,6 +1305,34 @@ message-processing:
         display-units: 'mm'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'LeviSystemCheckResponse'
+    can:
+      id: 0x38A
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LeviSystemCheckResponse'
+          id: 0x569
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'PtSystemCheckResponse'
+    can:
+      id: 0x4E8
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'PtSystemCheckResponse'
+          id: 0x56A
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
   - name: 'LeviFault'
     can:
       id: 0x65
@@ -2223,12 +2251,12 @@ commands:
     id: 0x206
   - name: 'ConnectionClosed'
     id: 0x207
-  - name: 'MockPtAck'
-    id: 0x208
   - name: 'MockLeviAck'
     id: 0x209
-  - name: 'MockPropAck'
+  - name: 'MockProp1Ack'
     id: 0x210
+  - name: 'MockProp2Ack'
+    id: 0x208
   - name: 'MockHVOn'
     id: 0x211
   - name: 'Charge'

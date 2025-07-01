@@ -3,6 +3,7 @@
     import {EventChannel, util} from "$lib";
     import {popup} from '@skeletonlabs/skeleton';
     import type {PopupSettings} from "@skeletonlabs/skeleton";
+    import { connectedToMainPCB } from '$lib/stores/state';
 
     export let className: string = '';
     export let cmd: 'connect_to_pod' | 'disconnect' | 'procedures' | 'save_logs';
@@ -18,6 +19,9 @@
             console.log(`Command ${cmd} sent with response: ` + r);
             util.log(`Command ${cmd} sent`, EventChannel.INFO);
             r ? successCallback(r) : errorCallback(r as string);
+            if (cmd === 'disconnect') {
+                connectedToMainPCB.set(false);
+            }
         }).catch((e) => {
             console.error(`Error sending command ${cmd}: ${e}`);
             util.log(`Command ${cmd} ERROR sending`, EventChannel.WARNING);

@@ -5,10 +5,12 @@ use core::fmt::Formatter;
 
 use embassy_stm32::gpio::Output;
 use embassy_time::Timer;
+use lib::EmergencyType;
 use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
 use lib::States;
+use log::error;
 
 use crate::entry_methods::enter_fault;
 use crate::CheckedSystem;
@@ -65,9 +67,9 @@ impl FSM {
             event_sender2,
             event_sender_gs,
             systems: CheckedSystems {
-                powertrain: false,
                 levitation: false,
-                propulsion: false,
+                propulsion1: false,
+                propulsion2: false,
             },
             rearm_sdc_pin,
             sdc_pin,
@@ -100,9 +102,23 @@ impl FSM {
             }
 
             if counter <= 100 {
+                // Sends the FSM state to the ground station every ~100 ms
                 self.event_sender_gs
                     .send(Event::FSMTransition(self.state.to_index()))
                     .await;
+
+                // Checks if the braking line is still high. If not, send an emergency message
+                // to the ground station and transition to fault state.
+                if self.sdc_pin.is_set_low() {
+                    error!("SDC pin is low! Sending emergency to the ground station!");
+                    self.event_sender_gs
+                        .send(Event::Emergency {
+                            emergency_type: EmergencyType::GeneralEmergency,
+                        })
+                        .await;
+                    self.transition(States::Fault).await;
+                }
+
                 counter = 0;
             }
 
@@ -153,14 +169,26 @@ impl FSM {
                 self.transition(States::SystemCheck).await
             }
 
-            (States::SystemCheck, Event::PropSystemCheckSuccess) => {
-                self.add_system_check(CheckedSystem::Propulsion).await
+            // Add the checked system to the list of checked systems
+            (States::SystemCheck, Event::Prop1SystemCheckSuccess) => {
+                self.add_system_check(CheckedSystem::Propulsion1).await
             }
-            (States::SystemCheck, Event::PowertrainSystemCheckSuccess) => {
-                self.add_system_check(CheckedSystem::Powertrain).await
+            (States::SystemCheck, Event::Prop2SystemCheckSuccess) => {
+                self.add_system_check(CheckedSystem::Propulsion2).await
             }
             (States::SystemCheck, Event::LeviSystemCheckSuccess) => {
                 self.add_system_check(CheckedSystem::Levitation).await
+            }
+
+            // Go into fault state if any of the system checks fail
+            (States::SystemCheck, Event::Prop1SystemCheckFailure) => {
+                self.transition(States::Fault).await
+            }
+            (States::SystemCheck, Event::Prop2SystemCheckFailure) => {
+                self.transition(States::Fault).await
+            }
+            (States::SystemCheck, Event::LeviSystemCheckFailure) => {
+                self.transition(States::Fault).await
             }
 
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
@@ -233,25 +261,25 @@ impl FSM {
                     .send(Event::LeviSystemCheckSuccess)
                     .await;
             }
-            CheckedSystem::Powertrain => {
-                self.systems.powertrain = true;
+            CheckedSystem::Propulsion1 => {
+                self.systems.propulsion1 = true;
                 self.event_sender_gs
-                    .send(Event::PowertrainSystemCheckSuccess)
+                    .send(Event::Prop1SystemCheckSuccess)
                     .await;
             }
-            CheckedSystem::Propulsion => {
-                self.systems.propulsion = true;
+            CheckedSystem::Propulsion2 => {
+                self.systems.propulsion2 = true;
                 self.event_sender_gs
-                    .send(Event::PropSystemCheckSuccess)
+                    .send(Event::Prop2SystemCheckSuccess)
                     .await;
             }
         }
 
-        if self.systems.propulsion && self.systems.levitation && self.systems.powertrain {
+        if self.systems.propulsion1 && self.systems.propulsion2 && self.systems.levitation {
             self.transition(States::Idle).await;
             self.systems.levitation = false;
-            self.systems.propulsion = false;
-            self.systems.powertrain = false;
+            self.systems.propulsion1 = false;
+            self.systems.propulsion2 = false;
         }
     }
 
@@ -282,9 +310,9 @@ impl FSM {
             States::Boot => {
                 // Reset PCB here
                 // SEND extra "restarting..." msg to gs
-                self.systems.propulsion = false;
+                self.systems.propulsion1 = false;
+                self.systems.propulsion2 = false;
                 self.systems.levitation = false;
-                self.systems.powertrain = false;
             }
             _ => {}
         }

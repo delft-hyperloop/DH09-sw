@@ -15,23 +15,23 @@ pub(crate) mod fsm;
 /// Struct with all the subsystems checked during the system check
 #[derive(Clone, Debug, Copy)]
 pub struct CheckedSystems {
-    /// Marks if powertrain has been checked
-    powertrain: bool,
     /// Marks if levitation has been checked
     levitation: bool,
-    /// Marks if propulsion has been checked
-    propulsion: bool,
+    /// Marks if propulsion motor 1 has been checked
+    propulsion1: bool,
+    /// Marks if propulsion motor 2 has been checked
+    propulsion2: bool,
 }
 
 /// Enum with all the systems checked during the system check
 #[derive(Copy, Debug, Clone)]
 pub enum CheckedSystem {
-    /// Used to indicate that powertrain has been checked
-    Powertrain,
     /// Used to indicate that levitation has been checked
     Levitation,
-    /// Used to indicate that propulsion has been checked
-    Propulsion,
+    /// Used to indicate that propulsion motor 1 has been checked
+    Propulsion1,
+    /// Used to indicate that propulsion motor 2 has been checked
+    Propulsion2,
 }
 
 pub use fsm::FSM;

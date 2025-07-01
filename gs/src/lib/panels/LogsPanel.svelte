@@ -100,12 +100,12 @@
             }
 
             switch (message[0]) {
-            case "Unsafe":
-              bigErrorStatus.set(ErrorStatus.UNSAFE)
-              break;
-            case "Safe":
-              bigErrorStatus.set(ErrorStatus.SAFE)
-              break;
+                case "Unsafe":
+                    bigErrorStatus.set(ErrorStatus.UNSAFE)
+                    break;
+                case "Safe":
+                    bigErrorStatus.set(ErrorStatus.SAFE)
+                    break;
             }
         });
 
@@ -129,7 +129,7 @@
                 await invoke("disconnect");
                 await invoke("connect_to_pod");
                 connectedToMainPCB.set(false);
-            } else if (message[0].split(":")[1].trim() === "ConnectionEstablished") {
+            } else if (message[0].split(":")[1].trim().toLowerCase().includes("established")) {
                 await invoke('send_command', {cmdName: "ConnectionEstablished", val: 0}).then(() => {
                     console.log(`Command ConnectionEstablished sent`);
                 }).catch((e) => {

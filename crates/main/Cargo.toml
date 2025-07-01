@@ -30,6 +30,7 @@ defmt-rtt.workspace = true
 fsm.workspace = true
 embedded-can.workspace = true
 lib.workspace = true
+log = "0.4.22"
 
 [build-dependencies]
 anyhow = "1"

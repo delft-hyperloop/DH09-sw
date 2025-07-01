@@ -18,8 +18,8 @@
     import {
         connectedToMainPCB,
         debugModeActive,
-        inStateAccelerating, inStateCharging,
-        inStateConnectedToGS,
+        inStateAccelerating,
+        inStateCharging,
         inStateLevitating,
         showcaseStateCounter,
         showcasingStates,
@@ -124,10 +124,15 @@
         }).catch((e) => {
             console.error(`Error sending command MockLeviAck: ${e}`);
         });
-        await invoke('send_command', {cmdName: "MockPropAck", val: 0}).then(() => {
-            console.log(`Command MockPropAck sent`);
+        await invoke('send_command', {cmdName: "MockProp1Ack", val: 0}).then(() => {
+            console.log(`Command MockProp1Ack sent`);
         }).catch((e) => {
-            console.error(`Error sending command MockPropAck: ${e}`);
+            console.error(`Error sending command MockProp1Ack: ${e}`);
+        });
+        await invoke('send_command', {cmdName: "MockProp2Ack", val: 0}).then(() => {
+            console.log(`Command MockProp2Ack sent`);
+        }).catch((e) => {
+            console.error(`Error sending command MockProp2Ack: ${e}`);
         });
     }
 </script>
@@ -213,9 +218,26 @@
 <!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
 <!--                    <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>-->
 <!--                </Tile>-->
+
+                <Tile
+                    bgToken={700}
+                >
+                    <div class="flex gap-2 items-center">
+                        <span>Connection Status:</span>
+                        <div class="flex flex-row items-center gap-1">
+                            {#if !$connectedToMainPCB}
+                                <ConnectionSignalOff size={20}/>
+                                <span>Not Connected</span>
+                            {:else}
+                                <ConnectionSignal size={20}/>
+                                <span>Connected</span>
+                            {/if}
+                        </div>
+                    </div>
+                </Tile>
                 <Tile
                     bgToken={800}
-                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : ''}">
+                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : $connectedToMainPCB ? 'shadow-[inset_0_0_10px_5px_#0EA774]' : ''}">
                     <MainFSM/>
                 </Tile>
                 <Tile
@@ -289,22 +311,6 @@
                             <Command cmd="StopCharge" icon={StopOutline}/>
                         {/if}
                         <Command cmd="SystemReset" icon={Reset}/>
-                    </div>
-                </Tile>
-                <Tile
-                    bgToken={700}
-                >
-                    <div class="flex gap-2 items-center">
-                        <span>Connection Status:</span>
-                        <div class="flex flex-row items-center gap-1">
-                            {#if !$connectedToMainPCB}
-                                <ConnectionSignalOff size={20}/>
-                                <span>Not Connected</span>
-                            {:else}
-                                <ConnectionSignal size={20}/>
-                                <span>Connected</span>
-                            {/if}
-                        </div>
                     </div>
                 </Tile>
                 {#if $debugModeActive}

@@ -90,9 +90,8 @@ fn match_cmd_to_event(command: Command) -> Event {
 
         // TODO: Replace these with the actual CAN commands
         Command::MockLeviAck(_) => Event::LeviSystemCheckSuccess,
-        Command::MockPropAck(_) => Event::PropSystemCheckSuccess,
-        Command::MockPtAck(_) => Event::PowertrainSystemCheckSuccess,
-        Command::MockHVOn(_) => Event::HVOnAck,
+        Command::MockProp1Ack(_) => Event::Prop1SystemCheckSuccess,
+        Command::MockProp2Ack(_) => Event::Prop2SystemCheckSuccess,
 
         _ => Event::NoEvent,
     }
@@ -195,16 +194,22 @@ pub async fn forward_can2_messages_to_fsm(
 
         let payload = envelope.payload();
 
-        // If it gets a ptc logs message from the powertrain controller with state HV
-        // on, send ack to fsm
-        if id == 1251 && payload[0] == 2 {
-            event_sender.send(Event::HVOnAck).await;
-        }
+        // // If it gets a ptc logs message from the powertrain controller with state HV
+        // // on, send ack to fsm
+        // if id == 1251 && payload[0] == 2 {
+        //     event_sender.send(Event::HVOnAck).await;
+        // }
 
-        // Check if the velocity is 0, which means that the pod is not moving (used for
-        // transitioning from the braking state to the levitating state)
-        if id == 826 && i16::from_be_bytes([payload[4], payload[5]]) == 0 {
-            event_sender.send(Event::Stopped).await;
+        // // Check if the velocity is 0, which means that the pod is not moving (used
+        // for // transitioning from the braking state to the levitating state)
+        // if id == 826 && i16::from_be_bytes([payload[4], payload[5]]) == 0 {
+        //     event_sender.send(Event::Stopped).await;
+        // }
+
+        let event = match_can_id_to_event(id, payload);
+        if event != Event::NoEvent {
+            event_sender.send(event).await;
+            info!("Event matched with CAN ID: {}", event);
         }
 
         let fsm_event = lib::config::event_for_can_2_id(id as u32);
@@ -212,6 +217,53 @@ pub async fn forward_can2_messages_to_fsm(
         if fsm_event != fsm::Event::NoEvent {
             event_sender.send(fsm_event).await;
         }
+    }
+}
+
+/// Matches an ID from data received over CAN to an event for the FSM
+fn match_can_id_to_event(id: u16, payload: &[u8]) -> Event {
+    match id {
+        // If it gets a ptc logs message from the powertrain controller with state HV
+        // on, send ack to fsm
+        1251 if payload[0] == 2 => Event::HVOnAck,
+
+        // Check if the velocity is 0, which means that the pod is not moving (used for
+        // transitioning from the braking state to the levitating state)
+        826 if i16::from_be_bytes([payload[4], payload[5]]) == 0 => Event::Stopped,
+
+        // Response from levi to the system check
+        906 => {
+            if payload[0] == 1 {
+                Event::LeviSystemCheckSuccess
+            } else {
+                Event::LeviSystemCheckFailure
+            }
+        }
+
+        // // Response from powertrain to the system check
+        // 1256 => {
+        //
+        // }
+
+        // Response from propulsion motor 1 to the system check
+        876 => {
+            if payload[0] == 1 {
+                Event::Prop1SystemCheckSuccess
+            } else {
+                Event::Prop1SystemCheckFailure
+            }
+        }
+
+        // Response from propulsion motor 1 to the system check
+        877 => {
+            if payload[0] == 1 {
+                Event::Prop2SystemCheckSuccess
+            } else {
+                Event::Prop2SystemCheckFailure
+            }
+        }
+
+        _ => Event::NoEvent,
     }
 }
 

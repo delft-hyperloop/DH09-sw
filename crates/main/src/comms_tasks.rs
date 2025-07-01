@@ -11,10 +11,12 @@ use embedded_can::Id;
 use embedded_can::StandardId;
 use lib::config::Command;
 use lib::config::Datatype;
+use lib::config::Datatype::LeviFault;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
 use lib::config::DATA_HASH;
 use lib::Datapoint;
+use lib::EmergencyType;
 use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
@@ -88,7 +90,8 @@ fn match_cmd_to_event(command: Command) -> Event {
 
         Command::ConnectionEstablished(_) => Event::ConnectToGS,
 
-        // TODO: Replace these with the actual CAN commands
+        // These were used strictly for testing purposes. They should not be used during a normal
+        // run.
         Command::MockLeviAck(_) => Event::LeviSystemCheckSuccess,
         Command::MockProp1Ack(_) => Event::Prop1SystemCheckSuccess,
         Command::MockProp2Ack(_) => Event::Prop2SystemCheckSuccess,
@@ -193,20 +196,8 @@ pub async fn forward_can2_messages_to_fsm(
         };
 
         let payload = envelope.payload();
-
-        // // If it gets a ptc logs message from the powertrain controller with state HV
-        // // on, send ack to fsm
-        // if id == 1251 && payload[0] == 2 {
-        //     event_sender.send(Event::HVOnAck).await;
-        // }
-
-        // // Check if the velocity is 0, which means that the pod is not moving (used
-        // for // transitioning from the braking state to the levitating state)
-        // if id == 826 && i16::from_be_bytes([payload[4], payload[5]]) == 0 {
-        //     event_sender.send(Event::Stopped).await;
-        // }
-
         let event = match_can_id_to_event(id, payload);
+
         if event != Event::NoEvent {
             event_sender.send(event).await;
             info!("Event matched with CAN ID: {}", event);
@@ -220,7 +211,9 @@ pub async fn forward_can2_messages_to_fsm(
     }
 }
 
-/// Matches an ID from data received over CAN to an event for the FSM
+/// Matches a CAN ID from the received data to an event for the FSM. This is
+/// different to the method in `config.rs` because it returns an event based on
+/// the payload or an emergency which also requires the type of emergency.
 fn match_can_id_to_event(id: u16, payload: &[u8]) -> Event {
     match id {
         // If it gets a ptc logs message from the powertrain controller with state HV
@@ -240,28 +233,28 @@ fn match_can_id_to_event(id: u16, payload: &[u8]) -> Event {
             }
         }
 
-        // // Response from powertrain to the system check
-        // 1256 => {
-        //
-        // }
-
         // Response from propulsion motor 1 to the system check
-        876 => {
-            if payload[0] == 1 {
+        1285 => {
+            if ((payload[0] >> 5) & 1) == 1 {
                 Event::Prop1SystemCheckSuccess
             } else {
                 Event::Prop1SystemCheckFailure
             }
         }
 
-        // Response from propulsion motor 1 to the system check
-        877 => {
-            if payload[0] == 1 {
+        // Response from propulsion motor 2 to the system check
+        1286 => {
+            if ((payload[0] >> 5) & 1) == 1 {
                 Event::Prop2SystemCheckSuccess
             } else {
                 Event::Prop2SystemCheckFailure
             }
         }
+
+        // Levi emergency
+        101 => Event::Emergency {
+            emergency_type: EmergencyType::EmergencyLevitation,
+        },
 
         _ => Event::NoEvent,
     }
@@ -346,7 +339,7 @@ pub async fn forward_fsm_to_gs(
     }
 }
 
-/// Forwards all CAN messages to the groundstation for logging
+/// Forwards all CAN messages to the ground station for logging
 #[embassy_executor::task]
 pub async fn log_can2_on_gs(
     gs_tx: ethernet::types::PodToGsPublisher<'static>,
@@ -375,7 +368,8 @@ pub async fn log_can2_on_gs(
     }
 }
 
-/// Only used for testing, should not be run in the final version
+/// Only used for testing, should not be run in the final version. Continuously
+/// sends a random message over CAN 2.
 #[embassy_executor::task]
 pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
     loop {

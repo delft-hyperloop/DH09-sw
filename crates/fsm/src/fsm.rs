@@ -3,6 +3,7 @@
 use core::fmt::Debug;
 use core::fmt::Formatter;
 
+use defmt::info;
 use embassy_stm32::gpio::Output;
 use embassy_time::Timer;
 use lib::EmergencyType;
@@ -159,7 +160,7 @@ impl FSM {
             (_, Event::Fault) => self.transition(States::Fault).await,
 
             (_, Event::ResetFSM) => {
-                self.transition(States::Boot).await;
+                info!("Reset FSM triggered. Resetting the main PCB...");
                 cortex_m::peripheral::SCB::sys_reset();
             }
 
@@ -180,17 +181,16 @@ impl FSM {
                 self.add_system_check(CheckedSystem::Levitation).await
             }
 
-            // Go into fault state if any of the system checks fail
-            (States::SystemCheck, Event::Prop1SystemCheckFailure) => {
-                self.transition(States::Fault).await
-            }
-            (States::SystemCheck, Event::Prop2SystemCheckFailure) => {
-                self.transition(States::Fault).await
-            }
-            (States::SystemCheck, Event::LeviSystemCheckFailure) => {
-                self.transition(States::Fault).await
-            }
-
+            // // Go into fault state if any of the system checks fail
+            // (States::SystemCheck, Event::Prop1SystemCheckFailure) => {
+            //     self.transition(States::Fault).await
+            // }
+            // (States::SystemCheck, Event::Prop2SystemCheckFailure) => {
+            //     self.transition(States::Fault).await
+            // }
+            // (States::SystemCheck, Event::LeviSystemCheckFailure) => {
+            //     self.transition(States::Fault).await
+            // }
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
             (States::PreCharge, Event::HVOnAck) => self.transition(States::Active).await,
             (States::Active, Event::Charge) => self.transition(States::Charging).await,

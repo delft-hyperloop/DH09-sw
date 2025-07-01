@@ -17,7 +17,6 @@
     import BinaryInput2 from '$lib/components/BinaryInput2.svelte';
     import PropulsionHeartbeat from '$lib/components/PropulsionHeartbeat.svelte';
     import PropulsionInitFault from '$lib/components/PropulsionInitFault.svelte';
-    import { invoke } from '@tauri-apps/api/tauri';
 
     const values: number[] = new Array(NamedCommandValues.length).fill(0);
     const propLabels: string[] = [

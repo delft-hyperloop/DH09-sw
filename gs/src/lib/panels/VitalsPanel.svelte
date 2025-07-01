@@ -51,6 +51,7 @@
     const fsmStateStore = storeManager.getWritable("FSMState");
     const ptcStateStore = storeManager.getWritable("PTCState");
     const ptcFaultStore = storeManager.getWritable("PTCNonCriticalFault");
+    const hvalStateStore = storeManager.getWritable("HVALState");
 
     const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
@@ -146,8 +147,12 @@
         <div class="flex gap-5 items-center justify-center">
             <div class="flex flex-row gap-2 items-center">
                 <span>HVAL:</span>
-                <Light isGreen={true}/>
-                <Light isGreen={false}/>
+                {#if $hvalStateStore && $hvalStateStore.length > 0}
+                    <Light
+                        isGreen={$hvalStateStore[0].value === 0}
+                        innerClass={$hvalStateStore[0].value === 1 ? "blink-red" : ""}
+                    />
+                {/if}
             </div>
         </div>
 
@@ -336,3 +341,17 @@
         </div>
     {/if}
 </div>
+
+<style>
+.blink-red {
+    animation: blink-red 1s steps(2, start) infinite;
+}
+@keyframes blink-red {
+    to { visibility: hidden; }
+}
+.light-off {
+    background: #444 !important;
+    box-shadow: none !important;
+    animation: none !important;
+}
+</style>

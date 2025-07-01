@@ -83,11 +83,15 @@ impl FSM {
         loop {
             let event = self.event_receiver.receive().await;
 
-            defmt::info!(
-                "{}: Received event: {:?}",
-                core::any::type_name::<Self>(),
-                event
-            );
+            if self.state != States::Braking && event != Event::Stopped
+                || self.state == States::Braking
+            {
+                defmt::info!(
+                    "FSM {{ state: {} }}: Received event: {:?}",
+                    self.state,
+                    event
+                );
+            }
 
             if !self.handle_events(event).await {
                 defmt::info!("{}: Stopping", core::any::type_name::<Self>());
@@ -129,7 +133,7 @@ impl FSM {
             (_, Event::Fault) => self.transition(States::Fault).await,
             (_, Event::RequestFSMState) => {
                 self.event_sender_gs
-                    .send(Event::FSMTransition(self.state as u8))
+                    .send(Event::FSMTransition(self.state.to_index()))
                     .await
             }
 
@@ -170,15 +174,15 @@ impl FSM {
             (States::Demo, Event::Levitate) => self.transition(States::Levitating).await,
             (States::Levitating, Event::StopLevitating) => self.transition(States::Demo).await,
             (States::Levitating, Event::Accelerate) => self.transition(States::Accelerating).await,
-            (States::Accelerating, Event::Cruise) => self.transition(States::Cruising).await,
             (States::Accelerating, Event::Brake) => self.transition(States::Braking).await,
-            (States::Cruising, Event::Brake) => self.transition(States::Braking).await,
             (States::Braking, Event::Stopped) => self.transition(States::Levitating).await,
             (States::Discharge, Event::EnterIdle) => self.transition(States::Idle).await,
             (States::Discharge, Event::ShutDown) => return false,
 
             // Send a message to the GS with the state in which it failed to transition in case it
-            // receives a wrong event
+            // receives a wrong event. Doesn't apply for `Event::Stopped` since that is sent
+            // whenever we get velocity 0, which should be the case for every state except
+            // `States::Accelerating` and `States::Braking`
             (_, event) => {
                 if let Some(failed_state_transition) = match event {
                     Event::Emergency { emergency_type: _ } | Event::Fault => Some(States::Fault),
@@ -194,15 +198,13 @@ impl FSM {
                     Event::Levitate => Some(States::Levitating),
                     Event::StopLevitating => Some(States::Demo),
                     Event::Accelerate => Some(States::Accelerating),
-                    Event::Cruise => Some(States::Cruising),
                     Event::Brake => Some(States::Braking),
-                    Event::Stopped => Some(States::Levitating),
                     Event::EnterIdle => Some(States::Idle),
                     Event::ShutDown => Some(States::Boot),
                     _ => None,
                 } {
                     self.event_sender_gs
-                        .send(Event::TransitionFail(failed_state_transition as u8))
+                        .send(Event::TransitionFail(failed_state_transition.to_index()))
                         .await;
                 }
             }
@@ -256,11 +258,11 @@ impl FSM {
         self.state = new_state;
 
         self.event_sender2
-            .send(Event::FSMTransition(new_state as u8))
+            .send(Event::FSMTransition(new_state.to_index()))
             .await;
 
         self.event_sender_gs
-            .send(Event::FSMTransition(new_state as u8))
+            .send(Event::FSMTransition(new_state.to_index()))
             .await;
 
         self.call_entry_method(self.state).await;

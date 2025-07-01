@@ -81,11 +81,6 @@ doc = "Pod is accelerating"
 index = 8
 
 [[FSMState]]
-state = "Cruising"
-doc = "Pod is cruising"
-index = 9
-
-[[FSMState]]
 state = "Braking"
 doc = "Pod is braking"
 index = 10
@@ -108,7 +103,7 @@ index = 13
 [[FSMState]]
 state = "UnknownState"
 doc = "The pod should never be in this state."
-index = 100
+index = 255
 
 [[Info]]
 label = "ServerStarted"

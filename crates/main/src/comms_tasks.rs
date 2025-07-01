@@ -71,7 +71,7 @@ fn match_cmd_to_event(command: Command) -> Event {
 
         // Propulsion commands
         Command::PropulsionOn(_) => Event::Accelerate,
-        Command::PropulsionOff(_) => Event::Cruise,
+        Command::MotorBrake(_) => Event::Brake,
 
         // Control commands
         Command::SystemCheck(_) => Event::StartSystemCheck,
@@ -192,10 +192,16 @@ pub async fn forward_can2_messages_to_fsm(
             Id::Standard(s) => s.as_raw(),
         };
 
+        let payload = envelope.payload();
+
         // If it gets a ptc logs message from the powertrain controller with state HV
         // on, send ack to fsm
-        if id == 1251 && envelope.payload()[0] == 3 {
+        if id == 1251 && payload[0] == 2 {
             event_sender.send(Event::HVOnAck).await;
+        }
+
+        if id == 826 && i16::from_be_bytes([payload[4], payload[5]]) == 0 {
+            event_sender.send(Event::Stopped).await;
         }
 
         let fsm_event = lib::config::event_for_can_2_id(id as u32);

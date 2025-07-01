@@ -2,9 +2,9 @@ import type { ModalSettings } from '@skeletonlabs/skeleton';
 
 /* AUTO GENERATED USING npm run generate:gs */
 
-export type NamedCommand = "SendHashes" | "LeviDropdown" | "DefaultCommand" | "GeneralEmergency" | "FSMUpdate" | "SystemCheck" | "ResetSenseCon" | "ResetPowertrain" | "ResetPropulsion" | "ResetLevitation" | "ResetLocalization" | "Heartbeat" | "FrontendHeartbeat" | "EmitEvent" | "StartHV" | "StopHV" | "LevitationOn" | "LevitationOff" | "PropulsionOn" | "PropulsionOff" | "SendPropulsionControlWord1" | "SendPropulsionControlWord2" | "PPControlParams" | "PPDebugParams1" | "PPDebugParams2" | "PPTestControlParams" | "PPRunParametersB" | "PPRunParameters1" | "PPRunParameters2" | "Shutdown" | "EmergencyBrake" | "SystemReset" | "RearmSDC" | "ConnectionEstablished" | "ConnectionClosed" | "MockPtAck" | "MockLeviAck" | "MockPropAck" | "MockHVOn" | "RequestFsmState";
+export type NamedCommand = "SendHashes" | "LeviDropdown" | "DefaultCommand" | "GeneralEmergency" | "FSMUpdate" | "SystemCheck" | "ResetSenseCon" | "ResetPowertrain" | "ResetPropulsion" | "ResetLevitation" | "ResetLocalization" | "Heartbeat" | "FrontendHeartbeat" | "EmitEvent" | "StartHV" | "StopHV" | "LevitationOn" | "LevitationOff" | "PropulsionOn" | "MotorBrake" | "SendPropulsionControlWord1" | "SendPropulsionControlWord2" | "PPControlParams" | "PPDebugParams1" | "PPDebugParams2" | "PPTestControlParams" | "PPRunParametersB" | "PPRunParameters1" | "PPRunParameters2" | "Shutdown" | "EmergencyBrake" | "SystemReset" | "RearmSDC" | "ConnectionEstablished" | "ConnectionClosed" | "MockPtAck" | "MockLeviAck" | "MockPropAck" | "MockHVOn" | "RequestFsmState";
 export const NamedCommandValues:NamedCommand[] = [
-    "SendHashes", "LeviDropdown", "DefaultCommand", "GeneralEmergency", "FSMUpdate", "SystemCheck", "ResetSenseCon", "ResetPowertrain", "ResetPropulsion", "ResetLevitation", "ResetLocalization", "Heartbeat", "FrontendHeartbeat", "EmitEvent", "StartHV", "StopHV", "LevitationOn", "LevitationOff", "PropulsionOn", "PropulsionOff", "SendPropulsionControlWord1", "SendPropulsionControlWord2", "PPControlParams", "PPDebugParams1", "PPDebugParams2", "PPTestControlParams", "PPRunParametersB", "PPRunParameters1", "PPRunParameters2", "Shutdown", "EmergencyBrake", "SystemReset", "RearmSDC", "ConnectionEstablished", "ConnectionClosed", "MockPtAck", "MockLeviAck", "MockPropAck", "MockHVOn", "RequestFsmState"];
+    "SendHashes", "LeviDropdown", "DefaultCommand", "GeneralEmergency", "FSMUpdate", "SystemCheck", "ResetSenseCon", "ResetPowertrain", "ResetPropulsion", "ResetLevitation", "ResetLocalization", "Heartbeat", "FrontendHeartbeat", "EmitEvent", "StartHV", "StopHV", "LevitationOn", "LevitationOff", "PropulsionOn", "MotorBrake", "SendPropulsionControlWord1", "SendPropulsionControlWord2", "PPControlParams", "PPDebugParams1", "PPDebugParams2", "PPTestControlParams", "PPRunParametersB", "PPRunParameters1", "PPRunParameters2", "Shutdown", "EmergencyBrake", "SystemReset", "RearmSDC", "ConnectionEstablished", "ConnectionClosed", "MockPtAck", "MockLeviAck", "MockPropAck", "MockHVOn", "RequestFsmState"];
 
 export type NamedDatatype = "TempMotorLeft0" | "TempMotorLeft1" | "TempMotorLeft2" | "TempMotorLeft3" | "TempMotorLeft4" | "TempMotorLeft5" | "TempMotorLeft6" | "TempMotorLeft7" | "TempMotorRight0" | "TempMotorRight1" | "TempMotorRight2" | "TempMotorRight3" | "TempMotorRight4" | "TempMotorRight5" | "TempMotorRight6" | "TempMotorRight7" | "PTCState" | "PTCNonCriticalFault" | "BMSVoltageHigh" | "BMSVoltageLow" | "BMSTemperatureHigh" | "BMSTemperatureLow" | "VPack" | "IPack" | "VDCLink" | "TempRangeStart" | "TempRangeEnd" | "Localization" | "Velocity" | "PPInitFault1" | "PPInitFault2" | "PPEmergency1" | "PPEmergency2" | "Word1" | "Word2" | "IqMeasured1" | "IqReference1" | "IdMeasured1" | "IdReference1" | "IqMeasured2" | "IqReference2" | "IdMeasured2" | "IdReference2" | "Vq_Log1" | "Vd_Log1" | "Vbus1" | "Ibus1" | "CANLog" | "Vq_Log2" | "Vd_Log2" | "Vbus2" | "Ibus2" | "Ta1" | "Tb1" | "Tc1" | "TCASE1" | "Ta2" | "Tb2" | "Tc2" | "TCASE2" | "FSMAckProp1" | "FSMAckProp2" | "FSMAckLevi" | "ClearFaultAckLevi" | "Offset1" | "Offset2" | "Offset3" | "Offset4" | "LeviFault" | "LeviHeartbeat" | "LeviFSMStateChanged" | "LevitationState" | "NonCriticalLeviError" | "Vertical" | "Lateral" | "Roll" | "Pitch" | "Yaw" | "VFL1" | "VFL2" | "VFR1" | "VFR2" | "VBL1" | "VBL2" | "VBR1" | "VBR2" | "LF1" | "LF2" | "LB1" | "LB2" | "ZRequested" | "RollRequested" | "PitchRequested" | "YRequested" | "YawRequested" | "TempHEMS1" | "TempHEMS2" | "TempHEMS3" | "TempHEMS4" | "TempHEMS5" | "TempHEMS6" | "TempHEMS7" | "TempHEMS8" | "TempEMS1" | "TempEMS2" | "TempEMS3" | "TempEMS4" | "TempEMS5" | "TempEMS6" | "TempEMS7" | "TempEMS8" | "DefaultDatatype" | "CommandHash" | "DataHash" | "ConfigHash" | "ValueError" | "ValueWarning" | "ValueCausedBraking" | "LocalisationHeartbeat" | "SensorHubHeartbeat" | "FrontendHeartbeating" | "FSMState" | "FSMTransitionFail" | "Emergency";
 
@@ -44,6 +44,14 @@ export const EventChannel = {
  * Function to convert data received at DATAPOINT.value to a given type
  */
 export type dataConvFun<T> = (data: number, old: T) => T;
+
+/**
+ * Type for the FSM states
+ */
+export type FsmState = {
+    element: SVGGElement | null,
+    index: number,
+}
 
 // /**
 //  * BMS Module Voltage

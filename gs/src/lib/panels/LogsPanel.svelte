@@ -86,7 +86,7 @@
             console.log(message)
             console.log(`bg-${message[1]}-600`)
 
-            if (message[0].includes("mismatch")) {
+            if (message[0].toLowerCase().includes("failed")) {
                 toastStore.trigger({
                     message: message[0],
                     background: 'bg-error-400',

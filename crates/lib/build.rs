@@ -294,6 +294,12 @@ impl States {{
             _ => States::UnknownState,
         }}
     }}
+
+    pub fn to_index(&self) -> u8 {{
+        match self {{
+{}
+        }}
+    }}
 }}",
         config
             .FSMState
@@ -306,6 +312,12 @@ impl States {{
             .iter()
             .filter(|x| x.state != "UnknownState")
             .map(|x| format!("\t\t\t{} => States::{}", x.index, x.state))
+            .collect::<Vec<String>>()
+            .join(",\n"),
+        config
+            .FSMState
+            .iter()
+            .map(|x| format!("\t\t\tStates::{} => {}", x.state, x.index))
             .collect::<Vec<String>>()
             .join(",\n")
     )

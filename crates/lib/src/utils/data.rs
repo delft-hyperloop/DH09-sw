@@ -25,9 +25,7 @@ pub enum Event {
     StopLevitating,
     /// Starts accelerating
     Accelerate,
-    /// Stops accelerating
-    Cruise,
-    /// Deploys brakes
+    /// Brakes with the motor
     Brake,
     /// Used for transitioning from braking to levitating when the speed of the
     /// pod is 0

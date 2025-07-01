@@ -260,8 +260,8 @@
                         {:else}
                             <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
                         {/if}
-                        <Command cmd="RearmSDC" text="Rearm SDC" icon={QComposerEdit}/>
-                        <Command cmd="RetractBrakes" icon={RightPanelClose}/>
+                        <Command cmd="RearmSDC" text="Rearm SDC" icon={RightPanelClose}/>
+<!--                        <Command cmd="RetractBrakes" icon={RightPanelClose}/>-->
                         {#if !$inStateLevitating}
                             <Command
                                 cmd="LevitationOn"
@@ -282,7 +282,7 @@
                                 dependencyMessage="The pod should be in the Levitating state to turn on the motor!"
                             />
                         {:else}
-                            <Command cmd="PropulsionOff" icon={Meter} iconClass="scale-x-[-1]"/>
+                            <Command cmd="MotorBrake" icon={Meter} iconClass="scale-x-[-1]"/>
                         {/if}
                         <Command cmd="SystemReset" icon={Reset}/>
                     </div>

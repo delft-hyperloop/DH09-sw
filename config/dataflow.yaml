@@ -2161,7 +2161,7 @@ commands:
     id: 0x408
   - name: 'PropulsionOn'
     id: 0x6c
-  - name: 'PropulsionOff'
+  - name: 'MotorBrake'
     id: 0x6d
   - name: 'SendPropulsionControlWord1'
     id: 0x1AE

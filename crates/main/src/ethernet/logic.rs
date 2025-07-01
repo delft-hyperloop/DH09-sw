@@ -29,7 +29,6 @@ use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
 use lib::config;
-use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
@@ -343,13 +342,6 @@ impl GsMaster {
                     .await;
                 self.reset_counter = 0;
                 info!("connected, endpoint={:?}", self.socket.remote_endpoint());
-
-                // Ask FSM to send its state again
-                self.rx_transmitter
-                    .publish(GsToPodMessage {
-                        command: Command::RequestFsmState(0),
-                    })
-                    .await;
             }
             Err(e) => {
                 warn!("Timeout for sending hashes has expired with error {:?}! Triggering a reconnection!", e);

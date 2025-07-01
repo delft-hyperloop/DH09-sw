@@ -80,6 +80,7 @@ impl FSM {
     /// false. This case should only happen if the FSM receives
     /// the `ShutDown` event.
     pub async fn run(&mut self) {
+        let mut counter = 0;
         loop {
             let event = self.event_receiver.receive().await;
 
@@ -97,6 +98,15 @@ impl FSM {
                 defmt::info!("{}: Stopping", core::any::type_name::<Self>());
                 break;
             }
+
+            if counter <= 100 {
+                self.event_sender_gs
+                    .send(Event::FSMTransition(self.state.to_index()))
+                    .await;
+                counter = 0;
+            }
+
+            Timer::after_millis(1).await;
         }
     }
 
@@ -122,7 +132,7 @@ impl FSM {
                 // Trigger emergency using the sdc
                 self.sdc_pin.set_low();
 
-                // If going in emergency state, send messages over CAN and to the groundstation
+                // If going in emergency state, send messages over CAN and to the ground station
                 self.event_sender2
                     .send(Event::Emergency { emergency_type })
                     .await;
@@ -131,11 +141,6 @@ impl FSM {
                     .await;
             }
             (_, Event::Fault) => self.transition(States::Fault).await,
-            (_, Event::RequestFSMState) => {
-                self.event_sender_gs
-                    .send(Event::FSMTransition(self.state.to_index()))
-                    .await
-            }
 
             (_, Event::ResetFSM) => {
                 self.transition(States::Boot).await;

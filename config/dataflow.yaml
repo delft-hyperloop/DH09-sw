@@ -2231,8 +2231,6 @@ commands:
     id: 0x210
   - name: 'MockHVOn'
     id: 0x211
-  - name: 'RequestFsmState'
-    id: 0x212
   - name: 'Charge'
     id: 0x213
   - name: 'StopCharge'

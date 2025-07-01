@@ -59,7 +59,6 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::EmergencyBrake(_) => Event::Emergency {
             emergency_type: lib::EmergencyType::GeneralEmergency,
         },
-        Command::RequestFsmState(_) => Event::RequestFSMState,
 
         // HV commands
         Command::StartHV(_) => Event::StartPreCharge,

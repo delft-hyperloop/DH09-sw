@@ -78,8 +78,6 @@ pub enum Event {
     PropSystemCheckSuccess,
     /// Acknowledgement that powertrain passed the system check
     PowertrainSystemCheckSuccess,
-    /// Sends its state to the Ground Station
-    RequestFSMState,
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]

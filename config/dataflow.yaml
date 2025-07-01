@@ -33,6 +33,10 @@ procedures:
     input: 'i16'
     output: 'f32'
     formula: '(x as f32) / 10.0'
+  scale_100:
+    input: 'f32'
+    output: 'f32'
+    formula: 'x * 100.0'
   scale_1000:
     input: 'i16'
     output: 'f32'
@@ -496,11 +500,29 @@ message-processing:
         gs:
           conversion: 'gs_u8:u8'
       - datapoint:
-          name: 'PTCNonCriticalFault'
+          name: 'HVALState'
           id: 0x3A4
           store:
             default: 0
         getter: 'u8[1..2]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+      - datapoint:
+          name: 'IMDWarnings'
+          id: 0x3A5
+          store:
+            default: 0
+        getter: 'u8[2..3]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+      - datapoint:
+          name: 'Errors'
+          id: 0x3A6
+          store:
+            default: 0
+        getter: 'u8[3..4]'
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'
@@ -635,11 +657,1646 @@ message-processing:
                   $chartStore.get("BMS Logs")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
+        getter: 'f32[4..8]'
+        can-conversion: 'scale_100:f32->f32'
+        display-units: 'mV'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'LVBMSLog1'
+    can:
+      id: 0x4E6
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_BMS_VoltageHigh'
+          id: 0x4E61
+          store:
+            default: 0
+        getter: 'u16[0..2]'
         can-conversion: 'decode_bms_voltage:u16->f32'
         display-units: 'V'
         gs:
           conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'LV_BMS_VoltageLow'
+          id: 0x4E62
+          store:
+            default: 0
+        getter: 'u16[2..4]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'LV_BMS_TemperatureHigh'
+          id: 0x4E63
+          store:
+            default: 0
+        getter: 'u16[4..6]'
+        can-conversion: 'decode_bms_temperature:u16->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'LV_BMS_TemperatureLow'
+          id: 0x4E64
+          store:
+            default: 0
+        getter: 'u16[6..8]'
+        can-conversion: 'decode_bms_temperature:u16->f32'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'LVBMSLog2'
+    can:
+      id: 0x4E7
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_BMS_VPack'
+          id: 0x4E71
+          store:
+            default: 0
+        getter: 'i16[0..2]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'LV_BMS_VPackAlt'
+          id: 0x4E72
+          store:
+            default: 0
+        getter: 'i16[2..4]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'LV_BMS_IPack'
+          id: 0x4E73
+          store:
+            default: 0
+        getter: 'i16[4..6]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        display-units: 'A'
+        gs:
+          conversion: 'gs_2p_float:f32'
+      - datapoint:
+          name: 'LV_BMS_IPackAlt'
+          id: 0x4E74
+          store:
+            default: 0
+        getter: 'i16[6..8]'
+        can-conversion: 'decode_bms_voltage:u16->f32'
+        display-units: 'A'
+        gs:
+          conversion: 'gs_2p_float:f32'
+  - name: 'InitCheck'
+    can:
+      id: 0x4E8
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'InitCheck'
+          id: 0x4E81
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        display-units: ''
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'LVBattVoltages1'
+    can:
+      id: 0x4E9
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_V1'
+          id: 0x4E91
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V2'
+          id: 0x4E92
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V3'
+          id: 0x4E93
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V4'
+          id: 0x4E94
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V5'
+          id: 0x4E95
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V6'
+          id: 0x4E96
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V7'
+          id: 0x4E97
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V8'
+          id: 0x4E98
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattVoltages2'
+    can:
+      id: 0x4EA
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_V9'
+          id: 0x4EA1
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V10'
+          id: 0x4EA2
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V11'
+          id: 0x4EA3
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V12'
+          id: 0x4EA4
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V13'
+          id: 0x4EA5
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V14'
+          id: 0x4EA6
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V15'
+          id: 0x4EA7
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V16'
+          id: 0x4EA8
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattVoltages3'
+    can:
+      id: 0x4EB
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_V17'
+          id: 0x4EB1
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V18'
+          id: 0x4EB2
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V19'
+          id: 0x4EB3
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V20'
+          id: 0x4EB4
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V21'
+          id: 0x4EB5
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V22'
+          id: 0x4EB6
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V23'
+          id: 0x4EB7
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V24'
+          id: 0x4EB8
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattVoltages4'
+    can:
+      id: 0x4EC
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_V25'
+          id: 0x4EC1
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V26'
+          id: 0x4EC2
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V27'
+          id: 0x4EC3
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V28'
+          id: 0x4EC4
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V29'
+          id: 0x4EC5
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V30'
+          id: 0x4EC6
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V31'
+          id: 0x4EC7
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V32'
+          id: 0x4EC8
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattVoltages5'
+    can:
+      id: 0x4ED
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_V33'
+          id: 0x4ED1
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V34'
+          id: 0x4ED2
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V35'
+          id: 0x4ED3
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V36'
+          id: 0x4ED4
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V37'
+          id: 0x4ED5
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V38'
+          id: 0x4ED6
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V39'
+          id: 0x4ED7
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V40'
+          id: 0x4ED8
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattVoltages6'
+    can:
+      id: 0x4EE
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_V41'
+          id: 0x4EE1
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V42'
+          id: 0x4EE2
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V43'
+          id: 0x4EE3
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V44'
+          id: 0x4EE4
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V45'
+          id: 0x4EE5
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V46'
+          id: 0x4EE6
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V47'
+          id: 0x4EE7
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V48'
+          id: 0x4EE8
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattVoltages7'
+    can:
+      id: 0x4EF
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_V49'
+          id: 0x4EF1
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V50'
+          id: 0x4EF2
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V51'
+          id: 0x4EF3
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V52'
+          id: 0x4EF4
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V53'
+          id: 0x4EF5
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V54'
+          id: 0x4EF6
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V55'
+          id: 0x4EF7
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V56'
+          id: 0x4EF8
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattVoltages8'
+    can:
+      id: 0x4F0
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_V57'
+          id: 0x4F01
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V58'
+          id: 0x4F02
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V59'
+          id: 0x4F03
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V60'
+          id: 0x4F04
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V61'
+          id: 0x4F05
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V62'
+          id: 0x4F06
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V63'
+          id: 0x4F07
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V64'
+          id: 0x4F08
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattVoltages9'
+    can:
+      id: 0x4F1
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_V65'
+          id: 0x4F11
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V66'
+          id: 0x4F12
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V67'
+          id: 0x4F13
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V68'
+          id: 0x4F14
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V69'
+          id: 0x4F15
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V70'
+          id: 0x4F16
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V71'
+          id: 0x4F17
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_V72'
+          id: 0x4F18
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: 'V'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps1'
+    can:
+      id: 0x4F2
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T1'
+          id: 0x4F21
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T2'
+          id: 0x4F22
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T3'
+          id: 0x4F23
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T4'
+          id: 0x4F24
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T5'
+          id: 0x4F25
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T6'
+          id: 0x4F26
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T7'
+          id: 0x4F27
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T8'
+          id: 0x4F28
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps2'
+    can:
+      id: 0x4F3
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T9'
+          id: 0x4F31
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T10'
+          id: 0x4F32
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T11'
+          id: 0x4F33
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T12'
+          id: 0x4F34
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T13'
+          id: 0x4F35
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T14'
+          id: 0x4F36
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T15'
+          id: 0x4F37
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T16'
+          id: 0x4F38
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps3'
+    can:
+      id: 0x4F4
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T17'
+          id: 0x4F41
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T18'
+          id: 0x4F42
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T19'
+          id: 0x4F43
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T20'
+          id: 0x4F44
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T21'
+          id: 0x4F45
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T22'
+          id: 0x4F46
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T23'
+          id: 0x4F47
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T24'
+          id: 0x4F48
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps4'
+    can:
+      id: 0x4F5
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T25'
+          id: 0x4F51
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T26'
+          id: 0x4F52
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T27'
+          id: 0x4F53
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T28'
+          id: 0x4F54
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T29'
+          id: 0x4F55
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T30'
+          id: 0x4F56
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T31'
+          id: 0x4F57
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T32'
+          id: 0x4F58
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps5'
+    can:
+      id: 0x4F6
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T33'
+          id: 0x4F61
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T34'
+          id: 0x4F62
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T35'
+          id: 0x4F63
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T36'
+          id: 0x4F64
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T37'
+          id: 0x4F65
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T38'
+          id: 0x4F66
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T39'
+          id: 0x4F67
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T40'
+          id: 0x4F68
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps6'
+    can:
+      id: 0x4F7
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T41'
+          id: 0x4F71
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T42'
+          id: 0x4F72
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T43'
+          id: 0x4F73
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T44'
+          id: 0x4F74
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T45'
+          id: 0x4F75
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T46'
+          id: 0x4F76
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T47'
+          id: 0x4F77
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T48'
+          id: 0x4F78
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps7'
+    can:
+      id: 0x4F8
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T49'
+          id: 0x4F81
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T50'
+          id: 0x4F82
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T51'
+          id: 0x4F83
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T52'
+          id: 0x4F84
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T53'
+          id: 0x4F85
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T54'
+          id: 0x4F86
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T55'
+          id: 0x4F87
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T56'
+          id: 0x4F88
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps8'
+    can:
+      id: 0x4F9
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T57'
+          id: 0x4F91
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T58'
+          id: 0x4F92
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T59'
+          id: 0x4F93
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T60'
+          id: 0x4F94
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T61'
+          id: 0x4F95
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T62'
+          id: 0x4F96
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T63'
+          id: 0x4F97
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T64'
+          id: 0x4F98
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+  - name: 'LVBattTemps9'
+    can:
+      id: 0x4FA
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'LV_Batt_T65'
+          id: 0x4FA1
+          store:
+            default: 0
+        getter: 'i8[0..1]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T66'
+          id: 0x4FA2
+          store:
+            default: 0
+        getter: 'i8[1..2]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T67'
+          id: 0x4FA3
+          store:
+            default: 0
+        getter: 'i8[2..3]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T68'
+          id: 0x4FA4
+          store:
+            default: 0
+        getter: 'i8[3..4]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T69'
+          id: 0x4FA5
+          store:
+            default: 0
+        getter: 'i8[4..5]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T70'
+          id: 0x4FA6
+          store:
+            default: 0
+        getter: 'i8[5..6]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T71'
+          id: 0x4FA7
+          store:
+            default: 0
+        getter: 'i8[6..7]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
+      - datapoint:
+          name: 'LV_Batt_T72'
+          id: 0x4FA8
+          store:
+            default: 0
+        getter: 'i8[7..8]'
+        can-conversion: 'identity_i16:i16->i16'
+        display-units: '°C'
+        gs:
+          conversion: 'gs_i16:i16'
   - name: 'TemperaturePrecisionRange'
     can:
       id: 0x1B4
@@ -755,6 +2412,29 @@ message-processing:
           store:
             default: 0
         getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'PTEmergency'
+    can:
+      id: 0x33
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'PTCError'
+          id: 0x331
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+      - datapoint:
+          name: 'BMSError'
+          id: 0x332
+          store:
+            default: 0
+        getter: 'u8[1..2]'
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'

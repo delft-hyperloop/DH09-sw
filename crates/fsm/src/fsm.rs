@@ -111,7 +111,7 @@ impl FSM {
 
                 // Checks if the braking line is still high. If not, send an emergency message
                 // to the ground station and transition to fault state.
-                if self.sdc_pin.is_set_low() {
+                if self.sdc_pin.is_set_low() && self.state != States::Fault {
                     error!("SDC pin is low! Sending emergency to the ground station!");
                     self.event_sender_gs
                         .send(Event::Emergency {

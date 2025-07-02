@@ -22,7 +22,7 @@ export const powertrainChartStore: Writable<string[]> = writable([]);
 export const serverStatus: Writable<boolean> = writable(false);
 export const bigErrorStatus: Writable<ErrorStatus> = writable(ErrorStatus.SAFE);
 export const latestTimestamp: Writable<number> = writable(0);
-export const connectedToMainPCB: Writable<boolean> = writable(true);
+export const connectedToMainPCB: Writable<boolean> = writable(false);
 
 export const goingForward: Writable<boolean> = writable(true);
 

@@ -237,7 +237,7 @@
                 </Tile>
                 <Tile
                     bgToken={800}
-                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : $connectedToMainPCB ? 'shadow-[inset_0_0_10px_5px_#0EA774]' : ''}">
+                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : $connectedToMainPCB ? '' : ''}">
                     <MainFSM/>
                 </Tile>
                 <Tile

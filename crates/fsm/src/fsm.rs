@@ -181,16 +181,20 @@ impl FSM {
                 self.add_system_check(CheckedSystem::Levitation).await
             }
 
-            // // Go into fault state if any of the system checks fail
-            // (States::SystemCheck, Event::Prop1SystemCheckFailure) => {
-            //     self.transition(States::Fault).await
-            // }
-            // (States::SystemCheck, Event::Prop2SystemCheckFailure) => {
-            //     self.transition(States::Fault).await
-            // }
-            // (States::SystemCheck, Event::LeviSystemCheckFailure) => {
-            //     self.transition(States::Fault).await
-            // }
+            // Go into fault state if any of the system checks fail
+            (States::SystemCheck, Event::Prop1SystemCheckFailure) => {
+                self.transition(States::Fault).await;
+                self.event_sender_gs.send(Event::Prop1SystemCheckFailure).await;
+            }
+            (States::SystemCheck, Event::Prop2SystemCheckFailure) => {
+                self.transition(States::Fault).await;
+                self.event_sender_gs.send(Event::Prop2SystemCheckFailure).await;
+            }
+            (States::SystemCheck, Event::LeviSystemCheckFailure) => {
+                self.transition(States::Fault).await;
+                self.event_sender_gs.send(Event::LeviSystemCheckFailure).await;
+            }
+            
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
             (States::PreCharge, Event::HVOnAck) => self.transition(States::Active).await,
             (States::Active, Event::Charge) => self.transition(States::Charging).await,
@@ -220,10 +224,8 @@ impl FSM {
                 if let Some(failed_state_transition) = match event {
                     Event::Emergency { emergency_type: _ } | Event::Fault => Some(States::Fault),
                     Event::ResetFSM => Some(States::Boot),
-                    Event::FaultFixed => Some(States::SystemCheck),
                     Event::StartSystemCheck => Some(States::SystemCheck),
                     Event::StartPreCharge => Some(States::PreCharge),
-                    Event::HVOnAck => Some(States::Active),
                     Event::Charge => Some(States::Charging),
                     Event::StopCharge => Some(States::Active),
                     Event::EnterDemo => Some(States::Demo),
@@ -257,18 +259,21 @@ impl FSM {
         match system {
             CheckedSystem::Levitation => {
                 self.systems.levitation = true;
+                info!("Levi system check success!");
                 self.event_sender_gs
                     .send(Event::LeviSystemCheckSuccess)
                     .await;
             }
             CheckedSystem::Propulsion1 => {
                 self.systems.propulsion1 = true;
+                info!("Prop1 system check success!");
                 self.event_sender_gs
                     .send(Event::Prop1SystemCheckSuccess)
                     .await;
             }
             CheckedSystem::Propulsion2 => {
                 self.systems.propulsion2 = true;
+                info!("Prop2 system check success!");
                 self.event_sender_gs
                     .send(Event::Prop2SystemCheckSuccess)
                     .await;

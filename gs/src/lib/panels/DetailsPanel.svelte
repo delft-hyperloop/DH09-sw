@@ -56,33 +56,48 @@
     const fsmTransitionFail = storeManager.getWritable("FSMTransitionFail");
     const emergency = storeManager.getWritable("Emergency");
 
+    const systemCheckLabels = [
+        "Levi",
+        "Prop 1",
+        "Prop 2",
+    ]
+    const systemCheckSuccesses = [
+        storeManager.getWritable("LeviSystemCheckSuccess"),
+        storeManager.getWritable("Prop1SystemCheckSuccess"),
+        storeManager.getWritable("Prop2SystemCheckSuccess"),
+    ]
+    const systemCheckFailures = [
+        storeManager.getWritable("LeviSystemCheckFailure"),
+        storeManager.getWritable("Prop1SystemCheckFailure"),
+        storeManager.getWritable("Prop2SystemCheckFailure"),
+    ]
+
+    systemCheckSuccesses.forEach((store, index) => {
+        store.subscribe((value) => {
+            if (value.value !== 0) {
+                toastStore.trigger({
+                    message: `${systemCheckLabels[index]} System Check Passed`,
+                    background: `bg-surface-600`,
+                    autohide: true,
+                });
+            }
+        })
+    });
+    systemCheckFailures.forEach((store, index) => {
+        store.subscribe((value) => {
+            if (value.value !== 0) {
+                toastStore.trigger({
+                    message: `${systemCheckLabels[index]} System Check Failed!`,
+                    background: 'bg-error-400',
+                    autohide: false,
+                });
+            }
+        })
+    })
+
     heartbeat.subscribe(() => {
         lastHeartbeatTimestamp.set(Date.now());
     })
-
-    // let firstPass = true;
-    // connectedToMainPCB.subscribe(() => {
-    //     if (!$connectedToMainPCB) {
-    //         if (!firstPass && $connectionAcknowledged) {
-    //             // modalBody.set('The main PCB disconnected from the groundstation! Make sure to reconnect before continuing!');
-    //             // modalTitle.set('Disconnected from the pod!');
-    //             // modalStore.trigger(MODAL_SETTINGS);
-    //
-    //             connectionAcknowledged.set(false);
-    //             toastStore.trigger({
-    //                 message: "The main PCB disconnected from the Groundstation!",
-    //                 background: "bg-error-400",
-    //                 autohide: false,
-    //                 callback: response => {
-    //                     if (response.status == 'closed') {
-    //                         connectionAcknowledged.set(true);
-    //                     }
-    //                 },
-    //             });
-    //         }
-    //         firstPass = false;
-    //     }
-    // })
 
     let emsTemps = [
         storeManager.getWritable("TempEMS1"),

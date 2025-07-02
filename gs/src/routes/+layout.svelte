@@ -934,6 +934,18 @@
 
     gdd.stores.registerStore<number>("Emergency", 0);
 
+    gdd.stores.registerStore<number>("LeviSystemCheckSuccess", 0);
+
+    gdd.stores.registerStore<number>("LeviSystemCheckFailure", 0);
+
+    gdd.stores.registerStore<number>("Prop1SystemCheckSuccess", 0);
+
+    gdd.stores.registerStore<number>("Prop1SystemCheckFailure", 0);
+
+    gdd.stores.registerStore<number>("Prop2SystemCheckSuccess", 0);
+
+    gdd.stores.registerStore<number>("Prop2SystemCheckFailure", 0);
+
     // End of generated
 
     gdd.stores.registerStore<number>("FrontendHeartbeating", 0);

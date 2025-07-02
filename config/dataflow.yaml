@@ -206,6 +206,36 @@ standard-datapoints:
       id: 0x205
       store:
         default: 0
+  - datapoint:
+      name: 'LeviSystemCheckSuccess'
+      id: 0x220
+      store: 
+        default: 0
+  - datapoint:
+      name: 'LeviSystemCheckFailure'
+      id: 0x221
+      store:
+        default: 0
+  - datapoint:
+      name: 'Prop1SystemCheckSuccess'
+      id: 0x222
+      store:
+        default: 0
+  - datapoint:
+      name: 'Prop1SystemCheckFailure'
+      id: 0x223
+      store:
+        default: 0
+  - datapoint:
+      name: 'Prop2SystemCheckSuccess'
+      id: 0x224
+      store:
+        default: 0
+  - datapoint:
+      name: 'Prop2SystemCheckFailure'
+      id: 0x225
+      store:
+        default: 0
 
 message-processing:
   - name: 'TempMotorLeft'

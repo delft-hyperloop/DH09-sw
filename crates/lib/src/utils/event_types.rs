@@ -9,7 +9,7 @@ use embassy_sync::priority_channel::Receiver;
 use embassy_sync::priority_channel::Sender;
 use heapless::binary_heap::Min;
 
-use crate::Event;
+use crate::{Datapoint, Event};
 
 /// Maximum number of events on the channel
 const MAX_EVENTS: usize = 32;

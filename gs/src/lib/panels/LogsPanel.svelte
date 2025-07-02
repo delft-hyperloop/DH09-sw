@@ -86,7 +86,7 @@
             console.log(message)
             console.log(`bg-${message[1]}-600`)
 
-            if (message[0].toLowerCase().includes("failed")) {
+            if (message[0].toLowerCase().includes("failed") || message[0].toLowerCase().includes("failure")) {
                 toastStore.trigger({
                     message: message[0],
                     background: 'bg-error-400',
@@ -137,6 +137,24 @@
                 });
                 util.log(`Command ConnectionEstablished sent`, EventChannel.INFO);
                 connectedToMainPCB.set(true);
+            }
+        })
+
+        unlistens[6] = await listen(EventChannel.INFO, async (event: {payload: string}) => {
+            if (event.payload.toLowerCase().includes("systemcheck")) {
+                let background = `bg-surface-600`;
+                let autohide = true;
+
+                if (event.payload.toLowerCase().includes("failure")) {
+                    autohide = false;
+                    background = 'bg-error-400';
+                }
+
+                toastStore.trigger({
+                    message: event.payload,
+                    background,
+                    autohide
+                })
             }
         })
 

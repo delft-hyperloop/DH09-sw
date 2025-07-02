@@ -17,6 +17,8 @@ pub enum Event {
     StartPreCharge,
     /// Will turn on high voltage while SDC is closed and brakes are deployed
     HVOnAck,
+    /// Ack used after discharge to go back to idle
+    PTCIdleAck,
     /// Enters the demo state armed brakes, SDC still closed
     EnterDemo,
     /// Starts levitating

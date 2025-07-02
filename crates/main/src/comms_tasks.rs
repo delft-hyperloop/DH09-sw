@@ -60,6 +60,7 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::EmergencyBrake(_) => Event::Emergency {
             emergency_type: lib::EmergencyType::GeneralEmergency,
         },
+        Command::FaultFixed(_) => Event::FaultFixed,
 
         // HV commands
         Command::StartHV(_) => Event::StartPreCharge,
@@ -157,13 +158,22 @@ pub async fn forward_fsm_events_to_can2(
 ) {
     loop {
         let event = event_receiver.receive().await;
-        if let fsm::Event::FSMTransition(state_number) = event {
-            can_tx
-                .send(lib::can::can2::CanEnvelope::new_with_id(
-                    Command::FSMUpdate(0).to_id(),
-                    &[state_number],
-                ))
-                .await
+        match event {
+            fsm::Event::FSMTransition(state_number) => {
+                can_tx
+                    .send(lib::can::can2::CanEnvelope::new_with_id(
+                        Command::FSMUpdate(0).to_id(),
+                        &[state_number],
+                    ))
+                    .await
+            }
+            fsm::Event::Discharge => {
+                can_tx.send(lib::can::can2::CanEnvelope::new_with_id(
+                    Command::StopHV(0).to_id(),
+                    &[0],
+                )).await
+            }
+            _ => {}
         }
     }
 }
@@ -214,6 +224,8 @@ pub async fn forward_can2_messages_to_fsm(
 /// the payload or an emergency which also requires the type of emergency.
 fn match_can_id_to_event(id: u16, payload: &[u8]) -> Event {
     match id {
+        
+        
         // If it gets a ptc logs message from the powertrain controller with state HV
         // on, send ack to fsm
         1251 if payload[0] == 2 => Event::HVOnAck,
@@ -233,25 +245,33 @@ fn match_can_id_to_event(id: u16, payload: &[u8]) -> Event {
             }
         }
 
-        // Response from propulsion motor left to the system check
+        // Response from propulsion motor left (2) to the system check
         877 => {
             if payload[0] == 1 {
                 Event::Prop1SystemCheckSuccess
             } else {
-                error!("Different system check payload for left motor: {}", payload[0]);
+                error!(
+                    "Different system check payload for left motor: {}",
+                    payload[0]
+                );
                 Event::Prop1SystemCheckFailure
             }
         }
+        1286 if payload[0] != 255 => Event::Prop2SystemCheckFailure,
 
-        // Response from propulsion motor right to the system check
+        // Response from propulsion motor right (1) to the system check
         876 => {
             if payload[0] == 1 {
                 Event::Prop2SystemCheckSuccess
             } else {
-                error!("Different system check payload for right motor: {}", payload[0]);
+                error!(
+                    "Different system check payload for right motor: {}",
+                    payload[0]
+                );
                 Event::Prop2SystemCheckFailure
             }
         }
+        1285 if payload[0] != 255 => Event::Prop1SystemCheckFailure,
 
         // Levi emergency
         101 => Event::Emergency {
@@ -343,68 +363,74 @@ pub async fn forward_fsm_to_gs(
                     .await
             }
             Event::LeviSystemCheckFailure => {
-                gs_tx.send(PodToGsMessage {
-                    dp: Datapoint::new(
-                        Datatype::LeviSystemCheckFailure,
-                        levi_failure,
-                        Instant::now().as_ticks(),
-                    ),
-                })
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(
+                            Datatype::LeviSystemCheckFailure,
+                            levi_failure,
+                            Instant::now().as_ticks(),
+                        ),
+                    })
                     .await;
                 levi_failure = levi_failure % 100 + 1;
             }
             Event::LeviSystemCheckSuccess => {
-                gs_tx.send(PodToGsMessage {
-                    dp: Datapoint::new(
-                        Datatype::LeviSystemCheckSuccess,
-                        levi_success,
-                        Instant::now().as_ticks(),
-                    ),
-                })
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(
+                            Datatype::LeviSystemCheckSuccess,
+                            levi_success,
+                            Instant::now().as_ticks(),
+                        ),
+                    })
                     .await;
                 levi_success = levi_success % 100 + 1;
             }
             Event::Prop1SystemCheckFailure => {
-                gs_tx.send(PodToGsMessage {
-                    dp: Datapoint::new(
-                        Datatype::Prop1SystemCheckFailure,
-                        prop1_failure,
-                        Instant::now().as_ticks(),
-                    ),
-                })
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(
+                            Datatype::Prop1SystemCheckFailure,
+                            prop1_failure,
+                            Instant::now().as_ticks(),
+                        ),
+                    })
                     .await;
                 prop1_failure = prop1_failure % 100 + 1;
             }
             Event::Prop1SystemCheckSuccess => {
-                gs_tx.send(PodToGsMessage {
-                    dp: Datapoint::new(
-                        Datatype::Prop1SystemCheckSuccess,
-                        prop1_success,
-                        Instant::now().as_ticks(),
-                    ),
-                })
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(
+                            Datatype::Prop1SystemCheckSuccess,
+                            prop1_success,
+                            Instant::now().as_ticks(),
+                        ),
+                    })
                     .await;
-                prop1_success  = prop1_success % 100 + 1;
+                prop1_success = prop1_success % 100 + 1;
             }
             Event::Prop2SystemCheckSuccess => {
-                gs_tx.send(PodToGsMessage {
-                    dp: Datapoint::new(
-                        Datatype::Prop2SystemCheckSuccess,
-                        prop2_success,
-                        Instant::now().as_ticks(),
-                    ),
-                })
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(
+                            Datatype::Prop2SystemCheckSuccess,
+                            prop2_success,
+                            Instant::now().as_ticks(),
+                        ),
+                    })
                     .await;
                 prop2_success = prop2_success % 100 + 1;
             }
             Event::Prop2SystemCheckFailure => {
-                gs_tx.send(PodToGsMessage {
-                    dp: Datapoint::new(
-                        Datatype::Prop2SystemCheckFailure,
-                        prop2_failure,
-                        Instant::now().as_ticks(),
-                    ),
-                })
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(
+                            Datatype::Prop2SystemCheckFailure,
+                            prop2_failure,
+                            Instant::now().as_ticks(),
+                        ),
+                    })
                     .await;
                 prop2_failure = prop2_failure % 100 + 1;
             }

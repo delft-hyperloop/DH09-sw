@@ -209,7 +209,7 @@ standard-datapoints:
   - datapoint:
       name: 'LeviSystemCheckSuccess'
       id: 0x220
-      store: 
+      store:
         default: 0
   - datapoint:
       name: 'LeviSystemCheckFailure'
@@ -2293,6 +2293,8 @@ commands:
     id: 0x213
   - name: 'StopCharge'
     id: 0x214
+  - name: 'FaultFixed'
+    id: 0x215
 
 beckhoff:
   task-period: 10 # period in ms

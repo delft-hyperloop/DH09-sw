@@ -311,6 +311,7 @@
                             <Command cmd="StopCharge" icon={StopOutline}/>
                         {/if}
                         <Command cmd="SystemReset" icon={Reset}/>
+                        <Command cmd="FaultFixed" />
                     </div>
                 </Tile>
                 {#if $debugModeActive}

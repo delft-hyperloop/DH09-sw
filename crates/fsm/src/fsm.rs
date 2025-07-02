@@ -4,6 +4,7 @@ use core::fmt::Debug;
 use core::fmt::Formatter;
 
 use defmt::info;
+use defmt::Format;
 use embassy_stm32::gpio::Output;
 use embassy_time::Timer;
 use lib::EmergencyType;
@@ -12,7 +13,7 @@ use lib::EventReceiver;
 use lib::EventSender;
 use lib::States;
 use log::error;
-
+use lib::config::Command;
 use crate::entry_methods::enter_fault;
 use crate::CheckedSystem;
 use crate::CheckedSystems;
@@ -143,8 +144,10 @@ impl FSM {
     /// - `true`: Otherwise
     async fn handle_events(&mut self, event: Event) -> bool {
         match (self.state, event) {
-            (_, Event::Emergency { emergency_type }) => {
+            (_, Event::Emergency { emergency_type }) if self.state != States::Fault => {
                 self.transition(States::Fault).await;
+
+                error!("Going into Fault state with emergency {:?}", emergency_type);
 
                 // Trigger emergency using the sdc
                 self.sdc_pin.set_low();
@@ -156,8 +159,14 @@ impl FSM {
                 self.event_sender_gs
                     .send(Event::Emergency { emergency_type })
                     .await;
+                
+                
+                self.event_sender2.send(Command::StopHV(0)).await;
             }
-            (_, Event::Fault) => self.transition(States::Fault).await,
+            (_, Event::Fault) if self.state != States::Fault => {
+                error!("Fault triggered!");
+                self.transition(States::Fault).await
+            }
 
             (_, Event::ResetFSM) => {
                 info!("Reset FSM triggered. Resetting the main PCB...");
@@ -183,18 +192,27 @@ impl FSM {
 
             // Go into fault state if any of the system checks fail
             (States::SystemCheck, Event::Prop1SystemCheckFailure) => {
+                error!("Prop 1 system check failure!");
                 self.transition(States::Fault).await;
-                self.event_sender_gs.send(Event::Prop1SystemCheckFailure).await;
+                self.event_sender_gs
+                    .send(Event::Prop1SystemCheckFailure)
+                    .await;
             }
             (States::SystemCheck, Event::Prop2SystemCheckFailure) => {
+                error!("Prop 2 system check failure!");
                 self.transition(States::Fault).await;
-                self.event_sender_gs.send(Event::Prop2SystemCheckFailure).await;
+                self.event_sender_gs
+                    .send(Event::Prop2SystemCheckFailure)
+                    .await;
             }
             (States::SystemCheck, Event::LeviSystemCheckFailure) => {
+                error!("Levi system check failure!");
                 self.transition(States::Fault).await;
-                self.event_sender_gs.send(Event::LeviSystemCheckFailure).await;
+                self.event_sender_gs
+                    .send(Event::LeviSystemCheckFailure)
+                    .await;
             }
-            
+
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
             (States::PreCharge, Event::HVOnAck) => self.transition(States::Active).await,
             (States::Active, Event::Charge) => self.transition(States::Charging).await,
@@ -214,7 +232,18 @@ impl FSM {
             (States::Accelerating, Event::Brake) => self.transition(States::Braking).await,
             (States::Braking, Event::Stopped) => self.transition(States::Levitating).await,
             (States::Discharge, Event::EnterIdle) => self.transition(States::Idle).await,
-            (States::Discharge, Event::ShutDown) => return false,
+            (States::Idle, Event::ShutDown) => return false,
+
+            (
+                States::PreCharge
+                | States::Active
+                | States::Demo
+                | States::Discharge
+                | States::Levitating
+                | States::Accelerating
+                | States::Braking,
+                Event::PTCIdleAck,
+            ) => self.transition(States::Idle).await,
 
             // Send a message to the GS with the state in which it failed to transition in case it
             // receives a wrong event. Doesn't apply for `Event::Stopped` since that is sent
@@ -222,7 +251,6 @@ impl FSM {
             // `States::Accelerating` and `States::Braking`
             (_, event) => {
                 if let Some(failed_state_transition) = match event {
-                    Event::Emergency { emergency_type: _ } | Event::Fault => Some(States::Fault),
                     Event::ResetFSM => Some(States::Boot),
                     Event::StartSystemCheck => Some(States::SystemCheck),
                     Event::StartPreCharge => Some(States::PreCharge),

@@ -15,7 +15,7 @@
         EventChannel,
     } from '$lib';
     import {
-        debugModeActive,
+        debugModeActive, emergencyModalActive,
         emsTempsAcknowledged,
         hemsTempsAcknowledged,
         leftMotorTempsAcknowledged,
@@ -291,8 +291,9 @@
     });
 
     emergency.subscribe((store) => {
-        if (store.value !== 0) {
-            let sources: String[] = [
+        if (store.value !== 0 && !$emergencyModalActive) {
+            emergencyModalActive.set(true);
+            const sources: String[] = [
                 "General",
                 "Propulsion",
                 "Levitation",

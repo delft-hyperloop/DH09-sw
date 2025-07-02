@@ -169,7 +169,9 @@ async fn main(spawner: Spawner) -> ! {
     // )).unwrap();
 
     let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
-    let sdc_pin = Output::new(p.PB0, Level::High, Speed::Medium);
+    let mut sdc_pin = Output::new(p.PB0, Level::High, Speed::Medium);
+
+    sdc_pin.set_high();
 
     spawner
         .spawn(run_fsm(

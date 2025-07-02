@@ -159,9 +159,8 @@ impl FSM {
                 self.event_sender_gs
                     .send(Event::Emergency { emergency_type })
                     .await;
-                
-                
-                self.event_sender2.send(Command::StopHV(0)).await;
+
+                self.event_sender2.send(Event::Discharge).await;
             }
             (_, Event::Fault) if self.state != States::Fault => {
                 error!("Fault triggered!");

@@ -224,8 +224,6 @@ pub async fn forward_can2_messages_to_fsm(
 /// the payload or an emergency which also requires the type of emergency.
 fn match_can_id_to_event(id: u16, payload: &[u8]) -> Event {
     match id {
-        
-        
         // If it gets a ptc logs message from the powertrain controller with state HV
         // on, send ack to fsm
         1251 if payload[0] == 2 => Event::HVOnAck,

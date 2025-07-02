@@ -32,9 +32,9 @@ pub enum Event {
     /// Used for transitioning from braking to levitating when the speed of the
     /// pod is 0
     Stopped,
-    /// Starts discharging the high voltage batteries
+    /// Starts discharging
     Discharge,
-    /// Shuts down the pod
+    /// Shuts down the pod (?)
     ShutDown,
     /// Pod should start charging
     Charge,

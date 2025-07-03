@@ -87,6 +87,14 @@
         ((((($imdWarningStore1.value >> 16) & $imdWarningStore2.value) >> index) & 1) == 1)
     );
 
+    imdWarningStore1.subscribe((store) => {
+        console.log(`imd warning store 1: ${store.value}`)
+    })
+
+    imdWarningStore2.subscribe((store) => {
+        console.log(`imd warning store 2: ${store.value}`)
+    })
+
     async function sendSystemCheckMocks() {
         await invoke('send_command', {cmdName: "MockPtAck", val: 0}).then(() => {
             console.log(`Command MockPtAck sent`);

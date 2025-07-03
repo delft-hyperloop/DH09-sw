@@ -42,6 +42,7 @@
     import { storePopup } from '@skeletonlabs/skeleton';
     import AlertModal from '$lib/components/AlertModal.svelte';
     import { invoke } from '@tauri-apps/api/tauri';
+    import { registerSubscribers } from '$lib/util/subscribers';
 
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -964,7 +965,7 @@
         latestTimestamp.set(Date.now());
     }, 1000);
 
-    let firstPass: boolean = true;
+    registerSubscribers();
 
     onMount(() => {
         setInterval(async () => {

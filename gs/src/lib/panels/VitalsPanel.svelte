@@ -149,8 +149,8 @@
                 <span>HVAL:</span>
                 {#if $hvalStateStore && $hvalStateStore.length > 0}
                     <Light
-                        isGreen={$hvalStateStore[0].value === 0}
-                        innerClass={$hvalStateStore[0].value === 1 ? "blink-red" : ""}
+                        isGreen={$hvalStateStore[0].value === 1}
+                        innerClass={$hvalStateStore[0].value === 2 ? "blink-red" : ""}
                     />
                 {/if}
             </div>
@@ -189,27 +189,48 @@
                     <Localization showLabels={true}/>
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
-                    <div class="flex flex-wrap justify-between gap-4">
-                        <div class="flex justify-between flex-col">
-                            <p>Velocity: <Store datatype="Velocity" /></p>
-                            <p>Position: <Store datatype="Localization" /></p>
-                            <p>LV Temp High: <Store datatype="BMSTemperatureLow" /></p>
-                            <p>HV Temp High: <Store datatype="BMSTemperatureHigh" /></p>
+                    <div class="flex flex-row justify-between items-start w-full">
+                        <!-- Vitals table left: 2x2 grid -->
+                        <div class="grid grid-cols-2 gap-x-8 gap-y-2">
+                            <div class="flex flex-col">
+                                <span>Velocity: <span class="font-mono inline"><Store datatype="Velocity" /></span></span>
+                                <span class="text-xs text-gray-400">Safe range: [MIN, MAX] m/s</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span>Position: <span class="font-mono inline"><Store datatype="Localization" /></span></span>
+                                <span class="text-xs text-gray-400">Safe range: [MIN, MAX] mm</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span>LV Temp High: <span class="font-mono inline"><Store datatype="BMSTemperatureLow" /></span></span>
+                                <span class="text-xs text-gray-400">Safe range: [0, 80] °C</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span>HV Temp High: <span class="font-mono inline"><Store datatype="BMSTemperatureHigh" /></span></span>
+                                <span class="text-xs text-gray-400">Safe range: [0, 80] °C</span>
+                            </div>
                         </div>
-                        <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
-                            <span>LV:</span>
-                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.values)}/>
-                            <span>Total: <Store datatype="BMSVoltageLow" /></span>
-
-                            <span>HV:</span>
-                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.values)}/>
-                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>
+                        <!-- Battery icons/info right: side by side -->
+                        <div class="flex flex-row gap-8 items-start ml-8">
+                            <div class="flex flex-col items-center">
+                                <span>LV:</span>
+                                <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.values)}/>
+                                <span>Total: <Store datatype="BMSVoltageLow" /></span>
+                                <span class="text-xs text-gray-400">Safe range: [280, 360] V</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span>HV:</span>
+                                <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.values)}/>
+                                <span>Total: <Store datatype="BMSVoltageHigh" /></span>
+                                <span class="text-xs text-gray-400">Safe range: [280, 420] V</span>
+                            </div>
                         </div>
-                        <div class="flex flex-col gap-4">
-                            <span>PT Controller State: {ptcStates[$ptcStateStore[0]?.value]}</span>
-                            <span>PT Controller Fault: {ptcFaultMessages.length > 0 ? ptcFaultMessages.join(', ') : 'None'}</span>
-                            <span>IMD: &ltstatus&gt</span>
-                        </div>
+                    </div>
+                    <div class="flex flex-row justify-end gap-2 mt-2 text-sm text-gray-300 w-full">
+                        <span>PT Controller State: {ptcStates[$ptcStateStore[0]?.value]}</span>
+                        <span>|</span>
+                        <span>PT Controller Fault: {ptcFaultMessages.length > 0 ? ptcFaultMessages.join(', ') : 'None'}</span>
+                        <span>|</span>
+                        <span>IMD: &ltstatus&gt</span>
                     </div>
                 </Tile>
 <!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
@@ -353,5 +374,8 @@
     background: #444 !important;
     box-shadow: none !important;
     animation: none !important;
+}
+.inline {
+  display: inline;
 }
 </style>

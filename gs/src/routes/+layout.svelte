@@ -65,7 +65,7 @@
     /////////// CHARTS ///////////
     //////////////////////////////
 
-    // Prop log 1 Left Motor chart for test runs
+    // Prop log 1 Left Motor
     let propLog1LeftMotorChart = new PlotBuffer(
         500,
         3 * 60000,
@@ -73,13 +73,20 @@
         true,
         'Id measured'
     );
-    propLog1LeftMotorChart.addSeries(StrokePresets.yellow('Id reference'));
-    propLog1LeftMotorChart.addSeries(StrokePresets.blue('Iq measured'));
-    propLog1LeftMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
+    propLog1LeftMotorChart.addSeries({ label: 'Id reference', spanGaps: false, stroke: '#0a85ff' }); // blue
+    propLog1LeftMotorChart.addSeries({ label: 'Iq measured', spanGaps: false, stroke: '#a259f7' }); // purple
+    propLog1LeftMotorChart.addSeries({ label: 'Iq reference', spanGaps: false, stroke: '#f78c25' }); // orange
+    // Min/Max
+    const propLog1Min = 0, propLog1Max = 20;
+    propLog1LeftMotorChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => propLog1Min });
+    propLog1LeftMotorChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => propLog1Max });
     $chartStore.set('Propulsion Log 1 - Left Motor', propLog1LeftMotorChart);
     propCharts.push('Propulsion Log 1 - Left Motor');
+    const xLenPropLog1Left = propLog1LeftMotorChart.getSeriesData(0).length;
+    propLog1LeftMotorChart.updateSeries(5, new Float32Array(xLenPropLog1Left).fill(propLog1Min));
+    propLog1LeftMotorChart.updateSeries(6, new Float32Array(xLenPropLog1Left).fill(propLog1Max));
 
-    // Prop log 1 Right Motor chart for test runs
+    // Prop log 1 Right Motor
     let propLog1RightMotorChart = new PlotBuffer(
         500,
         3 * 60000,
@@ -87,72 +94,128 @@
         true,
         'Id measured'
     );
-    propLog1RightMotorChart.addSeries(StrokePresets.yellow('Id reference'));
-    propLog1RightMotorChart.addSeries(StrokePresets.blue('Iq measured'));
-    propLog1RightMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
+    propLog1RightMotorChart.addSeries({ label: 'Id reference', spanGaps: false, stroke: '#43bccd' }); // teal
+    propLog1RightMotorChart.addSeries({ label: 'Iq measured', spanGaps: false, stroke: '#f72585' }); // pink
+    propLog1RightMotorChart.addSeries({ label: 'Iq reference', spanGaps: false, stroke: '#ffd166' }); // yellow
+    // Min/Max
+    propLog1RightMotorChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => propLog1Min });
+    propLog1RightMotorChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => propLog1Max });
     $chartStore.set('Propulsion Log 1 - Right Motor', propLog1RightMotorChart);
     propCharts.push('Propulsion Log 1 - Right Motor');
+    const xLenPropLog1Right = propLog1RightMotorChart.getSeriesData(0).length;
+    propLog1RightMotorChart.updateSeries(5, new Float32Array(xLenPropLog1Right).fill(propLog1Min));
+    propLog1RightMotorChart.updateSeries(6, new Float32Array(xLenPropLog1Right).fill(propLog1Max));
 
-    // Prop log 2 Left Motor chart for test runs
+    // Prop log 2 Left Motor
     let propLog2LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
-    propLog2LeftMotorChart.addSeries(StrokePresets.yellow('VD'));
-    propLog2LeftMotorChart.addSeries(StrokePresets.blue('Vbus'));
-    propLog2LeftMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
+    propLog2LeftMotorChart.addSeries({ label: 'VD', spanGaps: false, stroke: '#0ea774' }); // green
+    propLog2LeftMotorChart.addSeries({ label: 'Vbus', spanGaps: false, stroke: '#0a85ff' }); // blue
+    propLog2LeftMotorChart.addSeries({ label: 'Ibus', spanGaps: false, stroke: '#a259f7' }); // purple
+    // Min/Max
+    const propLog2Min = 0, propLog2Max = 20;
+    propLog2LeftMotorChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => propLog2Min });
+    propLog2LeftMotorChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => propLog2Max });
     $chartStore.set('Propulsion Log 2 - Left Motor', propLog2LeftMotorChart);
     propCharts.push('Propulsion Log 2 - Left Motor');
+    const xLenPropLog2Left = propLog2LeftMotorChart.getSeriesData(0).length;
+    propLog2LeftMotorChart.updateSeries(5, new Float32Array(xLenPropLog2Left).fill(propLog2Min));
+    propLog2LeftMotorChart.updateSeries(6, new Float32Array(xLenPropLog2Left).fill(propLog2Max));
 
-    // Prop log 2 Right Motor chart for test runs
+    // Prop log 2 Right Motor
     let propLog2RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
-    propLog2RightMotorChart.addSeries(StrokePresets.yellow('VD'));
-    propLog2RightMotorChart.addSeries(StrokePresets.blue('Vbus'));
-    propLog2RightMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
+    propLog2RightMotorChart.addSeries({ label: 'VD', spanGaps: false, stroke: '#f78c25' }); // orange
+    propLog2RightMotorChart.addSeries({ label: 'Vbus', spanGaps: false, stroke: '#43bccd' }); // teal
+    propLog2RightMotorChart.addSeries({ label: 'Ibus', spanGaps: false, stroke: '#f72585' }); // pink
+    // Min/Max
+    propLog2RightMotorChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => propLog2Min });
+    propLog2RightMotorChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => propLog2Max });
     $chartStore.set('Propulsion Log 2 - Right Motor', propLog2RightMotorChart);
     propCharts.push('Propulsion Log 2 - Right Motor');
+    const xLenPropLog2Right = propLog2RightMotorChart.getSeriesData(0).length;
+    propLog2RightMotorChart.updateSeries(5, new Float32Array(xLenPropLog2Right).fill(propLog2Min));
+    propLog2RightMotorChart.updateSeries(6, new Float32Array(xLenPropLog2Right).fill(propLog2Max));
 
-    // Prop log 3 Left Motor chart for test runs
+    // Prop log 3 Left Motor
     let propLog3LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
-    propLog3LeftMotorChart.addSeries(StrokePresets.yellow('Tb'));
-    propLog3LeftMotorChart.addSeries(StrokePresets.blue('Tc'));
-    propLog3LeftMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
+    propLog3LeftMotorChart.addSeries({ label: 'Tb', spanGaps: false, stroke: '#ffd166' }); // yellow
+    propLog3LeftMotorChart.addSeries({ label: 'Tc', spanGaps: false, stroke: '#0ea774' }); // green
+    propLog3LeftMotorChart.addSeries({ label: 'TCASE', spanGaps: false, stroke: '#0a85ff' }); // blue
+    // Min/Max
+    const propLog3Min = 0, propLog3Max = 20;
+    propLog3LeftMotorChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => propLog3Min });
+    propLog3LeftMotorChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => propLog3Max });
     $chartStore.set('Propulsion Log 3 - Left Motor', propLog3LeftMotorChart);
     propCharts.push('Propulsion Log 3 - Left Motor');
+    const xLenPropLog3Left = propLog3LeftMotorChart.getSeriesData(0).length;
+    propLog3LeftMotorChart.updateSeries(5, new Float32Array(xLenPropLog3Left).fill(propLog3Min));
+    propLog3LeftMotorChart.updateSeries(6, new Float32Array(xLenPropLog3Left).fill(propLog3Max));
 
-    // Prop log 3 Right Motor chart for test runs
+    // Prop log 3 Right Motor
     let propLog3RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
-    propLog3RightMotorChart.addSeries(StrokePresets.yellow('Tb'));
-    propLog3RightMotorChart.addSeries(StrokePresets.blue('Tc'));
-    propLog3RightMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
+    propLog3RightMotorChart.addSeries({ label: 'Tb', spanGaps: false, stroke: '#a259f7' }); // purple
+    propLog3RightMotorChart.addSeries({ label: 'Tc', spanGaps: false, stroke: '#f78c25' }); // orange
+    propLog3RightMotorChart.addSeries({ label: 'TCASE', spanGaps: false, stroke: '#43bccd' }); // teal
+    // Min/Max
+    propLog3RightMotorChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => propLog3Min });
+    propLog3RightMotorChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => propLog3Max });
     $chartStore.set('Propulsion Log 3 - Right Motor', propLog3RightMotorChart);
     propCharts.push('Propulsion Log 3 - Right Motor');
+    const xLenPropLog3Right = propLog3RightMotorChart.getSeriesData(0).length;
+    propLog3RightMotorChart.updateSeries(5, new Float32Array(xLenPropLog3Right).fill(propLog3Min));
+    propLog3RightMotorChart.updateSeries(6, new Float32Array(xLenPropLog3Right).fill(propLog3Max));
 
+    // Motor Temperatures Left
     let motorLeftTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Left 1');
-    motorLeftTemp.addSeries(StrokePresets.yellow('Motor Left 2'));
-    motorLeftTemp.addSeries(StrokePresets.blue('Motor Left 3'));
-    motorLeftTemp.addSeries(StrokePresets.blueDashed('Motor Left 4'));
-    motorLeftTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Left 5'));
-    motorLeftTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Left 6'));
-    motorLeftTemp.addSeries(StrokePresets.yellowDashed('Motor Left 7'));
-    motorLeftTemp.addSeries(StrokePresets.theoretical('Motor Left 8'))
+    motorLeftTemp.addSeries({ label: 'Motor Left 2', spanGaps: false, stroke: '#0a85ff' }); // blue
+    motorLeftTemp.addSeries({ label: 'Motor Left 3', spanGaps: false, stroke: '#a259f7' }); // purple
+    motorLeftTemp.addSeries({ label: 'Motor Left 4', spanGaps: false, stroke: '#f78c25' }); // orange
+    motorLeftTemp.addSeries({ label: 'Motor Left 5', spanGaps: false, stroke: '#0ea774' }); // green
+    motorLeftTemp.addSeries({ label: 'Motor Left 6', spanGaps: false, stroke: '#f72585' }); // pink
+    motorLeftTemp.addSeries({ label: 'Motor Left 7', spanGaps: false, stroke: '#43bccd' }); // teal
+    motorLeftTemp.addSeries({ label: 'Motor Left 8', spanGaps: false, stroke: '#ffd166' }); // yellow
+    // Min/Max
+    const motorLeftTempMin = 0, motorLeftTempMax = 120;
+    motorLeftTemp.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => motorLeftTempMin });
+    motorLeftTemp.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => motorLeftTempMax });
     $chartStore.set('Motor Temperatures Left', motorLeftTemp);
     propCharts.push('Motor Temperatures Left');
+    const xLenMotorLeftTemp = motorLeftTemp.getSeriesData(0).length;
+    motorLeftTemp.updateSeries(8, new Float32Array(xLenMotorLeftTemp).fill(motorLeftTempMin));
+    motorLeftTemp.updateSeries(9, new Float32Array(xLenMotorLeftTemp).fill(motorLeftTempMax));
 
+    // Motor Temperatures Right
     let motorRightTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Right 1');
-    motorRightTemp.addSeries(StrokePresets.yellow('Motor Right 2'));
-    motorRightTemp.addSeries(StrokePresets.blue('Motor Right 3'));
-    motorRightTemp.addSeries(StrokePresets.blueDashed('Motor Right 4'));
-    motorRightTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Right 5'));
-    motorRightTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Right 6'));
-    motorRightTemp.addSeries(StrokePresets.yellowDashed('Motor Right 7'));
-    motorRightTemp.addSeries(StrokePresets.theoretical('Motor Right 8'));
+    motorRightTemp.addSeries({ label: 'Motor Right 2', spanGaps: false, stroke: '#0a85ff' }); // blue
+    motorRightTemp.addSeries({ label: 'Motor Right 3', spanGaps: false, stroke: '#a259f7' }); // purple
+    motorRightTemp.addSeries({ label: 'Motor Right 4', spanGaps: false, stroke: '#f78c25' }); // orange
+    motorRightTemp.addSeries({ label: 'Motor Right 5', spanGaps: false, stroke: '#0ea774' }); // green
+    motorRightTemp.addSeries({ label: 'Motor Right 6', spanGaps: false, stroke: '#f72585' }); // pink
+    motorRightTemp.addSeries({ label: 'Motor Right 7', spanGaps: false, stroke: '#43bccd' }); // teal
+    motorRightTemp.addSeries({ label: 'Motor Right 8', spanGaps: false, stroke: '#ffd166' }); // yellow
+    // Min/Max
+    const motorRightTempMin = 0, motorRightTempMax = 120;
+    motorRightTemp.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => motorRightTempMin });
+    motorRightTemp.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => motorRightTempMax });
     $chartStore.set('Motor Temperatures Right', motorRightTemp);
     propCharts.push('Motor Temperatures Right');
+    const xLenMotorRightTemp = motorRightTemp.getSeriesData(0).length;
+    motorRightTemp.updateSeries(8, new Float32Array(xLenMotorRightTemp).fill(motorRightTempMin));
+    motorRightTemp.updateSeries(9, new Float32Array(xLenMotorRightTemp).fill(motorRightTempMax));
 
+    // Offset
     let offsetChart = new PlotBuffer(500, 60000, [0, 30], true, 'Offset 1');
-    offsetChart.addSeries(StrokePresets.hyperLoopGreen('Offset 2'));
-    offsetChart.addSeries(StrokePresets.yellow('Offset 3'));
-    offsetChart.addSeries(StrokePresets.blue('Offset 4'));
+    offsetChart.addSeries({ label: 'Offset 2', spanGaps: false, stroke: '#0a85ff' }); // blue
+    offsetChart.addSeries({ label: 'Offset 3', spanGaps: false, stroke: '#a259f7' }); // purple
+    offsetChart.addSeries({ label: 'Offset 4', spanGaps: false, stroke: '#f78c25' }); // orange
+    // Min/Max
+    const offsetMin = 0, offsetMax = 30;
+    offsetChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => offsetMin });
+    offsetChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => offsetMax });
     $chartStore.set('Offset', offsetChart);
     propCharts.push('Offset');
+    const xLenOffset = offsetChart.getSeriesData(0).length;
+    offsetChart.updateSeries(5, new Float32Array(xLenOffset).fill(offsetMin));
+    offsetChart.updateSeries(6, new Float32Array(xLenOffset).fill(offsetMax));
 
     let airGapChart = new PlotBuffer(
         500,
@@ -161,15 +224,29 @@
         true,
         'Vertical Air Gap'
     );
-    airGapChart.addSeries(StrokePresets.theoretical('Lateral Air Gap'));
+    airGapChart.addSeries({ label: 'Lateral Air Gap', spanGaps: false, stroke: '#a259f7' }); // purple
+    // Min/Max
+    const airGapMin = 0, airGapMax = 30;
+    airGapChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => airGapMin });
+    airGapChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => airGapMax });
     $chartStore.set('Air Gaps', airGapChart);
     leviCharts.push('Air Gaps');
+    const xLenAirGaps = airGapChart.getSeriesData(0).length;
+    airGapChart.updateSeries(3, new Float32Array(xLenAirGaps).fill(airGapMin));
+    airGapChart.updateSeries(4, new Float32Array(xLenAirGaps).fill(airGapMax));
 
     let anglesChart = new PlotBuffer(500, 60000, [0, 120], true, 'Roll');
-    anglesChart.addSeries(StrokePresets.theoretical('Pitch'));
-    anglesChart.addSeries(StrokePresets.blue('Yaw'));
+    anglesChart.addSeries({ label: 'Pitch', spanGaps: false, stroke: '#a259f7' }); // purple
+    anglesChart.addSeries({ label: 'Yaw', spanGaps: false, stroke: '#f78c25' }); // orange
+    // Min/Max
+    const anglesMin = 0, anglesMax = 120;
+    anglesChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => anglesMin });
+    anglesChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => anglesMax });
     $chartStore.set('Angles', anglesChart);
     leviCharts.push('Angles');
+    const xLenAngles = anglesChart.getSeriesData(0).length;
+    anglesChart.updateSeries(4, new Float32Array(xLenAngles).fill(anglesMin));
+    anglesChart.updateSeries(5, new Float32Array(xLenAngles).fill(anglesMax));
 
     let hemsCurrentChart = new PlotBuffer(
         500,
@@ -178,20 +255,34 @@
         true,
         'VFL1'
     );
-    hemsCurrentChart.addSeries(StrokePresets.blue('VFL2'));
-    hemsCurrentChart.addSeries(StrokePresets.theoretical('VFR1'));
-    hemsCurrentChart.addSeries(StrokePresets.yellow('VFR2'));
-    hemsCurrentChart.addSeries(StrokePresets.blueDashed('VBL1'));
-    hemsCurrentChart.addSeries(StrokePresets.theoreticalDashed('VBL2'));
-    hemsCurrentChart.addSeries(StrokePresets.yellowDashed('VBR1'));
-    hemsCurrentChart.addSeries(StrokePresets.hyperLoopGreen('VBR2'));
+    hemsCurrentChart.addSeries({ label: 'VFL2', spanGaps: false, stroke: '#0a85ff' }); // blue
+    hemsCurrentChart.addSeries({ label: 'VFR1', spanGaps: false, stroke: '#a259f7' }); // purple
+    hemsCurrentChart.addSeries({ label: 'VFR2', spanGaps: false, stroke: '#f78c25' }); // orange
+    hemsCurrentChart.addSeries({ label: 'VBL1', spanGaps: false, stroke: '#0ea774' }); // green
+    hemsCurrentChart.addSeries({ label: 'VBL2', spanGaps: false, stroke: '#f72585' }); // pink
+    hemsCurrentChart.addSeries({ label: 'VBR1', spanGaps: false, stroke: '#43bccd' }); // teal
+    hemsCurrentChart.addSeries({ label: 'VBR2', spanGaps: false, stroke: '#ffd166' }); // yellow
+    // Min/Max
+    const hemsCurrentMin = -11.3, hemsCurrentMax = 11.3;
+    hemsCurrentChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => hemsCurrentMin });
+    hemsCurrentChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => hemsCurrentMax });
     $chartStore.set('HEMS Current', hemsCurrentChart);
     leviCharts.push('HEMS Current');
+    const xLenHems = hemsCurrentChart.getSeriesData(0).length;
+    hemsCurrentChart.updateSeries(9, new Float32Array(xLenHems).fill(hemsCurrentMin));
+    hemsCurrentChart.updateSeries(10, new Float32Array(xLenHems).fill(hemsCurrentMax));
 
     let emsCurrentChart = new PlotBuffer(500, 3 * 60000, [-11.3, 11.3], true, 'LF');
-    emsCurrentChart.addSeries(StrokePresets.theoretical('LB'));
+    emsCurrentChart.addSeries({ label: 'LB', spanGaps: false, stroke: '#a259f7' }); // purple
+    // Min/Max
+    const emsCurrentMin = -11.3, emsCurrentMax = 11.3;
+    emsCurrentChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => emsCurrentMin });
+    emsCurrentChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => emsCurrentMax });
     $chartStore.set('EMS Current', emsCurrentChart);
     leviCharts.push('EMS Current');
+    const xLenEms = emsCurrentChart.getSeriesData(0).length;
+    emsCurrentChart.updateSeries(3, new Float32Array(xLenEms).fill(emsCurrentMin));
+    emsCurrentChart.updateSeries(4, new Float32Array(xLenEms).fill(emsCurrentMax));
 
     let accelChart = new PlotBuffer(500, 60000, [0, 25], false);
     $chartStore.set('Acceleration', accelChart);
@@ -206,56 +297,184 @@
     $chartStore.set("Localization", localizationChart);
 
     let leviRequestForceVerticalChart = new PlotBuffer(500, 60000, [0, 100], true, 'Z');
-    leviRequestForceVerticalChart.addSeries(StrokePresets.yellow('Roll'));
-    leviRequestForceVerticalChart.addSeries(StrokePresets.theoretical('Pitch'));
+    leviRequestForceVerticalChart.addSeries({ label: 'Roll', spanGaps: false, stroke: '#0a85ff' }); // blue
+    leviRequestForceVerticalChart.addSeries({ label: 'Pitch', spanGaps: false, stroke: '#a259f7' }); // purple
+    // Min/Max
+    const reqForceVertMin = 0, reqForceVertMax = 100;
+    leviRequestForceVerticalChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => reqForceVertMin });
+    leviRequestForceVerticalChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => reqForceVertMax });
     $chartStore.set('Requested Force Vertical', leviRequestForceVerticalChart);
     leviCharts.push('Requested Force Vertical');
+    const xLenReqVert = leviRequestForceVerticalChart.getSeriesData(0).length;
+    leviRequestForceVerticalChart.updateSeries(4, new Float32Array(xLenReqVert).fill(reqForceVertMin));
+    leviRequestForceVerticalChart.updateSeries(5, new Float32Array(xLenReqVert).fill(reqForceVertMax));
 
     let leviRequestForceHorizontalChart = new PlotBuffer(500, 60000, [0, 100], true, 'Y');
-    leviRequestForceHorizontalChart.addSeries(StrokePresets.yellow('Yaw'));
+    leviRequestForceHorizontalChart.addSeries({ label: 'Yaw', spanGaps: false, stroke: '#f78c25' }); // orange
+    // Min/Max
+    const reqForceHorizMin = 0, reqForceHorizMax = 100;
+    leviRequestForceHorizontalChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => reqForceHorizMin });
+    leviRequestForceHorizontalChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => reqForceHorizMax });
     $chartStore.set('Requested Force Horizontal', leviRequestForceHorizontalChart);
     leviCharts.push('Requested Force Horizontal');
+    const xLenReqHoriz = leviRequestForceHorizontalChart.getSeriesData(0).length;
+    leviRequestForceHorizontalChart.updateSeries(3, new Float32Array(xLenReqHoriz).fill(reqForceHorizMin));
+    leviRequestForceHorizontalChart.updateSeries(4, new Float32Array(xLenReqHoriz).fill(reqForceHorizMax));
 
     let hemsTempChart = new PlotBuffer(500, 60000, [0, 100], true, 'L1');
-    hemsTempChart.addSeries(StrokePresets.yellow('L2'));
-    hemsTempChart.addSeries(StrokePresets.theoretical('L3'));
-    hemsTempChart.addSeries(StrokePresets.yellowDashed('L4'));
-    hemsTempChart.addSeries(StrokePresets.hyperLoopGreen('R1'));
-    hemsTempChart.addSeries(StrokePresets.blue('R2'));
-    hemsTempChart.addSeries(StrokePresets.blueDashed('R3'));
-    hemsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('R4'));
+    hemsTempChart.addSeries({ label: 'L2', spanGaps: false, stroke: '#0a85ff' }); // blue
+    hemsTempChart.addSeries({ label: 'L3', spanGaps: false, stroke: '#a259f7' }); // purple
+    hemsTempChart.addSeries({ label: 'L4', spanGaps: false, stroke: '#f78c25' }); // orange
+    hemsTempChart.addSeries({ label: 'R1', spanGaps: false, stroke: '#0ea774' }); // green
+    hemsTempChart.addSeries({ label: 'R2', spanGaps: false, stroke: '#f72585' }); // pink
+    hemsTempChart.addSeries({ label: 'R3', spanGaps: false, stroke: '#43bccd' }); // teal
+    hemsTempChart.addSeries({ label: 'R4', spanGaps: false, stroke: '#ffd166' }); // yellow
+    // Min/Max
+    const hemsTempMin = 0, hemsTempMax = 100;
+    hemsTempChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => hemsTempMin });
+    hemsTempChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => hemsTempMax });
     $chartStore.set('Temperatures HEMS', hemsTempChart);
     leviCharts.push('Temperatures HEMS');
+    const xLenHemsTemp = hemsTempChart.getSeriesData(0).length;
+    hemsTempChart.updateSeries(9, new Float32Array(xLenHemsTemp).fill(hemsTempMin));
+    hemsTempChart.updateSeries(10, new Float32Array(xLenHemsTemp).fill(hemsTempMax));
 
     let emsTempChart = new PlotBuffer(500, 60000, [0, 100], true, 'L1');
-    emsTempChart.addSeries(StrokePresets.yellow('L2'));
-    emsTempChart.addSeries(StrokePresets.theoretical('L3'));
-    emsTempChart.addSeries(StrokePresets.yellowDashed('L4'));
-    emsTempChart.addSeries(StrokePresets.hyperLoopGreen('R1'));
-    emsTempChart.addSeries(StrokePresets.blue('R2'));
-    emsTempChart.addSeries(StrokePresets.blueDashed('R3'));
-    emsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('R4'));
+    emsTempChart.addSeries({ label: 'L2', spanGaps: false, stroke: '#0a85ff' }); // blue
+    emsTempChart.addSeries({ label: 'L3', spanGaps: false, stroke: '#a259f7' }); // purple
+    emsTempChart.addSeries({ label: 'L4', spanGaps: false, stroke: '#f78c25' }); // orange
+    emsTempChart.addSeries({ label: 'R1', spanGaps: false, stroke: '#0ea774' }); // green
+    emsTempChart.addSeries({ label: 'R2', spanGaps: false, stroke: '#f72585' }); // pink
+    emsTempChart.addSeries({ label: 'R3', spanGaps: false, stroke: '#43bccd' }); // teal
+    emsTempChart.addSeries({ label: 'R4', spanGaps: false, stroke: '#ffd166' }); // yellow
+    // Min/Max
+    const emsTempMin = 0, emsTempMax = 100;
+    emsTempChart.addSeries({ label: 'Min Safe', stroke: '#ffde0a', dash: [6, 6], spanGaps: true, show: true, value: () => emsTempMin });
+    emsTempChart.addSeries({ label: 'Max Safe', stroke: '#ff0a43', dash: [6, 6], spanGaps: true, show: true, value: () => emsTempMax });
     $chartStore.set('Temperatures EMS', emsTempChart);
     leviCharts.push('Temperatures EMS');
+    const xLenEmsTemp = emsTempChart.getSeriesData(0).length;
+    emsTempChart.updateSeries(9, new Float32Array(xLenEmsTemp).fill(emsTempMin));
+    emsTempChart.updateSeries(10, new Float32Array(xLenEmsTemp).fill(emsTempMax));
 
     let BMSVoltageHighChart = new PlotBuffer(500, 60000, [-500, 500], true, "BMS Voltage High");
+    // Add static min/max lines (placeholder values)
+    const bmsHighMin = 280; // TODO: update with real min
+    const bmsHighMax = 420; // TODO: update with real max
+    BMSVoltageHighChart.addSeries({
+        label: "Min Safe",
+        stroke: "#ffde0a",
+        dash: [6, 6],
+        spanGaps: true,
+        show: true,
+        value: () => bmsHighMin
+    });
+    BMSVoltageHighChart.addSeries({
+        label: "Max Safe",
+        stroke: "#ff0a43",
+        dash: [6, 6],
+        spanGaps: true,
+        show: true,
+        value: () => bmsHighMax
+    });
     $chartStore.set("BMS Voltage High", BMSVoltageHighChart);
     powertrainCharts.push("BMS Voltage High");
 
+    // After adding static min/max series for BMS Voltage High
+    const xLenHigh = BMSVoltageHighChart.getSeriesData(0).length;
+    BMSVoltageHighChart.updateSeries(2, new Float32Array(xLenHigh).fill(bmsHighMin)); // Min Safe
+    BMSVoltageHighChart.updateSeries(3, new Float32Array(xLenHigh).fill(bmsHighMax)); // Max Safe
+
     let BMSVoltageLowChart = new PlotBuffer(500, 60000, [-500, 500], true, "BSM Voltage Low");
+    // Add static min/max lines (placeholder values)
+    const bmsLowMin = 280; // TODO: update with real min
+    const bmsLowMax = 360; // TODO: update with real max
+    BMSVoltageLowChart.addSeries({
+        label: "Min Safe",
+        stroke: "#ffde0a",
+        dash: [6, 6],
+        spanGaps: true,
+        show: true,
+        value: () => bmsLowMin
+    });
+    BMSVoltageLowChart.addSeries({
+        label: "Max Safe",
+        stroke: "#ff0a43",
+        dash: [6, 6],
+        spanGaps: true,
+        show: true,
+        value: () => bmsLowMax
+    });
     $chartStore.set("BMS Voltage Low", BMSVoltageLowChart);
     powertrainCharts.push("BMS Voltage Low");
 
+    // After adding static min/max series for BMS Voltage Low
+    const xLenLow = BMSVoltageLowChart.getSeriesData(0).length;
+    BMSVoltageLowChart.updateSeries(2, new Float32Array(xLenLow).fill(bmsLowMin)); // Min Safe
+    BMSVoltageLowChart.updateSeries(3, new Float32Array(xLenLow).fill(bmsLowMax)); // Max Safe
+
     let BMSVoltageTempsChart = new PlotBuffer(500, 60000, [-500, 500], true, "Temp High");
     BMSVoltageTempsChart.addSeries(StrokePresets.blue("Temp Low"));
+    // Add static min/max lines (placeholder values)
+    const tempMin = 0; // TODO: update with real min
+    const tempMax = 80; // TODO: update with real max
+    BMSVoltageTempsChart.addSeries({
+        label: "Min Safe",
+        stroke: "#ffde0a",
+        dash: [6, 6],
+        spanGaps: true,
+        show: true,
+        value: () => tempMin
+    });
+    BMSVoltageTempsChart.addSeries({
+        label: "Max Safe",
+        stroke: "#ff0a43",
+        dash: [6, 6],
+        spanGaps: true,
+        show: true,
+        value: () => tempMax
+    });
     $chartStore.set("BMS Temps", BMSVoltageTempsChart);
     powertrainCharts.push("BMS Temps");
 
+    // After adding static min/max series for BMS Temps
+    const xLenTemps = BMSVoltageTempsChart.getSeriesData(0).length;
+    BMSVoltageTempsChart.updateSeries(3, new Float32Array(xLenTemps).fill(tempMin)); // Min Safe 
+    BMSVoltageTempsChart.updateSeries(4, new Float32Array(xLenTemps).fill(tempMax)); // Max Safe 
+
     let BMSLogsChart = new PlotBuffer(500, 60000, [-500, 500], true, "V Pack");
     BMSLogsChart.addSeries(StrokePresets.blue("I Pack"));
-    BMSLogsChart.addSeries(StrokePresets.theoretical("V DC Link"));
+    BMSLogsChart.addSeries({
+        label: "V DC Link",
+        spanGaps: false,
+        stroke: "#a259f7"
+    });
+    // Add static min/max lines (placeholder values)
+    const logMin = 0; // TODO: update with real min
+    const logMax = 100; // TODO: update with real max
+    BMSLogsChart.addSeries({
+        label: "Min Safe",
+        stroke: "#ffde0a",
+        dash: [6, 6],
+        spanGaps: true,
+        show: true,
+        value: () => logMin
+    });
+    BMSLogsChart.addSeries({
+        label: "Max Safe",
+        stroke: "#ff0a43",
+        dash: [6, 6],
+        spanGaps: true,
+        show: true,
+        value: () => logMax
+    });
     $chartStore.set("BMS Logs", BMSLogsChart);
     powertrainCharts.push("BMS Logs");
+
+    // After adding static min/max series for BMS Logs
+    const xLenLogs = BMSLogsChart.getSeriesData(0).length;
+    BMSLogsChart.updateSeries(4, new Float32Array(xLenLogs).fill(logMin)); 
+    BMSLogsChart.updateSeries(5, new Float32Array(xLenLogs).fill(logMax)); 
 
     leviChartStore.set(leviCharts);
     propChartStore.set(propCharts);

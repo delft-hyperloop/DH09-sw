@@ -188,11 +188,11 @@
     <TileGrid columns="1fr 1fr 1fr 1fr" rows="auto 1fr auto">
         <Tile insideClass="flex h-full items-center gap-4">
             <div class="flex flex-col items-center">
-                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />
+                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery[0]?.value)} />
                 <p>Low voltage</p>
             </div>
             <div class="flex flex-col items-center">
-                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery.value)} />
+                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery[0]?.value)} />
                 <p>High voltage</p>
             </div>
         </Tile>

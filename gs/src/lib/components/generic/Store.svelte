@@ -10,7 +10,7 @@
     $: store;
 </script>
 
-<div class="flex flex-col">
+<span class="store-inline">
     {#each $store as item, i}
         {#if Date.now() - item.timestamp > STALE_THRESHOLD_MS}
             <span class="text-stale">{typeof item.value === "number" ? item.value.toFixed(2) : item.value} {item.units}</span>
@@ -20,12 +20,15 @@
             </span>
         {/if}
     {/each}
-</div>
+</span>
 
 <style>
 .text-stale {
     color: orange;
     font-weight: bold;
+}
+.store-inline {
+    display: inline;
 }
 </style>
 

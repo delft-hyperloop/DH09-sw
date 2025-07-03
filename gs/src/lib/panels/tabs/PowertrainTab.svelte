@@ -179,6 +179,50 @@
 
     // const lvTotalStore = storeManager.getWritable("TotalBatteryVoltageLow");
     export const pop_up: boolean = true;
+
+    // Battery stats table
+    let titles = ["Battery", "Avg cell V", "Max cell V", "Min cell V", "Avg cell °C", "Max cell °C", "Min cell °C"];
+    $: tableArr = [
+        ["LV", avgLvVol, maxLvVol, minLvVol, avgLvTemp, maxLvTemp, minLvTemp],
+        ["HV mod 1", avg1Vol, max1Vol, min1Vol, avg1Temp, max1Temp, min1Temp],
+        ["HV mod 2", avg2Vol, max2Vol, min2Vol, avg2Temp, max2Temp, min2Temp],
+        ["HV mod 3", avg3Vol, max3Vol, min3Vol, avg3Temp, max3Temp, min3Temp],
+        ["HV mod 4", avg4Vol, max4Vol, min4Vol, avg4Temp, max4Temp, min4Temp],
+        ["HV mod 5", avg5Vol, max5Vol, min5Vol, avg5Temp, max5Temp, min5Temp],
+        ["HV mod 6", avg6Vol, max6Vol, min6Vol, avg6Temp, max6Temp, min6Temp],
+        ["HV mod 7", avg7Vol, max7Vol, min7Vol, avg7Temp, max7Temp, min7Temp],
+        ["HV mod 8", avg8Vol, max8Vol, min8Vol, avg8Temp, max8Temp, min8Temp],
+    ];
+
+    // LV cell voltages table
+    let lvTitles = ["cell 1", "cell 2", "cell 3", "cell 4", "cell 5", "cell 6", "cell 7"];
+    const lv0 = "SingleCellVoltageLV1", lv1 = "SingleCellVoltageLV2", lv2 = "SingleCellVoltageLV3", lv3 = "SingleCellVoltageLV4", lv4 = "SingleCellVoltageLV5", lv5 = "SingleCellVoltageLV6", lv6 = "SingleCellVoltageLV7", lv7 = "SingleCellVoltageLV8";
+    $: lvCellVoltArr = [[lv0, lv1, lv2, lv3, lv4, lv5, lv6, lv7]];
+
+    // HV cell voltages table
+    let hvTitles = ["Module", "cell 1", "cell 2", "cell 3", "cell 4", "cell 5", "cell 6", "cell 7", "cell 8", "cell 9", "cell 10", "cell 11", "cell 12", "cell 13", "cell 14"];
+    const hv0 = "SingleCellVoltageHV1", hv1 = "SingleCellVoltageHV2", hv2 = "SingleCellVoltageHV3", hv3 = "SingleCellVoltageHV4", hv4 = "SingleCellVoltageHV5", hv5 = "SingleCellVoltageHV6", hv6 = "SingleCellVoltageHV7", hv7 = "SingleCellVoltageHV8", hv8 = "SingleCellVoltageHV9", hv9 = "SingleCellVoltageHV10", hv10 = "SingleCellVoltageHV11", hv11 = "SingleCellVoltageHV12", hv12 = "SingleCellVoltageHV13", hv13 = "SingleCellVoltageHV14";
+    $: hvCellVoltArr = [["Module 1", hv0, hv1, hv2, hv3, hv4, hv5, hv6, hv7, hv8, hv9, hv10, hv11, hv12, hv13]];
+
+    // Add these variable definitions for tableArr keys
+    const avg1Temp = "Module1AvgTemperature", max1Temp = "Module1MaxTemperature", min1Temp = "Module1MinTemperature",
+        avg1Vol = "Module1AvgVoltage", max1Vol = "Module1MaxVoltage", min1Vol = "Module1MinVoltage",
+        avg2Temp = "Module2AvgTemperature", max2Temp = "Module2MaxTemperature", min2Temp = "Module2MinTemperature",
+        avg2Vol = "Module2AvgVoltage", max2Vol = "Module2MaxVoltage", min2Vol = "Module2MinVoltage",
+        avg3Temp = "Module3AvgTemperature", max3Temp = "Module3MaxTemperature", min3Temp = "Module3MinTemperature",
+        avg3Vol = "Module3AvgVoltage", max3Vol = "Module3MaxVoltage", min3Vol = "Module3MinVoltage",
+        avg4Temp = "Module4AvgTemperature", max4Temp = "Module4MaxTemperature", min4Temp = "Module4MinTemperature",
+        avg4Vol = "Module4AvgVoltage", max4Vol = "Module4MaxVoltage", min4Vol = "Module4MinVoltage",
+        avg5Temp = "Module5AvgTemperature", max5Temp = "Module5MaxTemperature", min5Temp = "Module5MinTemperature",
+        avg5Vol = "Module5AvgVoltage", max5Vol = "Module5MaxVoltage", min5Vol = "Module5MinVoltage",
+        avg6Temp = "Module6AvgTemperature", max6Temp = "Module6MaxTemperature", min6Temp = "Module6MinTemperature",
+        avg6Vol = "Module6AvgVoltage", max6Vol = "Module6MaxVoltage", min6Vol = "Module6MinVoltage",
+        avg7Temp = "Module7AvgTemperature", max7Temp = "Module7MaxTemperature", min7Temp = "Module7MinTemperature",
+        avg7Vol = "Module7AvgVoltage", max7Vol = "Module7MaxVoltage", min7Vol = "Module7MinVoltage",
+        avg8Temp = "Module8AvgTemperature", max8Temp = "Module8MaxTemperature", min8Temp = "Module8MinTemperature",
+        avg8Vol = "Module8AvgVoltage", max8Vol = "Module8MaxVoltage", min8Vol = "Module8MinVoltage",
+        avgLvTemp = "BatteryTemperatureLow", minLvTemp = "BatteryMinTemperatureLow", maxLvTemp = "BatteryMaxTemperatureLow",
+        avgLvVol = "BatteryVoltageLow", minLvVol = "BatteryMinVoltageLow", maxLvVol = "BatteryMaxVoltageHigh";
 </script>
 
 <div class="p-4">
@@ -215,9 +259,9 @@
 <!--                <p>IMD Voltage: <Store datatype="IMDVoltageDetails" /></p>-->
             </div>
         </Tile>
-<!--        <Tile containerClass="col-span-4" heading="Battery stats">-->
-<!--            <Table background="bg-surface-900" {tableArr} {titles} />-->
-<!--        </Tile>-->
+        <Tile containerClass="col-span-4" heading="Battery stats">
+            <Table background="bg-surface-900" {tableArr} {titles} />
+        </Tile>
         <Tile containerClass="col-span-2">
             <Chart title="BMS Voltage High" background="bg-surface-900" />
         </Tile>
@@ -230,11 +274,11 @@
         <Tile containerClass="col-span-full">
             <Chart title="BMS Logs" background="bg-surface-900"/>
         </Tile>
-<!--        <Tile containerClass="col-span-4" heading="Lv Cell Voltages">-->
-<!--            <Table background="bg-surface-900" tableArr={lvCellVoltArr} titles =  {lvTitles} />-->
-<!--        </Tile>-->
-<!--        <Tile containerClass="col-span-4" heading="HV Cell Voltages">-->
-<!--            <Table background="bg-surface-900 text-xs" tableArr={hvCellVoltArr} titles ={hvTitles} />-->
-<!--        </Tile>-->
+        <Tile containerClass="col-span-4" heading="Lv Cell Voltages">
+            <Table background="bg-surface-900" tableArr={lvCellVoltArr} titles={lvTitles} />
+        </Tile>
+        <Tile containerClass="col-span-4" heading="HV Cell Voltages">
+            <Table background="bg-surface-900 text-xs" tableArr={hvCellVoltArr} titles={hvTitles} />
+        </Tile>
     </TileGrid>
 </div>

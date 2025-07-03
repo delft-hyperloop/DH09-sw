@@ -376,7 +376,11 @@
 
     gdd.stores.registerStore<number>("PTCState", 0);
 
-    gdd.stores.registerStore<number>("PTCNonCriticalFault", 0);
+    gdd.stores.registerStore<number>("HVALState", 0);
+
+    gdd.stores.registerStore<number>("IMDWarnings", 0);
+
+    gdd.stores.registerStore<number>("PTCErrors", 0);
 
     gdd.stores.registerStore<number>("BMSVoltageHigh", 0, data => {
             const curr = Number(data);

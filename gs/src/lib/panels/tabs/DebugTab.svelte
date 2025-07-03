@@ -90,7 +90,7 @@
 <div class="p-4 h-full">
     <h2 class="text-2xl font-semibold mb-4">Debug Commands</h2>
     <TileGrid className="mb-5" columns="1fr 1fr" rows="">
-        <CollapsibleTile title="Propulsion Commands">
+        <CollapsibleTile title="Levi Commands">
             <div slot="content">
                 <div class="flex flex-row gap-4">
                     <div class="flex flex-col gap-2">
@@ -117,6 +117,10 @@
                         <Command cmd="LeviDropdown"/>
                     </div>
                 </div>
+            </div>
+        </CollapsibleTile>
+        <CollapsibleTile title="Propulsion Commands">
+            <div slot="content">
                 <div class="border-surface-600 border-[1px] rounded-lg m-4 p-2">
                     <div class="m-4">
                         <PropulsionHeartbeat storeName="Word1" labels={propReadLabels}/>
@@ -290,14 +294,6 @@
                         Disable Command Guards
                     </button>
                 {/if}
-                <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
-                        on:click={() => {GreenHVALTurnedOn.set(!$GreenHVALTurnedOn)}}>
-                    Toggle Green HVAL
-                </button>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
-                        on:click={() => {RedHVALTurnedOn.set(!$RedHVALTurnedOn)}}>
-                    Toggle Red HVAL
-                </button>
                 {#if !$showcasingStates}
                     <button class="btn rounded-md bg-primary-500 text-surface-900 overflow-auto font-medium"
                             on:click={() => {showcasingStates.set(true)}}>

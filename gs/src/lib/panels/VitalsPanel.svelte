@@ -8,17 +8,17 @@
         Store,
         TauriCommand,
         serverStatus,
+        Table,
     } from '$lib';
     import { AppBar, getToastStore } from '@skeletonlabs/skeleton';
     import {invoke} from "@tauri-apps/api/tauri";
-    import {DatatypeEnum as DE} from "$lib/namedDatatypeEnum";
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
     import {
         connectedToMainPCB,
         debugModeActive,
-        inStateAccelerating,
+        inStateAccelerating, inStateBraking,
         inStateCharging,
         inStateLevitating,
         showcaseStateCounter,
@@ -36,12 +36,15 @@
         Meter,
         RightPanelClose,
         ConnectionSignal,
-        ConnectionSignalOff, StopOutline,
+        ConnectionSignalOff,
+        StopOutline,
+        Tools
     } from 'carbon-icons-svelte';
     import type { SvelteComponent } from 'svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
     import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
+    import { imdWarnings, ptcErrorCodes, ptcStates } from '$lib/types';
 
     let width: number;
 
@@ -50,9 +53,10 @@
     const hvBattery = storeManager.getWritable("BMSVoltageHigh");
     const fsmState = storeManager.getWritable("FSMState");
     const ptcState = storeManager.getWritable("PTCState");
-    const ptcFault = storeManager.getWritable("PTCNonCriticalFault");
     const localization = storeManager.getWritable("Localization");
     const velocity = storeManager.getWritable("Velocity");
+    const ptcFaultStore = storeManager.getWritable("PTCErrors");
+    const imdWarningStore = storeManager.getWritable("IMDWarnings");
 
     const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
@@ -67,8 +71,6 @@
         serverStatus.set(true);
     };
 
-    let hovering_over_debug_commands: boolean = false;
-
     const handleFailure = (error:string) => {
         toastStore.trigger({
             message: `Server did not start successfully: ${error}`,
@@ -76,42 +78,13 @@
         });
     };
 
-    let tableTempsArr: any[][];
-    let tableArr2: any[][];
+    $: ptcFaultMessage = ptcErrorCodes.filter((x, index) =>
+        ((($ptcFaultStore.value >> index) & 1) == 1)
+    );
 
-    let tableBatteryTitles = ["", "HV Voltages", "HV Temp", "LV Voltages", "LV Temp"]
-
-    let ptcStates = [
-        "Idle",
-        "Precharge",
-        "HV On",
-        "Failure",
-        "Discharge",
-    ]
-
-    $: tableBatteryVitals = [
-        ["Min", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
-        ["Max", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
-        ["Avg", DE.Alpha1, DE.Alpha1, DE.Alpha1, DE.Alpha1],
-        ["Safe Range", "[360, 420] V", "[15,50] °C", "[280,360] V", "[15,50] °C"]
-    ]
-
-    $: tableTempsArr = [
-        ["Up VB", DE.Alpha1, "[0,70] °C", "HEMS 1", DE.Alpha1, "[0,80] °C"],
-        ["Low VB", DE.Alpha1, "[0,70] °C", "HEMS 2", DE.Alpha1, "[0,80] °C"],
-        ["Ambient", DE.Temp0, "[0,50] °C", "HEMS 3", DE.Alpha1, "[0,80] °C"],
-        ["Motor Front", "Temp_Motor_1", "[0,80] °C", "HEMS 4", DE.Alpha1, "[0,80] °C"],
-        ["Motor Back", "Temp_Motor_2", "[0,80] °C", "EMS 1", DE.Alpha1, "[0,80] °C"],
-        ["", "", "", "EMS 2", DE.Alpha1, "[0,80] °C"],
-    ]
-
-    $: tableArr2 = [
-        ["HEMS A1", DE.Alpha1, "[-10,10] A", "HEMS A2", DE.Alpha1, "[-10,10] A"],
-        ["HEMS B1", DE.Alpha1, "[-10,10] A", "HEMS B2", DE.Alpha1, "[-10,10] A"],
-        ["HEMS C1", DE.Alpha1, "[-10,10] A", "HEMS C2", DE.Alpha1, "[-10,10] A"],
-        ["HEMS D1", DE.Alpha1, "[-10,10] A", "HEMS D2", DE.Alpha1, "[-10,10] A"],
-        ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
-    ]
+    $: imdWarningMessage = imdWarnings.filter((x, index) =>
+        ((($imdWarningStore.value >> index) & 1) == 1)
+    );
 
     async function sendSystemCheckMocks() {
         await invoke('send_command', {cmdName: "MockPtAck", val: 0}).then(() => {
@@ -189,6 +162,18 @@
                 <Tile bgToken={700} containerClass="col-span-2">
                     <div class="flex flex-wrap justify-between gap-4">
                         <div class="flex justify-between flex-col">
+                            <div class="flex gap-2 items-center">
+                                <span>Connection Status:</span>
+                                <div class="flex flex-row items-center gap-1">
+                                    {#if !$connectedToMainPCB}
+                                        <ConnectionSignalOff size={20}/>
+                                        <span>Not Connected</span>
+                                    {:else}
+                                        <ConnectionSignal size={20}/>
+                                        <span>Connected</span>
+                                    {/if}
+                                </div>
+                            </div>
                             <p>Velocity: {$velocity.value} m/s</p>
                             <p>Acceleration: // m/s²</p>
                             <p>Position: {$localization.value / 100} mm</p>
@@ -204,34 +189,9 @@
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
-                            <span>PT Controller Fault: {$ptcFault.value}</span>
-                            <span>IMD: &ltstatus&gt</span>
-                        </div>
-                    </div>
-                </Tile>
-<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
-<!--                    <Table titles={tableBatteryTitles} tableArr={tableBatteryVitals}/>-->
-<!--                </Tile>-->
-<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
-<!--                    <Table tableArr={tableTempsArr} titles={["Module", "Temp °C", "Safe range", "Module", "Temp °C", "Safe range"]}/>-->
-<!--                </Tile>-->
-<!--                <Tile containerClass="pt-2 pb-1 col-span-2" bgToken={800}>-->
-<!--                    <Table titles={["Datatype", "Value", "Safe range", "Datatype", "Value", "Safe range"]} tableArr={tableArr2}/>-->
-<!--                </Tile>-->
-
-                <Tile
-                    bgToken={700}
-                >
-                    <div class="flex gap-2 items-center">
-                        <span>Connection Status:</span>
-                        <div class="flex flex-row items-center gap-1">
-                            {#if !$connectedToMainPCB}
-                                <ConnectionSignalOff size={20}/>
-                                <span>Not Connected</span>
-                            {:else}
-                                <ConnectionSignal size={20}/>
-                                <span>Connected</span>
-                            {/if}
+                            <span>PT Controller Fault: {ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}</span>
+                            <span>IMD Status??: &ltstatus&gt</span>
+                            <span>IMD Warning: {imdWarnings.length === 0 ? "None" : imdWarningMessage.join(", ")}</span>
                         </div>
                     </div>
                 </Tile>
@@ -283,7 +243,9 @@
                             <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
                         {/if}
                         <Command cmd="RearmSDC" text="Rearm SDC" icon={RightPanelClose}/>
-                        {#if !$inStateLevitating}
+                        {#if $inStateAccelerating || $inStateBraking || $inStateLevitating}
+                            <Command cmd="LevitationOff" icon={StopLevitatingIcon}/>
+                        {:else}
                             <Command
                                 cmd="LevitationOn"
                                 icon={StartLevitatingIcon}
@@ -291,8 +253,6 @@
                                 dependencyMessage="The pod should be in the Demo state to start levitating!"
                                 dependencyTitle="Wrong State!"
                             />
-                        {:else}
-                            <Command cmd="LevitationOff" icon={StopLevitatingIcon}/>
                         {/if}
                         {#if !$inStateAccelerating}
                             <Command
@@ -311,7 +271,7 @@
                             <Command cmd="StopCharge" icon={StopOutline}/>
                         {/if}
                         <Command cmd="SystemReset" icon={Reset}/>
-                        <Command cmd="FaultFixed" />
+                        <Command cmd="FaultFixed" icon={Tools}/>
                     </div>
                 </Tile>
                 {#if $debugModeActive}
@@ -320,25 +280,24 @@
                             Pass System Check
                         </button>
                     </Tile>
-                    <span class="text-3xl col-span-full">Please try to use the FSM instead of these commands!!! Don't make Harry cry!</span>
                     <Tile bgToken={700} containerClass="col-span-2 bg-surface-800" heading="Propulsion FSM Update Commands" headingOnLeft={true}>
-                        <button on:mouseenter={() => {hovering_over_debug_commands = true}} on:mouseleave={() => {hovering_over_debug_commands = false}} disabled class="flex gap-4 flex-wrap">
+                        <div class="flex gap-4 flex-wrap">
                             <Command cmd="FSMUpdate" text="Initialization" val={200} className="py-3 bg-primary-500 text-surface-900"/>
                             <Command cmd="FSMUpdate" text="Idle" val={201}/>
                             <Command cmd="FSMUpdate" text="Running" val={202}/>
                             <Command cmd="FSMUpdate" text="Braking" val={203}/>
-                        </button>
+                        </div>
                     </Tile>
                     <Tile bgToken={700} containerClass="col-span-2 bg-surface-800" heading="Powertrain FSM Update Commands" headingOnLeft={true}>
-                        <button on:mouseenter={() => {hovering_over_debug_commands = true}} on:mouseleave={() => {hovering_over_debug_commands = false}} disabled  class="flex gap-4 flex-wrap">
+                        <div class="flex gap-4 flex-wrap">
                             <Command cmd="FSMUpdate" text="HV On" val={4} className="py-3 bg-primary-500 text-surface-900"/>
                             <Command cmd="FSMUpdate" text="Idle" val={11}/>
                             <Command cmd="FSMUpdate" text="Reset Fault from Precharge Fault" val={3}/>
-                        </button>
+                        </div>
                     </Tile>
-                {/if}
-                {#if hovering_over_debug_commands}
-                    <span>😭</span>
+<!--                    <Tile bgToken={700} containerClass="col-span-full">-->
+<!--                        <Table titles={tableBatteryTitles} tableArr={tableBatteryVitals}/>-->
+<!--                    </Tile>-->
                 {/if}
             </TileGrid>
         </div>

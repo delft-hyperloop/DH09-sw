@@ -3,6 +3,7 @@
   import StartLevitating from '$lib/components/StartLevitating.svelte';
   import StopLevitating from '$lib/components/StopLevitating.svelte';
   import type { SvelteComponent } from 'svelte';
+  import { DownToBottom } from 'carbon-icons-svelte';
 
   const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
   const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
@@ -15,8 +16,9 @@
         <div class="flex gap-x-4 col-span-full mb-2">
             <Command cmd="LevitationOn" icon={StartLevitatingIcon}/>
             <Command cmd="LevitationOff" icon={StopLevitatingIcon}/>
-            <Command cmd="vertical_0_current" text="Vertical 0 Current"/>
-            <Command cmd="vert_0_current_reset" text="Reset Vertical 0 Current"/>
+            <Command cmd="LeviDropdown" text="Dropdown" icon={DownToBottom}/>
+<!--            <Command cmd="vertical_0_current" text="Vertical 0 Current"/>-->
+<!--            <Command cmd="vert_0_current_reset" text="Reset Vertical 0 Current"/>-->
         </div>
         <Tile containerClass="col-span-2">
             <Chart title="HEMS Current" background="bg-surface-900" />

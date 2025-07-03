@@ -3,12 +3,12 @@
     import {
         HomeTab,
         ProceduresTab,
-        RunInitTab,
+        PropulsionTab,
         detailTabSet,
         LocationTab,
         LeviTab,
         PneumaticsTab,
-        BatteriesTab,
+        PowertrainTab,
         DebugTab,
         GrandDataDistributor,
         util,
@@ -29,14 +29,15 @@
     import { MODAL_SETTINGS } from '$lib/types';
     import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
     import { invoke } from '@tauri-apps/api/tauri';
+    import Localization from '$lib/components/Localization.svelte';
 
     let i = 0;
     let tabs = [
         {name: "Home", value: i++},
-        {name: "Run", value: i++},
-        {name: "Location", value: i++},
-        {name: "Batteries", value: i++},
+        {name: "Powertrain", value: i++},
         {name: "Levitation", value: i++},
+        {name: "Propulsion", value: i++},
+        {name: "Location", value: i++},
         {name: "Pneumatics", value: i++},
         {name: "Procedures", value: i++},
         {name: "Debug", value: i++}
@@ -328,13 +329,13 @@
                 {#if $detailTabSet === 0}
                     <HomeTab />
                 {:else if $detailTabSet === 1}
-                    <RunInitTab />
+                    <PowertrainTab />
                 {:else if $detailTabSet === 2}
-                    <LocationTab />
-                {:else if $detailTabSet === 3}
-                    <BatteriesTab />
-                {:else if $detailTabSet === 4}
                     <LeviTab />
+                {:else if $detailTabSet === 3}
+                    <PropulsionTab />
+                {:else if $detailTabSet === 4}
+                    <LocationTab />
                 {:else if $detailTabSet === 5}
                     <PneumaticsTab />
                 {:else if $detailTabSet === 6}

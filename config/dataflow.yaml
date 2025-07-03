@@ -526,11 +526,29 @@ message-processing:
         gs:
           conversion: 'gs_u8:u8'
       - datapoint:
-          name: 'PTCNonCriticalFault'
+          name: 'HVALState'
           id: 0x3A4
           store:
             default: 0
         getter: 'u8[1..2]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+      - datapoint:
+          name: 'IMDWarnings'
+          id: 0x3B
+          store:
+            default: 0
+        getter: 'u32[2..5]'
+        can-conversion: 'identity_u32:u32->u32'
+        gs:
+          conversion: 'gs_u32:u32'
+      - datapoint:
+          name: 'PTCErrors'
+          id: 0x3B1
+          store:
+            default: 0
+        getter: 'u8[5..6]'
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'

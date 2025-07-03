@@ -2,13 +2,14 @@
     import { onDestroy, onMount } from 'svelte';
     import { GrandDataDistributor } from '$lib';
     import {
-        connectedToMainPCB, inStateAccelerating,
-        inStateActive, inStateCharging,
+        inStateAccelerating,
+        inStateActive,
+        inStateCharging,
         inStateLevitating,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
-    import { inStateConnectedToGS, inStateDemo, inStateIdle } from '$lib/stores/state.js';
+    import { inStateBraking, inStateConnectedToGS, inStateDemo, inStateIdle } from '$lib/stores/state.js';
     import type { FsmState } from '$lib/types';
 
     let boot: FsmState = {
@@ -80,6 +81,7 @@
         inStateLevitating.set(index === levitating.index);
         inStateAccelerating.set(index === accelerating.index);
         inStateCharging.set(index === charging.index);
+        inStateBraking.set(index == braking.index);
 
         if (index === 9) {
             console.error("FSM in state 9!");

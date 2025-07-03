@@ -4,7 +4,6 @@ use core::fmt::Debug;
 use core::fmt::Formatter;
 
 use defmt::info;
-use defmt::Format;
 use embassy_stm32::gpio::Output;
 use embassy_time::Timer;
 use lib::EmergencyType;
@@ -13,7 +12,6 @@ use lib::EventReceiver;
 use lib::EventSender;
 use lib::States;
 use log::error;
-use lib::config::Command;
 use crate::entry_methods::enter_fault;
 use crate::CheckedSystem;
 use crate::CheckedSystems;

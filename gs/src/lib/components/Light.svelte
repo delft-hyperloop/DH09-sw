@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onDestroy } from 'svelte';
     import { GreenHVALTurnedOn, RedHVALTurnedOn } from '$lib/stores/state';
+    import { GrandDataDistributor } from '$lib';
 
     // True means the light will be green while false is red.
     export let innerClass: string = "";
@@ -22,6 +23,9 @@
     let timer: number = 200;
     let blinkInterval: NodeJS.Timeout | null = null;
 
+    let stores = GrandDataDistributor.getInstance().stores;
+    let hvalSTate = stores.getWritable("HVALState");
+
     function startBlinking() {
         if (blinkInterval) {
             clearTimeout(blinkInterval);
@@ -34,7 +38,7 @@
     }
 
     $: {
-        if ($RedHVALTurnedOn && !isGreen) {
+        if ($hvalSTate.value == 2 && !isGreen) { // red turned on
             startBlinking();
         } else if (!isGreen) {
             color = colorOff;
@@ -43,7 +47,7 @@
                 clearTimeout(blinkInterval);
             }
             blinkOn = true;
-        } else if ($GreenHVALTurnedOn) {
+        } else if ($hvalSTate.value == 1) { // green turned
             color = green;
             shadow = greenShadow;
             blinkOn = true;

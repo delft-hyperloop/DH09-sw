@@ -47,6 +47,7 @@ export const inStateAccelerating: Writable<boolean> = writable(false);
 export const inStateDemo: Writable<boolean> = writable(false);
 export const inStateConnectedToGS: Writable<boolean> = writable(false);
 export const inStateCharging: Writable<boolean> = writable(false);
+export const inStateBraking: Writable<boolean> = writable(false);
 
 export const overrideDependencies: Writable<boolean> = writable(false);
 export const usingTestTrack: Writable<boolean> = writable(true);

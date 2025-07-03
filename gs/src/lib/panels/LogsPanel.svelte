@@ -23,6 +23,8 @@
     let logsCountUpperLimit: number = 500;
     let logsCutAmount: number = 250;
 
+    let firstTrace: boolean = true;
+
     let colours = new Map([
       ['STATUS', 'text-surface-50'],
       ['WARNING', 'text-warning-400'],
@@ -45,12 +47,18 @@
               logs = logs.toSpliced(0, logsCutAmount);
 
           }
-          logs = [...logs, {message: event.payload, log_type, timestamp: Date.now().valueOf()}]
+          if (!event.payload.toLowerCase().includes("[trace]") || firstTrace && event.payload.toLowerCase().includes("[trace]")) {
+              logs = [...logs, {message: event.payload.split(';')[0], log_type: 'STATUS', timestamp: Date.now().valueOf()}]
+              firstTrace = false;
+          } else {
+              logs[logs.length - 1] = {message: event.payload.split(';')[0], log_type: 'STATUS', timestamp: Date.now().valueOf()};
+          }
       });
     }
 
     function clearLogs() {
         logs = []
+        firstTrace = true;
     }
 
     function toggleLogsVisibility() {

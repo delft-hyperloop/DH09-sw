@@ -56,8 +56,7 @@
     const localization = storeManager.getWritable("Localization");
     const velocity = storeManager.getWritable("Velocity");
     const ptcFaultStore = storeManager.getWritable("PTCErrors");
-    const imdWarningStore1 = storeManager.getWritable("IMDWarnings1");
-    const imdWarningStore2 = storeManager.getWritable("IMDWarnings2");
+    const imdWarningStore = storeManager.getWritable("IMDWarnings");
 
     const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
@@ -80,20 +79,12 @@
     };
 
     $: ptcFaultMessage = ptcErrorCodes.filter((x, index) =>
-        ((($ptcFaultStore.value >> index) & 1) == 1)
+        ((($ptcFaultStore.value >> index - 1) & 1) == 1)
     );
 
     $: imdWarningMessage = imdWarnings.filter((x, index) =>
-        ((((($imdWarningStore1.value >> 16) & $imdWarningStore2.value) >> index) & 1) == 1)
+        ((($imdWarningStore.value >> index - 1) & 1) == 1)
     );
-
-    imdWarningStore1.subscribe((store) => {
-        console.log(`imd warning store 1: ${store.value}`)
-    })
-
-    imdWarningStore2.subscribe((store) => {
-        console.log(`imd warning store 2: ${store.value}`)
-    })
 
     async function sendSystemCheckMocks() {
         await invoke('send_command', {cmdName: "MockPtAck", val: 0}).then(() => {

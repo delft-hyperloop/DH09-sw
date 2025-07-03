@@ -299,6 +299,8 @@ pub async fn forward_can2_messages_to_gs(
         // info!("Received CAN frame with ID: {}", id);
 
         let data = can_frame.payload();
+        
+        info!(">>>>>>>>>id: {:?}, data: {:?}", id, data);
 
         lib::config::parse_datapoints_can_2(id as u32, data, |dp| async move {
             gs_tx.send(PodToGsMessage { dp }).await;

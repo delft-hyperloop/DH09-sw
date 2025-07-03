@@ -535,7 +535,7 @@ message-processing:
         gs:
           conversion: 'gs_u8:u8'
       - datapoint:
-          name: 'IMDWarnings1'
+          name: 'IMDWarnings'
           id: 0x3B0
           store:
             default: 0
@@ -544,26 +544,17 @@ message-processing:
         gs:
           conversion: 'gs_u16:u16'
       - datapoint:
-          name: 'IMDWarnings2'
-          id: 0x3B2
+          name: 'PTCErrors'
+          id: 0x3B1
           store:
             default: 0
         getter: 'u8[4..5]'
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'
-      - datapoint:
-          name: 'PTCErrors'
-          id: 0x3B1
-          store:
-            default: 0
-        getter: 'u8[5..6]'
-        can-conversion: 'identity_u8:u8->u8'
-        gs:
-          conversion: 'gs_u8:u8'
   - name: 'BMSLog1'
     can:
-      id: 0x4E4
+      id: 0x4E5
       bus: can2
     # fsm:
     #   event: 'ShutDown'
@@ -640,7 +631,7 @@ message-processing:
           conversion: 'gs_2p_float:f32'
   - name: 'BMSLog2'
     can:
-      id: 0x4E5
+      id: 0x4E6
       bus: can2
     datapoint-conversion:
       - datapoint:
@@ -1376,9 +1367,73 @@ message-processing:
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'
-  - name: 'PtSystemCheckResponse'
+  - name: 'LVBMSLog1'
+    can:
+      id: 0x4E7
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'VHigh'
+          id: 0x600
+          store:
+            default: 0
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+      - datapoint:
+          name: 'VLow'
+          id: 0x601
+          store:
+            default: 0
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+      - datapoint:
+          name: 'THigh'
+          id: 0x602
+          store:
+            default: 0
+        getter: 'u16[4..6]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+      - datapoint:
+          name: 'TLow'
+          id: 0x603
+          store:
+            default: 0
+        getter: 'u16[6..8]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+  - name: 'LVBMSLog2'
     can:
       id: 0x4E8
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'VPackLowVoltage'
+          id: 0x604
+          store:
+            default: 0
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+      - datapoint:
+          name: 'IPackLowVoltage'
+          id: 0x605
+          store:
+            default: 0
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
+        gs:
+          conversion: 'gs_u16:u16'
+  - name: 'PtSystemCheckResponse'
+    can:
+      id: 0x4E9
       bus: can2
     datapoint-conversion:
       - datapoint:

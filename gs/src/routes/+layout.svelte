@@ -263,6 +263,7 @@
     // gdd stores registration
     // auto-generated with npm run generate:gs
 
+
     gdd.stores.registerStore<number>("TempMotorLeft0", 0, data => {
             const curr = Number(data);
             $chartStore.get("Motor Temperatures Left")!.addEntry(1, curr);
@@ -379,9 +380,7 @@
 
     gdd.stores.registerStore<number>("HVALState", 0);
 
-    gdd.stores.registerStore<number>("IMDWarnings1", 0);
-
-    gdd.stores.registerStore<number>("IMDWarnings2", 0);
+    gdd.stores.registerStore<number>("IMDWarnings", 0);
 
     gdd.stores.registerStore<number>("PTCErrors", 0);
 
@@ -656,6 +655,18 @@
     );
 
     gdd.stores.registerStore<number>("LeviSystemCheckResponse", 0);
+
+    gdd.stores.registerStore<number>("VHigh", 0);
+
+    gdd.stores.registerStore<number>("VLow", 0);
+
+    gdd.stores.registerStore<number>("THigh", 0);
+
+    gdd.stores.registerStore<number>("TLow", 0);
+
+    gdd.stores.registerStore<number>("VPackLowVoltage", 0);
+
+    gdd.stores.registerStore<number>("IPackLowVoltage", 0);
 
     gdd.stores.registerStore<number>("PtSystemCheckResponse", 0);
 

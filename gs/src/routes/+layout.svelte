@@ -378,7 +378,9 @@
 
     gdd.stores.registerStore<number>("HVALState", 0);
 
-    gdd.stores.registerStore<number>("IMDWarnings", 0);
+    gdd.stores.registerStore<number>("IMDWarnings1", 0);
+
+    gdd.stores.registerStore<number>("IMDWarnings2", 0);
 
     gdd.stores.registerStore<number>("PTCErrors", 0);
 

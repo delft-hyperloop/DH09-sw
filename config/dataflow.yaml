@@ -535,14 +535,23 @@ message-processing:
         gs:
           conversion: 'gs_u8:u8'
       - datapoint:
-          name: 'IMDWarnings'
-          id: 0x3B
+          name: 'IMDWarnings1'
+          id: 0x3B0
           store:
             default: 0
-        getter: 'u32[2..5]'
-        can-conversion: 'identity_u32:u32->u32'
+        getter: 'u16[2..4]'
+        can-conversion: 'identity_u16:u16->u16'
         gs:
-          conversion: 'gs_u32:u32'
+          conversion: 'gs_u16:u16'
+      - datapoint:
+          name: 'IMDWarnings2'
+          id: 0x3B2
+          store:
+            default: 0
+        getter: 'u8[4..5]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
       - datapoint:
           name: 'PTCErrors'
           id: 0x3B1

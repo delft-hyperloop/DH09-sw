@@ -56,7 +56,8 @@
     const localization = storeManager.getWritable("Localization");
     const velocity = storeManager.getWritable("Velocity");
     const ptcFaultStore = storeManager.getWritable("PTCErrors");
-    const imdWarningStore = storeManager.getWritable("IMDWarnings");
+    const imdWarningStore1 = storeManager.getWritable("IMDWarnings1");
+    const imdWarningStore2 = storeManager.getWritable("IMDWarnings2");
 
     const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
@@ -83,7 +84,7 @@
     );
 
     $: imdWarningMessage = imdWarnings.filter((x, index) =>
-        ((($imdWarningStore.value >> index) & 1) == 1)
+        ((((($imdWarningStore1.value >> 16) & $imdWarningStore2.value) >> index) & 1) == 1)
     );
 
     async function sendSystemCheckMocks() {
@@ -174,9 +175,9 @@
                                     {/if}
                                 </div>
                             </div>
-                            <p>Velocity: {$velocity.value} m/s</p>
-                            <p>Acceleration: // m/s²</p>
-                            <p>Position: {$localization.value / 100} mm</p>
+                            <span>Velocity: {$velocity.value} m/s</span>
+                            <span>Acceleration: // m/s²</span>
+                            <span>Position: {$localization.value / 100} mm</span>
                         </div>
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
                             <span>LV:</span>

@@ -29,7 +29,6 @@
     import { MODAL_SETTINGS } from '$lib/types';
     import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
     import { invoke } from '@tauri-apps/api/tauri';
-    import Localization from '$lib/components/Localization.svelte';
 
     let i = 0;
     let tabs = [

@@ -143,6 +143,18 @@ label = "ResettingMainPCB"
 colour = "green"
 
 [[Info]]
+label = "Propulsion1SystemCheckSuccess"
+colour = "green"
+
+[[Info]]
+label = "Propulsion2SystemCheckSuccess"
+colour = "green"
+
+[[Info]]
+label = "LeviSystemCheckSuccess"
+colour = "green"
+
+[[Info]]
 label = "LeviProgramStarted"
 colour = "green"
 

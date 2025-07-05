@@ -31,12 +31,9 @@ pub async fn connect_main(
     let (connection, x) = connection.accept().await?;
     message_transmitter.send(Message::Warning(format!("connected with {:?}", x)))?;
     message_transmitter.send(Message::Status(Info::ConnectionEstablished))?;
-    let (x, y) = process_stream(
-        connection,
-        message_transmitter.clone(),
-        command_receiver.resubscribe(),
-    )
-    .await?;
+    let (x, y) =
+        process_stream(connection, message_transmitter.clone(), command_receiver.resubscribe())
+            .await?;
 
     x.await?;
     y.await?;

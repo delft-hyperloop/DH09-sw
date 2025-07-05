@@ -410,14 +410,14 @@
 
     gdd.stores.registerStore<number>("PTCErrors", 0);
 
-    gdd.stores.registerStore<number>("VHigh", 0, data => {
+    gdd.stores.registerStore<number>("HvVHigh", 0, data => {
             const curr = Number(data);
             $chartStore.get("BMS Voltages")!.addEntry(1, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("VLow", 0, data => {
+    gdd.stores.registerStore<number>("HvVLow", 0, data => {
             const curr = Number(data);
             $chartStore.get("BMS Voltages")!.addEntry(2, curr);
             return curr;
@@ -697,14 +697,14 @@
 
     gdd.stores.registerStore<number>("LeviSystemCheckResponse", 0);
 
-    gdd.stores.registerStore<number>("VHigh", 0, data => {
+    gdd.stores.registerStore<number>("LvVHigh", 0, data => {
             const curr = Number(data);
             $chartStore.get("BMS Voltages")!.addEntry(3, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("VLow", 0, data => {
+    gdd.stores.registerStore<number>("LvVLow", 0, data => {
             const curr = Number(data);
             $chartStore.get("BMS Voltages")!.addEntry(4, curr);
             return curr;
@@ -725,14 +725,14 @@
         }
     );
 
-    gdd.stores.registerStore<number>("Isolation Resistance", 0, data => {
+    gdd.stores.registerStore<number>("IsolationResistance", 0, data => {
             const curr = Number(data);
             $chartStore.get("Isolation Resistance")!.addEntry(1, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("Bus Current", 0, data => {
+    gdd.stores.registerStore<number>("BusCurrent", 0, data => {
             const curr = Number(data);
             $chartStore.get("Bus Current")!.addEntry(1, curr);
             return curr;

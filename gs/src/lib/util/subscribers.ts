@@ -29,22 +29,6 @@ export function registerSubscribers() {
     const heartbeat = storeManager.getWritable("FrontendHeartbeating");
     const emergency = storeManager.getWritable("Emergency");
 
-    const systemCheckLabels = [
-        "Levi",
-        "Prop 1",
-        "Prop 2",
-    ]
-    const systemCheckSuccesses = [
-        storeManager.getWritable("LeviSystemCheckSuccess"),
-        storeManager.getWritable("Prop1SystemCheckSuccess"),
-        storeManager.getWritable("Prop2SystemCheckSuccess"),
-    ]
-    const systemCheckFailures = [
-        storeManager.getWritable("LeviSystemCheckFailure"),
-        storeManager.getWritable("Prop1SystemCheckFailure"),
-        storeManager.getWritable("Prop2SystemCheckFailure"),
-    ]
-
     fsmTransitionFail.subscribe(async (store) => {
         let state: string = await invoke('get_fsm_state_by_index', { index: store.value });
         if (state !== "UnknownState") {
@@ -57,29 +41,6 @@ export function registerSubscribers() {
             util.log(`Transition to state ${state} failed!`, EventChannel.ERROR);
         }
     });
-
-    systemCheckSuccesses.forEach((store, index) => {
-        store.subscribe((value) => {
-            if (value.value !== 0) {
-                toastStore.trigger({
-                    message: `${systemCheckLabels[index]} System Check Passed`,
-                    background: `bg-surface-600`,
-                    autohide: true,
-                });
-            }
-        })
-    });
-    systemCheckFailures.forEach((store, index) => {
-        store.subscribe((value) => {
-            if (value.value !== 0) {
-                toastStore.trigger({
-                    message: `${systemCheckLabels[index]} System Check Failed!`,
-                    background: 'bg-error-400',
-                    autohide: false,
-                });
-            }
-        })
-    })
 
     heartbeat.subscribe(() => {
         lastHeartbeatTimestamp.set(Date.now());
@@ -265,7 +226,6 @@ export function registerSubscribers() {
 
     emergency.subscribe((store) => {
         if (store.value !== 0 && !get(emergencyModalActive)) {
-            console.log("Great!");
             emergencyModalActive.set(true);
             const sources: String[] = [
                 "General",

@@ -45,7 +45,6 @@
       return listen(channel, (event: {payload: string}) => {
           if (logs.length > logsCountUpperLimit) {
               logs = logs.toSpliced(0, logsCutAmount);
-
           }
           if (!event.payload.toLowerCase().includes("[trace]") || firstTrace && event.payload.toLowerCase().includes("[trace]")) {
               logs = [...logs, {message: event.payload.split(';')[0], log_type: 'STATUS', timestamp: Date.now().valueOf()}]
@@ -153,17 +152,20 @@
                 let background = `bg-surface-600`;
                 let autohide = true;
 
-                if (event.payload.toLowerCase().includes("failure")) {
-                    autohide = false;
-                    background = 'bg-error-400';
-                }
-
                 toastStore.trigger({
                     message: event.payload,
                     background,
                     autohide
                 })
             }
+        })
+
+        unlistens[7] = await listen(EventChannel.ERROR, (event: {payload: string}) => {
+            toastStore.trigger({
+                autohide: false,
+                message: event.payload,
+                background: 'bg-error-400',
+            })
         })
 
         logContainer.addEventListener('scroll', () => {

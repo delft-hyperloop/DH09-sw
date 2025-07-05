@@ -18,7 +18,6 @@ pub async fn handle_incoming_data(
     msg_sender.send(Message::Data(process(&data)))?;
 
     match data.datatype {
-        // TODO: Add 'events' here as datapoints, but probably generated in config
         Datatype::CommandHash => {
             if data.value != COMMAND_HASH {
                 msg_sender.send(Message::Error("Command hash mismatch".to_string()))?;
@@ -45,6 +44,24 @@ pub async fn handle_incoming_data(
         },
         Datatype::ResetFSM => {
             msg_sender.send(Message::Status(Info::ResettingMainPCB))?;
+        },
+        Datatype::Prop1SystemCheckSuccess => {
+            msg_sender.send(Message::Status(Info::Propulsion1SystemCheckSuccess))?;
+        },
+        Datatype::Prop2SystemCheckSuccess => {
+            msg_sender.send(Message::Status(Info::Propulsion2SystemCheckSuccess))?;
+        },
+        Datatype::LeviSystemCheckSuccess => {
+            msg_sender.send(Message::Status(Info::LeviSystemCheckSuccess))?;
+        },
+        Datatype::LeviSystemCheckFailure => {
+            msg_sender.send(Message::Error("Levi System Check Failure".to_string()))?;
+        }
+        Datatype::Prop1SystemCheckFailure => {
+            msg_sender.send(Message::Error("Prop 1 System Check Failure".to_string()))?;
+        }
+        Datatype::Prop2SystemCheckFailure => {
+            msg_sender.send(Message::Error("Prop 2 System Check Failure".to_string()))?;
         }
         _ => {},
     }

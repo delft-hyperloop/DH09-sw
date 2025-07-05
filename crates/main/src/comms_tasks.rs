@@ -96,6 +96,10 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::MockProp1Ack(_) => Event::Prop1SystemCheckSuccess,
         Command::MockProp2Ack(_) => Event::Prop2SystemCheckSuccess,
         Command::MockHVOn(_) => Event::HVOnAck,
+        
+        Command::FailLeviSystemCheck(_) => Event::LeviSystemCheckFailure,
+        Command::FailProp1SystemCheck(_) => Event::Prop1SystemCheckFailure,
+        Command::FailProp2SystemCheck(_) => Event::Prop2SystemCheckFailure,
 
         _ => Event::NoEvent,
     }
@@ -169,10 +173,12 @@ pub async fn forward_fsm_events_to_can2(
                     .await
             }
             fsm::Event::Discharge => {
-                can_tx.send(lib::can::can2::CanEnvelope::new_with_id(
-                    Command::StopHV(0).to_id(),
-                    &[0],
-                )).await
+                can_tx
+                    .send(lib::can::can2::CanEnvelope::new_with_id(
+                        Command::StopHV(0).to_id(),
+                        &[0],
+                    ))
+                    .await
             }
             _ => {}
         }
@@ -424,7 +430,7 @@ pub async fn forward_fsm_to_gs(
                     .send(PodToGsMessage {
                         dp: Datapoint::new(
                             Datatype::Prop2SystemCheckFailure,
-                            prop2_failure,
+                            0, // TODO: this to all of them
                             Instant::now().as_ticks(),
                         ),
                     })
@@ -432,13 +438,11 @@ pub async fn forward_fsm_to_gs(
                 prop2_failure = prop2_failure % 100 + 1;
             }
             Event::ResetFSM => {
-                gs_tx.send(PodToGsMessage{
-                    dp: Datapoint::new(
-                        Datatype::ResetFSM,
-                        1,
-                        Instant::now().as_ticks(),
-                    )
-                }).await;
+                gs_tx
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(Datatype::ResetFSM, 1, Instant::now().as_ticks()),
+                    })
+                    .await;
             }
             _ => {}
         }

@@ -237,18 +237,44 @@
     $chartStore.set('Temperatures EMS', emsTempChart);
     leviCharts.push('Temperatures EMS');
 
-    let BMSVoltageHighChart = new PlotBuffer(500, 60000, [-500, 500], true, "BMS Voltage High");
-    $chartStore.set("BMS Voltage High", BMSVoltageHighChart);
-    powertrainCharts.push("BMS Voltage High");
+    let isolationChart = new PlotBuffer(500, 60000, [-500, 500], true, "Isolation Resistance");
+    $chartStore.set("Isolation Resistance", isolationChart);
+    powertrainCharts.push("Isolation Resistance");
 
-    let BMSVoltageLowChart = new PlotBuffer(500, 60000, [-500, 500], true, "BSM Voltage Low");
-    $chartStore.set("BMS Voltage Low", BMSVoltageLowChart);
-    powertrainCharts.push("BMS Voltage Low");
+    let busCurrentChart = new PlotBuffer(500, 60000, [-500, 500], true, "Bus Current");
+    busCurrentChart.addSeries(StrokePresets.blue("HV Pack Current"));
+    $chartStore.set("Bus Current", busCurrentChart);
+    powertrainCharts.push("Bus Current");
 
-    let BMSVoltageTempsChart = new PlotBuffer(500, 60000, [-500, 500], true, "Temp High");
-    BMSVoltageTempsChart.addSeries(StrokePresets.blue("Temp Low"));
-    $chartStore.set("BMS Temps", BMSVoltageTempsChart);
-    powertrainCharts.push("BMS Temps");
+    let bmsTempsChart = new PlotBuffer(500, 60000, [-500, 500], true, "HV Highest Temperature");
+    bmsTempsChart.addSeries(StrokePresets.blue("HV Lowest Temperatures"));
+    bmsTempsChart.addSeries(StrokePresets.theoretical("LV Highest Temperature"));
+    bmsTempsChart.addSeries(StrokePresets.hyperLoopGreen("LV Lowest Temperature"));
+    $chartStore.set("BMS Temperatures", bmsTempsChart);
+    powertrainCharts.push("BMS Temperatures");
+
+    let bmsVoltagesChart = new PlotBuffer(500, 60000, [-500, 500], true, "HV Highest Voltage");
+    bmsVoltagesChart.addSeries(StrokePresets.blue("HV Lowest Voltage"));
+    bmsVoltagesChart.addSeries(StrokePresets.theoretical("LV Highest Voltage"));
+    bmsVoltagesChart.addSeries(StrokePresets.hyperLoopGreen("LV Lowest Voltage"));
+    $chartStore.set("BMS Voltages", bmsVoltagesChart);
+    powertrainCharts.push("BMS Voltages");
+
+    let hvPackVoltageChart = new PlotBuffer(500, 60000, [-500, 500], true, "HV Pack Voltage");
+    $chartStore.set("HV Pack Voltage", hvPackVoltageChart);
+    powertrainCharts.push("HV Pack Voltage");
+
+    let lvPackVoltageChart = new PlotBuffer(500, 60000, [-500, 500], true, "LV Pack Voltage");
+    $chartStore.set("LV Pack Voltage", lvPackVoltageChart);
+    powertrainCharts.push("LV Pack Voltage");
+
+    let lvPackCurrentChart = new PlotBuffer(500, 60000, [-500, 500], true, "LV Pack Current");
+    $chartStore.set("LV Pack Current", lvPackCurrentChart);
+    powertrainCharts.push("LV Pack Current");
+
+    let dcLinkVoltageChart = new PlotBuffer(500, 60000, [-500, 500], true, "DC Link Voltage");
+    $chartStore.set("DC Link Voltage", dcLinkVoltageChart);
+    powertrainCharts.push("DC Link Voltage");
 
     leviChartStore.set(leviCharts);
     propChartStore.set(propCharts);
@@ -384,39 +410,54 @@
 
     gdd.stores.registerStore<number>("PTCErrors", 0);
 
-    gdd.stores.registerStore<number>("BMSVoltageHigh", 0, data => {
+    gdd.stores.registerStore<number>("VHigh", 0, data => {
             const curr = Number(data);
-            $chartStore.get("BMS Voltage High")!.addEntry(1, curr);
+            $chartStore.get("BMS Voltages")!.addEntry(1, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("BMSVoltageLow", 0, data => {
+    gdd.stores.registerStore<number>("VLow", 0, data => {
             const curr = Number(data);
-            $chartStore.get("BMS Voltage Low")!.addEntry(1, curr);
+            $chartStore.get("BMS Voltages")!.addEntry(2, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("BMSTemperatureHigh", 0, data => {
             const curr = Number(data);
-            $chartStore.get("BMS Temps")!.addEntry(1, curr);
+            $chartStore.get("BMS Temperatures")!.addEntry(1, curr);
             return curr;
         }
     );
 
     gdd.stores.registerStore<number>("BMSTemperatureLow", 0, data => {
             const curr = Number(data);
-            $chartStore.get("BMS Temps")!.addEntry(2, curr);
+            $chartStore.get("BMS Temperatures")!.addEntry(2, curr);
             return curr;
         }
     );
 
-    gdd.stores.registerStore<number>("VPack", 0);
+    gdd.stores.registerStore<number>("VPack", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("HV Pack Voltage")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("IPack", 0);
+    gdd.stores.registerStore<number>("IPack", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Bus Current")!.addEntry(2, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("VDCLink", 0);
+    gdd.stores.registerStore<number>("VDCLink", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("DC Link Voltage")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
     gdd.stores.registerStore<number>("TempRangeStart", 0);
 
@@ -656,17 +697,61 @@
 
     gdd.stores.registerStore<number>("LeviSystemCheckResponse", 0);
 
-    gdd.stores.registerStore<number>("VHigh", 0);
+    gdd.stores.registerStore<number>("VHigh", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Voltages")!.addEntry(3, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("VLow", 0);
+    gdd.stores.registerStore<number>("VLow", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Voltages")!.addEntry(4, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("THigh", 0);
+    gdd.stores.registerStore<number>("THigh", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Temperatures")!.addEntry(3, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("TLow", 0);
+    gdd.stores.registerStore<number>("TLow", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("BMS Temperatures")!.addEntry(4, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("VPackLowVoltage", 0);
+    gdd.stores.registerStore<number>("Isolation Resistance", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Isolation Resistance")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
-    gdd.stores.registerStore<number>("IPackLowVoltage", 0);
+    gdd.stores.registerStore<number>("Bus Current", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Bus Current")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("VPackLowVoltage", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("LV Pack Voltage")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("IPackLowVoltage", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("LV Pack Current")!.addEntry(1, curr);
+            return curr;
+        }
+    );
 
     gdd.stores.registerStore<number>("PtSystemCheckResponse", 0);
 

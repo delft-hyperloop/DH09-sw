@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getModalStore, getToastStore, Tab, TabGroup } from '@skeletonlabs/skeleton';
+    import { Tab, TabGroup } from '@skeletonlabs/skeleton';
     import {
         HomeTab,
         ProceduresTab,
@@ -10,24 +10,11 @@
         PneumaticsTab,
         PowertrainTab,
         DebugTab,
-        GrandDataDistributor,
-        util,
-        EventChannel,
     } from '$lib';
     import {
-        debugModeActive, emergencyModalActive,
-        emsTempsAcknowledged,
-        hemsTempsAcknowledged,
-        leftMotorTempsAcknowledged,
+        debugModeActive,
         logsPanelSize,
-        propEmergency1Acknowledged,
-        propEmergency2Acknowledged,
-        propInitFault1Acknowledged,
-        propInitFault2Acknowledged,
-        rightMotorTempsAcknowledged,
     } from '$lib/stores/state';
-    import { MODAL_SETTINGS } from '$lib/types';
-    import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
 
     let i = 0;
     let tabs = [

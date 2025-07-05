@@ -560,14 +560,14 @@ message-processing:
     #   event: 'ShutDown'
     datapoint-conversion:
       - datapoint:
-          name: 'BMSVoltageHigh'
+          name: 'HvVHigh'
           id: 0x3A1
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("BMS Voltage High")!.addEntry(1, curr);
+                  $chartStore.get("BMS Voltages")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'u16[0..2]'
@@ -579,14 +579,14 @@ message-processing:
           upper: { warn: 360, err: 420 }
           lower: { warn: 280, err: 270 }
       - datapoint:
-          name: 'BMSVoltageLow'
+          name: 'HvVLow'
           id: 0x19D
           store:
             default: 0
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("BMS Voltage Low")!.addEntry(1, curr);
+                  $chartStore.get("BMS Voltages")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'u16[2..4]'
@@ -605,7 +605,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("BMS Temps")!.addEntry(1, curr);
+                  $chartStore.get("BMS Temperatures")!.addEntry(1, curr);
                   return curr;
               }
         getter: 'u16[4..6]'
@@ -621,7 +621,7 @@ message-processing:
             callback: |
               data => {
                   const curr = Number(data);
-                  $chartStore.get("BMS Temps")!.addEntry(2, curr);
+                  $chartStore.get("BMS Temperatures")!.addEntry(2, curr);
                   return curr;
               }
         getter: 'u16[6..8]'
@@ -639,6 +639,12 @@ message-processing:
           id: 0x3A5
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("HV Pack Voltage")!.addEntry(1, curr);
+                  return curr;
+              }
         getter: 'u16[0..2]'
         can-conversion: 'decode_bms_voltage:u16->f32'
         gs:
@@ -652,6 +658,12 @@ message-processing:
           id: 0x3A6
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Bus Current")!.addEntry(2, curr);
+                  return curr;
+              }
         getter: 'u16[2..4]'
         can-conversion: 'decode_bms_voltage:u16->f32'
         gs:
@@ -665,6 +677,12 @@ message-processing:
           id: 0x3A7
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("DC Link Voltage")!.addEntry(1, curr);
+                  return curr;
+              }
         getter: 'u16[4..6]'
         can-conversion: 'decode_bms_voltage:u16->f32'
         display-units: 'V'
@@ -1373,19 +1391,31 @@ message-processing:
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'VHigh'
+          name: 'LvVHigh'
           id: 0x600
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("BMS Voltages")!.addEntry(3, curr);
+                  return curr;
+              }
         getter: 'u16[0..2]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
       - datapoint:
-          name: 'VLow'
+          name: 'LvVLow'
           id: 0x601
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("BMS Voltages")!.addEntry(4, curr);
+                  return curr;
+              }
         getter: 'u16[2..4]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
@@ -1395,6 +1425,12 @@ message-processing:
           id: 0x602
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("BMS Temperatures")!.addEntry(3, curr);
+                  return curr;
+              }
         getter: 'u16[4..6]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
@@ -1404,10 +1440,53 @@ message-processing:
           id: 0x603
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("BMS Temperatures")!.addEntry(4, curr);
+                  return curr;
+              }
         getter: 'u16[6..8]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
+  - name: "PtIsoResistanceBusCurrent"
+    can:
+      id: 0x4E4
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'IsolationResistance'
+          id: 0x610
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Isolation Resistance")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        display-units: 'kOhm'
+        gs:
+          conversion: 'gs_u16:u16'
+      - datapoint:
+          name: 'BusCurrent'
+          id: 0x611
+          store:
+            default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("Bus Current")!.addEntry(1, curr);
+                  return curr;
+              }
+        getter: 'i32[2..6]'
+        can-conversion: 'identity_i32:i32->i32'
+        display-units: 'mA'
+        gs:
+          conversion: 'gs_i32:i32'
   - name: 'LVBMSLog2'
     can:
       id: 0x4E8
@@ -1418,6 +1497,12 @@ message-processing:
           id: 0x604
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("LV Pack Voltage")!.addEntry(1, curr);
+                  return curr;
+              }
         getter: 'u16[0..2]'
         can-conversion: 'identity_u16:u16->u16'
         gs:
@@ -1427,6 +1512,12 @@ message-processing:
           id: 0x605
           store:
             default: 0
+            callback: |
+              data => {
+                  const curr = Number(data);
+                  $chartStore.get("LV Pack Current")!.addEntry(1, curr);
+                  return curr;
+              }
         getter: 'u16[2..4]'
         can-conversion: 'identity_u16:u16->u16'
         gs:

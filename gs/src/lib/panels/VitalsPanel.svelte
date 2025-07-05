@@ -49,8 +49,8 @@
     let width: number;
 
     const storeManager = GrandDataDistributor.getInstance().stores;
-    const lvBattery = storeManager.getWritable("BMSVoltageLow");
-    const hvBattery = storeManager.getWritable("BMSVoltageHigh");
+    // const lvBattery = storeManager.getWritable("BMSVoltageLow");
+    // const hvBattery = storeManager.getWritable("BMSVoltageHigh");
     const fsmState = storeManager.getWritable("FSMState");
     const ptcState = storeManager.getWritable("PTCState");
     const localization = storeManager.getWritable("Localization");
@@ -149,8 +149,8 @@
             </button>
             <span style="writing-mode: vertical-lr" class="font-medium">Vitals Panel</span>
             <div class="flex flex-col gap-4">
-                <Battery fill="#3b669c" orientation="vertical" height={55} perc={Number($lvBattery.value)}/>
-                <Battery fill="#723f9c" orientation="vertical" height={55} perc={Number($hvBattery.value)}/>
+<!--                <Battery fill="#3b669c" orientation="vertical" height={55} perc={Number($lvBattery.value)}/>-->
+<!--                <Battery fill="#723f9c" orientation="vertical" height={55} perc={Number($hvBattery.value)}/>-->
             </div>
         </div>
     {:else}
@@ -180,12 +180,12 @@
                         </div>
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
                             <span>LV:</span>
-                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>
-                            <span>Total: <Store datatype="BMSVoltageLow" /></span>
+<!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>-->
+<!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
 
                             <span>HV:</span>
-                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
-                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>
+<!--                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>-->
+<!--                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>-->
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>PT Controller State: {ptcStates[$ptcState.value]}</span>

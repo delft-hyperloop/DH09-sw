@@ -200,8 +200,8 @@ pub async fn forward_can2_messages_to_fsm(
         };
 
         let id = match envelope.id() {
-            Id::Extended(_e) => todo!("Nuh-uh"),
-            Id::Standard(s) => s.as_raw(),
+            Id::Extended(e) => e.as_raw(),
+            Id::Standard(s) => s.as_raw() as u32,
         };
 
         let payload = envelope.payload();
@@ -222,7 +222,7 @@ pub async fn forward_can2_messages_to_fsm(
 /// Matches a CAN ID from the received data to an event for the FSM. This is
 /// different to the method in `config.rs` because it returns an event based on
 /// the payload or an emergency which also requires the type of emergency.
-fn match_can_id_to_event(id: u16, payload: &[u8]) -> Event {
+fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
     match id {
         // If it gets a ptc logs message from the powertrain controller with state HV
         // on, send ack to fsm
@@ -292,17 +292,13 @@ pub async fn forward_can2_messages_to_gs(
     loop {
         let can_frame = can_rx.next_message_pure().await;
         let id = match can_frame.id() {
-            Id::Extended(_extended_id) => todo!("Nuh-uh"),
-            Id::Standard(id) => id.as_raw(),
+            Id::Extended(extended_id) => extended_id.as_raw(),
+            Id::Standard(id) => id.as_raw() as u32,
         };
 
-        // info!("Received CAN frame with ID: {}", id);
-
         let data = can_frame.payload();
-        
-        info!(">>>>>>>>>id: {:?}, data: {:?}", id, data);
 
-        lib::config::parse_datapoints_can_2(id as u32, data, |dp| async move {
+        lib::config::parse_datapoints_can_2(id, data, |dp| async move {
             gs_tx.send(PodToGsMessage { dp }).await;
         })
         .await;
@@ -450,7 +446,7 @@ pub async fn log_can2_on_gs(
         let id = match can_frame.id() {
             Id::Standard(s) => s.as_raw() as u32,
             Id::Extended(e) => {
-                warn!("Received extended CAN ID on can1->gs: {}", e.as_raw());
+                warn!("Received extended CAN ID on can2 -> gs: {}", e.as_raw());
                 continue;
             }
         };

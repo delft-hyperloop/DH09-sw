@@ -49,12 +49,8 @@
     let width: number;
 
     const storeManager = GrandDataDistributor.getInstance().stores;
-    // const lvBattery = storeManager.getWritable("BMSVoltageLow");
-    // const hvBattery = storeManager.getWritable("BMSVoltageHigh");
     const fsmState = storeManager.getWritable("FSMState");
     const ptcState = storeManager.getWritable("PTCState");
-    const localization = storeManager.getWritable("Localization");
-    const velocity = storeManager.getWritable("Velocity");
     const ptcFaultStore = storeManager.getWritable("PTCErrors");
     const imdWarningStore = storeManager.getWritable("IMDWarnings");
 
@@ -174,23 +170,25 @@
                                     {/if}
                                 </div>
                             </div>
-                            <span>Velocity: {$velocity.value} m/s</span>
-                            <span>Acceleration: // m/s²</span>
-                            <span>Position: {$localization.value / 100} mm</span>
+                            <span>Velocity: <Store datatype="Velocity"/> m/s</span>
+                            <span>Position: <Store datatype="Localization" dataModifier={0.01}/></span>
                         </div>
                         <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
                             <span>LV:</span>
 <!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>-->
 <!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
+                            <span>Total: TBD</span>
+                            <Battery fill="#3b669c" orientation="horizontal" perc={0}/>
 
                             <span>HV:</span>
 <!--                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>-->
 <!--                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>-->
+                            <Battery fill="#723f9c" orientation="horizontal" perc={0}/>
+                            <span>Total: TBD</span>
                         </div>
                         <div class="flex flex-col gap-4">
                             <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
                             <span>PT Controller Fault: {ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}</span>
-                            <span>IMD Status??: &ltstatus&gt</span>
                             <span>IMD Warning: {imdWarnings.length === 0 ? "None" : imdWarningMessage.join(", ")}</span>
                         </div>
                     </div>

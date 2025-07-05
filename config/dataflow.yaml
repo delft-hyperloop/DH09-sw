@@ -747,7 +747,7 @@ message-processing:
               }
         getter: 'i16[4..6]'
         can-conversion: 'identity_i16:i16->i16'
-        display-units: 'mm'
+        display-units: 'm/s'
         gs:
           conversion: 'gs_i16:i16'
   - name: 'PPInitFault1'

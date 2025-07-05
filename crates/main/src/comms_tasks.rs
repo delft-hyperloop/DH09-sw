@@ -211,7 +211,7 @@ pub async fn forward_can2_messages_to_fsm(
             event_sender.send(event).await;
         }
 
-        let fsm_event = lib::config::event_for_can_2_id(id as u32);
+        let fsm_event = lib::config::event_for_can_2_id(id);
 
         if fsm_event != fsm::Event::NoEvent {
             event_sender.send(fsm_event).await;

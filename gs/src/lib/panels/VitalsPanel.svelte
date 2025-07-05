@@ -22,6 +22,7 @@
         inStateLevitating,
         showcaseStateCounter,
         showcasingStates,
+        usingTestTrack,
     } from '$lib/stores/state';
     import {
         Activity,
@@ -116,6 +117,9 @@
         ["EMS AB", DE.Alpha1, "[-10,10] A", "EMS CD", DE.Alpha1, "[-10,10] A"],
     ]
 
+    $: positionSafeRange = $usingTestTrack ? '[0, 15000] mm' : '[0, 100000] mm';
+    $: trackName = $usingTestTrack ? 'Test Track' : 'EHC Track';
+
     async function sendSystemCheckMocks() {
         await invoke('send_command', {cmdName: "MockPtAck", val: 0}).then(() => {
             console.log(`Command MockPtAck sent`);
@@ -189,6 +193,9 @@
                     <Localization showLabels={true}/>
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
+                    <div class="flex flex-col w-full mb-2">
+                        <span class="text-lg font-semibold text-primary-400">Current Track: {trackName}</span>
+                    </div>
                     <div class="flex flex-row justify-between items-start w-full">
                         <!-- Vitals table left: 2x2 grid -->
                         <div class="grid grid-cols-2 gap-x-8 gap-y-2">
@@ -198,7 +205,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <span>Position: <span class="font-mono inline"><Store datatype="Localization" /></span></span>
-                                <span class="text-xs text-gray-400">Safe range: [MIN, MAX] mm</span>
+                                <span class="text-xs text-gray-400">Safe range: {positionSafeRange}</span>
                             </div>
                             <div class="flex flex-col">
                                 <span>LV Temp High: <span class="font-mono inline"><Store datatype="BMSTemperatureLow" /></span></span>

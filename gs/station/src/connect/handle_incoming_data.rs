@@ -20,24 +20,21 @@ pub async fn handle_incoming_data(
     match data.datatype {
         Datatype::CommandHash => {
             if data.value != COMMAND_HASH {
-                msg_sender.send(Message::Error("Command hash mismatch".to_string()))?;
-                msg_sender.send(Message::Status(Info::CommandHashFailed))?;
+                msg_sender.send(Message::Error("Command Hash Mismatch".to_string()))?;
             } else {
                 msg_sender.send(Message::Status(Info::CommandHashPassed))?;
             }
         },
         Datatype::DataHash => {
             if data.value != DATA_HASH {
-                msg_sender.send(Message::Error("Data hash mismatch".to_string()))?;
-                msg_sender.send(Message::Status(Info::DataHashFailed))?;
+                msg_sender.send(Message::Error("Data Hash Mismatch".to_string()))?;
             } else {
                 msg_sender.send(Message::Status(Info::DataHashPassed))?;
             }
         },
         Datatype::ConfigHash => {
             if data.value != CONFIG_HASH {
-                msg_sender.send(Message::Error("Config hash mismatch".to_string()))?;
-                msg_sender.send(Message::Status(Info::ConfigHashFailed))?;
+                msg_sender.send(Message::Error("Config Hash Mismatch".to_string()))?;
             } else {
                 msg_sender.send(Message::Status(Info::ConfigHashPassed))?;
             }

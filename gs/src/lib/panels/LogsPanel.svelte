@@ -69,13 +69,6 @@
         }
     }
 
-    let connectionClosedMessages = [
-        "ConnectionClosedByClient",
-        "ConnectionClosedByServer",
-        "ConnectionDropped",
-        "FailedToReadFromConnection",
-    ];
-
     onMount(async () => {
         unlistens[0] = await registerChannel(EventChannel.INFO, 'INFO');
 
@@ -95,13 +88,15 @@
 
             if (message[0].toLowerCase().includes("failed") || message[0].toLowerCase().includes("failure")) {
                 toastStore.trigger({
-                    message: message[0],
-                    background: 'bg-error-400',
+                    message: message[0].split(":")[1].replace(/([A-Z])/g, ' $1').trim(),
+                    background: 'bg-surface-400',
                     autohide: false,
                 });
             } else {
+                let msg = message[0].split(":")[1]
+
                 toastStore.trigger({
-                    message: message[0],
+                    message: msg.replace(/([A-Z])/g, ' $1').trim(),
                     background: `bg-surface-600` || 'bg-surface-600',
                 });
             }
@@ -149,23 +144,22 @@
 
         unlistens[6] = await listen(EventChannel.INFO, async (event: {payload: string}) => {
             if (event.payload.toLowerCase().includes("systemcheck")) {
-                let background = `bg-surface-600`;
-                let autohide = true;
-
                 toastStore.trigger({
                     message: event.payload,
-                    background,
-                    autohide
+                    background: `bg-surface-600`,
+                    autohide: true
                 })
             }
         })
 
         unlistens[7] = await listen(EventChannel.ERROR, (event: {payload: string}) => {
-            toastStore.trigger({
-                autohide: false,
-                message: event.payload,
-                background: 'bg-error-400',
-            })
+            if (!event.payload.includes("Error reading from socket:")) {
+                toastStore.trigger({
+                    autohide: false,
+                    message: event.payload,
+                    background: 'bg-error-400',
+                });
+            }
         })
 
         logContainer.addEventListener('scroll', () => {

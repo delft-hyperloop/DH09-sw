@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
 import { MODAL_SETTINGS } from '$lib/types';
 import {
+    connectedToMainPCB,
     emergencyModalActive,
     emsTempsAcknowledged,
     hemsTempsAcknowledged,
@@ -244,5 +245,5 @@ export function registerSubscribers() {
             console.error(`Emergency triggered with source ${store.value - 1}!`);
             util.log(`Emergency triggered: ${sources[store.value - 1]} Emergency!`, EventChannel.ERROR);
         }
-    })
+    });
 }

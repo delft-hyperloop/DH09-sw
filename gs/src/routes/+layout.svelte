@@ -72,9 +72,9 @@
         true,
         'Id measured'
     );
-    propLog1LeftMotorChart.addSeries(StrokePresets.yellow('Id reference'));
-    propLog1LeftMotorChart.addSeries(StrokePresets.blue('Iq measured'));
-    propLog1LeftMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
+    propLog1LeftMotorChart.addSeries({ label: 'Id reference', spanGaps: false, stroke: '#0074D9' }); // blue
+    propLog1LeftMotorChart.addSeries({ label: 'Iq measured', spanGaps: false, stroke: '#ffa64d' }); 
+    propLog1LeftMotorChart.addSeries({ label: 'Iq reference', spanGaps: false, stroke: '#B10DC9' }); // purple
     $chartStore.set('Propulsion Log 1 - Left Motor', propLog1LeftMotorChart);
     propCharts.push('Propulsion Log 1 - Left Motor');
 
@@ -86,70 +86,110 @@
         true,
         'Id measured'
     );
-    propLog1RightMotorChart.addSeries(StrokePresets.yellow('Id reference'));
-    propLog1RightMotorChart.addSeries(StrokePresets.blue('Iq measured'));
-    propLog1RightMotorChart.addSeries(StrokePresets.theoretical('Iq reference'));
+    propLog1RightMotorChart.addSeries({ label: 'Id reference', spanGaps: false, stroke: '#0074D9' }); // blue
+    propLog1RightMotorChart.addSeries({ label: 'Iq measured', spanGaps: false, stroke: '#ffa64d' }); // green
+    propLog1RightMotorChart.addSeries({ label: 'Iq reference', spanGaps: false, stroke: '#B10DC9' }); // purple
     $chartStore.set('Propulsion Log 1 - Right Motor', propLog1RightMotorChart);
     propCharts.push('Propulsion Log 1 - Right Motor');
 
     // Prop log 2 Left Motor chart for test runs
     let propLog2LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
-    propLog2LeftMotorChart.addSeries(StrokePresets.yellow('VD'));
-    propLog2LeftMotorChart.addSeries(StrokePresets.blue('Vbus'));
-    propLog2LeftMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
+    propLog2LeftMotorChart.addSeries({ label: 'VD', spanGaps: false, stroke: '#0074D9' }); // blue
+    propLog2LeftMotorChart.addSeries({ label: 'Vbus', spanGaps: false, stroke: '#ffa64d' }); // green
+    propLog2LeftMotorChart.addSeries({ label: 'Ibus', spanGaps: false, stroke: '#B10DC9' }); // purple
     $chartStore.set('Propulsion Log 2 - Left Motor', propLog2LeftMotorChart);
     propCharts.push('Propulsion Log 2 - Left Motor');
 
     // Prop log 2 Right Motor chart for test runs
     let propLog2RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'VQ');
-    propLog2RightMotorChart.addSeries(StrokePresets.yellow('VD'));
-    propLog2RightMotorChart.addSeries(StrokePresets.blue('Vbus'));
-    propLog2RightMotorChart.addSeries(StrokePresets.theoretical('Ibus'));
+    propLog2RightMotorChart.addSeries({ label: 'VD', spanGaps: false, stroke: '#0074D9' }); // blue
+    propLog2RightMotorChart.addSeries({ label: 'Vbus', spanGaps: false, stroke: '#ffa64d' }); // green
+    propLog2RightMotorChart.addSeries({ label: 'Ibus', spanGaps: false, stroke: '#B10DC9' }); // purple
     $chartStore.set('Propulsion Log 2 - Right Motor', propLog2RightMotorChart);
     propCharts.push('Propulsion Log 2 - Right Motor');
 
     // Prop log 3 Left Motor chart for test runs
     let propLog3LeftMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
-    propLog3LeftMotorChart.addSeries(StrokePresets.yellow('Tb'));
-    propLog3LeftMotorChart.addSeries(StrokePresets.blue('Tc'));
-    propLog3LeftMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
+    propLog3LeftMotorChart.addSeries({ label: 'Tb', spanGaps: false, stroke: '#0074D9' }); // blue
+    propLog3LeftMotorChart.addSeries({ label: 'Tc', spanGaps: false, stroke: '#ffa64d' }); // green
+    propLog3LeftMotorChart.addSeries({ label: 'TCASE', spanGaps: false, stroke: '#B10DC9' }); // purple
     $chartStore.set('Propulsion Log 3 - Left Motor', propLog3LeftMotorChart);
     propCharts.push('Propulsion Log 3 - Left Motor');
 
     // Prop log 3 Right Motor chart for test runs
     let propLog3RightMotorChart = new PlotBuffer(500, 3 * 60000, [0, 20], true, 'Ta');
-    propLog3RightMotorChart.addSeries(StrokePresets.yellow('Tb'));
-    propLog3RightMotorChart.addSeries(StrokePresets.blue('Tc'));
-    propLog3RightMotorChart.addSeries(StrokePresets.theoretical('TCASE'));
+    propLog3RightMotorChart.addSeries({ label: 'Tb', spanGaps: false, stroke: '#0074D9' }); // blue
+    propLog3RightMotorChart.addSeries({ label: 'Tc', spanGaps: false, stroke: '#ffa64d' }); // green
+    propLog3RightMotorChart.addSeries({ label: 'TCASE', spanGaps: false, stroke: '#B10DC9' }); // purple
     $chartStore.set('Propulsion Log 3 - Right Motor', propLog3RightMotorChart);
     propCharts.push('Propulsion Log 3 - Right Motor');
 
     let motorLeftTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Left 1');
-    motorLeftTemp.addSeries(StrokePresets.yellow('Motor Left 2'));
-    motorLeftTemp.addSeries(StrokePresets.blue('Motor Left 3'));
-    motorLeftTemp.addSeries(StrokePresets.blueDashed('Motor Left 4'));
-    motorLeftTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Left 5'));
-    motorLeftTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Left 6'));
-    motorLeftTemp.addSeries(StrokePresets.yellowDashed('Motor Left 7'));
-    motorLeftTemp.addSeries(StrokePresets.theoretical('Motor Left 8'))
+    motorLeftTemp.addSeries({ label: 'Motor Left 2', spanGaps: false, stroke: '#0074D9' }); // blue
+    motorLeftTemp.addSeries({ label: 'Motor Left 3', spanGaps: false, stroke: '#ffa64d' }); // green
+    motorLeftTemp.addSeries({ label: 'Motor Left 4', spanGaps: false, stroke: '#B10DC9' }); // purple
+    motorLeftTemp.addSeries({ label: 'Motor Left 5', spanGaps: false, stroke: '#39CCCC' }); // teal
+    motorLeftTemp.addSeries({ label: 'Motor Left 6', spanGaps: false, stroke: '#FF851B' }); // orange
+    motorLeftTemp.addSeries({ label: 'Motor Left 7', spanGaps: false, stroke: '#F012BE' }); // pink
+    motorLeftTemp.addSeries({ label: 'Motor Left 8', spanGaps: false, stroke: '#7FDBFF' }); // cyan
+
+    // Motor Left Temperature safety lines
+    const motorLeftTempMin = 0, motorLeftTempMax = 80;
+    motorLeftTemp.addSeries({
+        label: "Min Safe (0°C)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    motorLeftTemp.addSeries({
+        label: "Max Safe (80°C)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
     $chartStore.set('Motor Temperatures Left', motorLeftTemp);
     propCharts.push('Motor Temperatures Left');
+    const xLenMotorLeft = motorLeftTemp.getSeriesData(0).length;
+    motorLeftTemp.updateSeries(9, new Float32Array(xLenMotorLeft).fill(motorLeftTempMin)); // Min Safe (yellow)
+    motorLeftTemp.updateSeries(10, new Float32Array(xLenMotorLeft).fill(motorLeftTempMax)); // Max Safe (red)
 
     let motorRightTemp = new PlotBuffer(500, 60000, [0, 120], true, 'Motor Right 1');
-    motorRightTemp.addSeries(StrokePresets.yellow('Motor Right 2'));
-    motorRightTemp.addSeries(StrokePresets.blue('Motor Right 3'));
-    motorRightTemp.addSeries(StrokePresets.blueDashed('Motor Right 4'));
-    motorRightTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Right 5'));
-    motorRightTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Right 6'));
-    motorRightTemp.addSeries(StrokePresets.yellowDashed('Motor Right 7'));
-    motorRightTemp.addSeries(StrokePresets.theoretical('Motor Right 8'));
+    motorRightTemp.addSeries({ label: 'Motor Right 2', spanGaps: false, stroke: '#0074D9' }); // blue
+    motorRightTemp.addSeries({ label: 'Motor Right 3', spanGaps: false, stroke: '#ffa64d' }); // green
+    motorRightTemp.addSeries({ label: 'Motor Right 4', spanGaps: false, stroke: '#B10DC9' }); // purple
+    motorRightTemp.addSeries({ label: 'Motor Right 5', spanGaps: false, stroke: '#39CCCC' }); // teal
+    motorRightTemp.addSeries({ label: 'Motor Right 6', spanGaps: false, stroke: '#FF851B' }); // orange
+    motorRightTemp.addSeries({ label: 'Motor Right 7', spanGaps: false, stroke: '#F012BE' }); // pink
+    motorRightTemp.addSeries({ label: 'Motor Right 8', spanGaps: false, stroke: '#7FDBFF' }); // cyan
+
+    // Motor Right Temperature safety lines
+    const motorRightTempMin = 0, motorRightTempMax = 80;
+    motorRightTemp.addSeries({
+        label: "Min Safe (0°C)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    motorRightTemp.addSeries({
+        label: "Max Safe (80°C)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
     $chartStore.set('Motor Temperatures Right', motorRightTemp);
     propCharts.push('Motor Temperatures Right');
+    const xLenMotorRight = motorRightTemp.getSeriesData(0).length;
+    motorRightTemp.updateSeries(9, new Float32Array(xLenMotorRight).fill(motorRightTempMin)); // Min Safe (yellow)
+    motorRightTemp.updateSeries(10, new Float32Array(xLenMotorRight).fill(motorRightTempMax)); // Max Safe (red)
 
     let offsetChart = new PlotBuffer(500, 60000, [0, 30], true, 'Offset 1');
-    offsetChart.addSeries(StrokePresets.hyperLoopGreen('Offset 2'));
-    offsetChart.addSeries(StrokePresets.yellow('Offset 3'));
-    offsetChart.addSeries(StrokePresets.blue('Offset 4'));
+    offsetChart.addSeries({ label: 'Offset 2', spanGaps: false, stroke: '#0074D9' }); // blue
+    offsetChart.addSeries({ label: 'Offset 3', spanGaps: false, stroke: '#ffa64d' }); // green
+    offsetChart.addSeries({ label: 'Offset 4', spanGaps: false, stroke: '#B10DC9' }); // purple
     $chartStore.set('Offset', offsetChart);
     propCharts.push('Offset');
 
@@ -160,37 +200,97 @@
         true,
         'Vertical Air Gap'
     );
-    airGapChart.addSeries(StrokePresets.theoretical('Lateral Air Gap'));
+    airGapChart.addSeries({ label: 'Lateral Air Gap', spanGaps: false, stroke: '#0074D9' });
     $chartStore.set('Air Gaps', airGapChart);
     leviCharts.push('Air Gaps');
 
+    // Air Gaps chart safety lines
+    const airGapMin = 2, airGapMax = 27;
+    airGapChart.addSeries({
+        label: "Min Safe (2mm)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    airGapChart.addSeries({
+        label: "Max Safe (27mm)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    const xLenAirGaps = airGapChart.getSeriesData(0).length;
+    airGapChart.updateSeries(3, new Float32Array(xLenAirGaps).fill(airGapMin)); // Min Safe (yellow)
+    airGapChart.updateSeries(4, new Float32Array(xLenAirGaps).fill(airGapMax)); // Max Safe (red)
+
     let anglesChart = new PlotBuffer(500, 60000, [0, 120], true, 'Roll');
-    anglesChart.addSeries(StrokePresets.theoretical('Pitch'));
-    anglesChart.addSeries(StrokePresets.blue('Yaw'));
+    anglesChart.addSeries({ label: 'Pitch', spanGaps: false, stroke: '#4d4dff' });
+    anglesChart.addSeries({ label: 'Yaw', spanGaps: false, stroke: '#B10DC9' });
     $chartStore.set('Angles', anglesChart);
     leviCharts.push('Angles');
 
     let hemsCurrentChart = new PlotBuffer(
         500,
         3 * 60000,
-        [-11.3, 11.3],
+        [-13, 13],
         true,
         'VFL1'
     );
-    hemsCurrentChart.addSeries(StrokePresets.blue('VFL2'));
-    hemsCurrentChart.addSeries(StrokePresets.theoretical('VFR1'));
-    hemsCurrentChart.addSeries(StrokePresets.yellow('VFR2'));
-    hemsCurrentChart.addSeries(StrokePresets.blueDashed('VBL1'));
-    hemsCurrentChart.addSeries(StrokePresets.theoreticalDashed('VBL2'));
-    hemsCurrentChart.addSeries(StrokePresets.yellowDashed('VBR1'));
-    hemsCurrentChart.addSeries(StrokePresets.hyperLoopGreen('VBR2'));
+    hemsCurrentChart.addSeries({ label: 'VFL2', spanGaps: false, stroke: '#0074D9' });
+    hemsCurrentChart.addSeries({ label: 'VFR1', spanGaps: false, stroke: '#ffa64d' });
+    hemsCurrentChart.addSeries({ label: 'VFR2', spanGaps: false, stroke: '#B10DC9' });
+    hemsCurrentChart.addSeries({ label: 'VBL1', spanGaps: false, stroke: '#39CCCC' });
+    hemsCurrentChart.addSeries({ label: 'VBL2', spanGaps: false, stroke: '#FF851B' });
+    hemsCurrentChart.addSeries({ label: 'VBR1', spanGaps: false, stroke: '#F012BE' });
+    hemsCurrentChart.addSeries({ label: 'VBR2', spanGaps: false, stroke: '#7FDBFF' });
     $chartStore.set('HEMS Current', hemsCurrentChart);
     leviCharts.push('HEMS Current');
 
-    let emsCurrentChart = new PlotBuffer(500, 3 * 60000, [-11.3, 11.3], true, 'LF');
-    emsCurrentChart.addSeries(StrokePresets.theoretical('LB'));
+    // HEMS Current chart safety lines
+    const hemsCurrentMin = -13, hemsCurrentMax = 13;
+    hemsCurrentChart.addSeries({
+        label: "Min Safe (-13A)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    hemsCurrentChart.addSeries({
+        label: "Max Safe (13A)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    const xLenHems = hemsCurrentChart.getSeriesData(0).length;
+    hemsCurrentChart.updateSeries(9, new Float32Array(xLenHems).fill(hemsCurrentMin)); // Min Safe (yellow)
+    hemsCurrentChart.updateSeries(10, new Float32Array(xLenHems).fill(hemsCurrentMax)); // Max Safe (red)
+
+    let emsCurrentChart = new PlotBuffer(500, 3 * 60000, [-13, 13], true, 'LF');
+    emsCurrentChart.addSeries({ label: 'LB', spanGaps: false, stroke: '#4d4dff' });
     $chartStore.set('EMS Current', emsCurrentChart);
     leviCharts.push('EMS Current');
+
+    // EMS Current chart safety lines
+    const emsCurrentMin = -13, emsCurrentMax = 13;
+    emsCurrentChart.addSeries({
+        label: "Min Safe (-13A)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    emsCurrentChart.addSeries({
+        label: "Max Safe (13A)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    const xLenEms = emsCurrentChart.getSeriesData(0).length;
+    emsCurrentChart.updateSeries(3, new Float32Array(xLenEms).fill(emsCurrentMin)); // Min Safe (yellow)
+    emsCurrentChart.updateSeries(4, new Float32Array(xLenEms).fill(emsCurrentMax)); // Max Safe (red)
 
     let accelChart = new PlotBuffer(500, 60000, [0, 25], false);
     $chartStore.set('Acceleration', accelChart);
@@ -205,50 +305,144 @@
     $chartStore.set("Localization", localizationChart);
 
     let leviRequestForceVerticalChart = new PlotBuffer(500, 60000, [0, 100], true, 'Z');
-    leviRequestForceVerticalChart.addSeries(StrokePresets.yellow('Roll'));
-    leviRequestForceVerticalChart.addSeries(StrokePresets.theoretical('Pitch'));
+    leviRequestForceVerticalChart.addSeries({ label: 'Roll', spanGaps: false, stroke: '#ffa64d' }); // green
+    leviRequestForceVerticalChart.addSeries({ label: 'Pitch', spanGaps: false, stroke: '#ffde0a' }); // yellow
     $chartStore.set('Requested Force Vertical', leviRequestForceVerticalChart);
     leviCharts.push('Requested Force Vertical');
 
     let leviRequestForceHorizontalChart = new PlotBuffer(500, 60000, [0, 100], true, 'Y');
-    leviRequestForceHorizontalChart.addSeries(StrokePresets.yellow('Yaw'));
+    leviRequestForceHorizontalChart.addSeries({ label: 'Yaw', spanGaps: false, stroke: '#ff0a43' }); // red
     $chartStore.set('Requested Force Horizontal', leviRequestForceHorizontalChart);
     leviCharts.push('Requested Force Horizontal');
 
     let hemsTempChart = new PlotBuffer(500, 60000, [0, 100], true, 'L1');
-    hemsTempChart.addSeries(StrokePresets.yellow('L2'));
-    hemsTempChart.addSeries(StrokePresets.theoretical('L3'));
-    hemsTempChart.addSeries(StrokePresets.yellowDashed('L4'));
-    hemsTempChart.addSeries(StrokePresets.hyperLoopGreen('R1'));
-    hemsTempChart.addSeries(StrokePresets.blue('R2'));
-    hemsTempChart.addSeries(StrokePresets.blueDashed('R3'));
-    hemsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('R4'));
+    hemsTempChart.addSeries({ label: 'L2', spanGaps: false, stroke: '#0074D9' });
+    hemsTempChart.addSeries({ label: 'L3', spanGaps: false, stroke: '#ffa64d' });
+    hemsTempChart.addSeries({ label: 'L4', spanGaps: false, stroke: '#B10DC9' });
+    hemsTempChart.addSeries({ label: 'R1', spanGaps: false, stroke: '#39CCCC' });
+    hemsTempChart.addSeries({ label: 'R2', spanGaps: false, stroke: '#FF851B' });
+    hemsTempChart.addSeries({ label: 'R3', spanGaps: false, stroke: '#F012BE' });
+    hemsTempChart.addSeries({ label: 'R4', spanGaps: false, stroke: '#7FDBFF' });
     $chartStore.set('Temperatures HEMS', hemsTempChart);
     leviCharts.push('Temperatures HEMS');
 
+    // Temperatures HEMS chart safety lines
+    const hemsTempMin = 0, hemsTempMax = 80;
+    hemsTempChart.addSeries({
+        label: "Min Safe (0°C)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    hemsTempChart.addSeries({
+        label: "Max Safe (80°C)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    const xLenHemsTemp = hemsTempChart.getSeriesData(0).length;
+    hemsTempChart.updateSeries(9, new Float32Array(xLenHemsTemp).fill(hemsTempMin)); // Min Safe (yellow)
+    hemsTempChart.updateSeries(10, new Float32Array(xLenHemsTemp).fill(hemsTempMax)); // Max Safe (red)
+
     let emsTempChart = new PlotBuffer(500, 60000, [0, 100], true, 'L1');
-    emsTempChart.addSeries(StrokePresets.yellow('L2'));
-    emsTempChart.addSeries(StrokePresets.theoretical('L3'));
-    emsTempChart.addSeries(StrokePresets.yellowDashed('L4'));
-    emsTempChart.addSeries(StrokePresets.hyperLoopGreen('R1'));
-    emsTempChart.addSeries(StrokePresets.blue('R2'));
-    emsTempChart.addSeries(StrokePresets.blueDashed('R3'));
-    emsTempChart.addSeries(StrokePresets.hyperloopGreenDashed('R4'));
+    emsTempChart.addSeries({ label: 'L2', spanGaps: false, stroke: '#0074D9' });
+    emsTempChart.addSeries({ label: 'L3', spanGaps: false, stroke: '#ffa64d' });
+    emsTempChart.addSeries({ label: 'L4', spanGaps: false, stroke: '#B10DC9' });
+    emsTempChart.addSeries({ label: 'R1', spanGaps: false, stroke: '#39CCCC' });
+    emsTempChart.addSeries({ label: 'R2', spanGaps: false, stroke: '#FF851B' });
+    emsTempChart.addSeries({ label: 'R3', spanGaps: false, stroke: '#F012BE' });
+    emsTempChart.addSeries({ label: 'R4', spanGaps: false, stroke: '#7FDBFF' });
     $chartStore.set('Temperatures EMS', emsTempChart);
     leviCharts.push('Temperatures EMS');
 
-    let BMSVoltageHighChart = new PlotBuffer(500, 60000, [-500, 500], true, "BMS Voltage High");
+    // Temperatures EMS chart safety lines
+    const emsTempMin = 0, emsTempMax = 80;
+    emsTempChart.addSeries({
+        label: "Min Safe (0°C)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    emsTempChart.addSeries({
+        label: "Max Safe (80°C)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    const xLenEmsTemp = emsTempChart.getSeriesData(0).length;
+    emsTempChart.updateSeries(9, new Float32Array(xLenEmsTemp).fill(emsTempMin)); // Min Safe (yellow)
+    emsTempChart.updateSeries(10, new Float32Array(xLenEmsTemp).fill(emsTempMax)); // Max Safe (red)
+
+    let BMSVoltageHighChart = new PlotBuffer(500, 60000, [0, 700], true, "BMS Voltage High");
+    const bmsHighMin = 400, bmsHighMax = 600;
+    BMSVoltageHighChart.addSeries({
+        label: "Min Safe (400V)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    BMSVoltageHighChart.addSeries({
+        label: "Max Safe (600V)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
     $chartStore.set("BMS Voltage High", BMSVoltageHighChart);
     powertrainCharts.push("BMS Voltage High");
+    const xLenHigh = BMSVoltageHighChart.getSeriesData(0).length;
+    BMSVoltageHighChart.updateSeries(2, new Float32Array(xLenHigh).fill(bmsHighMin)); // Min Safe (yellow)
+    BMSVoltageHighChart.updateSeries(3, new Float32Array(xLenHigh).fill(bmsHighMax)); // Max Safe (red)
 
-    let BMSVoltageLowChart = new PlotBuffer(500, 60000, [-500, 500], true, "BSM Voltage Low");
+    let BMSVoltageLowChart = new PlotBuffer(500, 60000, [0, 50], true, "BMS Voltage Low");
+    const bmsLowMin = 20, bmsLowMax = 30;
+    BMSVoltageLowChart.addSeries({
+        label: "Min Safe (20V)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    BMSVoltageLowChart.addSeries({
+        label: "Max Safe (30V)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
     $chartStore.set("BMS Voltage Low", BMSVoltageLowChart);
     powertrainCharts.push("BMS Voltage Low");
+    const xLenLow = BMSVoltageLowChart.getSeriesData(0).length;
+    BMSVoltageLowChart.updateSeries(2, new Float32Array(xLenLow).fill(bmsLowMin)); // Min Safe (yellow)
+    BMSVoltageLowChart.updateSeries(3, new Float32Array(xLenLow).fill(bmsLowMax)); // Max Safe (red)
 
-    let BMSVoltageTempsChart = new PlotBuffer(500, 60000, [-500, 500], true, "Temp High");
+    let BMSVoltageTempsChart = new PlotBuffer(500, 60000, [0, 100], true, "Temp High");
+    const tempMin = 0, tempMax = 80;
     BMSVoltageTempsChart.addSeries(StrokePresets.blue("Temp Low"));
+    BMSVoltageTempsChart.addSeries({
+        label: "Min Safe (0°C)",
+        stroke: "#ffde0a", // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    BMSVoltageTempsChart.addSeries({
+        label: "Max Safe (80°C)",
+        stroke: "#ff0a43", // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
     $chartStore.set("BMS Temps", BMSVoltageTempsChart);
     powertrainCharts.push("BMS Temps");
+    const xLenTemps = BMSVoltageTempsChart.getSeriesData(0).length;
+    BMSVoltageTempsChart.updateSeries(3, new Float32Array(xLenTemps).fill(tempMin)); // Min Safe (yellow)
+    BMSVoltageTempsChart.updateSeries(4, new Float32Array(xLenTemps).fill(tempMax)); // Max Safe (red)
 
     leviChartStore.set(leviCharts);
     propChartStore.set(propCharts);

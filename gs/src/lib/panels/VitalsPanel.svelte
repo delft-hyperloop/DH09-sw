@@ -23,6 +23,7 @@
         inStateLevitating,
         showcaseStateCounter,
         showcasingStates,
+        usingTestTrack,
     } from '$lib/stores/state';
     import {
         Activity,
@@ -85,6 +86,13 @@
     $: imdWarningMessage = imdWarnings.filter((x, index) =>
         ((($imdWarningStore.value >> index - 1) & 1) == 1)
     );
+
+    $: positionSafeRange = $usingTestTrack ? '[0, 15000] mm' : '[0, 100000] mm';
+    $: trackName = $usingTestTrack ? 'Test Track' : 'EHC Track';
+    $: trackLength = $usingTestTrack ? 15000 : 100000;
+    $: currentPosition = $localization.value || 0;
+    $: safeVelocityMax = Math.max(0, Math.round((trackLength - currentPosition) / 2));
+    $: velocitySafeRange = `[0, ${safeVelocityMax}] m/s`;
 
     async function sendSystemCheckMocks() {
         await invoke('send_command', {cmdName: "MockPtAck", val: 0}).then(() => {
@@ -160,39 +168,51 @@
                     <Localization showLabels={true}/>
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
-                    <div class="flex flex-wrap justify-between gap-4">
-                        <div class="flex justify-between flex-col">
-                            <div class="flex gap-2 items-center">
-                                <span>Connection Status:</span>
-                                <div class="flex flex-row items-center gap-1">
-                                    {#if !$connectedToMainPCB}
-                                        <ConnectionSignalOff size={20}/>
-                                        <span>Not Connected</span>
-                                    {:else}
-                                        <ConnectionSignal size={20}/>
-                                        <span>Connected</span>
-                                    {/if}
-                                </div>
+                    <div class="flex flex-col w-full mb-2">
+                        <span class="text-lg font-semibold text-primary-400">Current Track: {trackName}</span>
+                    </div>
+                    <div class="flex flex-row justify-between items-start w-full">
+                        <!-- Vitals table left: 2x2 grid -->
+                        <div class="grid grid-cols-2 gap-x-8 gap-y-2">
+                            <div class="flex flex-col">
+                                <span>Velocity: <span class="font-mono inline"><Store datatype="Velocity" /></span></span>
+                                <span class="text-xs text-gray-400">Safe range: {velocitySafeRange}</span>
                             </div>
-                            <span>Velocity: {$velocity.value} m/s</span>
-                            <span>Acceleration: // m/s²</span>
-                            <span>Position: {$localization.value / 100} mm</span>
+                            <div class="flex flex-col">
+                                <span>Position: <span class="font-mono inline"><Store datatype="Localization" /></span></span>
+                                <span class="text-xs text-gray-400">Safe range: {positionSafeRange}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span>LV Temp High: <span class="font-mono inline"><Store datatype="BMSTemperatureLow" /></span></span>
+                                <span class="text-xs text-gray-400">Safe range: [0, 80] °C</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span>HV Temp High: <span class="font-mono inline"><Store datatype="BMSTemperatureHigh" /></span></span>
+                                <span class="text-xs text-gray-400">Safe range: [0, 80] °C</span>
+                            </div>
                         </div>
-                        <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
-                            <span>LV:</span>
-                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>
-                            <span>Total: <Store datatype="BMSVoltageLow" /></span>
-
-                            <span>HV:</span>
-                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
-                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>
+                        <!-- Battery icons/info right: side by side -->
+                        <div class="flex flex-row gap-8 items-start ml-8">
+                            <div class="flex flex-col items-center">
+                                <span>LV:</span>
+                                <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>
+                                <span>Total: <Store datatype="BMSVoltageLow" /></span>
+                                <span class="text-xs text-gray-400">Safe range: [280, 360] V</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span>HV:</span>
+                                <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>
+                                <span>Total: <Store datatype="BMSVoltageHigh" /></span>
+                                <span class="text-xs text-gray-400">Safe range: [280, 420] V</span>
+                            </div>
                         </div>
-                        <div class="flex flex-col gap-4">
-                            <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
-                            <span>PT Controller Fault: {ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}</span>
-                            <span>IMD Status??: &ltstatus&gt</span>
-                            <span>IMD Warning: {imdWarnings.length === 0 ? "None" : imdWarningMessage.join(", ")}</span>
-                        </div>
+                    </div>
+                    <div class="flex flex-row justify-end gap-2 mt-2 text-sm text-gray-300 w-full">
+                        <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
+                        <span>|</span>
+                        <span>PT Controller Fault: {ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}</span>
+                        <span>|</span>
+                        <span>IMD: &ltstatus&gt</span>
                     </div>
                 </Tile>
                 <Tile

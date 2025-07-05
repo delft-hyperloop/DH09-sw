@@ -3,8 +3,6 @@ use std::collections::VecDeque;
 use gslib::Datapoint;
 
 use crate::connect::handle_incoming_data::handle_incoming_data;
-use crate::connect::DataSender;
-use crate::CommandSender;
 use crate::MessageSender;
 
 /// # Unloads from the buffer and transmits any messages found

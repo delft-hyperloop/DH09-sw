@@ -95,6 +95,7 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::MockLeviAck(_) => Event::LeviSystemCheckSuccess,
         Command::MockProp1Ack(_) => Event::Prop1SystemCheckSuccess,
         Command::MockProp2Ack(_) => Event::Prop2SystemCheckSuccess,
+        Command::MockHVOn(_) => Event::HVOnAck,
 
         _ => Event::NoEvent,
     }
@@ -429,6 +430,15 @@ pub async fn forward_fsm_to_gs(
                     })
                     .await;
                 prop2_failure = prop2_failure % 100 + 1;
+            }
+            Event::ResetFSM => {
+                gs_tx.send(PodToGsMessage{
+                    dp: Datapoint::new(
+                        Datatype::ResetFSM,
+                        1,
+                        Instant::now().as_ticks(),
+                    )
+                }).await;
             }
             _ => {}
         }

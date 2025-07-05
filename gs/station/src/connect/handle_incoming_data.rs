@@ -18,6 +18,7 @@ pub async fn handle_incoming_data(
     msg_sender.send(Message::Data(process(&data)))?;
 
     match data.datatype {
+        // TODO: Add 'events' here as datapoints, but probably generated in config
         Datatype::CommandHash => {
             if data.value != COMMAND_HASH {
                 msg_sender.send(Message::Error("Command hash mismatch".to_string()))?;
@@ -42,6 +43,9 @@ pub async fn handle_incoming_data(
                 msg_sender.send(Message::Status(Info::ConfigHashPassed))?;
             }
         },
+        Datatype::ResetFSM => {
+            msg_sender.send(Message::Status(Info::ResettingMainPCB))?;
+        }
         _ => {},
     }
 

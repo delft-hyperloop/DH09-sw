@@ -20,7 +20,7 @@
         debugModeActive,
         inStateAccelerating, inStateBraking,
         inStateCharging,
-        inStateLevitating,
+        inStateLevitating, overrideDependencies,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
@@ -45,6 +45,7 @@
     import StopLevitating from '$lib/components/StopLevitating.svelte';
     import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
     import { imdWarnings, ptcErrorCodes, ptcStates } from '$lib/types';
+    import ValueStore from '$lib/components/generic/ValueStore.svelte';
 
     let width: number;
 
@@ -171,25 +172,42 @@
                                 </div>
                             </div>
                             <span>Velocity: <Store datatype="Velocity"/> m/s</span>
-                            <span>Position: <Store datatype="Localization" dataModifier={0.01}/></span>
+                            <span>Position: <Store datatype="Localization" dataModifier={0.01}/> mm</span>
                         </div>
-                        <div style="grid-template-columns: 1fr 2fr 3fr;" class="grid gap-2 items-center">
+                        <div style="grid-template-columns: 1fr 2fr" class="grid gap-2 items-center">
                             <span>LV:</span>
 <!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>-->
 <!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
-                            <span>Total: TBD</span>
                             <Battery fill="#3b669c" orientation="horizontal" perc={0}/>
 
                             <span>HV:</span>
 <!--                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>-->
 <!--                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>-->
                             <Battery fill="#723f9c" orientation="horizontal" perc={0}/>
-                            <span>Total: TBD</span>
+
                         </div>
                         <div class="flex flex-col gap-4">
-                            <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
-                            <span>PT Controller Fault: {ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}</span>
-                            <span>IMD Warning: {imdWarnings.length === 0 ? "None" : imdWarningMessage.join(", ")}</span>
+                            <span>
+                                PT Controller State:
+                                <ValueStore
+                                    value={ptcStates[$ptcState.value]}
+                                    timestamp={$ptcState.timestamp}
+                                />
+                            </span>
+                            <span>
+                                PT Controller Fault:
+                                <ValueStore
+                                    value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}
+                                    timestamp={$ptcFaultStore.timestamp}
+                                />
+                            </span>
+                            <span>
+                                IMD Warning:
+                                <ValueStore
+                                    value={imdWarnings.length === 0 ? "None" : imdWarningMessage.join(", ")}
+                                    timestamp={$imdWarningStore.timestamp}
+                                />
+                            </span>
                         </div>
                     </div>
                 </Tile>
@@ -242,7 +260,11 @@
                         {/if}
                         <Command cmd="RearmSDC" text="Rearm SDC" icon={RightPanelClose}/>
                         {#if $inStateAccelerating || $inStateBraking || $inStateLevitating}
-                            <Command cmd="LevitationOff" icon={StopLevitatingIcon}/>
+                            <Command
+                                cmd="LevitationOff"
+                                icon={StopLevitatingIcon}
+                                disabled={!$overrideDependencies && !$inStateLevitating}
+                            />
                         {:else}
                             <Command
                                 cmd="LevitationOn"

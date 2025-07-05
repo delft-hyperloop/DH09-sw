@@ -167,6 +167,8 @@ impl FSM {
 
             (_, Event::ResetFSM) => {
                 info!("Reset FSM triggered. Resetting the main PCB...");
+                self.event_sender_gs.send(Event::ResetFSM).await;
+                Timer::after_millis(5).await;
                 cortex_m::peripheral::SCB::sys_reset();
             }
 

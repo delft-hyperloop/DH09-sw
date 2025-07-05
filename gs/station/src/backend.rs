@@ -29,12 +29,10 @@ use crate::MessageSender;
 
 pub struct Backend {
     pub server_handle: Option<AbortHandle>,
-    pub levi_handle: Option<(AbortHandle, AbortHandle)>,
     pub message_transmitter: MessageSender,
     pub message_receiver: MessageReceiver,
     pub command_transmitter: CommandSender,
     pub command_receiver: CommandReceiver,
-    pub processed_data_sender: DataSender,
     pub processed_data_receiver: DataReceiver,
     pub log: Log,
     pub save_path: PathBuf,
@@ -54,17 +52,15 @@ impl Backend {
             tokio::sync::broadcast::channel::<Message>(128);
         let (command_transmitter, command_receiver) =
             tokio::sync::broadcast::channel::<Command>(128);
-        let (processed_data_sender, processed_data_receiver) =
+        let (_processed_data_sender, processed_data_receiver) =
             tokio::sync::broadcast::channel::<ProcessedData>(128);
 
         Self {
             server_handle: None,
-            levi_handle: None,
             message_transmitter,
             message_receiver,
             command_transmitter,
             command_receiver,
-            processed_data_sender,
             processed_data_receiver,
             log: Log { messages: vec![], commands: vec![] },
             save_path: PathBuf::from_str("/Users/andtsa/Desktop/log.txt").unwrap(),
@@ -77,12 +73,9 @@ impl Backend {
         if self.server_handle.is_none() {
             let m = self.message_transmitter.clone();
             let c = self.command_receiver.resubscribe();
-            let t = self.command_transmitter.clone();
-            let s = self.processed_data_sender.clone();
-            let r = self.processed_data_receiver.resubscribe();
             self.server_handle = Some(
                 tokio::spawn(
-                    async move { crate::connect::connect_main(m, c, t, r, s).await.unwrap() },
+                    async move { crate::connect::connect_main(m, c).await.unwrap() },
                 )
                 .abort_handle(), // todo:
                                  // is unwrap necessary?

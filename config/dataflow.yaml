@@ -236,6 +236,9 @@ standard-datapoints:
       id: 0x225
       store:
         default: 0
+  - datapoint:
+      name: 'ResetFSM'
+      id: 0x226
 
 message-processing:
   - name: 'TempMotorLeft'

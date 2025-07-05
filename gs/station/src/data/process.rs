@@ -1,5 +1,4 @@
 use gslib::Datapoint;
-use gslib::Datatype;
 use gslib::ProcessedData;
 use gslib::ValueCheckResult;
 

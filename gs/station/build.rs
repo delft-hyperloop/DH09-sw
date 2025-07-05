@@ -2,7 +2,6 @@
 
 extern crate serde;
 use std::env;
-use std::fmt::Write;
 use std::fs;
 use std::path::Path;
 
@@ -24,7 +23,6 @@ struct Config {
 #[derive(Debug, Deserialize)]
 struct Pod {
     net: NetConfig,
-    comm: CommConfig,
 }
 #[derive(Debug, Deserialize)]
 struct NetConfig {
@@ -33,14 +31,8 @@ struct NetConfig {
 }
 
 #[derive(Debug, Deserialize)]
-struct CommConfig {
-    // levi_requested_data: Vec<String>,
-}
-
-#[derive(Debug, Deserialize)]
 struct GS {
     ips: Vec<[u8; 4]>,
-    force: bool,
     port: u16,
     buffer_size: usize,
     timeout: u64,

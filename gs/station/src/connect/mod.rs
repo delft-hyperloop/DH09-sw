@@ -15,7 +15,6 @@ use tokio::task::JoinHandle;
 use crate::connect::tcp_reader::get_messages_from_tcp;
 use crate::connect::tcp_writer::transmit_commands_to_tcp;
 use crate::CommandReceiver;
-use crate::CommandSender;
 use crate::MessageSender;
 
 pub type DataReceiver = tokio::sync::broadcast::Receiver<ProcessedData>;
@@ -24,9 +23,6 @@ pub type DataSender = tokio::sync::broadcast::Sender<ProcessedData>;
 pub async fn connect_main(
     message_transmitter: MessageSender,
     command_receiver: CommandReceiver,
-    command_transmitter: CommandSender,
-    data_receiver: DataReceiver,
-    data_sender: DataSender,
 ) -> Result<()> {
     // connect the stream to the address
     message_transmitter.send(Message::Warning(format!("trying to connect... {:?}", socket())))?;
@@ -39,9 +35,6 @@ pub async fn connect_main(
         connection,
         message_transmitter.clone(),
         command_receiver.resubscribe(),
-        command_transmitter.clone(),
-        data_receiver.resubscribe(),
-        data_sender.clone(),
     )
     .await?;
 
@@ -55,13 +48,9 @@ async fn process_stream(
     socket: TcpStream,
     message_transmitter: MessageSender,
     command_receiver: CommandReceiver,
-    command_transmitter: CommandSender,
-    data_receiver: DataReceiver,
-    data_sender: DataSender,
 ) -> Result<(JoinHandle<()>, JoinHandle<()>)> {
     let (reader, writer) = socket.into_split();
     let transmit = message_transmitter.clone();
-    let t = command_transmitter.clone();
     let a = tokio::spawn(async move {
         match get_messages_from_tcp(reader, transmit.clone()).await {
             Ok(_) => {

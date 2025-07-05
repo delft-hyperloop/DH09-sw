@@ -13,7 +13,7 @@
 
 <span class="{$latestTimestamp - $store.timestamp > STALE_DATA_TICKS ? 'text-surface-400' : ''}">
     {typeof $store.value === "number" ?
-        ($store.value * dataModifier).toFixed(2) : $store.value} {$store.units}
+        ($store.value * dataModifier).toFixed(2) : $store.value}
 </span>
 
 

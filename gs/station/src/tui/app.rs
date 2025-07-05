@@ -2,7 +2,6 @@ use std::collections::BTreeMap;
 use std::time::Duration;
 use std::time::Instant;
 
-use gslib::state_to_string;
 use gslib::Datapoint;
 use gslib::Datatype;
 use gslib::Event;

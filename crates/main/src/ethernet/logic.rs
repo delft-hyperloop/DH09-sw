@@ -10,7 +10,7 @@ use embassy_executor::Spawner;
 use embassy_net::tcp::ConnectError;
 use embassy_net::tcp::State;
 use embassy_net::tcp::TcpSocket;
-use embassy_net::Config;
+use embassy_net::{Config, Ipv4Cidr};
 use embassy_net::Ipv4Address;
 use embassy_net::Stack;
 use embassy_net::StackResources;
@@ -68,9 +68,6 @@ pub struct GsMaster {
     tx_transmitter: PodToGsPublisher<'static>,
     /// Flag that triggers a reconnection (creates a new socket)
     should_reconnect: bool,
-    /// Counts the amount of times it reset the connection. If >= 5, trigger
-    /// emergency
-    reset_counter: i16,
 }
 
 impl Debug for GsMaster {
@@ -110,7 +107,7 @@ impl GsMaster {
 
         // static IPv4 address
         // let config = Config::ipv4_static(embassy_net::StaticConfigV4 {
-        //     address: Ipv4Cidr::new(Ipv4Address::new(192, 168, 0, 69), 24),
+        //     address: Ipv4Cidr::new(Ipv4Address::new(192, 168, 1, 113), 24),
         //     gateway: None,
         //     dns_servers: Default::default(),
         // });
@@ -170,7 +167,6 @@ impl GsMaster {
             rx_transmitter,
             tx_transmitter,
             should_reconnect: false,
-            reset_counter: 0,
         }
     }
 
@@ -340,14 +336,11 @@ impl GsMaster {
                         dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
                     })
                     .await;
-                self.reset_counter = 0;
                 info!("connected, endpoint={:?}", self.socket.remote_endpoint());
             }
             Err(e) => {
                 warn!("Timeout for sending hashes has expired with error {:?}! Triggering a reconnection!", e);
                 self.should_reconnect = true;
-                // TODO: finish this
-                self.reset_counter += 1;
             }
         }
 

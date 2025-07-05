@@ -69,40 +69,6 @@ pub struct ApiStruct {
     pub message_receiver: Receiver<Message>,
 }
 
-/// 0 - Boot
-/// 1 - ConnectedToGS
-/// 2 - SystemCheck
-/// 3 - Idle
-/// 4 - PreCharge
-/// 5 - Active
-/// 6 - Demo
-/// 7 - Levitating
-/// 8 - Accelerating
-/// 9 - Cruising
-/// 10 - Braking
-/// 11 - Discharge
-/// 12 - Charging
-/// 13 - Fault
-pub fn state_to_string(state: u64) -> String {
-    match state {
-        0 => "Boot".to_string(),
-        1 => "ConnectedToGS".to_string(),
-        2 => "SystemCheck".to_string(),
-        3 => "Idle".to_string(),
-        4 => "PreCharge".to_string(),
-        5 => "Active".to_string(),
-        6 => "Demo".to_string(),
-        7 => "Levitating".to_string(),
-        8 => "Accelerating".to_string(),
-        9 => "Cruising".to_string(),
-        10 => "Braking".to_string(),
-        11 => "Discharge".to_string(),
-        12 => "Charging".to_string(),
-        13 => "Fault".to_string(),
-        _ => "Unknown!!".to_string(),
-    }
-}
-
 pub fn socket() -> std::net::SocketAddr {
     std::net::SocketAddr::new(std::net::IpAddr::from([0, 0, 0, 0]), GS_IP_ADDRESSES[0].1)
 }

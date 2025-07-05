@@ -73,13 +73,13 @@ pub fn unload_buffer(state: State<BackendState>) -> Vec<ProcessedData> {
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]
-pub fn send_command(cmd_name: String, val: u64) -> bool {
+pub async fn send_command(cmd_name: String, val: u64) -> bool {
     if cmd_name != "FrontendHeartbeat" {
         eprintln!("[frontend] Sending command {}({}) [{}]", cmd_name, val, Local::now());
     }
     let c = Command::from_string(&cmd_name, val);
     if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().send_command(c)
+        backend_mutex.get_mut().unwrap().send_command(c).await
     } else {
         panic!("kys");
     }
@@ -94,14 +94,14 @@ fn i32_to_u64(x: [i32; 2]) -> u64 {
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]
-pub fn send_command_64_bits(cmd_name: String, vals: [i32; 2]) -> bool {
+pub async fn send_command_64_bits(cmd_name: String, vals: [i32; 2]) -> bool {
     let value = i32_to_u64(vals);
     if cmd_name != "FrontendHeartbeat" {
         eprintln!("[frontend] Sending command {}({}) [{}]", cmd_name, value, Local::now());
     }
     let c = Command::from_string(&cmd_name, value);
     if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().send_command(c)
+        backend_mutex.get_mut().unwrap().send_command(c).await
     } else {
         panic!("kys");
     }
@@ -110,9 +110,9 @@ pub fn send_command_64_bits(cmd_name: String, vals: [i32; 2]) -> bool {
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]
-pub fn connect_to_pod() -> bool {
+pub async fn connect_to_pod() -> bool {
     if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().start_server()
+        backend_mutex.get_mut().unwrap().start_server().await
     } else {
         false
     }

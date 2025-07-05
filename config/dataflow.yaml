@@ -2713,6 +2713,21 @@ message-processing:
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'
+  - name: 'SensorHubEmergency'
+    can:
+      id: 0x1A
+      bus: can1
+    datapoint-conversion:
+      - datapoint:
+          name: 'SensorHubEmergency'
+          id: 0x1A01
+          store:
+            default: 0
+        getter: 'u16[0..2]'
+        can-conversion: 'identity_u16:u16->u16'
+        display-units: ''
+        gs:
+          conversion: 'gs_u16:u16'
   - name: 'PTEmergency'
     can:
       id: 0x33

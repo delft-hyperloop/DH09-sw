@@ -260,14 +260,12 @@ impl GsMaster {
         self.socket.set_keep_alive(Some(SOCKET_KEEP_ALIVE));
 
         let mut index: usize = 0;
+        let mut backoff_ms = 1000; // Start with 1s
+        const MAX_BACKOFF_MS: u64 = 10000; // Cap at 10s
         loop {
             let mut counter = 0usize;
 
-            // Try to connect to a different IP address every time the socket can't reach
-            // the server
             let remote = self.remotes[index];
-            // info!("Trying to connect to {:?}", remote);
-
             match self.socket.connect(remote).await {
                 Ok(()) => {
                     debug!(
@@ -275,6 +273,7 @@ impl GsMaster {
                         self.socket.state(),
                         self.socket.remote_endpoint()
                     );
+                    backoff_ms = 1000; // Reset backoff on success
                     break;
                 }
                 Err(ConnectError::InvalidState) => {
@@ -286,17 +285,16 @@ impl GsMaster {
                         "Connect error (probably waiting for the GS server to start): {}",
                         e
                     );
-                    // Don't remove this timer!
+                    warn!("Backoff for {} ms before retrying connect", backoff_ms);
+                    Timer::after_millis(backoff_ms).await;
+                    backoff_ms = (backoff_ms * 2).min(MAX_BACKOFF_MS); // Exponential backoff
                     counter = counter.wrapping_add(1);
                     if counter.rem(200) == 0 {
-                        // TODO: Send emergency message to pull down sdc if not the first time
-                        // connecting and set FSM to      disconnected?
                         warn!(
                             "Couldn't connect to GS. Pulling down SDC. socket state={}",
                             self.socket.state()
                         );
                     }
-                    // Switch to a different IP address
                     index = (index + 1) % config::IP_ADDRESS_COUNT;
                 }
             }
@@ -368,15 +366,12 @@ impl GsMaster {
     async fn reconnect(&mut self) {
         info!("Reconnecting to the GS");
 
-        // Performs a hardware reset instead of making a new socket
-        // SCB::sys_reset()
-
         // flush whatever was still written to the socket
-        self.socket.flush().await.expect("couldn't flush socket");
-
-        // This closes the connection, which may not be necessary?
-        // close the socket
-        // self.socket.abort();
+        if let Err(e) = self.socket.flush().await {
+            warn!("Socket flush failed: {:?}", e);
+        }
+        // Explicitly abort/close the socket if possible
+        // self.socket.abort(); // Uncomment if abort() is available
 
         // SAFETY: replace the socket in memory with a new socket.
         unsafe {
@@ -388,10 +383,19 @@ impl GsMaster {
                 TcpSocket::new(self.stack, &mut RX_BUFFER, &mut TX_BUFFER),
             );
         }
-
-        // Connect to the GS
+        // Add backoff before attempting to reconnect
+        static mut RECONNECT_BACKOFF_MS: u64 = 1000;
+        static mut RECONNECT_BACKOFF_MAX: u64 = 10000;
+        unsafe {
+            warn!("Backoff for {} ms before reconnecting", RECONNECT_BACKOFF_MS);
+            Timer::after_millis(RECONNECT_BACKOFF_MS).await;
+            RECONNECT_BACKOFF_MS = (RECONNECT_BACKOFF_MS * 2).min(RECONNECT_BACKOFF_MAX);
+        }
         self.connect().await;
         self.should_reconnect = false;
+        unsafe {
+            RECONNECT_BACKOFF_MS = 1000; // Reset after successful reconnect
+        }
     }
 
     /// Transmits the messages from the PodToGsChannel. If a transmission fails,

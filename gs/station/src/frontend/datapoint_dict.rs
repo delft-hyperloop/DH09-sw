@@ -8,84 +8,97 @@ const VALUE_HEADER: &str = "Value";
 const TIMESTAMP_HEADER: &str = "Timestamp";
 
 pub struct DatapointDict {
-    datapoints: [Datapoint; 50],
-    size: usize,
-    capacity: usize,
+    datapoints: Vec<Datapoint>,
     max_length_type: usize,
     max_length_value: usize,
+    terminal_command_rx: TerminalCommandReceiver,
+    scrolled_rows: usize,
 }
 
 impl DatapointDict {
-    pub fn new(capacity: usize) -> Self {
+    pub fn new(terminal_command_rx: TerminalCommandReceiver) -> Self {
         Self {
-            datapoints: [Datapoint::new(Datatype::DefaultDatatype, 0, 0); 50],
-            size: 0,
-            capacity,
-            max_length_type: DATATYPE_HEADER.len(),
-            max_length_value: VALUE_HEADER.len(),
+            datapoints: Vec::new(),
+            max_length_type: 30,
+            max_length_value: 10,
+            terminal_command_rx,
+            scrolled_rows: 0,
+        }
+    }
+    
+    /// Processes the commands received.
+    pub async fn process_command(&mut self) {
+        if !self.terminal_command_rx.is_empty() {
+            match self.terminal_command_rx.recv().await {
+                Some(TerminalCommands::Up) if self.scrolled_rows != 0 => {
+                    self.scrolled_rows -= 1
+                }
+                Some(TerminalCommands::Down) if self.scrolled_rows != self.datapoints.len() => self.scrolled_rows += 1,
+                _ => {}
+            }
         }
     }
 
+    /// Formats the dictionary as a string
     pub fn as_string(&self) -> String {
         let mut result = format!(
-            "{}{}|{}{}|{}\n{}",
+            "{:<width_types$}|{:<width_values$}|{}\n\r{}",
             DATATYPE_HEADER,
-            " ".repeat(self.max_length_type.saturating_sub(DATATYPE_HEADER.len())),
             VALUE_HEADER,
-            " ".repeat(self.max_length_value.saturating_sub(VALUE_HEADER.len())),
             TIMESTAMP_HEADER,
-            "-".repeat(self.max_length_value + self.max_length_type + TIMESTAMP_HEADER.len() + 2)
+            "-".repeat(self.max_length_value + self.max_length_type + TIMESTAMP_HEADER.len() + 2),
+            width_types = self.max_length_type,
+            width_values = self.max_length_value
         );
-        for i in 0..self.size {
+        
+        for i in self.scrolled_rows..self.datapoints.len() {
             let dp = self.datapoints[i];
             result.push_str(&format!(
-                "\n{:?}{}|{}{}|{}",
-                dp.datatype,
-                " ".repeat(self.max_length_type.saturating_sub(format!("{:?}", dp.datatype).len())),
+                "\n\r{:<width_types$}|{:<width_values$}|{}",
+                format!("{:?}", dp.datatype),
                 dp.value,
-                " ".repeat(self.max_length_value.saturating_sub(format!("{:?}", dp.value).len())),
                 dp.timestamp,
+                width_types = self.max_length_type,
+                width_values = self.max_length_value
             ));
         }
-        result.push_str("\n");
+        result.push_str("\n\r");
         result
     }
 
     pub fn add_datapoint(&mut self, datapoint: Datapoint) {
-        if datapoint.datatype != Datatype::CommandHash
-            && datapoint.datatype != Datatype::DataHash
-            && datapoint.datatype != Datatype::ConfigHash
-            && datapoint.datatype != Datatype::DefaultDatatype
+        if datapoint.datatype == Datatype::ConfigHash
+            || datapoint.datatype == Datatype::DataHash
+            || datapoint.datatype == Datatype::CommandHash
         {
-            for i in 0..self.capacity {
-                if self.datapoints[i].datatype == Datatype::DefaultDatatype {
-                    self.max_length_value = std::cmp::max(
-                        self.max_length_value,
-                        format!("{:?}", datapoint.value).len(),
-                    );
-                    self.max_length_type = std::cmp::max(
-                        self.max_length_type,
-                        format!("{:?}", datapoint.datatype).len(),
-                    );
-                    self.datapoints[i] = datapoint;
-                    self.size += 1;
-                    return;
-                } else if datapoint.datatype == self.datapoints[i].datatype {
-                    self.datapoints[i] = datapoint;
-                    return;
-                }
+            return;
+        }
+        for i in 0..self.datapoints.len() {
+            if self.datapoints[i].datatype == datapoint.datatype {
+                self.datapoints[i] = datapoint;
+                self.max_length_value = std::cmp::max(
+                    self.max_length_value,
+                    format!("{:?}", datapoint.value).len(),
+                );
+                self.max_length_type = std::cmp::max(
+                    self.max_length_type,
+                    format!("{:?}", datapoint.datatype).len(),
+                );
+                return;
             }
         }
-        // TODO: replace oldest?
+        self.datapoints.push(datapoint);
     }
 }
 
 impl std::fmt::Display for DatapointDict {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let result = &mut format!("\x1B[{}A{}", self.capacity + 2, self.as_string());
-        for _ in 0..(self.capacity - self.size) {
-            result.push_str("\n");
-        }
-        write!(f, "{}", result)
-    }
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{}", self.as_string()) }
 }
+
+pub enum TerminalCommands {
+    Up,
+    Down,
+}
+
+pub type TerminalCommandReceiver = tokio::sync::mpsc::Receiver<TerminalCommands>;
+pub type TerminalCommandSender = tokio::sync::mpsc::Sender<TerminalCommands>;

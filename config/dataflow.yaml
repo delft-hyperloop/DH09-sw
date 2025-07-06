@@ -2471,6 +2471,12 @@ commands:
     id: 0x214
   - name: 'FaultFixed'
     id: 0x215
+  - name: 'FailLeviSystemCheck'
+    id: 0x216
+  - name: 'FailProp1SystemCheck'
+    id: 0x217
+  - name: 'FailProp2SystemCheck'
+    id: 0x218
 
 beckhoff:
   task-period: 10 # period in ms

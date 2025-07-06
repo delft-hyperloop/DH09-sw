@@ -1,9 +1,15 @@
-use std::io::stdout;
 use std::io::Write;
 use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
 
+use crossterm::cursor;
+use crossterm::event::{read, EnableMouseCapture, Event, KeyCode};
+use crossterm::execute;
+use crossterm::terminal::enable_raw_mode;
+use crossterm::terminal::Clear;
+use crossterm::terminal::ClearType;
+use crossterm::terminal::EnterAlternateScreen;
 use gslib::Datapoint;
 use gslib::Datatype;
 use gslib::Message;
@@ -21,7 +27,7 @@ use tokio::time::sleep;
 
 use crate::backend::Backend;
 use crate::frontend::commands::*;
-use crate::frontend::datapoint_dict::DatapointDict;
+use crate::frontend::datapoint_dict::{DatapointDict, TerminalCommands};
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
 
@@ -137,10 +143,24 @@ pub fn tauri_main(backend: Backend) {
 
             // --
 
+            let mut stdout = std::io::stdout();
+            enable_raw_mode().unwrap();
+            execute!(stdout, EnterAlternateScreen).unwrap();
+            let (terminal_command_tx, mut terminal_command_rx) = tokio::sync::mpsc::channel::<TerminalCommands>(1);
+
             tokio::spawn(async move {
-                let capacity = 50;
-                let mut datapoint_dict: DatapointDict = DatapointDict::new(capacity);
-                print!("{}", "\n".repeat(capacity + 10));
+                if let Event::Key(event) = read().unwrap() {
+                    match event.code {
+                        KeyCode::Up => terminal_command_tx.send(TerminalCommands::Up).await.unwrap(),
+                        KeyCode::Down => terminal_command_tx.send(TerminalCommands::Down).await.unwrap(),
+                        _ => {}
+                    };
+                }
+            });
+
+            tokio::spawn(async move {
+                let mut datapoint_dict: DatapointDict = DatapointDict::new(terminal_command_rx);
+
                 let ss = s2.clone();
                 loop {
                     match message_rcv.try_recv() {
@@ -159,13 +179,27 @@ pub fn tauri_main(backend: Backend) {
                                         )
                                         .expect("Couldn't send message");
                                     }
+
+                                    // Add datapoint to dictionary
                                     datapoint_dict.add_datapoint(Datapoint::new(
                                         dp.datatype,
                                         dp.value as u64,
                                         dp.timestamp,
                                     ));
+                                    
+                                    // Check if there are any commands from the terminal
+                                    datapoint_dict.process_command().await;
+
+                                    // Clear terminal and move cursor to the top left corner
+                                    execute!(stdout, Clear(ClearType::All), cursor::MoveTo(0, 0))
+                                        .unwrap();
+
+                                    // Print the dictionary
                                     print!("{}", datapoint_dict);
-                                    stdout().flush().unwrap();
+
+                                    // Flush the output to the terminal
+                                    stdout.flush().unwrap();
+
                                     app_handle
                                         .state::<BackendState>()
                                         .data_buffer

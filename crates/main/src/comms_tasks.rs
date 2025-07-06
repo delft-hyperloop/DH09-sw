@@ -96,7 +96,7 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::MockProp1Ack(_) => Event::Prop1SystemCheckSuccess,
         Command::MockProp2Ack(_) => Event::Prop2SystemCheckSuccess,
         Command::MockHVOn(_) => Event::HVOnAck,
-        
+
         Command::FailLeviSystemCheck(_) => Event::LeviSystemCheckFailure,
         Command::FailProp1SystemCheck(_) => Event::Prop1SystemCheckFailure,
         Command::FailProp2SystemCheck(_) => Event::Prop2SystemCheckFailure,
@@ -499,6 +499,7 @@ pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
 #[embassy_executor::task]
 pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
     let mut value = 1;
+    // let mut random: u16 = 1300;
     loop {
         // info!("Sending heartbeat");
         gs_tx
@@ -510,7 +511,18 @@ pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
                 ),
             })
             .await;
-        value = !value;
+        value = (value + 1) % 2;
         Timer::after_millis(100).await;
+
+        // gs_tx
+        //     .send(PodToGsMessage {
+        //         dp: Datapoint::new(
+        //             Datatype::from_id(random),
+        //             random as u64,
+        //             embassy_time::Instant::now().as_ticks(),
+        //         ),
+        //     })
+        //     .await;
+        // random += 1;
     }
 }

@@ -53,13 +53,13 @@ pub async fn handle_incoming_data(
         },
         Datatype::LeviSystemCheckFailure => {
             msg_sender.send(Message::Error("Levi System Check Failure".to_string()))?;
-        }
+        },
         Datatype::Prop1SystemCheckFailure => {
             msg_sender.send(Message::Error("Prop 1 System Check Failure".to_string()))?;
-        }
+        },
         Datatype::Prop2SystemCheckFailure => {
             msg_sender.send(Message::Error("Prop 2 System Check Failure".to_string()))?;
-        }
+        },
         _ => {},
     }
 

@@ -30,6 +30,7 @@
             <Chart title="Air Gaps" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">
+            <!-- Angles chart: convert radians to degrees in the data source, and set yRange to [-0.4, 0.4] degrees in PlotBuffer -->
             <Chart title="Angles" background="bg-surface-900" />
         </Tile>
         <Tile containerClass="col-span-1">

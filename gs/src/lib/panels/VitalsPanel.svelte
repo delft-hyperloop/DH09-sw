@@ -207,12 +207,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-row justify-end gap-2 mt-2 text-sm text-gray-300 w-full">
+                    <!-- Move PT Controller State, Fault, and IMD status to their own left-aligned lines below battery display -->
+                    <div class="flex flex-row justify-start gap-2 mt-2 text-sm text-gray-300 w-full">
                         <span>PT Controller State: {ptcStates[$ptcState.value]}</span>
                         <span>|</span>
                         <span>PT Controller Fault: {ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}</span>
                         <span>|</span>
-                        <span>IMD: &ltstatus&gt</span>
+                        <span style="min-width: 320px; white-space: nowrap;">IMD: {imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}</span>
                     </div>
                 </Tile>
                 <Tile

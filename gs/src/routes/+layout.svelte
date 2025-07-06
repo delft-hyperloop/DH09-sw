@@ -224,11 +224,30 @@
     airGapChart.updateSeries(3, new Float32Array(xLenAirGaps).fill(airGapMin)); // Min Safe (yellow)
     airGapChart.updateSeries(4, new Float32Array(xLenAirGaps).fill(airGapMax)); // Max Safe (red)
 
-    let anglesChart = new PlotBuffer(500, 60000, [0, 120], true, 'Roll');
+    // Angles chart: now in degrees, yRange [-0.4, 0.4] deg, with min/max safety lines
+    let anglesChart = new PlotBuffer(500, 60000, [-0.4, 0.4], true, 'Roll');
     anglesChart.addSeries({ label: 'Pitch', spanGaps: false, stroke: '#4d4dff' });
     anglesChart.addSeries({ label: 'Yaw', spanGaps: false, stroke: '#B10DC9' });
     $chartStore.set('Angles', anglesChart);
     leviCharts.push('Angles');
+    // Add min/max safety lines at +/- 0.4 deg
+    anglesChart.addSeries({
+        label: 'Min Safe (-0.4°)',
+        stroke: '#ffde0a', // yellow
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    anglesChart.addSeries({
+        label: 'Max Safe (0.4°)',
+        stroke: '#ff0a43', // red
+        dash: [6, 6],
+        spanGaps: true,
+        show: true
+    });
+    const xLenAngles = anglesChart.getSeriesData(0).length;
+    anglesChart.updateSeries(4, new Float32Array(xLenAngles).fill(-0.4)); // Min Safe (yellow)
+    anglesChart.updateSeries(5, new Float32Array(xLenAngles).fill(0.4)); // Max Safe (red)
 
     let hemsCurrentChart = new PlotBuffer(
         500,
@@ -889,25 +908,22 @@
     );
 
     gdd.stores.registerStore<number>("Roll", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Angles")!.addEntry(1, curr);
-            return curr;
-        }
-    );
+        const curr = Number(data) * 180 / Math.PI;
+        $chartStore.get("Angles")!.addEntry(1, curr);
+        return curr;
+    });
 
     gdd.stores.registerStore<number>("Pitch", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Angles")!.addEntry(2, curr);
-            return curr;
-        }
-    );
+        const curr = Number(data) * 180 / Math.PI;
+        $chartStore.get("Angles")!.addEntry(2, curr);
+        return curr;
+    });
 
     gdd.stores.registerStore<number>("Yaw", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Angles")!.addEntry(3, curr);
-            return curr;
-        }
-    );
+        const curr = Number(data) * 180 / Math.PI;
+        $chartStore.get("Angles")!.addEntry(3, curr);
+        return curr;
+    });
 
     gdd.stores.registerStore<number>("VFL1", 0, data => {
             const curr = Number(data);

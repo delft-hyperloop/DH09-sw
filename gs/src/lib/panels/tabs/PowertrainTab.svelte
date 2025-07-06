@@ -209,9 +209,9 @@
         <Tile insideClass="flex h-full items-center ">
             <div class="flex flex-col ml-4">
                 <!-- <span>Area under maintenance...</span> -->
-               <!-- <p>LV Current: <Store datatype="BatteryCurrentLow" /></p>-->
-<!--                <p>HV Current: <Store datatype="BatteryCurrentHigh" /></p>-->
-<!--                <p>IMD Voltage: <Store datatype="IMDVoltageDetails" /></p> -->
+               <p>LV Current: <Store datatype="Ibus1" /></p>
+              <p>HV Current: <Store datatype="Ibus2" /></p>
+              <p>IMD Warnings: <Store datatype="IMDWarnings" /></p> 
             </div>
         </Tile>
 <!--        <Tile containerClass="col-span-4" heading="Battery stats">-->

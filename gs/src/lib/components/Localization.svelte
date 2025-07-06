@@ -1,12 +1,14 @@
 <script lang="ts">
     import { goingForward, usingTestTrack } from '$lib/stores/state';
     import { GrandDataDistributor } from '$lib';
+    import { derived } from 'svelte/store';
     
     export let showLabels: boolean = true;
 
     const storeManager = GrandDataDistributor.getInstance().stores;
     // 100_000 received from the localization sensor is 1 meter
     const location = storeManager.getWritable("Localization");
+    const velocity = storeManager.getWritable("Velocity");
     let trackLength = 15000;
 
     // SVG elements
@@ -29,6 +31,23 @@
 
     const color_active = "#4D9C89";
     const color_off = "#525B5B";
+
+    // Predictive stopping calculation
+    const currentPosition = derived(location, ($location) => $location.value / 100 || 0);
+    const currentVelocity = derived(velocity, ($velocity) => $velocity.value || 0);
+    const t_stop = 2; // seconds
+    const predictedStop = derived([currentPosition, currentVelocity], ([$currentPosition, $currentVelocity]) => $currentPosition + $currentVelocity * t_stop);
+
+    // Map positions to SVG x-coords
+    function posToX(pos: number) {
+        return x_coord_start + (pos / trackLength) * (x_coord_end - x_coord_start);
+    }
+
+    const stopColor = derived(predictedStop, ($predictedStop) => {
+        if ($predictedStop >= trackLength) return 'rgba(255, 0, 0, 0.35)'; // red
+        if ($predictedStop > trackLength * 0.9) return 'rgba(255, 165, 0, 0.35)'; // orange
+        return 'rgba(76, 175, 80, 0.25)'; // green
+    });
 
     $: if (progress) {
         let path_length: number = progress.getTotalLength();
@@ -58,11 +77,25 @@
         }
     }
 
+    $: startX = posToX($currentPosition);
+    $: stopX = posToX(Math.min($predictedStop, trackLength));
+    $: regionWidth = Math.max(40, stopX - startX);
 </script>
 <div class="w-full">
     <svg viewBox="0 0 920 60" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g id="localiser" transform="translate(0, 2)">
             <g id="track">
+                <!-- Predictive stopping region only when moving and predicted stop is ahead -->
+                {#if $currentVelocity > 0 && $predictedStop > $currentPosition}
+                    <rect
+                        x={startX}
+                        y={y_coord - 12}
+                        width={stopX - startX}
+                        height={24}
+                        fill={$stopColor}
+                        rx={6}
+                    />
+                {/if}
                 <g id="progress_container" bind:this={progress_container}>
                     <g id="path" bind:this={path}>
                         <path d="M10 26H909" stroke="#525B5B" stroke-width="6" />
@@ -132,6 +165,7 @@
                 <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_64_411" />
                 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_64_411" result="shape" />
             </filter>
+
         </defs>
     </svg>
 </div>

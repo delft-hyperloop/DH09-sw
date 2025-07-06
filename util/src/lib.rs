@@ -13,6 +13,8 @@ pub mod fsm_states;
 pub mod info;
 pub mod ip;
 pub mod limits;
+pub mod fmt;
+
 use anyhow::Result;
 
 /// Checks if there are duplicate IDs in the datatypes. Obsolete since we

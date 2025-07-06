@@ -14,6 +14,7 @@
 #![allow(non_snake_case)]
 
 use anyhow::anyhow;
+use goose_utils::fmt::run_fmt;
 
 extern crate serde;
 
@@ -21,6 +22,8 @@ use std::collections::BTreeMap;
 use std::env;
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
+use std::process::Command;
 
 use anyhow::Result;
 use goose_utils::fsm_states::FSMState;
@@ -128,6 +131,19 @@ fn main() -> Result<()> {
             e
         )
     });
+
+    // format the generated file so it's readable
+    run_fmt(
+        &dest_path,
+        // rustfmt.toml is at the workspace root,
+        // exactly 2 directories up from this lib/build.rs :)
+        &PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap().to_string())
+            .ancestors()
+            .nth(2)
+            .unwrap()
+            .join("rustfmt.toml"),
+    )?;
+
     println!("cargo::rerun-if-changed={CONFIG_PATH}");
     println!("cargo::rerun-if-changed={EVENTS_PATH}");
     println!("cargo::rerun-if-changed={DATAFLOW_PATH}");

@@ -1,24 +1,11 @@
-use std::io::Write;
 use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
 
-use crossterm::cursor;
-use crossterm::event::{read, EnableMouseCapture, Event, KeyCode};
-use crossterm::execute;
-use crossterm::terminal::enable_raw_mode;
-use crossterm::terminal::Clear;
-use crossterm::terminal::ClearType;
-use crossterm::terminal::EnterAlternateScreen;
-use gslib::Datapoint;
-use gslib::Datatype;
-use gslib::Message;
 use gslib::ERROR_CHANNEL;
 use gslib::HEARTBEAT;
-use gslib::INFO_CHANNEL;
 use gslib::SHORTCUT_CHANNEL;
 use gslib::STATUS_CHANNEL;
-use gslib::WARNING_CHANNEL;
 use tauri::AppHandle;
 use tauri::GlobalShortcutManager;
 use tauri::Manager;
@@ -27,7 +14,6 @@ use tokio::time::sleep;
 
 use crate::backend::Backend;
 use crate::frontend::commands::*;
-use crate::frontend::datapoint_dict::{DatapointDict, TerminalCommands};
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
 
@@ -53,7 +39,8 @@ pub fn tauri_main(backend: Backend) {
             let app_handle = app.handle();
             let window = app_handle.get_window("main").unwrap();
 
-            let mut message_rcv = backend.message_receiver.resubscribe();
+            let fake_msg_transmitter = backend.message_transmitter.clone();
+
             unsafe {
                 BACKEND.replace(Mutex::new(backend));
             }
@@ -70,12 +57,20 @@ pub fn tauri_main(backend: Backend) {
                 loop {
                     s.emit_all(SHORTCUT_CHANNEL, "heartbeat").unwrap();
                     sleep(Duration::from_millis(HEARTBEAT)).await;
+                    fake_msg_transmitter
+                        .send(gslib::Message::Data(gslib::ProcessedData {
+                            datatype: gslib::Datatype::Offset1,
+                            value: 69.0,
+                            timestamp: 42,
+                            style: "red".to_string(),
+                            units: "yourmom".to_string(),
+                        }))
+                        .unwrap();
                 }
             });
 
             // set up shortcuts
             let s = app_handle.clone();
-            let s2 = app_handle.clone();
             let shortcuts = app_handle.global_shortcut_manager();
 
             window.on_window_event(move |event| {
@@ -127,7 +122,7 @@ pub fn tauri_main(backend: Backend) {
 
                         for i in 1..10 {
                             let ss = s.clone();
-                            sh.register(&format!("SHIFT+{}", i), move || {
+                            sh.register(&format!("SHIFT+{i}"), move || {
                                 ss.emit_all(SHORTCUT_CHANNEL, format!("tab_{i}")).unwrap();
                             })
                             .expect("Could not register shortcut");
@@ -141,95 +136,6 @@ pub fn tauri_main(backend: Backend) {
                 }
             });
 
-            // --
-
-            let mut stdout = std::io::stdout();
-            enable_raw_mode().unwrap();
-            execute!(stdout, EnterAlternateScreen).unwrap();
-            let (terminal_command_tx, mut terminal_command_rx) = tokio::sync::mpsc::channel::<TerminalCommands>(1);
-
-            tokio::spawn(async move {
-                if let Event::Key(event) = read().unwrap() {
-                    match event.code {
-                        KeyCode::Up => terminal_command_tx.send(TerminalCommands::Up).await.unwrap(),
-                        KeyCode::Down => terminal_command_tx.send(TerminalCommands::Down).await.unwrap(),
-                        _ => {}
-                    };
-                }
-            });
-
-            tokio::spawn(async move {
-                let mut datapoint_dict: DatapointDict = DatapointDict::new(terminal_command_rx);
-
-                let ss = s2.clone();
-                loop {
-                    match message_rcv.try_recv() {
-                        Ok(msg) => {
-                            if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-                                backend_mutex.get_mut().unwrap().log_msg(&msg);
-                            }
-
-                            match msg {
-                                Message::Data(dp) => {
-                                    // println!("Received datapoint: {:?}", dp);
-                                    if dp.datatype == Datatype::CANLog {
-                                        ss.emit_all(
-                                            INFO_CHANNEL,
-                                            format!("Received datapoint on the main PCB: {:?}", dp),
-                                        )
-                                        .expect("Couldn't send message");
-                                    }
-
-                                    // Add datapoint to dictionary
-                                    datapoint_dict.add_datapoint(Datapoint::new(
-                                        dp.datatype,
-                                        dp.value as u64,
-                                        dp.timestamp,
-                                    ));
-                                    
-                                    // Check if there are any commands from the terminal
-                                    datapoint_dict.process_command().await;
-
-                                    // Clear terminal and move cursor to the top left corner
-                                    execute!(stdout, Clear(ClearType::All), cursor::MoveTo(0, 0))
-                                        .unwrap();
-
-                                    // Print the dictionary
-                                    print!("{}", datapoint_dict);
-
-                                    // Flush the output to the terminal
-                                    stdout.flush().unwrap();
-
-                                    app_handle
-                                        .state::<BackendState>()
-                                        .data_buffer
-                                        .lock()
-                                        .unwrap()
-                                        .push(Message::Data(dp));
-                                },
-                                Message::Status(s) => app_handle
-                                    .emit_all(
-                                        STATUS_CHANNEL,
-                                        &*format!("Status: {:?};{}", s, s.to_colour_str()),
-                                    )
-                                    .unwrap(),
-                                Message::Info(i) => {
-                                    app_handle.emit_all(INFO_CHANNEL, i.to_string()).unwrap()
-                                },
-                                Message::Warning(w) => {
-                                    app_handle.emit_all(WARNING_CHANNEL, w.to_string()).unwrap()
-                                },
-                                Message::Error(e) => {
-                                    app_handle.emit_all(ERROR_CHANNEL, e.to_string()).unwrap()
-                                },
-                            }
-                        },
-                        Err(_e) => {
-                            // eprintln!("Error receiving message: {:?}", e);
-                        },
-                    }
-                }
-            });
             Ok(())
         })
         .run(tauri::generate_context!())

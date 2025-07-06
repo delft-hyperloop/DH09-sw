@@ -2366,9 +2366,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.169"
+version = "0.2.174"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a"
+checksum = "1171693293099992e19cddea4e8b849964e9846f4acee11b3948bcc337be8776"
 
 [[package]]
 name = "libredox"
@@ -2481,6 +2481,7 @@ dependencies = [
  "fsm",
  "heapless 0.8.0",
  "lib",
+ "libc",
  "log",
  "panic-probe",
  "rand_core 0.6.4",
@@ -3647,9 +3648,9 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "signal-hook"
-version = "0.3.17"
+version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8621587d4798caf8eb44879d42e56b9a93ea5dcd315a6487c357130095b62801"
+checksum = "d881a16cf4426aa584979d30bd82cb33429027e42122b169753d6ef1085ed6e2"
 dependencies = [
  "libc",
  "signal-hook-registry",
@@ -3825,12 +3826,14 @@ dependencies = [
  "csv",
  "dirs",
  "goose_utils",
+ "libc",
  "rand 0.8.5",
  "ratatui",
  "rayon",
  "regex",
  "serde",
  "serde_json",
+ "signal-hook",
  "tauri",
  "tauri-build",
  "time",

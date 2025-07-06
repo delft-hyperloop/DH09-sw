@@ -1,13 +1,15 @@
 [package]
 name = "station"
 version = "0.4.0"
-description = "Helios III Ground Station"
-authors = ["Andreas Tsatsanis", " Francisco Amaro", "Kiril Panayotov"]
+description = "Theia Ground Station"
+authors = ["Andreas Tsatsanis", "Kiril Panayotov", "Harry Toth", "Francisco Amaro"]
 license = "MIT"
-repository = "https://github.com/delft-hyperloop/Helios_III.git"
+repository = "https://github.com/delft-hyperloop/DH09-sw.git"
 default-run = "station"
+# still on rust 2021 because of tauri
+# todo: wait for tauri to update,
+# or use existing patch release, see https://github.com/tauri-apps/tauri/issues/10412
 edition = "2021"
-rust-version = "1.86"
 build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -27,7 +29,7 @@ serde = { version = "1.0", features = ["derive"] }
 chrono = "0.4.38"
 toml = "0.8.12"
 crossterm = { version = "0.27.0"}
-ratatui = { version = "0.26.1", features = ["widget-calendar"] }
+ratatui = { version = "0.26.1", features = ["widget-calendar"], optional = true }
 regex = "1.10.3"
 rayon = "1.9.0"
 colored = "2.1.0"
@@ -37,6 +39,8 @@ tokio = { version = "1.29.1", features = ["rt", "time", "rt-multi-thread", "macr
 anyhow = "1.0.86"
 csv = "1.2.2"
 dirs = "6.0.0"
+signal-hook = "0.3.18"
+libc = "0.2.174"
 
 [[bin]]
 name = "station"
@@ -46,20 +50,11 @@ path = "src/main.rs"
 name = "gslib"
 path = "src/lib.rs"
 
-#[dependencies.tauri]
-#version = "1.6.2"
-#features = [ "window-start-dragging", "window-unminimize", "window-unmaximize", "window-minimize", "window-hide", "window-show", "window-close", "window-maximize"]
-#[package.metadata.tauri]
-#label = "Goose Ground Station"
-#width = 800
-#height = 600
-#resizable = true
-
 [features]
-default = ["backend"]
-tui = []
-backend = ["tauri"]
-full = ["backend", "tui"]
+default = ["full"]
+tui = ["ratatui"]
+gui = ["tauri"]
+full = ["gui", "tui"]
 
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.

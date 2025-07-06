@@ -6,26 +6,13 @@ use gslib::Command;
 use gslib::Info;
 use gslib::Log;
 use gslib::Message;
-use gslib::ProcessedData;
 use regex::Regex;
 use tokio::task::AbortHandle;
 
-use crate::connect::DataReceiver;
-use crate::connect::DataSender;
 use crate::CommandReceiver;
 use crate::CommandSender;
 use crate::MessageReceiver;
 use crate::MessageSender;
-
-// /// Any frontend that interfaces with this backend needs to comply to this trait
-// pub trait Frontend {
-//     /// This is called from main.rs, can be used for any initialisation
-//     fn start();
-//     /// When the backend has data available, it will call this function
-//     fn receive_data(&mut self, data: Vec<Message>);
-//     ///
-//     fn send_command(&self, cmd: Command);
-// }
 
 pub struct Backend {
     pub server_handle: Option<AbortHandle>,
@@ -33,7 +20,6 @@ pub struct Backend {
     pub message_receiver: MessageReceiver,
     pub command_transmitter: CommandSender,
     pub command_receiver: CommandReceiver,
-    pub processed_data_receiver: DataReceiver,
     pub log: Log,
     pub save_path: PathBuf,
 }
@@ -52,8 +38,6 @@ impl Backend {
             tokio::sync::broadcast::channel::<Message>(128);
         let (command_transmitter, command_receiver) =
             tokio::sync::broadcast::channel::<Command>(128);
-        let (_processed_data_sender, processed_data_receiver) =
-            tokio::sync::broadcast::channel::<ProcessedData>(128);
 
         Self {
             server_handle: None,
@@ -61,7 +45,6 @@ impl Backend {
             message_receiver,
             command_transmitter,
             command_receiver,
-            processed_data_receiver,
             log: Log { messages: vec![], commands: vec![] },
             save_path: PathBuf::from_str("/Users/andtsa/Desktop/log.txt").unwrap(),
         }
@@ -75,11 +58,8 @@ impl Backend {
             let c = self.command_receiver.resubscribe();
             self.server_handle = Some(
                 tokio::spawn(async move { crate::connect::connect_main(m, c).await.unwrap() })
-                    .abort_handle(), // todo:
-                                     // is unwrap necessary?
+                    .abort_handle(),
             );
-            // self.status(crate::api::Status::ServerStarted);
-            // self.info(format!("Server handle: {:?}", self.server_handle));
             true
         } else {
             self.warn("Server already running".to_string());
@@ -89,7 +69,7 @@ impl Backend {
 
     pub fn send_command(&mut self, cmd: Command) -> bool {
         // self.info(format!("[TRACE] enqueuing command {:?}", cmd));
-        #[cfg(all(feature = "backend", not(feature = "tui")))]
+        #[cfg(all(feature = "gui", not(feature = "tui")))]
         if cmd != Command::FrontendHeartbeat(0) && cmd != Command::Heartbeat(0) {
             eprintln!("[backend] sending command {:?}", &cmd);
         }
@@ -192,7 +172,7 @@ impl Backend {
             .as_str()
             .to_string();
 
-        x.1 = Regex::new(&format!("\nPeople[: ]*\n({}*)\nItems", all))
+        x.1 = Regex::new(&format!("\nPeople[: ]*\n({all}*)\nItems"))
             .unwrap()
             .captures(&content)
             .ok_or_else(|| anyhow!("\nMissing \"People\" field for procedure:\n{:?}", content))?
@@ -201,7 +181,7 @@ impl Backend {
             .as_str()
             .to_string();
 
-        x.2 = Regex::new(&format!("\nItems[: ]*\n({}*)\nProcedures", all))
+        x.2 = Regex::new(&format!("\nItems[: ]*\n({all}*)\nProcedures"))
             .unwrap()
             .captures(&content)
             .ok_or_else(|| anyhow!("\nMissing \"Items\" field for procedure:\n{:?}", content))?
@@ -210,7 +190,7 @@ impl Backend {
             .as_str()
             .to_string();
 
-        x.3 = Regex::new(&format!("\nProcedures[: ]*\n({}*)\n", all))
+        x.3 = Regex::new(&format!("\nProcedures[: ]*\n({all}*)\n"))
             .unwrap()
             .captures(&content)
             .ok_or_else(|| anyhow!("\nMissing \"Procedures\" field for procedure:\n{:?}", content))?

@@ -26,7 +26,7 @@ pub async fn get_messages_from_tcp(
             },
             Ok(n) => {
                 #[cfg(debug_assertions)]
-                message_transmitter.send(Message::Info(format!("[TRACE] received {} bytes", n)))?;
+                message_transmitter.send(Message::Info(format!("[TRACE] received {n} bytes")))?;
                 let _ = &buffer[..n].iter().for_each(|x| {
                     byte_queue.push_back(*x);
                 });
@@ -35,7 +35,7 @@ pub async fn get_messages_from_tcp(
             },
             Err(e) => {
                 message_transmitter
-                    .send(Message::Error(format!("Error reading from socket: {}", e)))?;
+                    .send(Message::Error(format!("Error reading from socket: {e}")))?;
                 message_transmitter.send(Message::Status(Info::ConnectionClosedByClient))?;
                 break;
             },

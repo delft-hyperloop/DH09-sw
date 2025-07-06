@@ -141,7 +141,7 @@ pub fn save_logs() -> bool {
 
         let path = dirs::download_dir()
             .unwrap_or_else(|| std::env::current_dir().unwrap())
-            .join(format!("log-{}.txt", formatted_time));
+            .join(format!("log-{formatted_time}.txt"));
 
         if Backend::save_to_path(log, path).is_ok() {
             if let Ok(Some(app)) = APP_HANDLE.try_lock().map(|lock| lock.clone()) {
@@ -192,7 +192,7 @@ pub fn procedures() -> Vec<[String; 6]> {
                 "".into(),
                 "".into(),
                 "".into(),
-                format!("{:?}", res),
+                format!("{res:?}"),
             ]]
         }
     } else {
@@ -206,78 +206,3 @@ pub fn procedures() -> Vec<[String; 6]> {
 pub fn test_panic() {
     panic!("kill yourself");
 }
-
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn test_route() -> Route { Route::default() }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn validate_route(route: Route) -> bool { validate_route_internal(route) }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn speeds_to_u64(speeds: LocationSpeedMap) -> u64 { speeds.into() }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn speeds_from_u64(speeds: String) -> Result<LocationSpeedMap, String> {
-//     match u64::from_str(&speeds) {
-//         Ok(parsed_speeds) => Ok(parsed_speeds.into()),
-//         Err(e) => Err(format!("Failed to parse speeds from string: {}", e)),
-//     }
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn positions_to_u64(positions: LocationSequence) -> String {
-//     let positions_u64: u64 = positions.into();
-//     positions_u64.to_string()
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn positions_from_u64(positions: String) -> Result<LocationSequence, String> {
-//     match u64::from_str(&positions) {
-//         Ok(parsed_positions) => Ok(parsed_positions.into()),
-//         Err(e) => Err(format!("Failed to parse positions from string: {}", e)),
-//     }
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn set_route(route: Route) -> bool {
-//     send_command("SetRoute".into(), 1822648539875311616)
-//         && send_command("SetSpeeds".into(), 14104086254467416064)
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn set_route(route: Route) -> bool {
-//     send_command("SetRoute".into(), route.positions.into())
-//         && send_command("SetSpeeds".into(), route.speeds.into())
-// }
-
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn demonstration_a() -> bool {
-//     send_command("SetRoute".into(), 1822648536894799872)
-//         && send_command("SetSpeeds".into(), 15761687916893437952)
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn demonstration_b() -> bool {
-//     send_command("SetRoute".into(), 1905022642377719808)
-//         && send_command("SetSpeeds".into(), 15708555503539847368)
-// }

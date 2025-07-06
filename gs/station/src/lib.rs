@@ -1,12 +1,8 @@
-#[cfg(feature = "tui")]
 use std::str::FromStr;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 
-#[cfg(feature = "tui")]
 use ratatui::prelude::Color;
-
-// use crate::POD_IP_ADDRESS;
 
 include!(concat!(env!("OUT_DIR"), "/config.rs"));
 
@@ -58,7 +54,6 @@ pub struct Log {
 }
 
 impl Info {
-    #[cfg(feature = "tui")]
     pub fn colour(&self) -> Color { Color::from_str(self.to_colour_str()).unwrap() }
 }
 

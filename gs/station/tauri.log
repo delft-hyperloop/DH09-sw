@@ -1,0 +1,12 @@
+
+thread 'tokio-runtime-worker' panicked at gs/station/src/tui/app.rs:36:17:
+bverqfvbgewr gtrProcessedData { datatype: Offset1, value: 69.0, timestamp: 42, style: "red", units: "yourmom" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[frontend] Sending command MockPtAck(0) [2025-07-06 20:19:41.239892 +02:00]
+[frontend] Sending command MockLeviAck(0) [2025-07-06 20:19:41.241828 +02:00]
+[frontend] Sending command MockProp1Ack(0) [2025-07-06 20:19:41.244748 +02:00]
+[frontend] Sending command MockProp2Ack(0) [2025-07-06 20:19:41.245619 +02:00]
+[frontend] Sending command MockPtAck(0) [2025-07-06 20:19:41.839492 +02:00]
+[frontend] Sending command MockLeviAck(0) [2025-07-06 20:19:41.841567 +02:00]
+[frontend] Sending command MockProp1Ack(0) [2025-07-06 20:19:41.842218 +02:00]
+[frontend] Sending command MockProp2Ack(0) [2025-07-06 20:19:41.842786 +02:00]

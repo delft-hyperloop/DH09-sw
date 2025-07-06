@@ -173,7 +173,10 @@ impl FSM {
                 cortex_m::peripheral::SCB::sys_reset();
             }
 
-            (States::Fault, Event::FaultFixed) => self.transition(States::SystemCheck).await,
+            (States::Fault, Event::FaultFixed) => {
+                self.sdc_pin.set_high();
+                self.transition(States::SystemCheck).await
+            }
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,
             (States::ConnectedToGS, Event::StartSystemCheck) => {
                 self.transition(States::SystemCheck).await

@@ -209,8 +209,10 @@ async fn main(spawner: Spawner) -> ! {
         pc4: p.PC4,
         pc5: p.PC5,
         pb12: p.PB12,
+        pg13: p.PG13,
         pb13: p.PB13,
         pb11: p.PB11,
+        pg11: p.PG11,
     };
 
     let gs_master = GS_MASTER.init(

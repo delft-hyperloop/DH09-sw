@@ -1,5 +1,6 @@
 use std::fmt::Formatter;
 
+use crossterm::terminal::disable_raw_mode;
 use gslib::Datapoint;
 use gslib::Datatype;
 
@@ -25,16 +26,16 @@ impl DatapointDict {
             scrolled_rows: 0,
         }
     }
-    
+
     /// Processes the commands received.
     pub async fn process_command(&mut self) {
         if !self.terminal_command_rx.is_empty() {
             match self.terminal_command_rx.recv().await {
-                Some(TerminalCommands::Up) if self.scrolled_rows != 0 => {
-                    self.scrolled_rows -= 1
-                }
-                Some(TerminalCommands::Down) if self.scrolled_rows != self.datapoints.len() => self.scrolled_rows += 1,
-                _ => {}
+                Some(TerminalCommands::Up) if self.scrolled_rows != 0 => self.scrolled_rows -= 1,
+                Some(TerminalCommands::Down) if self.scrolled_rows != self.datapoints.len() => {
+                    self.scrolled_rows += 1
+                },
+                _ => {},
             }
         }
     }
@@ -50,7 +51,7 @@ impl DatapointDict {
             width_types = self.max_length_type,
             width_values = self.max_length_value
         );
-        
+
         for i in self.scrolled_rows..self.datapoints.len() {
             let dp = self.datapoints[i];
             result.push_str(&format!(
@@ -76,14 +77,10 @@ impl DatapointDict {
         for i in 0..self.datapoints.len() {
             if self.datapoints[i].datatype == datapoint.datatype {
                 self.datapoints[i] = datapoint;
-                self.max_length_value = std::cmp::max(
-                    self.max_length_value,
-                    format!("{:?}", datapoint.value).len(),
-                );
-                self.max_length_type = std::cmp::max(
-                    self.max_length_type,
-                    format!("{:?}", datapoint.datatype).len(),
-                );
+                self.max_length_value =
+                    std::cmp::max(self.max_length_value, format!("{:?}", datapoint.value).len());
+                self.max_length_type =
+                    std::cmp::max(self.max_length_type, format!("{:?}", datapoint.datatype).len());
                 return;
             }
         }
@@ -101,4 +98,3 @@ pub enum TerminalCommands {
 }
 
 pub type TerminalCommandReceiver = tokio::sync::mpsc::Receiver<TerminalCommands>;
-pub type TerminalCommandSender = tokio::sync::mpsc::Sender<TerminalCommands>;

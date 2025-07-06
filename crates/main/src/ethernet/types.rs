@@ -15,6 +15,8 @@ use embassy_stm32::peripherals::PB13;
 use embassy_stm32::peripherals::PC1;
 use embassy_stm32::peripherals::PC4;
 use embassy_stm32::peripherals::PC5;
+use embassy_stm32::peripherals::PG11;
+use embassy_stm32::peripherals::PG13;
 use embassy_stm32::Peri;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::channel::Channel;
@@ -161,9 +163,13 @@ pub struct EthPeripherals {
     /// todo
     pub pb12: Peri<'static, PB12>,
     /// todo
+    pub pg13: Peri<'static, PG13>,
+    /// todo
     pub pb13: Peri<'static, PB13>,
     /// todo
     pub pb11: Peri<'static, PB11>,
+    /// todo
+    pub pg11: Peri<'static, PG11>,
 }
 
 impl Debug for EthPeripherals {

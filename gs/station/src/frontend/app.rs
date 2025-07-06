@@ -4,8 +4,12 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use crossterm::cursor;
-use crossterm::event::{read, EnableMouseCapture, Event, KeyCode};
+use crossterm::event::read;
+use crossterm::event::EnableMouseCapture;
+use crossterm::event::Event;
+use crossterm::event::KeyCode;
 use crossterm::execute;
+use crossterm::terminal::disable_raw_mode;
 use crossterm::terminal::enable_raw_mode;
 use crossterm::terminal::Clear;
 use crossterm::terminal::ClearType;
@@ -27,7 +31,8 @@ use tokio::time::sleep;
 
 use crate::backend::Backend;
 use crate::frontend::commands::*;
-use crate::frontend::datapoint_dict::{DatapointDict, TerminalCommands};
+use crate::frontend::datapoint_dict::DatapointDict;
+use crate::frontend::datapoint_dict::TerminalCommands;
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
 
@@ -146,15 +151,26 @@ pub fn tauri_main(backend: Backend) {
             let mut stdout = std::io::stdout();
             enable_raw_mode().unwrap();
             execute!(stdout, EnterAlternateScreen).unwrap();
-            let (terminal_command_tx, mut terminal_command_rx) = tokio::sync::mpsc::channel::<TerminalCommands>(1);
+            let (terminal_command_tx, terminal_command_rx) =
+                tokio::sync::mpsc::channel::<TerminalCommands>(1);
 
             tokio::spawn(async move {
-                if let Event::Key(event) = read().unwrap() {
-                    match event.code {
-                        KeyCode::Up => terminal_command_tx.send(TerminalCommands::Up).await.unwrap(),
-                        KeyCode::Down => terminal_command_tx.send(TerminalCommands::Down).await.unwrap(),
-                        _ => {}
-                    };
+                loop {
+                    if let Event::Key(event) = read().unwrap() {
+                        match event.code {
+                            KeyCode::Up => {
+                                terminal_command_tx.send(TerminalCommands::Up).await.unwrap()
+                            },
+                            KeyCode::Down => {
+                                terminal_command_tx.send(TerminalCommands::Down).await.unwrap()
+                            },
+                            KeyCode::Esc => {
+                                disable_raw_mode().unwrap();
+                                break;
+                            },
+                            _ => {},
+                        };
+                    }
                 }
             });
 
@@ -186,7 +202,7 @@ pub fn tauri_main(backend: Backend) {
                                         dp.value as u64,
                                         dp.timestamp,
                                     ));
-                                    
+
                                     // Check if there are any commands from the terminal
                                     datapoint_dict.process_command().await;
 

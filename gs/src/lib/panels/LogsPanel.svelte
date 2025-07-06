@@ -144,16 +144,6 @@
             }
         })
 
-        unlistens[7] = await listen(EventChannel.ERROR, (event: {payload: string}) => {
-            if (!event.payload.includes("Error reading from socket:")) {
-                toastStore.trigger({
-                    autohide: false,
-                    message: event.payload,
-                    background: 'bg-error-400',
-                });
-            }
-        })
-
         logContainer.addEventListener('scroll', () => {
             userHasScrolled = logContainer.scrollTop < logContainer.scrollHeight - logContainer.clientHeight;
         });

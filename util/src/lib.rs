@@ -9,11 +9,11 @@ pub mod commands;
 pub mod dataflow;
 pub mod datatypes;
 pub mod events;
+pub mod fmt;
 pub mod fsm_states;
 pub mod info;
 pub mod ip;
 pub mod limits;
-pub mod fmt;
 
 use anyhow::Result;
 

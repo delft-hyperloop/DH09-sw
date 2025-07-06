@@ -36,7 +36,7 @@ async fn main() {
         use std::fs::File;
         use std::os::fd::AsRawFd;
 
-        let log_file = File::create("tauri.log").expect("couldn’t open log");
+        let log_file = File::create("/Users/andtsa/downloads/tauri.log").expect("couldn’t open log");
         let stderr = log_file.try_clone().expect("??");
         // SAFETY: questionable. replaces the global stderr handle
         unsafe { libc::dup2(stderr.as_raw_fd(), libc::STDERR_FILENO) };

@@ -14,6 +14,7 @@
 #![allow(non_snake_case)]
 
 use anyhow::anyhow;
+use goose_utils::fmt::run_fmt;
 
 extern crate serde;
 
@@ -132,30 +133,16 @@ fn main() -> Result<()> {
     });
 
     // format the generated file so it's readable
-    let status = Command::new("rustfmt")
-        .arg("--config-path")
-        .arg(
-            // rustfmt.toml is at the workspace root,
-            // exactly 2 directories up from this lib/build.rs :)
-            PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap().to_string())
-                .ancestors()
-                .nth(2)
-                .unwrap()
-                .join("rustfmt.toml"),
-        )
-        .arg("--edition=2024")
-        .arg(&dest_path)
-        .status()?;
-
-    if !status.success() {
-        panic!(
-            "rustfmt failed on `{}` with exit code {}",
-            dest_path.display(),
-            status.code().unwrap_or(-1)
-        );
-    }
-
-    println!("formatted {} (@generated)", dest_path.display());
+    run_fmt(
+        &dest_path,
+        // rustfmt.toml is at the workspace root,
+        // exactly 2 directories up from this lib/build.rs :)
+        &PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap().to_string())
+            .ancestors()
+            .nth(2)
+            .unwrap()
+            .join("rustfmt.toml"),
+    )?;
 
     println!("cargo::rerun-if-changed={CONFIG_PATH}");
     println!("cargo::rerun-if-changed={EVENTS_PATH}");

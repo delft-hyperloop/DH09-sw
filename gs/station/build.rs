@@ -4,11 +4,13 @@ extern crate serde;
 use std::env;
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 
 use anyhow::Result;
 use goose_utils::commands::generate_commands_from_config;
 use goose_utils::datatypes::generate_data_types_from_config;
 use goose_utils::events::generate_events;
+use goose_utils::fmt::run_fmt;
 use goose_utils::fsm_states::FSMState;
 use goose_utils::hash_config;
 use serde::Deserialize;
@@ -80,9 +82,21 @@ fn main() -> Result<()> {
         panic!("Couldn't write to {}! Build failed.", dest_path.to_str().unwrap());
     });
 
-    println!("cargo::rerun-if-changed={}", CONFIG_PATH);
-    println!("cargo::rerun-if-changed={}", EVENTS_PATH);
-    println!("cargo::rerun-if-changed={}", DATAFLOW_PATH);
+    // format the generated file so it's readable
+    run_fmt(
+        &dest_path,
+        // rustfmt.toml is at the workspace root,
+        // exactly 2 directories up from station/build.rs
+        &PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap().to_string())
+            .ancestors()
+            .nth(2)
+            .unwrap()
+            .join("rustfmt.toml"),
+    )?;
+
+    println!("cargo::rerun-if-changed={CONFIG_PATH}");
+    println!("cargo::rerun-if-changed={EVENTS_PATH}");
+    println!("cargo::rerun-if-changed={DATAFLOW_PATH}");
     println!("cargo::rerun-if-changed=build.rs");
     println!("cargo::rerun-if-changed=../../util");
 

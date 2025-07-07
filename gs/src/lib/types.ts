@@ -26,7 +26,9 @@ export type Datapoint = {
     value: number,
     timestamp: number,
     style: string,
-    units: string
+    units: string,
+    upper: number | undefined,
+    lower: number | undefined,
 }
 
 /**

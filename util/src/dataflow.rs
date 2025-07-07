@@ -169,6 +169,7 @@ pub struct DatapointConversionSpec {
     pub display_units: Option<String>,
     pub limits: Option<LimitsSpec>,
     pub gs: DatapointConversionGsSpec,
+    pub severity: Option<String>,
     #[serde(rename = "beckhoff")]
     pub comes_from_levi_info: Option<DatapointComesFromLeviInfo>,
 }
@@ -1072,7 +1073,15 @@ export const NamedDatatypeValues = ["#
             if let Some(callback) = &store.callback {
                 write!(&mut code, ", {callback}").unwrap();
             }
-
+            match (d.lower, d.upper) {
+                (Limit::Single(lower), Limit::Single(upper)) => writeln!(&mut code, ", undefined, {}, {}", lower, upper).unwrap(),
+                (Limit::Multiple(lower_severities), Limit::Multiple(upper_severities)) => {
+                    if lower_severities.brake.is_some() && upper_severities.brake.is_some() {
+                        writeln!(&mut code, ", undefined, {}, {}", lower_severities.brake.unwrap(), upper_severities.brake.unwrap()).unwrap()
+                    }
+                },
+                _ => {}
+            }
             writeln!(&mut code, ");").unwrap();
         }
     }

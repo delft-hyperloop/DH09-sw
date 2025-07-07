@@ -20,9 +20,7 @@ pub struct Config {
 pub struct Datatype {
     pub name: String,
     pub id: u16,
-    #[serde(default = "NONE")]
     pub lower: Limit,
-    #[serde(default = "NONE")]
     pub upper: Limit,
     pub display_units: Option<String>,
     pub priority: Option<usize>,

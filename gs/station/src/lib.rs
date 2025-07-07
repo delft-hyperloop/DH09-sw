@@ -40,6 +40,8 @@ pub struct ProcessedData {
     pub timestamp: u64,
     pub style: String,
     pub units: String,
+    pub lower: Option<u64>,
+    pub upper: Option<u64>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

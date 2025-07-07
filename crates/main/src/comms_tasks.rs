@@ -198,7 +198,6 @@ pub async fn forward_can2_messages_to_fsm(
     event_sender: EventSender,
 ) {
     loop {
-        // TODO: Check if data is inside bounds
         let msg = can_rx.next_message().await;
 
         let envelope = match msg {
@@ -502,7 +501,7 @@ pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
 #[embassy_executor::task]
 pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
     let mut value = 1;
-    // let mut random: u16 = 1300;
+    let mut random: u16 = 200;
     loop {
         // info!("Sending heartbeat");
         gs_tx
@@ -517,6 +516,16 @@ pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
         value = (value + 1) % 2;
         Timer::after_millis(100).await;
 
+        gs_tx.send(PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::Localization,
+                random as u64,
+                Instant::now().as_ticks()
+            )
+        }).await;
+        
+        random += 1;
+        
         // gs_tx
         //     .send(PodToGsMessage {
         //         dp: Datapoint::new(

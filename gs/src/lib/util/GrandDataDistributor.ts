@@ -89,7 +89,15 @@ export class GrandDataDistributor {
      */
     protected processData(data: Datapoint[]) {
         data.forEach((datapoint) => {
-            this.StoreManager.updateStore(datapoint.datatype, new Date().getTime(), datapoint.style, datapoint.units, datapoint.value);
+            this.StoreManager.updateStore(
+                datapoint.datatype,
+                new Date().getTime(),
+                datapoint.style,
+                datapoint.units,
+                datapoint.value,
+                datapoint.lower,
+                datapoint.upper
+            );
         });
     }
 
@@ -117,9 +125,18 @@ class StoreManager {
      * @param initial
      * @param initialUnits
      * @param processFunction - the function to process the data
+     * @param upper
+     * @param lower
      */
-    public registerStore<T>(name: NamedDatatype, initial: T, processFunction?: dataConvFun<T>, initialUnits?:string) {
-        this.stores.set(name, writable<Store<T>>(new Store(initial, '', initialUnits || '', 0, processFunction)));
+    public registerStore<T>(
+        name: NamedDatatype,
+        initial: T,
+        processFunction?: dataConvFun<T>,
+        initialUnits?:string,
+        lower?: number,
+        upper?: number,
+    ) {
+        this.stores.set(name, writable<Store<T>>(new Store(initial, '', initialUnits || '', 0, processFunction, lower, upper)));
     }
 
     /**
@@ -129,12 +146,22 @@ class StoreManager {
      * @param style
      * @param units
      * @param data - the data to update the store with
+     * @param upper
+     * @param lower
      */
-    public updateStore(name: NamedDatatype, timestamp:number, style:string, units:string, data: number) {
+    public updateStore(
+        name: NamedDatatype,
+        timestamp: number,
+        style: string,
+        units: string,
+        data: number,
+        lower?: number,
+        upper?: number
+    ) {
         const store = this.stores.get(name);
         if (store) {
             const storeVal = get(store);
-            store.set(new Store(storeVal.processFunction(data, storeVal.value), style, units, timestamp, storeVal.processFunction))
+            store.set(new Store(storeVal.processFunction(data, storeVal.value), style, units, timestamp, storeVal.processFunction, lower, upper))
         }
     }
 
@@ -160,13 +187,25 @@ class Store<T> {
     private _style: string;
     private _units: string;
     private _timestamp: number;
+    private _lower: number | undefined;
+    private _upper: number | undefined;
 
-    constructor(initial:T, style:string, units:string, timestamp: number, processFunction: dataConvFun<T> = (data) => data.valueOf() as unknown as T) {
+    constructor(
+        initial:T,
+        style:string,
+        units:string,
+        timestamp: number,
+        processFunction: dataConvFun<T> = (data) => data.valueOf() as unknown as T,
+        lower: number | undefined,
+        upper: number | undefined,
+    ) {
         this._value = initial;
         this.processFunction = processFunction;
         this._style = style;
         this._units = units;
         this._timestamp = timestamp;
+        this._lower = lower;
+        this._upper = upper;
     }
 
     // public set(data: number, style: string, units:string) {
@@ -190,5 +229,13 @@ class Store<T> {
 
     get timestamp(): number {
         return this._timestamp;
+    }
+
+    get upper() : number | undefined {
+        return this._upper;
+    }
+
+    get lower(): number | undefined {
+        return this._lower;
     }
 }

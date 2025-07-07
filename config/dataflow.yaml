@@ -737,6 +737,9 @@ message-processing:
         display-units: 'mm'
         gs:
           conversion: 'gs_i32:i32'
+#        limits:
+#          upper: 400
+#          lower: 0
       - datapoint:
           name: 'Velocity'
           id: 0x527
@@ -753,6 +756,9 @@ message-processing:
         display-units: 'm/s'
         gs:
           conversion: 'gs_i16:i16'
+#        limits:
+#          upper: { warn: 250, err: 300, brake: 1000 }
+#          lower: { warn: 0, err: 0, brake: 200}
   - name: 'PPInitFault1'
     can:
       id: 0x505

@@ -28,6 +28,12 @@ export function registerSubscribers() {
     const propEmergency2 = storeManager.getWritable("PPEmergency2");
     const heartbeat = storeManager.getWritable("FrontendHeartbeating");
     const emergency = storeManager.getWritable("Emergency");
+    const localization = storeManager.getWritable("Localization");
+
+    localization.subscribe((store) => {
+        // console.log(`Style: ${store.style}`);
+        console.log(`upper: ${store.upper}`);
+    })
 
     fsmTransitionFail.subscribe(async (store) => {
         let state: string = await invoke('get_fsm_state_by_index', { index: store.value });

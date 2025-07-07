@@ -463,6 +463,9 @@
     BMSVoltageTempsChart.updateSeries(3, new Float32Array(xLenTemps).fill(tempMin)); // Min Safe (yellow)
     BMSVoltageTempsChart.updateSeries(4, new Float32Array(xLenTemps).fill(tempMax)); // Max Safe (red)
 
+    let breakingCommsChart = new PlotBuffer(500, 60000, [0, 100], false, 'Breaking Comms');
+    $chartStore.set('Breaking Comms', breakingCommsChart);
+
     leviChartStore.set(leviCharts);
     propChartStore.set(propCharts);
     powertrainChartStore.set(powertrainCharts);
@@ -1157,6 +1160,7 @@
     );
 
     gdd.stores.registerStore<number>("FSMState", 0);
+    gdd.stores.registerStore<number>("PressureBrakes1", 0);
 
     gdd.stores.registerStore<number>("FSMTransitionFail", 100);
 

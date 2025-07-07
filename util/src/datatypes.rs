@@ -9,8 +9,6 @@ use std::hash::Hasher;
 use anyhow::Result;
 use serde::Deserialize;
 
-const NONE: fn() -> Limit = || Limit::No;
-
 #[derive(Deserialize, Hash, Default)]
 pub struct Config {
     pub(crate) Datatype: Vec<Datatype>,

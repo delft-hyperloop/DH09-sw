@@ -133,12 +133,12 @@ impl GsMaster {
             p.pc4, // RX_D0: Received Bit 0
             p.pc5, // RX_D1: Received Bit 1
             //choose one:
-            // p.pb12, // FOR MPCB (TX_D0: Transmit Bit 0)
-            p.pg13, // FOR NUCLEO (TX_D0: Transmit Bit 0)
+            p.pb12, // FOR MPCB (TX_D0: Transmit Bit 0)
+            // p.pg13, // FOR NUCLEO (TX_D0: Transmit Bit 0)
             p.pb13, // TX_D1: Transmit Bit 1
             //choose one:
-            // p.pb11, //FOR MPCB (TX_EN: Transmit Enable)
-            p.pg11, // FOR NUCLEO (TX_EN: Transmit Enable)
+            p.pb11, //FOR MPCB (TX_EN: Transmit Enable)
+            // p.pg11, // FOR NUCLEO (TX_EN: Transmit Enable)
             GenericPhy::new(0),
             mac_addr,
         );
@@ -352,11 +352,11 @@ impl GsMaster {
     /// Reconnects to the GS if the connection drops by creating a new socket.
     async fn reconnect(&mut self) {
         // Go into fault state if the pcb disconnects from the ground station.
-        self.rx_transmitter
-            .publish(GsToPodMessage {
-                command: Command::ReconnectEmergency(0),
-            })
-            .await;
+        // self.rx_transmitter
+        //     .publish(GsToPodMessage {
+        //         command: Command::ReconnectEmergency(0),
+        //     })
+        //     .await;
 
         info!("Reconnecting to the GS");
 

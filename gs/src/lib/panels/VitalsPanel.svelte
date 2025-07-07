@@ -171,8 +171,8 @@
                                     {/if}
                                 </div>
                             </div>
-                            <span>Velocity: <Store datatype="Velocity"/> m/s</span>
-                            <span>Position: <Store datatype="Localization" dataModifier={0.01}/> mm</span>
+                            <span>Velocity: <Store datatype="Velocity"/></span>
+                            <span>Position: <Store datatype="Localization" dataModifier={0.01}/></span>
                         </div>
                         <div style="grid-template-columns: 1fr 2fr" class="grid gap-2 items-center">
                             <span>LV:</span>

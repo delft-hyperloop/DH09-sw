@@ -1,4 +1,5 @@
-use gslib::{Datapoint, Limit};
+use gslib::Datapoint;
+use gslib::Limit;
 use gslib::ProcessedData;
 use gslib::ValueCheckResult;
 
@@ -18,18 +19,18 @@ pub fn process(datapoint: &Datapoint) -> ProcessedData {
     let mut upper = None;
     let mut lower = None;
     match (bounds.0, bounds.1) {
-        (Limit::No, Limit::No) => {}
-        (Limit::Single(upper_limit), Limit::Single(lower_limit)) => { 
+        (Limit::No, Limit::No) => {},
+        (Limit::Single(upper_limit), Limit::Single(lower_limit)) => {
             upper = Some(upper_limit);
             lower = Some(lower_limit);
         },
-        (Limit::Multiple(upper_severities), Limit::Multiple(lower_severities)) => { 
+        (Limit::Multiple(upper_severities), Limit::Multiple(lower_severities)) => {
             if upper_severities.brake.is_some() && lower_severities.brake.is_some() {
                 upper = Some(upper_severities.brake.unwrap());
                 lower = Some(lower_severities.brake.unwrap());
             }
         },
-        _ => {}
+        _ => {},
     }
 
     ProcessedData {

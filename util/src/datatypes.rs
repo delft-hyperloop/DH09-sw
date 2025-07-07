@@ -12,6 +12,7 @@ use serde::Deserialize;
 #[derive(Deserialize, Hash, Default)]
 pub struct Config {
     pub(crate) Datatype: Vec<Datatype>,
+    pub(crate) criticalDatapoints: Vec<String>,
 }
 
 #[derive(Deserialize, Hash)]
@@ -20,6 +21,7 @@ pub struct Datatype {
     pub id: u16,
     pub lower: Limit,
     pub upper: Limit,
+    pub critical: bool,
     pub display_units: Option<String>,
     pub priority: Option<usize>,
     pub store: Option<StoreInfo>,
@@ -81,6 +83,9 @@ pub fn generate_data_types_from_config(config: &Config, drv: bool) -> Result<Str
     config.hash(&mut hasher);
     let hash = hasher.finish();
 
+    let criticalCount = config.criticalDatapoints.len();
+    let criticalDatapoints = &config.criticalDatapoints;
+    let mut criticalDatapointResult = String::new();
     let mut enum_definitions = String::new();
     let mut match_to_id = String::new();
     let mut match_from_id = String::new();
@@ -91,6 +96,10 @@ pub fn generate_data_types_from_config(config: &Config, drv: bool) -> Result<Str
 
     let mut priorities = String::new();
 
+    for dtp in criticalDatapoints {
+        criticalDatapointResult.push_str(&format!("\n\t\t\tDatatype::{} => true,", dtp));
+    }
+    
     for dtype in &config.Datatype {
         data_ids.push(dtype.id);
         enum_definitions.push_str(&format!("    {},\n", dtype.name));
@@ -138,6 +147,9 @@ pub enum ValueCheckResult {{
 #[allow(non_camel_case_types)]
 #[allow(non_snake_case)]
 {}
+
+pub const CRITICAL_DATATYPE_COUNT: usize = {criticalCount};
+
 pub enum Datatype {{
 {enum_definitions}
 }}\n
@@ -148,6 +160,13 @@ impl Datatype {{
 {match_to_id}
         }}
     }}
+
+    pub fn is_critical(&self) -> bool {{
+        match self {{{criticalDatapointResult}
+            _ => false,
+        }}
+    }}
+
     pub fn from_id(id:u16) -> Self {{
         #[allow(unreachable_patterns)]
         match id {{

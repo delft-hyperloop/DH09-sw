@@ -3,18 +3,19 @@
 
 use defmt::todo;
 use defmt::*;
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::pubsub::WaitResult;
 use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_can::Frame;
 use embedded_can::Id;
 use embedded_can::StandardId;
-use lib::config::Command;
+use lib::config::{Command, CRITICAL_DATATYPE_COUNT};
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
 use lib::config::DATA_HASH;
-use lib::Datapoint;
+use lib::{config, Datapoint};
 use lib::EmergencyType;
 use lib::Event;
 use lib::EventReceiver;
@@ -298,6 +299,12 @@ pub async fn forward_can2_messages_to_gs(
     mut can_rx: can2::CanRxSubscriber<'static>,
     gs_tx: ethernet::types::PodToGsPublisher<'static>,
 ) {
+    // Store the timestamp of the last check.
+    let mut lastCriticalDatapointCheck = Instant::now();
+    
+    // Store the timestamps for each checked datapoint
+    let mut criticalDatapoints: [(config::Datatype, u32); CRITICAL_DATATYPE_COUNT] = [(config::Datatype::DefaultDatatype, 0); CRITICAL_DATATYPE_COUNT];
+    
     loop {
         let can_frame = can_rx.next_message_pure().await;
         let id = match can_frame.id() {
@@ -306,7 +313,10 @@ pub async fn forward_can2_messages_to_gs(
         };
 
         let data = can_frame.payload();
+        
+        
 
+        // send the datapoint to the ground station
         lib::config::parse_datapoints_can_2(id, data, |dp| async move {
             gs_tx.send(PodToGsMessage { dp }).await;
         })
@@ -499,7 +509,9 @@ pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
 
 /// Sends a heartbeat to the ground station every 100 ms
 #[embassy_executor::task]
-pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
+pub async fn gs_heartbeat(
+    gs_tx: ethernet::types::PodToGsPublisher<'static>
+) {
     let mut value = 1;
     // let mut random: u16 = 200;
     loop {
@@ -514,7 +526,7 @@ pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
             })
             .await;
         value = (value + 1) % 2;
-        Timer::after_millis(100).await;
+        Timer::after_millis(50).await;
 
         // gs_tx.send(PodToGsMessage {
         //     dp: Datapoint::new(
@@ -523,9 +535,9 @@ pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
         //         Instant::now().as_ticks()
         //     )
         // }).await;
-        // 
+        //
         // random += 1;
-        
+
         // gs_tx
         //     .send(PodToGsMessage {
         //         dp: Datapoint::new(

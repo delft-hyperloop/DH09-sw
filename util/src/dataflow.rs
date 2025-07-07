@@ -273,7 +273,7 @@ impl TryFrom<String> for ConversionGsSpec {
 pub struct DatapointSpec {
     pub name: String,
     pub id: u16,
-
+    pub critical: Option<bool>,
     pub store: Option<StoreInfo>,
 }
 
@@ -458,11 +458,19 @@ pub fn collect_data_types(df: &DataflowSpec) -> crate::datatypes::Config {
     let mut data_types = crate::datatypes::Config::default();
     for mp in &df.message_processing {
         for dpc in &mp.datapoint_conversion {
+            let mut critical = false;
+            if dpc.datapoint.critical.is_some() {
+                critical = dpc.datapoint.critical.unwrap();
+                if critical {
+                    data_types.criticalDatapoints.push(dpc.datapoint.name.clone())
+                }
+            }
             data_types.Datatype.push(crate::datatypes::Datatype {
                 id: dpc.datapoint.id,
                 name: dpc.datapoint.name.clone(),
                 lower: dpc.limits.as_ref().map(|l| l.lower).unwrap_or(Limit::No),
                 upper: dpc.limits.as_ref().map(|l| l.upper).unwrap_or(Limit::No),
+                critical,
                 display_units: dpc.display_units.clone(),
                 priority: None,
                 store: dpc.datapoint.store.clone(),
@@ -475,6 +483,7 @@ pub fn collect_data_types(df: &DataflowSpec) -> crate::datatypes::Config {
             name: sd.datapoint.name.clone(),
             lower: Limit::No,
             upper: Limit::No,
+            critical: false,
             display_units: None,
             priority: sd.priority,
             store: sd.datapoint.store.clone(),
@@ -1074,13 +1083,21 @@ export const NamedDatatypeValues = ["#
                 write!(&mut code, ", {callback}").unwrap();
             }
             match (d.lower, d.upper) {
-                (Limit::Single(lower), Limit::Single(upper)) => writeln!(&mut code, ", undefined, {}, {}", lower, upper).unwrap(),
+                (Limit::Single(lower), Limit::Single(upper)) => {
+                    writeln!(&mut code, ", undefined, {}, {}", lower, upper).unwrap()
+                },
                 (Limit::Multiple(lower_severities), Limit::Multiple(upper_severities)) => {
                     if lower_severities.brake.is_some() && upper_severities.brake.is_some() {
-                        writeln!(&mut code, ", undefined, {}, {}", lower_severities.brake.unwrap(), upper_severities.brake.unwrap()).unwrap()
+                        writeln!(
+                            &mut code,
+                            ", undefined, {}, {}",
+                            lower_severities.brake.unwrap(),
+                            upper_severities.brake.unwrap()
+                        )
+                        .unwrap()
                     }
                 },
-                _ => {}
+                _ => {},
             }
             writeln!(&mut code, ");").unwrap();
         }

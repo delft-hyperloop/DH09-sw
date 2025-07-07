@@ -724,6 +724,7 @@ message-processing:
       - datapoint:
           name: 'Localization'
           id: 0x321
+          critical: true
           store:
             default: 0
             callback: |

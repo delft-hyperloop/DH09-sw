@@ -105,14 +105,14 @@ impl GsMaster {
         let mac_addr = lib::config::POD_MAC_ADDRESS;
 
         // Get an IPv4 address for the pod
-        // let config = Config::dhcpv4(Default::default());
+        let config = Config::dhcpv4(Default::default());
 
-        // static IPv4 address
-        let config = Config::ipv4_static(embassy_net::StaticConfigV4 {
-            address: Ipv4Cidr::new(Ipv4Address::new(192, 168, 1, 113), 24),
-            gateway: None,
-            dns_servers: Default::default(),
-        });
+        // static IPv4 address for the old router
+        // let config = Config::ipv4_static(embassy_net::StaticConfigV4 {
+        //     address: Ipv4Cidr::new(Ipv4Address::new(192, 168, 1, 113), 24),
+        //     gateway: None,
+        //     dns_servers: Default::default(),
+        // });
 
         // Get the IPv4 address of the GS
         let remotes = get_remote_endpoints();

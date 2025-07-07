@@ -4,7 +4,6 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
 import { MODAL_SETTINGS } from '$lib/types';
 import {
-    connectedToMainPCB,
     emergencyModalActive,
     emsTempsAcknowledged,
     hemsTempsAcknowledged,
@@ -234,6 +233,7 @@ export function registerSubscribers() {
                 "Levitation",
                 "Powertrain Controller",
                 "SenseCon",
+                "Disconnection",
             ]
             modalTitle.set(`${sources[store.value - 1]} Emergency!`);
             modalBody.set(

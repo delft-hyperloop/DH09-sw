@@ -2477,6 +2477,8 @@ commands:
     id: 0x217
   - name: 'FailProp2SystemCheck'
     id: 0x218
+  - name: 'ReconnectEmergency'
+    id: 0x219
 
 beckhoff:
   task-period: 10 # period in ms

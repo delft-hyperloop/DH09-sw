@@ -61,6 +61,9 @@ fn match_cmd_to_event(command: Command) -> Event {
             emergency_type: lib::EmergencyType::GeneralEmergency,
         },
         Command::FaultFixed(_) => Event::FaultFixed,
+        Command::ReconnectEmergency(_) => Event::Emergency {
+            emergency_type: EmergencyType::DisconnectionEmergency,
+        },
 
         // HV commands
         Command::StartHV(_) => Event::StartPreCharge,

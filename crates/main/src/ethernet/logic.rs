@@ -30,6 +30,7 @@ use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
 use lib::config;
+use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
@@ -285,8 +286,6 @@ impl GsMaster {
                     // Don't remove this timer!
                     counter = counter.wrapping_add(1);
                     if counter.rem(200) == 0 {
-                        // TODO: Send emergency message to pull down sdc if not the first time
-                        // connecting and set FSM to      disconnected?
                         warn!(
                             "Couldn't connect to GS. Pulling down SDC. socket state={}",
                             self.socket.state()
@@ -352,6 +351,13 @@ impl GsMaster {
 
     /// Reconnects to the GS if the connection drops by creating a new socket.
     async fn reconnect(&mut self) {
+        // Go into fault state if the pcb disconnects from the ground station.
+        self.rx_transmitter
+            .publish(GsToPodMessage {
+                command: Command::ReconnectEmergency(0),
+            })
+            .await;
+
         info!("Reconnecting to the GS");
 
         // Performs a hardware reset instead of making a new socket

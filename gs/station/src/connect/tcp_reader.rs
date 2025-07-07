@@ -19,8 +19,6 @@ pub async fn get_messages_from_tcp(
             Ok(0) => {
                 message_transmitter.send(Message::Status(Info::ConnectionClosedByClient))?;
                 message_transmitter
-                    .send(Message::Warning("Connection closed by client".to_string()))?;
-                message_transmitter
                     .send(Message::Error("Connection closed by client".to_string()))?;
                 break;
             },

@@ -106,6 +106,8 @@ pub enum EmergencyType {
     EmergencyPTC,
     /// Emergency triggered by SenseCon
     EmergencySenseCon,
+    /// Emergency triggered when we lose connection to the main PCB
+    DisconnectionEmergency,
 }
 
 impl Event {

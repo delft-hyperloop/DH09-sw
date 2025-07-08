@@ -1,6 +1,5 @@
 use std::fmt::Formatter;
 
-use crossterm::terminal::disable_raw_mode;
 use gslib::Datapoint;
 use gslib::Datatype;
 

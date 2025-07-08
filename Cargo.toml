@@ -88,7 +88,7 @@ features = [
 [workspace.dependencies.embassy-net]
 git = "https://github.com/delft-hyperloop/embassy"
 rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
-features = ["medium-ethernet", "proto-ipv4", "tcp", "dns", "dhcpv4", "defmt", "packet-trace"]
+features = ["medium-ethernet", "proto-ipv4", "tcp", "dns", "dhcpv4", "defmt", "packet-trace", "icmp", "udp"]
 
 [workspace.dependencies.embassy-net-driver]
 git = "https://github.com/delft-hyperloop/embassy"

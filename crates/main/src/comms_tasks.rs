@@ -568,7 +568,7 @@ pub async fn check_critical_datapoints(
             last_critical_datapoint_check = now;
 
             for dtt in critical_datapoints {
-                if dtt.0 != Datatype::DefaultDatatype && dtt.1 != 0 && now - dtt.1 >= 1000 {
+                if dtt.0 != Datatype::DefaultDatatype && dtt.1 != 0 && now - dtt.1 >= 2000 {
                     // Send a message to the fsm to enter emergency
                     event_sender
                         .send(Event::Emergency {

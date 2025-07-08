@@ -23,6 +23,7 @@ use lib::EventChannel;
 use lib::EventReceiver;
 use lib::EventSender;
 use main::can::can2;
+use main::comms_tasks::check_critical_datapoints;
 use main::comms_tasks::forward_can2_messages_to_fsm;
 use main::comms_tasks::forward_can2_messages_to_gs;
 use main::comms_tasks::forward_fsm_events_to_can2;
@@ -138,6 +139,7 @@ async fn main(spawner: Spawner) -> ! {
     let event_receiver_fsm: EventReceiver = event_channel_fsm.receiver().into();
     let event_sender_can2_to_fsm: EventSender = event_channel_fsm.sender().into();
     let event_sender_gs_to_fsm: EventSender = event_channel_fsm.sender().into();
+    let event_sender_stale_data_checker: EventSender = event_channel_fsm.sender().into();
 
     // The event channel that will be used to transmit events from the FSM over the
     // CAN bus
@@ -251,6 +253,12 @@ async fn main(spawner: Spawner) -> ! {
     )));
 
     unwrap!(spawner.spawn(gs_heartbeat(gs_comms.tx_publisher())));
+
+    unwrap!(spawner.spawn(check_critical_datapoints(
+        can2.new_subscriber(),
+        event_sender_stale_data_checker,
+        gs_comms.tx_publisher()
+    )));
 
     // unwrap!(spawner.spawn(log_can2_on_gs(
     //     gs_comms.tx_publisher(),

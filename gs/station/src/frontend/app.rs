@@ -156,7 +156,7 @@ pub fn tauri_main(backend: Backend) {
 
             tokio::spawn(async move {
                 loop {
-                    if let Event::Key(event) = read().unwrap() {
+                    if let Ok(Event::Key(event)) = read() {
                         match event.code {
                             KeyCode::Up => {
                                 terminal_command_tx.send(TerminalCommands::Up).await.unwrap()

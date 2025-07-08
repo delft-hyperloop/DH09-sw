@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::str::FromStr;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;

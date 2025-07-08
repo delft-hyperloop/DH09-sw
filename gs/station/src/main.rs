@@ -33,13 +33,23 @@ async fn main() {
     // so it just needs a handle to receive data.
     #[cfg(feature = "tui")]
     let tui = {
-        use std::fs::File;
-        use std::os::fd::AsRawFd;
+        // // redirect stderr somewhere else
+        // use std::fs::File;
+        // use std::os::fd::AsRawFd;
+        //
+        // use crossterm::tty::IsTty;
+        //
+        // let log_file =
+        //     File::create("/Users/andtsa/downloads/tauri.log").expect("couldn’t open log");
+        // let logfd = log_file.try_clone().expect("??");
+        // // SAFETY: questionable. replaces the global stderr handle
+        // unsafe {
+        //     libc::dup2(logfd.as_raw_fd(), libc::STDOUT_FILENO);
+        //     libc::dup2(logfd.as_raw_fd(), libc::STDERR_FILENO);
+        // }
+        //
+        // assert!(!std::io::stdout().is_tty());
 
-        let log_file = File::create("/Users/andtsa/downloads/tauri.log").expect("couldn’t open log");
-        let stderr = log_file.try_clone().expect("??");
-        // SAFETY: questionable. replaces the global stderr handle
-        unsafe { libc::dup2(stderr.as_raw_fd(), libc::STDERR_FILENO) };
         let rx = backend.message_receiver.resubscribe();
         tokio::spawn(async move { tui_main(rx).await })
     };
@@ -48,7 +58,7 @@ async fn main() {
     tauri_main(backend);
 
     #[cfg(feature = "tui")]
-    tui.await.unwrap();
+    tui.await.unwrap().unwrap();
 
     if !cfg!(feature = "gui") && !cfg!(feature = "tui") {
         println!("No features enabled, exiting");

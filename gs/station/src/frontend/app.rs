@@ -39,11 +39,7 @@ pub fn tauri_main(backend: Backend) {
             let app_handle = app.handle();
             let window = app_handle.get_window("main").unwrap();
 
-            let fake_msg_transmitter = backend.message_transmitter.clone();
-
-            unsafe {
-                BACKEND.replace(Mutex::new(backend));
-            }
+            BACKEND.lock().expect("impossible poison").write(backend);
 
             let s = app_handle.clone();
             // this is unsafe, don't do it anywhere else
@@ -57,15 +53,6 @@ pub fn tauri_main(backend: Backend) {
                 loop {
                     s.emit_all(SHORTCUT_CHANNEL, "heartbeat").unwrap();
                     sleep(Duration::from_millis(HEARTBEAT)).await;
-                    fake_msg_transmitter
-                        .send(gslib::Message::Data(gslib::ProcessedData {
-                            datatype: gslib::Datatype::Offset1,
-                            value: 69.0,
-                            timestamp: 42,
-                            style: "red".to_string(),
-                            units: "yourmom".to_string(),
-                        }))
-                        .unwrap();
                 }
             });
 

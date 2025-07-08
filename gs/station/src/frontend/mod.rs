@@ -2,6 +2,7 @@ pub mod app;
 pub mod commands;
 
 use std::fmt::Debug;
+use std::mem::MaybeUninit;
 use std::sync::Mutex;
 
 use gslib::Message;
@@ -14,7 +15,7 @@ pub struct BackendState {
     pub data_buffer: Mutex<Vec<Message>>,
 }
 
-static mut BACKEND: Option<Mutex<Backend>> = None;
+static BACKEND: Mutex<MaybeUninit<Backend>> = Mutex::new(MaybeUninit::uninit());
 
 impl Default for BackendState {
     fn default() -> Self {

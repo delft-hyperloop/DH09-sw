@@ -30,7 +30,7 @@ impl App {
     pub async fn run(&mut self, terminal: &mut Tui) -> anyhow::Result<()> {
         while self.is_running {
             terminal.draw(|frame| self.render_frame(frame))?;
-            self.receive_data().await;
+            self.receive_data();
             self.handle_keyboard_events()?;
         }
         Ok(())
@@ -38,7 +38,7 @@ impl App {
 
     fn render_frame(&self, frame: &mut Frame) { frame.render_widget(self, frame.area()); }
 
-    async fn receive_data(&mut self) {
+    fn receive_data(&mut self) {
         while let Ok(datapoint) = self.stream.try_recv() {
             match datapoint {
                 Message::Data(datapoint) => {
@@ -59,6 +59,7 @@ impl App {
                     match key_event.code {
                         KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('c') => {
                             ratatui::restore();
+                            println!("\033[0;");
                             std::process::exit(0);
                         },
                         KeyCode::Up | KeyCode::Char('k') => {
@@ -74,6 +75,7 @@ impl App {
             };
         } else {
             // timeout expired
+            println!("bv8bw0vb8bwv");
         }
         Ok(())
     }

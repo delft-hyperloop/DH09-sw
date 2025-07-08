@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use chrono::Local;
 use gslib::Datapoint;
@@ -78,8 +77,8 @@ pub fn send_command(cmd_name: String, val: u64) -> bool {
         eprintln!("[frontend] Sending command {}({}) [{}]", cmd_name, val, Local::now());
     }
     let c = Command::from_string(&cmd_name, val);
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().send_command(c)
+    if let Ok(mut backend_mutex) = unsafe { BACKEND.lock() } {
+        unsafe { backend_mutex.assume_init_mut().send_command(c) }
     } else {
         panic!("kys");
     }
@@ -100,8 +99,8 @@ pub fn send_command_64_bits(cmd_name: String, vals: [i32; 2]) -> bool {
         eprintln!("[frontend] Sending command {}({}) [{}]", cmd_name, value, Local::now());
     }
     let c = Command::from_string(&cmd_name, value);
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().send_command(c)
+    if let Ok(mut backend_mutex) = unsafe { BACKEND.lock() } {
+        unsafe { backend_mutex.assume_init_mut().send_command(c) }
     } else {
         panic!("kys");
     }
@@ -111,8 +110,8 @@ pub fn send_command_64_bits(cmd_name: String, vals: [i32; 2]) -> bool {
 #[allow(unused)]
 #[tauri::command]
 pub fn connect_to_pod() -> bool {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().start_server()
+    if let Ok(mut backend_mutex) = unsafe { BACKEND.lock() } {
+        unsafe { backend_mutex.assume_init_mut().start_server() }
     } else {
         false
     }
@@ -122,8 +121,10 @@ pub fn connect_to_pod() -> bool {
 #[allow(unused)]
 #[tauri::command]
 pub fn disconnect() -> bool {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().quit_server();
+    if let Ok(mut backend_mutex) = unsafe { BACKEND.lock() } {
+        unsafe {
+            backend_mutex.assume_init_mut().quit_server();
+        }
         true
     } else {
         false
@@ -134,8 +135,8 @@ pub fn disconnect() -> bool {
 #[allow(unused)]
 #[tauri::command]
 pub fn save_logs() -> bool {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_ref() } {
-        let log = &backend_mutex.lock().unwrap().log;
+    if let Ok(mut backend_mutex) = unsafe { BACKEND.lock() } {
+        let log = unsafe { &backend_mutex.assume_init_ref().log };
         let now = Local::now().naive_local();
         let formatted_time = now.format("%d_%m_%Y at %H_%M_%S").to_string();
 
@@ -156,36 +157,41 @@ pub fn save_logs() -> bool {
     }
 }
 
-#[macro_export]
-#[allow(unused)]
-#[tauri::command]
-pub fn save_to_file(path: &str) -> bool {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_ref() } {
-        let log = &backend_mutex.lock().unwrap().log;
-        if let Ok(x) = PathBuf::from_str(path) {
-            Backend::save_to_path(log, x).is_ok()
-        } else {
-            false
-        }
-    } else {
-        false
-    }
-}
+// #[macro_export]
+// #[allow(unused)]
+// #[tauri::command]
+// pub fn save_to_file(path: &str) -> bool {
+//     if let Ok(mut backend_mutex) = unsafe { BACKEND.lock() } {
+//         let log = unsafe { &backend_mutex.assume_init_ref().log };
+//         if let Ok(x) = PathBuf::from_str(path) {
+//             Backend::save_to_path(log, x).is_ok()
+//         } else {
+//             false
+//         }
+//     } else {
+//         false
+//     }
+// }
 
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]
 pub fn procedures() -> Vec<[String; 6]> {
     let res = Backend::load_procedures(PathBuf::from("../../config/procedures/"));
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
+    if let Ok(mut backend_mutex) = unsafe { BACKEND.lock() } {
         if let Ok(x) = res {
-            backend_mutex.get_mut().unwrap().log_msg(&Message::Info("Loading procedures".into()));
+            unsafe {
+                backend_mutex
+                    .assume_init_mut()
+                    .log_msg(&Message::Info("Loading procedures".into()));
+            }
             x
         } else {
-            backend_mutex
-                .get_mut()
-                .unwrap()
-                .log_msg(&Message::Error("Failed to load procedures".into()));
+            unsafe {
+                backend_mutex
+                    .assume_init_mut()
+                    .log_msg(&Message::Error("Failed to load procedures".into()));
+            }
             vec![[
                 "Failed".into(),
                 "Failed to parse some procedures".into(),

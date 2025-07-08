@@ -58,6 +58,11 @@ pub fn get_fsm_state_by_index(index: u8) -> String { format!("{:?}", States::fro
 #[macro_export]
 #[allow(unused)]
 #[tauri::command]
+pub fn get_datatype_by_id(id: u16) -> String { format!("{:?}", Datatype::from_id(id)) }
+
+#[macro_export]
+#[allow(unused)]
+#[tauri::command]
 pub fn unload_buffer(state: State<BackendState>) -> Vec<ProcessedData> {
     let mut data_buffer = state.data_buffer.lock().unwrap();
     let mut datapoints = Vec::new();

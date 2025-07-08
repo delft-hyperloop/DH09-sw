@@ -99,7 +99,7 @@ pub fn generate_data_types_from_config(config: &Config, drv: bool) -> Result<Str
     for dtp in criticalDatapoints {
         criticalDatapointResult.push_str(&format!("\n\t\t\tDatatype::{} => true,", dtp));
     }
-    
+
     for dtype in &config.Datatype {
         data_ids.push(dtype.id);
         enum_definitions.push_str(&format!("    {},\n", dtype.name));
@@ -144,12 +144,11 @@ pub enum ValueCheckResult {{
     BrakeNow,
 }}
 
+pub const CRITICAL_DATATYPE_COUNT: usize = {criticalCount};
+
 #[allow(non_camel_case_types)]
 #[allow(non_snake_case)]
 {}
-
-pub const CRITICAL_DATATYPE_COUNT: usize = {criticalCount};
-
 pub enum Datatype {{
 {enum_definitions}
 }}\n

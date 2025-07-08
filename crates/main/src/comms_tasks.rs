@@ -10,13 +10,14 @@ use embassy_time::Timer;
 use embedded_can::Frame;
 use embedded_can::Id;
 use embedded_can::StandardId;
-use lib::config::{Command, CRITICAL_DATATYPE_COUNT};
+use lib::{config, EmergencyType};
+use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
+use lib::config::CRITICAL_DATATYPE_COUNT;
 use lib::config::DATA_HASH;
-use lib::{config, Datapoint};
-use lib::EmergencyType;
+use lib::Datapoint;
 use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
@@ -198,6 +199,13 @@ pub async fn forward_can2_messages_to_fsm(
     mut can_rx: can2::CanRxSubscriber<'static>,
     event_sender: EventSender,
 ) {
+    // Store the timestamp of the last check.
+    let mut last_critical_datapoint_check = Instant::now().as_millis();
+
+    // Store the timestamps for each checked datapoint
+    let mut critical_datapoints: [(config::Datatype, u64); CRITICAL_DATATYPE_COUNT] =
+        [(config::Datatype::DefaultDatatype, 0); CRITICAL_DATATYPE_COUNT];
+    
     loop {
         let msg = can_rx.next_message().await;
 
@@ -213,6 +221,41 @@ pub async fn forward_can2_messages_to_fsm(
             Id::Extended(e) => e.as_raw(),
             Id::Standard(s) => s.as_raw() as u32,
         };
+
+        if Datatype::from_id(id as u16).is_critical() {
+            let datatype = Datatype::from_id(id as u16);
+            
+            let mut index = 0;
+            loop {
+                let dtt = critical_datapoints[index];
+                if dtt.0 == datatype || dtt.0 == Datatype::DefaultDatatype {
+                    // if dtt.1 != 0 && Instant::now().as_millis() - dtt.1 >= 1000 {
+                    //     event_sender.send(Event::Emergency { emergency_type: EmergencyType::StaleCriticalDataEmergency }).await;
+                    //     event_sender.send(Event::StaleCriticalData(id)).await;
+                    // }
+                    critical_datapoints[index] = (datatype, Instant::now().as_millis());
+                    break;
+                }
+
+                index += 1;
+                if index == CRITICAL_DATATYPE_COUNT {
+                    error!("Didn't find critical datatype!!");
+                    break;
+                }
+            }
+        }
+
+        let now = Instant::now().as_millis();
+        if now - last_critical_datapoint_check >= 250 {
+            last_critical_datapoint_check = now;
+
+            for dtt in critical_datapoints {
+                if dtt.0 != Datatype::DefaultDatatype && dtt.1 != 0 && now - dtt.1 >= 1000 {
+                    event_sender.send(Event::Emergency { emergency_type: EmergencyType::StaleCriticalDataEmergency }).await;
+                    event_sender.send(Event::StaleCriticalData(id)).await;
+                }
+            }
+        }
 
         let payload = envelope.payload();
         let event = match_can_id_to_event(id, payload);
@@ -299,12 +342,6 @@ pub async fn forward_can2_messages_to_gs(
     mut can_rx: can2::CanRxSubscriber<'static>,
     gs_tx: ethernet::types::PodToGsPublisher<'static>,
 ) {
-    // Store the timestamp of the last check.
-    let mut lastCriticalDatapointCheck = Instant::now();
-    
-    // Store the timestamps for each checked datapoint
-    let mut criticalDatapoints: [(config::Datatype, u32); CRITICAL_DATATYPE_COUNT] = [(config::Datatype::DefaultDatatype, 0); CRITICAL_DATATYPE_COUNT];
-    
     loop {
         let can_frame = can_rx.next_message_pure().await;
         let id = match can_frame.id() {
@@ -313,8 +350,6 @@ pub async fn forward_can2_messages_to_gs(
         };
 
         let data = can_frame.payload();
-        
-        
 
         // send the datapoint to the ground station
         lib::config::parse_datapoints_can_2(id, data, |dp| async move {
@@ -335,12 +370,6 @@ pub async fn forward_fsm_to_gs(
     gs_tx: ethernet::types::PodToGsPublisher<'static>,
     event_receiver: EventReceiver,
 ) {
-    let mut levi_failure = 1;
-    let mut levi_success = 1;
-    let mut prop1_success = 1;
-    let mut prop2_success = 1;
-    let mut prop1_failure = 1;
-    let mut prop2_failure = 1;
     loop {
         let event = event_receiver.receive().await;
         match event {
@@ -354,6 +383,15 @@ pub async fn forward_fsm_to_gs(
                         ),
                     })
                     .await
+            }
+            Event::StaleCriticalData(id) => {
+                gs_tx.send( PodToGsMessage {
+                    dp: Datapoint::new(
+                        Datatype::EmergencyStaleCriticalData,
+                        id as u64,
+                    Instant::now().as_ticks(),
+                    ),
+                }).await;
             }
             Event::TransitionFail(other_state) => {
                 gs_tx
@@ -382,72 +420,66 @@ pub async fn forward_fsm_to_gs(
                     .send(PodToGsMessage {
                         dp: Datapoint::new(
                             Datatype::LeviSystemCheckFailure,
-                            levi_failure,
+                            0,
                             Instant::now().as_ticks(),
                         ),
                     })
                     .await;
-                levi_failure = levi_failure % 100 + 1;
             }
             Event::LeviSystemCheckSuccess => {
                 gs_tx
                     .send(PodToGsMessage {
                         dp: Datapoint::new(
                             Datatype::LeviSystemCheckSuccess,
-                            levi_success,
+                            0,
                             Instant::now().as_ticks(),
                         ),
                     })
                     .await;
-                levi_success = levi_success % 100 + 1;
             }
             Event::Prop1SystemCheckFailure => {
                 gs_tx
                     .send(PodToGsMessage {
                         dp: Datapoint::new(
                             Datatype::Prop1SystemCheckFailure,
-                            prop1_failure,
+                            0,
                             Instant::now().as_ticks(),
                         ),
                     })
                     .await;
-                prop1_failure = prop1_failure % 100 + 1;
             }
             Event::Prop1SystemCheckSuccess => {
                 gs_tx
                     .send(PodToGsMessage {
                         dp: Datapoint::new(
                             Datatype::Prop1SystemCheckSuccess,
-                            prop1_success,
+                            0,
                             Instant::now().as_ticks(),
                         ),
                     })
                     .await;
-                prop1_success = prop1_success % 100 + 1;
             }
             Event::Prop2SystemCheckSuccess => {
                 gs_tx
                     .send(PodToGsMessage {
                         dp: Datapoint::new(
                             Datatype::Prop2SystemCheckSuccess,
-                            prop2_success,
+                            0,
                             Instant::now().as_ticks(),
                         ),
                     })
                     .await;
-                prop2_success = prop2_success % 100 + 1;
             }
             Event::Prop2SystemCheckFailure => {
                 gs_tx
                     .send(PodToGsMessage {
                         dp: Datapoint::new(
                             Datatype::Prop2SystemCheckFailure,
-                            0, // TODO: this to all of them
+                            0,
                             Instant::now().as_ticks(),
                         ),
                     })
                     .await;
-                prop2_failure = prop2_failure % 100 + 1;
             }
             Event::ResetFSM => {
                 gs_tx
@@ -509,9 +541,7 @@ pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
 
 /// Sends a heartbeat to the ground station every 100 ms
 #[embassy_executor::task]
-pub async fn gs_heartbeat(
-    gs_tx: ethernet::types::PodToGsPublisher<'static>
-) {
+pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
     let mut value = 1;
     // let mut random: u16 = 200;
     loop {

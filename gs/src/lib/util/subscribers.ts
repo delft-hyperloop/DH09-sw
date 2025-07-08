@@ -29,6 +29,17 @@ export function registerSubscribers() {
     const heartbeat = storeManager.getWritable("FrontendHeartbeating");
     const emergency = storeManager.getWritable("Emergency");
     const localization = storeManager.getWritable("Localization");
+    const emergencyStaleData = storeManager.getWritable("EmergencyStaleCriticalData");
+
+    emergencyStaleData.subscribe(async (store) => {
+        if (store.value !== 0) {
+            let datatype: string = await invoke("get_datatype_by_id", { id: store.value });
+            console.error("Stale critical data emergency with id " + store.value);
+            modalBody.set(`${datatype} has been stale for more than one second! The main PCB went into the Fault state!`);
+            modalTitle.set("Stale critical datatype!")
+            modalStore.trigger(MODAL_SETTINGS);
+        }
+    })
 
     localization.subscribe((store) => {
         // console.log(`Style: ${store.style}`);

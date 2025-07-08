@@ -239,6 +239,9 @@ standard-datapoints:
   - datapoint:
       name: 'ResetFSM'
       id: 0x226
+  - datapoint:
+      name: 'EmergencyStaleCriticalData'
+      id: 0x227
 
 message-processing:
   - name: 'TempMotorLeft'

@@ -30,7 +30,6 @@ use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
 use lib::config;
-use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;

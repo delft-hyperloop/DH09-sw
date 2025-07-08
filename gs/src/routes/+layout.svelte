@@ -1053,6 +1053,8 @@
 
     gdd.stores.registerStore<number>("FrontendHeartbeating", 0);
 
+    gdd.stores.registerStore<number>("EmergencyStaleCriticalData", 0);
+
     gdd.start(50);
 
     initializeStores();

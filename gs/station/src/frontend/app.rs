@@ -5,7 +5,6 @@ use std::time::Duration;
 
 use crossterm::cursor;
 use crossterm::event::read;
-use crossterm::event::EnableMouseCapture;
 use crossterm::event::Event;
 use crossterm::event::KeyCode;
 use crossterm::execute;
@@ -53,6 +52,7 @@ pub fn tauri_main(backend: Backend) {
             test_panic,
             save_logs,
             get_fsm_state_by_index,
+            get_datatype_by_id,
         ])
         .setup(move |app| {
             let app_handle = app.handle();

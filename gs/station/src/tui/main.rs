@@ -2,7 +2,10 @@
 mod app;
 mod render;
 
+use std::io::stdout;
 use std::io::Stdout;
+
+use crossterm::execute;
 use ratatui::prelude::*;
 
 use crate::app::App;
@@ -12,8 +15,11 @@ pub type Tui = Terminal<CrosstermBackend<Stdout>>;
 
 pub fn tui_main() -> anyhow::Result<()> {
     let mut terminal = ratatui::try_init()?;
-    App::new().run(&mut terminal)?;
+    let mut app = App::new()?;
+    app.run(&mut terminal)?;
     ratatui::try_restore()?;
+    let _ = execute!(stdout(), crossterm::cursor::Show);
+    app.child.kill()?;
     Ok(())
 }
 

@@ -1,9 +1,13 @@
 #![allow(clippy::manual_flatten)]
 use std::collections::BTreeMap;
-use std::io::stdin;
 use std::io::stdout;
 use std::io::BufRead;
+use std::path::PathBuf;
+use std::process::Child;
+use std::process::Command;
+use std::process::Stdio;
 use std::sync::mpsc::Receiver;
+use std::thread;
 use std::time::Duration;
 
 use crossterm::event::poll;
@@ -24,22 +28,42 @@ pub struct App {
     pub scroll: usize,
     pub is_running: bool,
     pub stream: Receiver<ProcessedData>,
+    pub child: Child,
 }
 
 impl App {
-    pub fn new() -> Self {
+    pub fn new() -> anyhow::Result<Self> {
         let (tx, rx) = std::sync::mpsc::channel();
-        std::thread::spawn(move || {
-            let stdin = stdin();
-            for line in stdin.lock().lines() {
-                if let Ok(line) = line {
+
+        let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let gui_dir = manifest_dir.parent().expect("ooga booga").to_path_buf();
+
+        eprintln!("Spawning GUI from: {}", gui_dir.display());
+
+        let mut child = Command::new("npm")
+            .current_dir(&gui_dir)
+            .args(["run", "gui"])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("Failed to spawn gui");
+
+        let map = BTreeMap::new();
+
+        // thread to read stdout
+        if let Some(out) = child.stdout.take() {
+            let tx = tx.clone();
+            thread::spawn(move || {
+                let reader = std::io::BufReader::new(out);
+                for line in reader.lines().flatten() {
                     if let Ok(Some(dp)) = read_datapoint(&line) {
                         let _ = tx.send(dp);
                     }
                 }
-            }
-        });
-        Self { data: Default::default(), is_running: true, scroll: 0, stream: rx }
+            });
+        }
+
+        Ok(Self { data: map, is_running: true, scroll: 0, stream: rx, child })
     }
 
     pub fn run(&mut self, terminal: &mut Tui) -> anyhow::Result<()> {
@@ -67,9 +91,10 @@ impl App {
                 Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
                     match key_event.code {
                         KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('c') => {
-                            ratatui::restore();
-                            let _ = execute!(stdout(), crossterm::cursor::Show);
-                            std::process::exit(0);
+                            self.is_running = false;
+                            // ratatui::restore();
+                            // let _ = execute!(stdout(), crossterm::cursor::Show);
+                            // std::process::exit(0);
                         },
                         KeyCode::Up | KeyCode::Char('k') => {
                             self.scroll = self.scroll.wrapping_add(1);

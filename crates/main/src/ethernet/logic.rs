@@ -12,7 +12,6 @@ use embassy_net::tcp::State;
 use embassy_net::tcp::TcpSocket;
 use embassy_net::Config;
 use embassy_net::Ipv4Address;
-use embassy_net::Ipv4Cidr;
 use embassy_net::Stack;
 use embassy_net::StackResources;
 use embassy_stm32::eth::Ethernet;

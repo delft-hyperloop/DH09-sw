@@ -23,6 +23,7 @@ pub type EventChannel =
 pub struct EventSender(
     Sender<'static, NoopRawMutex, Event, embassy_sync::priority_channel::Min, MAX_EVENTS>,
 );
+
 /// Type alias for the event channel receiver.
 #[derive(Copy, Clone)]
 pub struct EventReceiver(

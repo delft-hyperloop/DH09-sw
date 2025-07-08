@@ -86,9 +86,6 @@ pub enum Event {
     Prop2SystemCheckSuccess,
     /// Propulsion motor 2 failed the system check
     Prop2SystemCheckFailure,
-    /// Event sent to signal to the ground station that critical data became
-    /// stale. The value passed with it represents the index of the datatype
-    StaleCriticalData(u32),
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]

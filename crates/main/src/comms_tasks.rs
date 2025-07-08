@@ -3,14 +3,13 @@
 
 use defmt::todo;
 use defmt::*;
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::pubsub::WaitResult;
 use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_can::Frame;
 use embedded_can::Id;
 use embedded_can::StandardId;
-use lib::{config, EmergencyType};
+use lib::config;
 use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
@@ -18,6 +17,7 @@ use lib::config::CONFIG_HASH;
 use lib::config::CRITICAL_DATATYPE_COUNT;
 use lib::config::DATA_HASH;
 use lib::Datapoint;
+use lib::EmergencyType;
 use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
@@ -42,7 +42,6 @@ pub async fn forward_gs_to_fsm(
         let command: Command = msg.command;
         let event: Event = match_cmd_to_event(command);
 
-        // TODO: Turn off High Voltage in case of emergency!
         match event {
             Event::NoEvent => {}
             _ => event_sender.send(event).await,
@@ -199,13 +198,6 @@ pub async fn forward_can2_messages_to_fsm(
     mut can_rx: can2::CanRxSubscriber<'static>,
     event_sender: EventSender,
 ) {
-    // Store the timestamp of the last check.
-    let mut last_critical_datapoint_check = Instant::now().as_millis();
-
-    // Store the timestamps for each checked datapoint
-    let mut critical_datapoints: [(config::Datatype, u64); CRITICAL_DATATYPE_COUNT] =
-        [(config::Datatype::DefaultDatatype, 0); CRITICAL_DATATYPE_COUNT];
-    
     loop {
         let msg = can_rx.next_message().await;
 
@@ -221,41 +213,6 @@ pub async fn forward_can2_messages_to_fsm(
             Id::Extended(e) => e.as_raw(),
             Id::Standard(s) => s.as_raw() as u32,
         };
-
-        if Datatype::from_id(id as u16).is_critical() {
-            let datatype = Datatype::from_id(id as u16);
-            
-            let mut index = 0;
-            loop {
-                let dtt = critical_datapoints[index];
-                if dtt.0 == datatype || dtt.0 == Datatype::DefaultDatatype {
-                    // if dtt.1 != 0 && Instant::now().as_millis() - dtt.1 >= 1000 {
-                    //     event_sender.send(Event::Emergency { emergency_type: EmergencyType::StaleCriticalDataEmergency }).await;
-                    //     event_sender.send(Event::StaleCriticalData(id)).await;
-                    // }
-                    critical_datapoints[index] = (datatype, Instant::now().as_millis());
-                    break;
-                }
-
-                index += 1;
-                if index == CRITICAL_DATATYPE_COUNT {
-                    error!("Didn't find critical datatype!!");
-                    break;
-                }
-            }
-        }
-
-        let now = Instant::now().as_millis();
-        if now - last_critical_datapoint_check >= 250 {
-            last_critical_datapoint_check = now;
-
-            for dtt in critical_datapoints {
-                if dtt.0 != Datatype::DefaultDatatype && dtt.1 != 0 && now - dtt.1 >= 1000 {
-                    event_sender.send(Event::Emergency { emergency_type: EmergencyType::StaleCriticalDataEmergency }).await;
-                    event_sender.send(Event::StaleCriticalData(id)).await;
-                }
-            }
-        }
 
         let payload = envelope.payload();
         let event = match_can_id_to_event(id, payload);
@@ -383,15 +340,6 @@ pub async fn forward_fsm_to_gs(
                         ),
                     })
                     .await
-            }
-            Event::StaleCriticalData(id) => {
-                gs_tx.send( PodToGsMessage {
-                    dp: Datapoint::new(
-                        Datatype::EmergencyStaleCriticalData,
-                        id as u64,
-                    Instant::now().as_ticks(),
-                    ),
-                }).await;
             }
             Event::TransitionFail(other_state) => {
                 gs_tx
@@ -558,16 +506,6 @@ pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
         value = (value + 1) % 2;
         Timer::after_millis(50).await;
 
-        // gs_tx.send(PodToGsMessage {
-        //     dp: Datapoint::new(
-        //         Datatype::Localization,
-        //         random as u64,
-        //         Instant::now().as_ticks()
-        //     )
-        // }).await;
-        //
-        // random += 1;
-
         // gs_tx
         //     .send(PodToGsMessage {
         //         dp: Datapoint::new(
@@ -578,5 +516,78 @@ pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
         //     })
         //     .await;
         // random += 1;
+    }
+}
+
+/// Periodically checks if critical datapoints become stale
+#[embassy_executor::task]
+pub async fn check_critical_datapoints(
+    mut can_rx: can2::CanRxSubscriber<'static>,
+    event_sender: EventSender,
+    gs_tx: ethernet::types::PodToGsPublisher<'static>,
+) {
+    // Store the timestamp of the last check.
+    let mut last_critical_datapoint_check = Instant::now().as_millis();
+
+    // Store the timestamps for each checked datapoint
+    let mut critical_datapoints: [(config::Datatype, u64); CRITICAL_DATATYPE_COUNT] =
+        [(config::Datatype::DefaultDatatype, 0); CRITICAL_DATATYPE_COUNT];
+
+    loop {
+        if !can_rx.is_empty() {
+            let can_frame = can_rx.next_message_pure().await;
+
+            let id = match can_frame.id() {
+                Id::Standard(s) => s.as_raw() as u32,
+                Id::Extended(e) => e.as_raw(),
+            };
+
+            // Check if the received datatype is critical
+            if Datatype::from_id(id as u16).is_critical() {
+                let datatype = Datatype::from_id(id as u16);
+
+                let mut index = 0;
+                loop {
+                    let dtt = critical_datapoints[index];
+                    if dtt.0 == datatype || dtt.0 == Datatype::DefaultDatatype {
+                        critical_datapoints[index] = (datatype, Instant::now().as_millis());
+                        break;
+                    }
+
+                    index += 1;
+                    if index == CRITICAL_DATATYPE_COUNT {
+                        error!("Didn't find critical datatype!!");
+                        break;
+                    }
+                }
+            }
+        }
+
+        let now = Instant::now().as_millis();
+        if now - last_critical_datapoint_check >= 250 {
+            last_critical_datapoint_check = now;
+
+            for dtt in critical_datapoints {
+                if dtt.0 != Datatype::DefaultDatatype && dtt.1 != 0 && now - dtt.1 >= 1000 {
+                    // Send a message to the fsm to enter emergency
+                    event_sender
+                        .send(Event::Emergency {
+                            emergency_type: EmergencyType::StaleCriticalDataEmergency,
+                        })
+                        .await;
+
+                    // Send the ID of the stale datatype to the ground station
+                    gs_tx
+                        .send(PodToGsMessage {
+                            dp: Datapoint {
+                                datatype: Datatype::EmergencyStaleCriticalData,
+                                value: dtt.0.to_id() as u64,
+                                timestamp: Instant::now().as_ticks(),
+                            },
+                        })
+                        .await;
+                }
+            }
+        }
     }
 }

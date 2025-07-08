@@ -5,10 +5,7 @@ use core::fmt::Formatter;
 
 use defmt::info;
 use embassy_stm32::gpio::Output;
-use embassy_time::Instant;
 use embassy_time::Timer;
-use lib::config::Datatype;
-use lib::Datapoint;
 use lib::EmergencyType;
 use lib::Event;
 use lib::EventReceiver;
@@ -165,11 +162,6 @@ impl FSM {
                 }
 
                 self.event_sender2.send(Event::Discharge).await;
-            }
-            (_, Event::StaleCriticalData(id)) => {
-                self.event_sender_gs
-                    .send(Event::StaleCriticalData(id))
-                    .await
             }
             (_, Event::Fault) if self.state != States::Fault => {
                 error!("Fault triggered!");

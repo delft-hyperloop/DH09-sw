@@ -17,6 +17,8 @@ use embassy_stm32::gpio::Output;
 use embassy_stm32::gpio::Speed;
 use embassy_stm32::peripherals;
 use embassy_stm32::peripherals::*;
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+use embassy_sync::signal::Signal;
 use embassy_time::Timer;
 use fsm::FSM;
 use lib::EventChannel;
@@ -72,6 +74,8 @@ static GS_MASTER: StaticCell<GsMaster> = StaticCell::new();
 /// struct for the channels used for communicating with the GsMaster
 static GS_COMMS: StaticCell<GsComms> = StaticCell::new();
 
+static SIGNAL: StaticCell<Signal<NoopRawMutex, bool>> = StaticCell::new();
+
 #[embassy_executor::task]
 async fn run_fsm(
     event_receiver: EventReceiver,
@@ -93,8 +97,11 @@ async fn run_fsm(
 
 /// Run the GsMaster
 #[embassy_executor::task]
-async fn run_gs_master(gs_master: &'static mut GsMaster) -> ! {
-    gs_master.run().await;
+async fn run_gs_master(
+    gs_master: &'static mut GsMaster,
+    signal: &'static Signal<NoopRawMutex, bool>,
+) -> ! {
+    gs_master.run(signal).await;
 }
 
 #[embassy_executor::main]
@@ -229,7 +236,9 @@ async fn main(spawner: Spawner) -> ! {
         .await,
     );
 
-    unwrap!(spawner.spawn(run_gs_master(gs_master)));
+    let signal = SIGNAL.init(Signal::new());
+
+    unwrap!(spawner.spawn(run_gs_master(gs_master, signal)));
 
     unwrap!(spawner.spawn(forward_gs_to_fsm(
         gs_comms.rx_receiver(),
@@ -257,7 +266,8 @@ async fn main(spawner: Spawner) -> ! {
     unwrap!(spawner.spawn(check_critical_datapoints(
         can2.new_subscriber(),
         event_sender_stale_data_checker,
-        gs_comms.tx_publisher()
+        gs_comms.tx_publisher(),
+        signal
     )));
 
     // unwrap!(spawner.spawn(log_can2_on_gs(

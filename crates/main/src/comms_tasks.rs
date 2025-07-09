@@ -3,7 +3,9 @@
 
 use defmt::todo;
 use defmt::*;
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::pubsub::WaitResult;
+use embassy_sync::signal::Signal;
 use embassy_time::Instant;
 use embassy_time::Timer;
 use embedded_can::Frame;
@@ -528,7 +530,11 @@ pub async fn check_critical_datapoints(
     mut can_rx: can2::CanRxSubscriber<'static>,
     event_sender: EventSender,
     gs_tx: ethernet::types::PodToGsPublisher<'static>,
+    signal: &'static Signal<NoopRawMutex, bool>,
 ) {
+    // Wait for the signal to indicate that you are connected to the ground station
+    signal.wait().await;
+
     // Store the timestamp of the last check.
     let mut last_critical_datapoint_check = Instant::now().as_millis();
 

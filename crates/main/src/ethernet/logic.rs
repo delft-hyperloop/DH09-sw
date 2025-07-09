@@ -20,7 +20,9 @@ use embassy_stm32::eth::InterruptHandler;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::interrupt;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::mutex::Mutex;
+use embassy_sync::signal::Signal;
 use embassy_time::Duration;
 use embassy_time::Instant;
 use embassy_time::Timer;
@@ -107,7 +109,7 @@ impl GsMaster {
 
         // static IPv4 address
         // let config = Config::ipv4_static(embassy_net::StaticConfigV4 {
-        //     address: Ipv4Cidr::new(Ipv4Address::new(192, 168, 1, 113), 24),
+        //     address: Ipv4Cidr::new(Ipv4Address::new(192, 168, 0, 100), 24),
         //     gateway: None,
         //     dns_servers: Default::default(),
         // });
@@ -210,11 +212,12 @@ impl GsMaster {
     ///   remote TCP received the acknowledgment of its connection termination
     ///   request.
     /// - `CLOSED` represents no connection state at all
-    pub async fn run(&mut self) -> ! {
+    pub async fn run(&mut self, signal: &'static Signal<NoopRawMutex, bool>) -> ! {
         info!("Running the ethernet fsm");
 
         info!("Connecting to the GS");
         self.connect().await;
+        signal.signal(true);
         info!("Connected to the GS");
 
         loop {

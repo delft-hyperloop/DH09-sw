@@ -727,7 +727,7 @@ message-processing:
       - datapoint:
           name: 'Localization'
           id: 0x321
-          critical: true
+#          critical: true
           store:
             default: 0
             callback: |
@@ -827,7 +827,7 @@ message-processing:
       - datapoint:
           name: 'Word1'
           id: 0x5B8
-          critical: true
+#          critical: true
           store:
             default: 0
         getter: 'u16[0..2]'
@@ -842,7 +842,7 @@ message-processing:
       - datapoint:
           name: 'Word2'
           id: 0x4B6
-          critical: true
+#          critical: true
           store:
             default: 0
         getter: 'u16[0..2]'

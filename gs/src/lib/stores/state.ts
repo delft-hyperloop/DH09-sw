@@ -39,6 +39,8 @@ export const threeDModeActive: Writable<boolean> = writable(false);
 export const propControlWord1: Writable<number> = writable<number>(0);
 export const propControlWord2: Writable<number> = writable<number>(0);
 
+export const ptResetMessage: Writable<number> = writable<number>(0);
+
 export const propulsionConfigSent: Writable<boolean> = writable(false);
 export const inStateIdle: Writable<boolean> = writable(false);
 export const inStateActive: Writable<boolean> = writable(false);

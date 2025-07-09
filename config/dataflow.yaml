@@ -297,7 +297,6 @@ message-processing:
         display-units: '°C'
         gs:
           conversion: 'gs_2p_float:f32'
-
       - datapoint:
           name: 'TempMotorLeft3'
           id: 0x4B3
@@ -525,6 +524,7 @@ message-processing:
       - datapoint:
           name: 'PTCState'
           id: 0x3A3
+          critical: true
           store:
             default: 0
         getter: 'u8[0..1]'
@@ -568,6 +568,7 @@ message-processing:
       - datapoint:
           name: 'HvVHigh'
           id: 0x3A1
+          critical: true
           store:
             default: 0
             callback: |
@@ -581,12 +582,13 @@ message-processing:
         gs:
           conversion: 'gs_2p_float:f32'
         display-units: 'V'
-        limits:
-          upper: { warn: 360, err: 420 }
-          lower: { warn: 280, err: 270 }
+#        limits:
+#          upper: { warn: 360, err: 420 }
+#          lower: { warn: 280, err: 270 }
       - datapoint:
           name: 'HvVLow'
           id: 0x19D
+          critical: true
           store:
             default: 0
             callback: |
@@ -600,9 +602,9 @@ message-processing:
         gs:
           conversion: 'gs_2p_float:f32'
         display-units: 'V'
-        limits:
-          upper: { warn: 360, err: 420 }
-          lower: { warn: 280, err: 270 }
+#        limits:
+#          upper: { warn: 360, err: 420 }
+#          lower: { warn: 280, err: 270 }
       - datapoint:
           name: 'BMSTemperatureHigh'
           id: 0x3A2
@@ -643,6 +645,7 @@ message-processing:
       - datapoint:
           name: 'VPack'
           id: 0x3A5
+          critical: true
           store:
             default: 0
             callback: |
@@ -656,12 +659,13 @@ message-processing:
         gs:
           conversion: 'gs_2p_float:f32'
         display-units: 'V'
-        limits:
-          upper: { warn: 360, err: 420 }
-          lower: { warn: 280, err: 270 }
+#        limits:
+#          upper: { warn: 360, err: 420 }
+#          lower: { warn: 280, err: 270 }
       - datapoint:
           name: 'IPack'
           id: 0x3A6
+          critical: true
           store:
             default: 0
             callback: |
@@ -675,12 +679,13 @@ message-processing:
         gs:
           conversion: 'gs_2p_float:f32'
         display-units: 'A'
-        limits:
-          upper: { warn: 360, err: 420 }
-          lower: { warn: 280, err: 270 }
+#        limits:
+#          upper: { warn: 360, err: 420 }
+#          lower: { warn: 280, err: 270 }
       - datapoint:
           name: 'VDCLink'
           id: 0x3A7
+          critical: true
           store:
             default: 0
             callback: |
@@ -727,7 +732,7 @@ message-processing:
       - datapoint:
           name: 'Localization'
           id: 0x321
-#          critical: true
+          critical: true
           store:
             default: 0
             callback: |
@@ -827,7 +832,7 @@ message-processing:
       - datapoint:
           name: 'Word1'
           id: 0x5B8
-#          critical: true
+          critical: true
           store:
             default: 0
         getter: 'u16[0..2]'
@@ -842,7 +847,7 @@ message-processing:
       - datapoint:
           name: 'Word2'
           id: 0x4B6
-#          critical: true
+          critical: true
           store:
             default: 0
         getter: 'u16[0..2]'
@@ -1408,6 +1413,7 @@ message-processing:
       - datapoint:
           name: 'LvVHigh'
           id: 0x600
+          critical: true
           store:
             default: 0
             callback: |
@@ -1422,6 +1428,7 @@ message-processing:
           conversion: 'gs_u16:u16'
       - datapoint:
           name: 'LvVLow'
+          critical: true
           id: 0x601
           store:
             default: 0
@@ -1473,6 +1480,7 @@ message-processing:
       - datapoint:
           name: 'IsolationResistance'
           id: 0x610
+          critical: true
           store:
             default: 0
             callback: |
@@ -1489,6 +1497,7 @@ message-processing:
       - datapoint:
           name: 'BusCurrent'
           id: 0x611
+          critical: true
           store:
             default: 0
             callback: |
@@ -1510,6 +1519,7 @@ message-processing:
       - datapoint:
           name: 'VPackLowVoltage'
           id: 0x604
+          critical: true
           store:
             default: 0
             callback: |
@@ -1525,6 +1535,7 @@ message-processing:
       - datapoint:
           name: 'IPackLowVoltage'
           id: 0x605
+          critical: true
           store:
             default: 0
             callback: |
@@ -1573,6 +1584,7 @@ message-processing:
       - datapoint:
           name: 'LeviHeartbeat'
           id: 0x567
+          critical: true
           store:
             default: 0
         getter: 'u8[0..1]'
@@ -2081,7 +2093,6 @@ message-processing:
       - datapoint:
           name: 'TempHEMS1'
           id: 0x53C
-          critical: true
           store:
             default: 0
             callback: |

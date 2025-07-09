@@ -2081,6 +2081,7 @@ message-processing:
       - datapoint:
           name: 'TempHEMS1'
           id: 0x53C
+          critical: true
           store:
             default: 0
             callback: |

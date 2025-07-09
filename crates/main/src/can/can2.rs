@@ -32,9 +32,9 @@ use static_cell::StaticCell;
 /// todo: docs
 const CAN_RX_CAPACITY: usize = 4;
 /// todo: docs
-const CAN_RX_SUBSCRIBERS: usize = 4;
+const CAN_RX_SUBSCRIBERS: usize = 3;
 /// todo: docs
-const CAN_RX_PUBLISHERS: usize = 1;
+const CAN_RX_PUBLISHERS: usize = 2;
 
 /// todo: docs
 type CanRxChannel = PubSubChannel<

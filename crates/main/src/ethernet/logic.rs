@@ -10,7 +10,7 @@ use embassy_executor::Spawner;
 use embassy_net::tcp::ConnectError;
 use embassy_net::tcp::State;
 use embassy_net::tcp::TcpSocket;
-use embassy_net::Config;
+use embassy_net::{Config, Ipv4Cidr};
 use embassy_net::Ipv4Address;
 use embassy_net::Stack;
 use embassy_net::StackResources;
@@ -105,7 +105,7 @@ impl GsMaster {
         // Get an IPv4 address for the pod
         let config = Config::dhcpv4(Default::default());
 
-        // static IPv4 address for the old router
+        // static IPv4 address
         // let config = Config::ipv4_static(embassy_net::StaticConfigV4 {
         //     address: Ipv4Cidr::new(Ipv4Address::new(192, 168, 1, 113), 24),
         //     gateway: None,
@@ -132,11 +132,11 @@ impl GsMaster {
             p.pc5, // RX_D1: Received Bit 1
             //choose one:
             p.pb12, // FOR MPCB (TX_D0: Transmit Bit 0)
-            // p.pg13, // FOR NUCLEO (TX_D0: Transmit Bit 0)
+            // p.PG13, // FOR NUCLEO (TX_D0: Transmit Bit 0)
             p.pb13, // TX_D1: Transmit Bit 1
             //choose one:
             p.pb11, //FOR MPCB (TX_EN: Transmit Enable)
-            // p.pg11, // FOR NUCLEO (TX_EN: Transmit Enable)
+            // p.PG11, // FOR NUCLEO (TX_EN: Transmit Enable)
             GenericPhy::new(0),
             mac_addr,
         );
@@ -349,13 +349,6 @@ impl GsMaster {
 
     /// Reconnects to the GS if the connection drops by creating a new socket.
     async fn reconnect(&mut self) {
-        // Go into fault state if the pcb disconnects from the ground station.
-        // self.rx_transmitter
-        //     .publish(GsToPodMessage {
-        //         command: Command::ReconnectEmergency(0),
-        //     })
-        //     .await;
-
         info!("Reconnecting to the GS");
 
         // Performs a hardware reset instead of making a new socket

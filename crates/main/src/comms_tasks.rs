@@ -542,23 +542,35 @@ pub async fn check_critical_datapoints(
                 Id::Extended(e) => e.as_raw(),
             };
 
+            // send the datapoint to the ground station
+            let received_datatypes = lib::config::match_can_to_datatypes(id);
+
             // Check if the received datatype is critical
-            if Datatype::from_id(id as u16).is_critical() {
-                let datatype = Datatype::from_id(id as u16);
+            for datatype in received_datatypes {
+                if datatype == Datatype::DefaultDatatype {
+                    break;
+                }
+                if datatype.is_critical() {
+                    info!(">>>>>>>>>Got a critical datatype! {:?}", datatype);
 
-                let mut index = 0;
-                loop {
-                    let dtt = critical_datapoints[index];
-                    if dtt.0 == datatype || dtt.0 == Datatype::DefaultDatatype {
-                        critical_datapoints[index] = (datatype, Instant::now().as_millis());
-                        break;
-                    }
+                    let mut index = 0;
+                    loop {
+                        let dtt = critical_datapoints[index];
+                        if dtt.0 == datatype || dtt.0 == Datatype::DefaultDatatype {
+                            critical_datapoints[index] = (datatype, Instant::now().as_millis());
+                            info!(">>>>>>>>>Updated critical datapoint {:?}", dtt.0);
+                            break;
+                        }
 
-                    index += 1;
-                    if index == CRITICAL_DATATYPE_COUNT {
-                        error!("Didn't find critical datatype!!");
-                        break;
+                        index += 1;
+                        if index == CRITICAL_DATATYPE_COUNT {
+                            error!("Didn't find critical datatype!!");
+                            break;
+                        }
                     }
+                }
+                else {
+                    info!("non critical datatype: {:?}", datatype);
                 }
             }
         }
@@ -567,7 +579,12 @@ pub async fn check_critical_datapoints(
         if now - last_critical_datapoint_check >= 250 {
             last_critical_datapoint_check = now;
 
+            // info!(">>>>>>>>>checking datatypes");
             for dtt in critical_datapoints {
+                if dtt.0 == Datatype::DefaultDatatype {
+                    break;
+                }
+                info!(">>>>>>>>>checking {:?}", dtt.0);
                 if dtt.0 != Datatype::DefaultDatatype && dtt.1 != 0 && now - dtt.1 >= 2000 {
                     // Send a message to the fsm to enter emergency
                     event_sender
@@ -589,5 +606,7 @@ pub async fn check_critical_datapoints(
                 }
             }
         }
+        
+        Timer::after_micros(10).await;
     }
 }

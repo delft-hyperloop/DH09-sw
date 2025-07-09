@@ -222,6 +222,13 @@ impl FSM {
             (States::PreCharge, Event::HVOnAck) => self.transition(States::Active).await,
             (States::Active, Event::Charge) => self.transition(States::Charging).await,
             (States::Charging, Event::StopCharge) => self.transition(States::Active).await,
+            (_, Event::OverrideRearmSdc) => {
+                self.sdc_pin.set_high();
+                Timer::after_millis(100).await;
+                self.rearm_sdc_pin.set_high();
+                Timer::after_millis(100).await;
+                self.rearm_sdc_pin.set_low();
+            }
             (States::Active, Event::EnterDemo) => {
                 self.sdc_pin.set_high();
                 Timer::after_millis(100).await;

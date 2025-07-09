@@ -105,6 +105,8 @@ fn match_cmd_to_event(command: Command) -> Event {
         Command::FailProp1SystemCheck(_) => Event::Prop1SystemCheckFailure,
         Command::FailProp2SystemCheck(_) => Event::Prop2SystemCheckFailure,
 
+        Command::OverrideRearmSdc(_) => Event::OverrideRearmSdc,
+
         _ => Event::NoEvent,
     }
 }
@@ -568,8 +570,7 @@ pub async fn check_critical_datapoints(
                             break;
                         }
                     }
-                }
-                else {
+                } else {
                     info!("non critical datatype: {:?}", datatype);
                 }
             }
@@ -606,7 +607,7 @@ pub async fn check_critical_datapoints(
                 }
             }
         }
-        
+
         Timer::after_micros(10).await;
     }
 }

@@ -86,6 +86,8 @@ pub enum Event {
     Prop2SystemCheckSuccess,
     /// Propulsion motor 2 failed the system check
     Prop2SystemCheckFailure,
+    /// Override event for rearming the sdc (only used for testing)
+    OverrideRearmSdc,
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]

@@ -2492,6 +2492,8 @@ commands:
     id: 0x218
   - name: 'ReconnectEmergency'
     id: 0x219
+  - name: 'OverrideRearmSdc'
+    id: 0x21A
 
 beckhoff:
   task-period: 10 # period in ms

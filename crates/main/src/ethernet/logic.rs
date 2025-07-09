@@ -10,7 +10,7 @@ use embassy_executor::Spawner;
 use embassy_net::tcp::ConnectError;
 use embassy_net::tcp::State;
 use embassy_net::tcp::TcpSocket;
-use embassy_net::{Config, Ipv4Cidr};
+use embassy_net::Config;
 use embassy_net::Ipv4Address;
 use embassy_net::Stack;
 use embassy_net::StackResources;

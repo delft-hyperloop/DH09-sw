@@ -701,13 +701,11 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
     }
     writeln!(&mut code, "_ => {{}}}}}}").unwrap();
 
-    writeln!(&mut code, "pub fn match_can_to_datatypes(id: u32) -> [Datatype; 8] {{ match id {{").unwrap();
+    writeln!(&mut code, "pub fn match_can_to_datatypes(id: u32) -> [Datatype; 8] {{ match id {{")
+        .unwrap();
     for mp in &df.message_processing {
         if let CanSpec::Can2 { id, .. } = mp.can {
-            writeln!(
-                &mut code,
-                "{id} => [ "
-            ).unwrap();
+            writeln!(&mut code, "{id} => [ ").unwrap();
 
             let mut count = 0;
             for dpc in &mp.datapoint_conversion {
@@ -728,7 +726,12 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         }
     }
 
-    writeln!(&mut code, "_ => [{}Datatype::DefaultDatatype],}}}}", "Datatype::DefaultDatatype, ".repeat(7)).unwrap();
+    writeln!(
+        &mut code,
+        "_ => [{}Datatype::DefaultDatatype],}}}}",
+        "Datatype::DefaultDatatype, ".repeat(7)
+    )
+    .unwrap();
 
     let mut can1commands = vec![];
     let mut can2commands = vec![];

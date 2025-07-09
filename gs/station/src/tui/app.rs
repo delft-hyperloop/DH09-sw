@@ -1,6 +1,5 @@
 #![allow(clippy::manual_flatten)]
 use std::collections::BTreeMap;
-use std::io::stdout;
 use std::io::BufRead;
 use std::path::PathBuf;
 use std::process::Child;
@@ -15,12 +14,18 @@ use crossterm::event::Event;
 use crossterm::event::KeyCode;
 use crossterm::event::KeyEventKind;
 use crossterm::event::{self};
-use crossterm::execute;
 use gslib::Datatype;
 use gslib::ProcessedData;
 use ratatui::Frame;
 
 use crate::Tui;
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum InputMode {
+    #[default]
+    Normal,
+    Editing,
+}
 
 #[allow(dead_code)]
 pub struct App {
@@ -28,6 +33,8 @@ pub struct App {
     pub scroll: usize,
     pub is_running: bool,
     pub stream: Receiver<ProcessedData>,
+    pub input_mode: InputMode,
+    pub cur_search: String,
     pub child: Child,
 }
 
@@ -48,22 +55,37 @@ impl App {
             .spawn()
             .expect("Failed to spawn gui");
 
-        let map = BTreeMap::new();
+        let mut map = BTreeMap::new();
+
+        map.insert(Datatype::Ta1, ProcessedData { datatype: Datatype::Ta1, value: 341.3, timestamp: 53, style: "L".into(), units: "yourmom".into(), lower: None, upper: None });
+        map.insert(Datatype::Ta2, ProcessedData { datatype: Datatype::Ta2, value: 341.3, timestamp: 53, style: "L".into(), units: "yourmom".into(), lower: None, upper: None });
 
         // thread to read stdout
         if let Some(out) = child.stdout.take() {
             let tx = tx.clone();
             thread::spawn(move || {
                 let reader = std::io::BufReader::new(out);
-                for line in reader.lines().flatten() {
-                    if let Ok(Some(dp)) = read_datapoint(&line) {
-                        let _ = tx.send(dp);
+                for line in reader.lines() {
+                    if let Ok(line) = line {
+                        if let Ok(Some(dp)) = read_datapoint(&line) {
+                            let _ = tx.send(dp);
+                        }
+                    } else {
+                        eprintln!("failed to read from child: {line:?}");
                     }
                 }
             });
         }
 
-        Ok(Self { data: map, is_running: true, scroll: 0, stream: rx, child })
+        Ok(Self {
+            data: map,
+            is_running: true,
+            scroll: 0,
+            stream: rx,
+            child,
+            input_mode: InputMode::Normal,
+            cur_search: String::new(),
+        })
     }
 
     pub fn run(&mut self, terminal: &mut Tui) -> anyhow::Result<()> {
@@ -89,20 +111,43 @@ impl App {
                 // it's important to check that the event is a key press event as
                 // crossterm also emits key release and repeat events on Windows.
                 Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                    match key_event.code {
-                        KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('c') => {
-                            self.is_running = false;
-                            // ratatui::restore();
-                            // let _ = execute!(stdout(), crossterm::cursor::Show);
-                            // std::process::exit(0);
+                    match self.input_mode {
+                        InputMode::Normal => match key_event.code {
+                            KeyCode::Char('q') | KeyCode::Char('c') => {
+                                self.is_running = false;
+                            },
+                            KeyCode::Up | KeyCode::Char('k') => {
+                                self.scroll = self.scroll.saturating_sub(1);
+                            },
+                            KeyCode::Down | KeyCode::Char('j') => {
+                                self.scroll = self.scroll.wrapping_add(1).min(self.data.len().saturating_sub(1));
+                            },
+                            KeyCode::Esc => self.cur_search = String::new(),
+                            KeyCode::Char('/') => self.input_mode = InputMode::Editing,
+                            _ => {},
                         },
-                        KeyCode::Up | KeyCode::Char('k') => {
-                            self.scroll = self.scroll.wrapping_add(1);
+                        InputMode::Editing => match key_event.code {
+                            KeyCode::Esc => {
+                                self.input_mode = InputMode::Normal;
+                                self.cur_search = String::new();
+                            },
+                            KeyCode::Enter => {
+                                self.input_mode = InputMode::Normal;
+                            },
+                            KeyCode::Backspace => {
+                                self.cur_search.truncate(self.cur_search.len().saturating_sub(1))
+                            },
+                            KeyCode::Char(c) => {
+                                self.cur_search.push(c);
+                            },
+                            KeyCode::Up => {
+                                self.scroll = self.scroll.saturating_sub(1);
+                            },
+                            KeyCode::Down => {
+                                self.scroll = self.scroll.wrapping_add(1).min(self.data.len().saturating_sub(1));
+                            },
+                            _ => {},
                         },
-                        KeyCode::Down | KeyCode::Char('j') => {
-                            self.scroll = self.scroll.saturating_sub(1);
-                        },
-                        _ => {},
                     }
                 },
                 _ => {},

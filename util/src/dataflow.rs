@@ -996,7 +996,7 @@ END_IF
 
 pub fn make_logging_pcb_code(_df: &DataflowSpec) -> String {
     // TODO
-    format!("")
+    String::new()
 }
 
 pub fn make_gs_code(df: &DataflowSpec) -> String {
@@ -1116,7 +1116,7 @@ export const NamedDatatypeValues = ["#
             }
             match (d.lower, d.upper) {
                 (Limit::Single(lower), Limit::Single(upper)) => {
-                    writeln!(&mut code, ", undefined, {}, {}", lower, upper).unwrap()
+                    writeln!(&mut code, ", undefined, {lower}, {upper}").unwrap()
                 },
                 (Limit::Multiple(lower_severities), Limit::Multiple(upper_severities)) => {
                     if lower_severities.brake.is_some() && upper_severities.brake.is_some() {

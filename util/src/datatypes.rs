@@ -97,7 +97,7 @@ pub fn generate_data_types_from_config(config: &Config, drv: bool) -> Result<Str
     let mut priorities = String::new();
 
     for dtp in criticalDatapoints {
-        criticalDatapointResult.push_str(&format!("\n\t\t\tDatatype::{} => true,", dtp));
+        criticalDatapointResult.push_str(&format!("\n\t\t\tDatatype::{dtp} => true,"));
     }
 
     for dtype in &config.Datatype {

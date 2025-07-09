@@ -83,7 +83,7 @@ pub fn check_config(dp: &str, cp: &str, conf: &str) -> Result<String> {
     let mut hasher = DefaultHasher::new();
     cs.hash(&mut hasher);
     let hash = hasher.finish();
-    Ok(format!("\npub const CONFIG_HASH: u64 = {};\n", hash))
+    Ok(format!("\npub const CONFIG_HASH: u64 = {hash};\n"))
 }
 
 fn nearest_id(id: u16, ids: &[u16]) -> u16 {
@@ -107,7 +107,7 @@ pub fn hash_config(conf: &str) -> Result<String> {
     let mut hasher = DefaultHasher::new();
     cs.hash(&mut hasher);
     let hash = hasher.finish();
-    Ok(format!("\npub const CONFIG_HASH: u64 = {};\n", hash))
+    Ok(format!("\npub const CONFIG_HASH: u64 = {hash};\n"))
 }
 
 fn category(d: &[u16], c: &[u16], i: u16) -> String {

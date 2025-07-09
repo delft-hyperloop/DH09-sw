@@ -13,6 +13,8 @@ use crossterm::event::poll;
 use crossterm::event::Event;
 use crossterm::event::KeyCode;
 use crossterm::event::KeyEventKind;
+use crossterm::event::KeyModifiers;
+use crossterm::event::ModifierKeyCode;
 use crossterm::event::{self};
 use gslib::Datatype;
 use gslib::ProcessedData;
@@ -57,8 +59,30 @@ impl App {
 
         let mut map = BTreeMap::new();
 
-        map.insert(Datatype::Ta1, ProcessedData { datatype: Datatype::Ta1, value: 341.3, timestamp: 53, style: "L".into(), units: "yourmom".into(), lower: None, upper: None });
-        map.insert(Datatype::Ta2, ProcessedData { datatype: Datatype::Ta2, value: 341.3, timestamp: 53, style: "L".into(), units: "yourmom".into(), lower: None, upper: None });
+        map.insert(
+            Datatype::Ta1,
+            ProcessedData {
+                datatype: Datatype::Ta1,
+                value: 341.3,
+                timestamp: 53,
+                style: "L".into(),
+                units: "yourmom".into(),
+                lower: None,
+                upper: None,
+            },
+        );
+        map.insert(
+            Datatype::Ta2,
+            ProcessedData {
+                datatype: Datatype::Ta2,
+                value: 341.3,
+                timestamp: 53,
+                style: "L".into(),
+                units: "yourmom".into(),
+                lower: None,
+                upper: None,
+            },
+        );
 
         // thread to read stdout
         if let Some(out) = child.stdout.take() {
@@ -120,7 +144,10 @@ impl App {
                                 self.scroll = self.scroll.saturating_sub(1);
                             },
                             KeyCode::Down | KeyCode::Char('j') => {
-                                self.scroll = self.scroll.wrapping_add(1).min(self.data.len().saturating_sub(1));
+                                self.scroll = self
+                                    .scroll
+                                    .wrapping_add(1)
+                                    .min(self.data.len().saturating_sub(1));
                             },
                             KeyCode::Esc => self.cur_search = String::new(),
                             KeyCode::Char('/') => self.input_mode = InputMode::Editing,
@@ -137,6 +164,11 @@ impl App {
                             KeyCode::Backspace => {
                                 self.cur_search.truncate(self.cur_search.len().saturating_sub(1))
                             },
+                            KeyCode::Char('c')
+                                if key_event.modifiers.contains(KeyModifiers::CONTROL) =>
+                            {
+                                self.is_running = false;
+                            },
                             KeyCode::Char(c) => {
                                 self.cur_search.push(c);
                             },
@@ -144,7 +176,10 @@ impl App {
                                 self.scroll = self.scroll.saturating_sub(1);
                             },
                             KeyCode::Down => {
-                                self.scroll = self.scroll.wrapping_add(1).min(self.data.len().saturating_sub(1));
+                                self.scroll = self
+                                    .scroll
+                                    .wrapping_add(1)
+                                    .min(self.data.len().saturating_sub(1));
                             },
                             _ => {},
                         },

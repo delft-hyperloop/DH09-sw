@@ -50,7 +50,7 @@
     };
 </script>
 
-<button disabled={disabled} class="btn rounded-md font-number font-medium text-wrap flex-wrap {className ? className : 'bg-primary-500 text-surface-900'}"
+<button disabled={disabled} class="btn overflow-hidden rounded-md font-number font-medium text-wrap flex-wrap {className ? className : 'bg-primary-500 text-surface-900'}"
         on:click={send}>
     {#if icon}
         <div class="mr-1">

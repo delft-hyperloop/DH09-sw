@@ -2,7 +2,6 @@ use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
 
-
 use gslib::Datatype;
 use gslib::Message;
 use gslib::ERROR_CHANNEL;
@@ -46,9 +45,7 @@ pub fn tauri_main(backend: Backend) {
             let window = app_handle.get_window("main").unwrap();
 
             let mut message_rcv = backend.message_receiver.resubscribe();
-            unsafe {
-                BACKEND.replace(Mutex::new(backend));
-            }
+            BACKEND.lock().expect("impossible poison").write(backend);
 
             let s = app_handle.clone();
             // this is unsafe, don't do it anywhere else
@@ -140,8 +137,10 @@ pub fn tauri_main(backend: Backend) {
                 loop {
                     match message_rcv.try_recv() {
                         Ok(msg) => {
-                            if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-                                backend_mutex.get_mut().unwrap().log_msg(&msg);
+                            if let Ok(mut backend_mutex) = BACKEND.lock() {
+                                unsafe {
+                                    backend_mutex.assume_init_mut().log_msg(&msg);
+                                }
                             }
 
                             match msg {

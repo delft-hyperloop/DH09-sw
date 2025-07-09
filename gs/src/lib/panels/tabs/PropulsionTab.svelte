@@ -91,12 +91,12 @@
                 <p class="col-span-2">
                     Choose Direction:
                 </p>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden"
                         on:click={() => {currentDirectionForward = true}}
                         disabled={currentDirectionForward}>
                     Forward
                 </button>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden"
                         on:click={() => {currentDirectionForward = false}}
                         disabled={!currentDirectionForward}>
                     Backward
@@ -104,12 +104,12 @@
                 <p class="col-span-2">
                     Choose Track:
                 </p>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden text-wrap"
                         on:click={() => {usingTestTrack.set(true)}}
                         disabled={$usingTestTrack}>
                     Test Track
                 </button>
-                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow overflow-auto font-medium"
+                <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden text-wrap"
                         on:click={() => {usingTestTrack.set(false)}}
                         disabled={!$usingTestTrack}>
                     EHC Track
@@ -121,7 +121,7 @@
                         {/each}
                     </div>
                 </div>
-                <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow overflow-auto font-medium"
+                <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow font-medium overflow-hidden"
                         on:click={submitRun} disabled={false}>
                     Submit All Run Parameters
                 </button>

@@ -2,7 +2,7 @@
     import { getModalStore } from '@skeletonlabs/skeleton';
     import { modalBody, modalTitle } from '$lib/stores/data';
     import { Help } from 'carbon-icons-svelte';
-    import { emergencyModalActive } from '$lib/stores/state';
+    import { emergencyModalActive, emergencyStaleDataModalActive } from '$lib/stores/state';
 
     let modalStore = getModalStore();
     let helpComponentVisible: boolean = false;
@@ -10,6 +10,7 @@
     let closeModal = () => {
         modalStore.close();
         emergencyModalActive.set(false);
+        emergencyStaleDataModalActive.set(false);
     }
 </script>
 

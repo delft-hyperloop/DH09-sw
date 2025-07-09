@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onDestroy } from 'svelte';
-    import { GreenHVALTurnedOn, RedHVALTurnedOn } from '$lib/stores/state';
     import { GrandDataDistributor } from '$lib';
 
     // True means the light will be green while false is red.

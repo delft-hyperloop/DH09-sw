@@ -14,7 +14,6 @@ use crossterm::event::Event;
 use crossterm::event::KeyCode;
 use crossterm::event::KeyEventKind;
 use crossterm::event::KeyModifiers;
-use crossterm::event::ModifierKeyCode;
 use crossterm::event::{self};
 use gslib::Datatype;
 use gslib::ProcessedData;
@@ -57,32 +56,7 @@ impl App {
             .spawn()
             .expect("Failed to spawn gui");
 
-        let mut map = BTreeMap::new();
-
-        map.insert(
-            Datatype::Ta1,
-            ProcessedData {
-                datatype: Datatype::Ta1,
-                value: 341.3,
-                timestamp: 53,
-                style: "L".into(),
-                units: "yourmom".into(),
-                lower: None,
-                upper: None,
-            },
-        );
-        map.insert(
-            Datatype::Ta2,
-            ProcessedData {
-                datatype: Datatype::Ta2,
-                value: 341.3,
-                timestamp: 53,
-                style: "L".into(),
-                units: "yourmom".into(),
-                lower: None,
-                upper: None,
-            },
-        );
+        let map = BTreeMap::new();
 
         // thread to read stdout
         if let Some(out) = child.stdout.take() {

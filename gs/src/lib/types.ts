@@ -108,7 +108,7 @@ export type Procedure = {
     content: string
 }
 
-export type LogType = 'INFO' | 'WARNING' | 'ERROR' | 'STATUS';
+export type LogType = 'INFO' | 'WARNING' | 'ERROR' | 'STATUS' | 'TRACE';
 
 export const MODAL_SETTINGS: ModalSettings = {
     component: 'alertModal',

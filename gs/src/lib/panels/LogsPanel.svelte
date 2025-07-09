@@ -19,11 +19,10 @@
     let logContainer: HTMLElement;
     let userHasScrolled = false;
     let logs: Log[] = [];
+    let trace: Log | undefined = undefined;
 
     let logsCountUpperLimit: number = 500;
     let logsCutAmount: number = 250;
-
-    let firstTrace: boolean = true;
 
     let colours = new Map([
       ['STATUS', 'text-surface-50'],
@@ -46,18 +45,18 @@
           if (logs.length > logsCountUpperLimit) {
               logs = logs.toSpliced(0, logsCutAmount);
           }
-          if (!event.payload.toLowerCase().includes("[trace]") || firstTrace && event.payload.toLowerCase().includes("[trace]")) {
-              logs = [...logs, {message: event.payload.split(';')[0], log_type: 'STATUS', timestamp: Date.now().valueOf()}]
-              firstTrace = false;
+          if (!event.payload.toLowerCase().includes("[trace]")) {
+              logs = [{message: event.payload.split(';')[0], log_type: log_type, timestamp: Date.now().valueOf()}, ...logs]
           } else {
-              logs[logs.length - 1] = {message: event.payload.split(';')[0], log_type: 'STATUS', timestamp: Date.now().valueOf()};
+              trace = {message: event.payload.split(';')[0], log_type: 'TRACE', timestamp: Date.now().valueOf()};
           }
       });
     }
 
     function clearLogs() {
-        logs = []
-        firstTrace = true;
+        logs = [];
+        trace = undefined;
+        userHasScrolled = false;
     }
 
     function toggleLogsVisibility() {
@@ -77,7 +76,7 @@
                 logs = logs.toSpliced(0, logsCutAmount);
             }
 
-            logs = [...logs, {message: event.payload.split(';')[0], log_type: 'STATUS', timestamp: Date.now().valueOf()}]
+            logs = [{message: event.payload.split(';')[0], log_type: 'STATUS', timestamp: Date.now().valueOf()}, ...logs]
 
             console.log("received smth", event.payload)
 
@@ -203,6 +202,11 @@
     </AppBar>
 
     <div class="p-1 overflow-y-auto" bind:this={logContainer} style="height: {$logsScrollAreaSize}vh;">
+        {#if trace !== undefined}
+            <div class="flex items-center">
+                <p class="{colours.get('STATUS')}"><span class="font-mono font-light">[{trace.timestamp}]</span>{trace.message}</p>
+            </div>
+        {/if}
         {#each filteredLogs as log}
             <div class="flex items-center">
                 <p class="{colours.get(log.log_type)}"><span class="font-mono font-light">[{log.timestamp}]</span>{log.message}</p>

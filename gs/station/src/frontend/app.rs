@@ -1,19 +1,7 @@
-use std::io::Write;
 use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
 
-use crossterm::cursor;
-use crossterm::event::read;
-use crossterm::event::Event;
-use crossterm::event::KeyCode;
-use crossterm::execute;
-use crossterm::terminal::disable_raw_mode;
-use crossterm::terminal::enable_raw_mode;
-use crossterm::terminal::Clear;
-use crossterm::terminal::ClearType;
-use crossterm::terminal::EnterAlternateScreen;
-use gslib::Datapoint;
 use gslib::Datatype;
 use gslib::Message;
 use gslib::ERROR_CHANNEL;
@@ -30,8 +18,6 @@ use tokio::time::sleep;
 
 use crate::backend::Backend;
 use crate::frontend::commands::*;
-use crate::frontend::datapoint_dict::DatapointDict;
-use crate::frontend::datapoint_dict::TerminalCommands;
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
 
@@ -59,9 +45,7 @@ pub fn tauri_main(backend: Backend) {
             let window = app_handle.get_window("main").unwrap();
 
             let mut message_rcv = backend.message_receiver.resubscribe();
-            unsafe {
-                BACKEND.replace(Mutex::new(backend));
-            }
+            BACKEND.lock().expect("impossible poison").write(backend);
 
             let s = app_handle.clone();
             // this is unsafe, don't do it anywhere else
@@ -132,7 +116,7 @@ pub fn tauri_main(backend: Backend) {
 
                         for i in 1..10 {
                             let ss = s.clone();
-                            sh.register(&format!("SHIFT+{}", i), move || {
+                            sh.register(&format!("SHIFT+{i}"), move || {
                                 ss.emit_all(SHORTCUT_CHANNEL, format!("tab_{i}")).unwrap();
                             })
                             .expect("Could not register shortcut");
@@ -148,41 +132,15 @@ pub fn tauri_main(backend: Backend) {
 
             // --
 
-            let mut stdout = std::io::stdout();
-            enable_raw_mode().unwrap();
-            execute!(stdout, EnterAlternateScreen).unwrap();
-            let (terminal_command_tx, terminal_command_rx) =
-                tokio::sync::mpsc::channel::<TerminalCommands>(1);
-
             tokio::spawn(async move {
-                loop {
-                    if let Ok(Event::Key(event)) = read() {
-                        match event.code {
-                            KeyCode::Up => {
-                                terminal_command_tx.send(TerminalCommands::Up).await.unwrap()
-                            },
-                            KeyCode::Down => {
-                                terminal_command_tx.send(TerminalCommands::Down).await.unwrap()
-                            },
-                            KeyCode::Esc => {
-                                disable_raw_mode().unwrap();
-                                break;
-                            },
-                            _ => {},
-                        };
-                    }
-                }
-            });
-
-            tokio::spawn(async move {
-                let mut datapoint_dict: DatapointDict = DatapointDict::new(terminal_command_rx);
-
                 let ss = s2.clone();
                 loop {
                     match message_rcv.try_recv() {
                         Ok(msg) => {
-                            if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-                                backend_mutex.get_mut().unwrap().log_msg(&msg);
+                            if let Ok(mut backend_mutex) = BACKEND.lock() {
+                                unsafe {
+                                    backend_mutex.assume_init_mut().log_msg(&msg);
+                                }
                             }
 
                             match msg {
@@ -191,30 +149,16 @@ pub fn tauri_main(backend: Backend) {
                                     if dp.datatype == Datatype::CANLog {
                                         ss.emit_all(
                                             INFO_CHANNEL,
-                                            format!("Received datapoint on the main PCB: {:?}", dp),
+                                            format!("Received datapoint on the main PCB: {dp:?}"),
                                         )
                                         .expect("Couldn't send message");
                                     }
 
-                                    // Add datapoint to dictionary
-                                    datapoint_dict.add_datapoint(Datapoint::new(
-                                        dp.datatype,
-                                        dp.value as u64,
-                                        dp.timestamp,
-                                    ));
-
-                                    // Check if there are any commands from the terminal
-                                    datapoint_dict.process_command().await;
-
-                                    // Clear terminal and move cursor to the top left corner
-                                    execute!(stdout, Clear(ClearType::All), cursor::MoveTo(0, 0))
-                                        .unwrap();
-
-                                    // Print the dictionary
-                                    print!("{}", datapoint_dict);
-
-                                    // Flush the output to the terminal
-                                    stdout.flush().unwrap();
+                                    // send datapoint to tui
+                                    println!(
+                                        "datapoint:{:?}:{}:{}\n",
+                                        dp.datatype, dp.value, dp.timestamp
+                                    );
 
                                     app_handle
                                         .state::<BackendState>()

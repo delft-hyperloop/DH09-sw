@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 #[cfg(feature = "tui")]
 use std::str::FromStr;
 use std::sync::mpsc::Receiver;

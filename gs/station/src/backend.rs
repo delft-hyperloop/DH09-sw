@@ -1,9 +1,7 @@
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use anyhow::anyhow;
 use gslib::Command;
-use gslib::Info;
 use gslib::Log;
 use gslib::Message;
 use gslib::ProcessedData;
@@ -16,25 +14,14 @@ use crate::CommandSender;
 use crate::MessageReceiver;
 use crate::MessageSender;
 
-// /// Any frontend that interfaces with this backend needs to comply to this trait
-// pub trait Frontend {
-//     /// This is called from main.rs, can be used for any initialisation
-//     fn start();
-//     /// When the backend has data available, it will call this function
-//     fn receive_data(&mut self, data: Vec<Message>);
-//     ///
-//     fn send_command(&self, cmd: Command);
-// }
-
 pub struct Backend {
     pub server_handle: Option<AbortHandle>,
     pub message_transmitter: MessageSender,
     pub message_receiver: MessageReceiver,
     pub command_transmitter: CommandSender,
     pub command_receiver: CommandReceiver,
-    pub processed_data_receiver: DataReceiver,
+    pub _processed_data_receiver: DataReceiver,
     pub log: Log,
-    pub save_path: PathBuf,
 }
 
 impl Default for Backend {
@@ -51,7 +38,7 @@ impl Backend {
             tokio::sync::broadcast::channel::<Message>(128);
         let (command_transmitter, command_receiver) =
             tokio::sync::broadcast::channel::<Command>(128);
-        let (_processed_data_sender, processed_data_receiver) =
+        let (_processed_data_sender, _processed_data_receiver) =
             tokio::sync::broadcast::channel::<ProcessedData>(128);
 
         Self {
@@ -60,9 +47,8 @@ impl Backend {
             message_receiver,
             command_transmitter,
             command_receiver,
-            processed_data_receiver,
+            _processed_data_receiver,
             log: Log { messages: vec![], commands: vec![] },
-            save_path: PathBuf::from_str("/Users/andtsa/Desktop/log.txt").unwrap(),
         }
     }
 
@@ -88,7 +74,7 @@ impl Backend {
 
     pub fn send_command(&mut self, cmd: Command) -> bool {
         // self.info(format!("[TRACE] enqueuing command {:?}", cmd));
-        #[cfg(all(feature = "backend", not(feature = "tui")))]
+        #[cfg(all(feature = "gui", not(feature = "tui")))]
         if cmd != Command::FrontendHeartbeat(0) && cmd != Command::Heartbeat(0) {
             eprintln!("[backend] sending command {:?}", &cmd);
         }
@@ -105,24 +91,12 @@ impl Backend {
         self.message_transmitter.send(Message::Warning(msg)).unwrap();
     }
 
-    pub fn err(&mut self, msg: String) {
-        self.message_transmitter.send(Message::Error(msg)).unwrap();
-    }
-
-    pub fn status(&mut self, status: Info) {
-        self.message_transmitter.send(Message::Status(status)).unwrap();
-    }
-
     pub fn quit_server(&mut self) {
         if let Some(sh) = self.server_handle.take() {
             self.info("Quitting server_handle".into());
             self.command_transmitter.send(Command::Shutdown(0)).unwrap();
             sh.abort();
         }
-    }
-
-    pub fn save(&self) -> anyhow::Result<Message> {
-        Self::save_to_path(&self.log, self.save_path.clone())
     }
 
     pub fn save_to_path(log: &Log, path: PathBuf) -> anyhow::Result<Message> {
@@ -191,7 +165,7 @@ impl Backend {
             .as_str()
             .to_string();
 
-        x.1 = Regex::new(&format!("\nPeople[: ]*\n({}*)\nItems", all))
+        x.1 = Regex::new(&format!("\nPeople[: ]*\n({all}*)\nItems"))
             .unwrap()
             .captures(&content)
             .ok_or_else(|| anyhow!("\nMissing \"People\" field for procedure:\n{:?}", content))?
@@ -200,7 +174,7 @@ impl Backend {
             .as_str()
             .to_string();
 
-        x.2 = Regex::new(&format!("\nItems[: ]*\n({}*)\nProcedures", all))
+        x.2 = Regex::new(&format!("\nItems[: ]*\n({all}*)\nProcedures"))
             .unwrap()
             .captures(&content)
             .ok_or_else(|| anyhow!("\nMissing \"Items\" field for procedure:\n{:?}", content))?
@@ -209,7 +183,7 @@ impl Backend {
             .as_str()
             .to_string();
 
-        x.3 = Regex::new(&format!("\nProcedures[: ]*\n({}*)\n", all))
+        x.3 = Regex::new(&format!("\nProcedures[: ]*\n({all}*)\n"))
             .unwrap()
             .captures(&content)
             .ok_or_else(|| anyhow!("\nMissing \"Procedures\" field for procedure:\n{:?}", content))?

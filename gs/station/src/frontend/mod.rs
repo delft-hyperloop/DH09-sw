@@ -1,8 +1,8 @@
 pub mod app;
 pub mod commands;
-mod datapoint_dict;
 
 use std::fmt::Debug;
+use std::mem::MaybeUninit;
 use std::sync::Mutex;
 
 use gslib::Message;
@@ -15,14 +15,10 @@ pub struct BackendState {
     pub data_buffer: Mutex<Vec<Message>>,
 }
 
-static mut BACKEND: Option<Mutex<Backend>> = None;
+static BACKEND: Mutex<MaybeUninit<Backend>> = Mutex::new(MaybeUninit::uninit());
 
 impl Default for BackendState {
     fn default() -> Self {
-        Self {
-            running: Mutex::new(false),
-            data_buffer: Mutex::new(Vec::new()),
-            // command_sender: None,
-        }
+        Self { running: Mutex::new(false), data_buffer: Mutex::new(Vec::new()) }
     }
 }

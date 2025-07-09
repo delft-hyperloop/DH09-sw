@@ -83,8 +83,8 @@ pub fn send_command(cmd_name: String, val: u64) -> bool {
         eprintln!("[frontend] Sending command {}({}) [{}]", cmd_name, val, Local::now());
     }
     let c = Command::from_string(&cmd_name, val);
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().send_command(c)
+    if let Ok(mut backend_mutex) = BACKEND.lock() {
+        unsafe { backend_mutex.assume_init_mut().send_command(c) }
     } else {
         panic!("kys");
     }
@@ -105,8 +105,8 @@ pub fn send_command_64_bits(cmd_name: String, vals: [i32; 2]) -> bool {
         eprintln!("[frontend] Sending command {}({}) [{}]", cmd_name, value, Local::now());
     }
     let c = Command::from_string(&cmd_name, value);
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().send_command(c)
+    if let Ok(mut backend_mutex) = BACKEND.lock() {
+        unsafe { backend_mutex.assume_init_mut().send_command(c) }
     } else {
         panic!("kys");
     }
@@ -116,8 +116,8 @@ pub fn send_command_64_bits(cmd_name: String, vals: [i32; 2]) -> bool {
 #[allow(unused)]
 #[tauri::command]
 pub fn connect_to_pod() -> bool {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().start_server()
+    if let Ok(mut backend_mutex) = BACKEND.lock() {
+        unsafe { backend_mutex.assume_init_mut().start_server() }
     } else {
         false
     }
@@ -127,8 +127,10 @@ pub fn connect_to_pod() -> bool {
 #[allow(unused)]
 #[tauri::command]
 pub fn disconnect() -> bool {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
-        backend_mutex.get_mut().unwrap().quit_server();
+    if let Ok(mut backend_mutex) = BACKEND.lock() {
+        unsafe {
+            backend_mutex.assume_init_mut().quit_server();
+        }
         true
     } else {
         false
@@ -139,14 +141,14 @@ pub fn disconnect() -> bool {
 #[allow(unused)]
 #[tauri::command]
 pub fn save_logs() -> bool {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_ref() } {
-        let log = &backend_mutex.lock().unwrap().log;
+    if let Ok(mut backend_mutex) = BACKEND.lock() {
+        let log = unsafe { &backend_mutex.assume_init_mut().log };
         let now = Local::now().naive_local();
         let formatted_time = now.format("%d_%m_%Y at %H_%M_%S").to_string();
 
         let path = dirs::download_dir()
             .unwrap_or_else(|| std::env::current_dir().unwrap())
-            .join(format!("log-{}.txt", formatted_time));
+            .join(format!("log-{formatted_time}.txt"));
 
         if Backend::save_to_path(log, path).is_ok() {
             if let Ok(Some(app)) = APP_HANDLE.try_lock().map(|lock| lock.clone()) {
@@ -165,13 +167,10 @@ pub fn save_logs() -> bool {
 #[allow(unused)]
 #[tauri::command]
 pub fn save_to_file(path: &str) -> bool {
-    if let Some(backend_mutex) = unsafe { BACKEND.as_ref() } {
-        let log = &backend_mutex.lock().unwrap().log;
-        if let Ok(x) = PathBuf::from_str(path) {
-            Backend::save_to_path(log, x).is_ok()
-        } else {
-            false
-        }
+    if let Ok(mut backend_mutex) = BACKEND.lock() {
+        let log = unsafe { &backend_mutex.assume_init_mut().log };
+        let Ok(x) = PathBuf::from_str(path);
+        Backend::save_to_path(log, x).is_ok()
     } else {
         false
     }
@@ -182,22 +181,27 @@ pub fn save_to_file(path: &str) -> bool {
 #[tauri::command]
 pub fn procedures() -> Vec<[String; 6]> {
     let res = Backend::load_procedures(PathBuf::from("../../config/procedures/"));
-    if let Some(backend_mutex) = unsafe { BACKEND.as_mut() } {
+    if let Ok(mut backend_mutex) = BACKEND.lock() {
         if let Ok(x) = res {
-            backend_mutex.get_mut().unwrap().log_msg(&Message::Info("Loading procedures".into()));
+            unsafe {
+                backend_mutex
+                    .assume_init_mut()
+                    .log_msg(&Message::Info("Loading procedures".into()));
+            }
             x
         } else {
-            backend_mutex
-                .get_mut()
-                .unwrap()
-                .log_msg(&Message::Error("Failed to load procedures".into()));
+            unsafe {
+                backend_mutex
+                    .assume_init_mut()
+                    .log_msg(&Message::Error("Failed to load procedures".into()));
+            }
             vec![[
                 "Failed".into(),
                 "Failed to parse some procedures".into(),
                 "".into(),
                 "".into(),
                 "".into(),
-                format!("{:?}", res),
+                format!("{res:?}"),
             ]]
         }
     } else {
@@ -211,78 +215,3 @@ pub fn procedures() -> Vec<[String; 6]> {
 pub fn test_panic() {
     panic!("kill yourself");
 }
-
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn test_route() -> Route { Route::default() }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn validate_route(route: Route) -> bool { validate_route_internal(route) }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn speeds_to_u64(speeds: LocationSpeedMap) -> u64 { speeds.into() }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn speeds_from_u64(speeds: String) -> Result<LocationSpeedMap, String> {
-//     match u64::from_str(&speeds) {
-//         Ok(parsed_speeds) => Ok(parsed_speeds.into()),
-//         Err(e) => Err(format!("Failed to parse speeds from string: {}", e)),
-//     }
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn positions_to_u64(positions: LocationSequence) -> String {
-//     let positions_u64: u64 = positions.into();
-//     positions_u64.to_string()
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn positions_from_u64(positions: String) -> Result<LocationSequence, String> {
-//     match u64::from_str(&positions) {
-//         Ok(parsed_positions) => Ok(parsed_positions.into()),
-//         Err(e) => Err(format!("Failed to parse positions from string: {}", e)),
-//     }
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn set_route(route: Route) -> bool {
-//     send_command("SetRoute".into(), 1822648539875311616)
-//         && send_command("SetSpeeds".into(), 14104086254467416064)
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn set_route(route: Route) -> bool {
-//     send_command("SetRoute".into(), route.positions.into())
-//         && send_command("SetSpeeds".into(), route.speeds.into())
-// }
-
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn demonstration_a() -> bool {
-//     send_command("SetRoute".into(), 1822648536894799872)
-//         && send_command("SetSpeeds".into(), 15761687916893437952)
-// }
-//
-// #[macro_export]
-// #[allow(unused)]
-// #[tauri::command]
-// pub fn demonstration_b() -> bool {
-//     send_command("SetRoute".into(), 1905022642377719808)
-//         && send_command("SetSpeeds".into(), 15708555503539847368)
-// }

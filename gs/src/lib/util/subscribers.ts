@@ -4,7 +4,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
 import { MODAL_SETTINGS } from '$lib/types';
 import {
-    emergencyModalActive,
+    emergencyModalActive, emergencyStaleDataModalActive,
     emsTempsAcknowledged,
     hemsTempsAcknowledged,
     leftMotorTempsAcknowledged,
@@ -32,7 +32,8 @@ export function registerSubscribers() {
     const emergencyStaleData = storeManager.getWritable("EmergencyStaleCriticalData");
 
     emergencyStaleData.subscribe(async (store) => {
-        if (store.value !== 0) {
+        if (store.value !== 0 && !get(emergencyStaleDataModalActive)) {
+            emergencyStaleDataModalActive.set(true);
             let datatype: string = await invoke("get_datatype_by_id", { id: store.value });
             console.error("Stale critical data emergency with id " + store.value);
             modalBody.set(`${datatype} has been stale for more than one second! The main PCB went into the Fault state!`);
@@ -244,6 +245,10 @@ export function registerSubscribers() {
     emergency.subscribe((store) => {
         if (store.value !== 0 && !get(emergencyModalActive)) {
             emergencyModalActive.set(true);
+
+            // Stale critical data emergency should be handled in a different modal to
+            // also show the datapoint that cause the emergency. Therefore, it is missing
+            // from here.
             const sources: String[] = [
                 "General",
                 "Propulsion",

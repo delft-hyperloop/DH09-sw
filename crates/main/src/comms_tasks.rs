@@ -521,7 +521,8 @@ pub async fn gs_heartbeat(gs_tx: ethernet::types::PodToGsPublisher<'static>) {
     }
 }
 
-/// Periodically checks if critical datapoints become stale
+/// Periodically checks if critical datapoints become stale. If so, send an
+/// emergency event to the FSM.
 #[embassy_executor::task]
 pub async fn check_critical_datapoints(
     mut can_rx: can2::CanRxSubscriber<'static>,
@@ -536,6 +537,7 @@ pub async fn check_critical_datapoints(
         [(config::Datatype::DefaultDatatype, 0); CRITICAL_DATATYPE_COUNT];
 
     loop {
+        // Check if the channel for receiving CSN messages is empty
         if !can_rx.is_empty() {
             let can_frame = can_rx.next_message_pure().await;
 
@@ -544,23 +546,22 @@ pub async fn check_critical_datapoints(
                 Id::Extended(e) => e.as_raw(),
             };
 
-            // send the datapoint to the ground station
+            // get the datatypes associated with the ID of the received CAN message
             let received_datatypes = lib::config::match_can_to_datatypes(id);
 
-            // Check if the received datatype is critical
+            // Check if the received datatypes are critical
             for datatype in received_datatypes {
                 if datatype == Datatype::DefaultDatatype {
                     break;
                 }
                 if datatype.is_critical() {
-                    info!(">>>>>>>>>Got a critical datatype! {:?}", datatype);
-
                     let mut index = 0;
+
+                    // Update the list of critical datatypes
                     loop {
                         let dtt = critical_datapoints[index];
                         if dtt.0 == datatype || dtt.0 == Datatype::DefaultDatatype {
                             critical_datapoints[index] = (datatype, Instant::now().as_millis());
-                            info!(">>>>>>>>>Updated critical datapoint {:?}", dtt.0);
                             break;
                         }
 
@@ -570,23 +571,22 @@ pub async fn check_critical_datapoints(
                             break;
                         }
                     }
-                } else {
-                    info!("non critical datatype: {:?}", datatype);
                 }
             }
         }
 
+        // The time in milliseconds after which a datatype is considered stale
+        let timeout_time: u64 = 5000;
+
+        // Check if the data is stale every 250 milliseconds
         let now = Instant::now().as_millis();
         if now - last_critical_datapoint_check >= 250 {
             last_critical_datapoint_check = now;
 
-            // info!(">>>>>>>>>checking datatypes");
             for dtt in critical_datapoints {
                 if dtt.0 == Datatype::DefaultDatatype {
                     break;
-                }
-                info!(">>>>>>>>>checking {:?}", dtt.0);
-                if dtt.0 != Datatype::DefaultDatatype && dtt.1 != 0 && now - dtt.1 >= 2000 {
+                } else if now - dtt.1 >= timeout_time {
                     // Send a message to the fsm to enter emergency
                     event_sender
                         .send(Event::Emergency {

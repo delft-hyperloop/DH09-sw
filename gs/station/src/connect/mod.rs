@@ -29,7 +29,7 @@ pub async fn connect_main(
     // let connection = TcpStream::connect(socket()).await?;
     let connection = TcpListener::bind(socket()).await?;
     let (connection, x) = connection.accept().await?;
-    message_transmitter.send(Message::Warning(format!("connected with {:?}", x)))?;
+    message_transmitter.send(Message::Warning(format!("connected with {x:?}")))?;
     message_transmitter.send(Message::Status(Info::ConnectionEstablished))?;
     let (x, y) =
         process_stream(connection, message_transmitter.clone(), command_receiver.resubscribe())
@@ -60,8 +60,7 @@ async fn process_stream(
             Err(e) => {
                 transmit
                     .send(Message::Error(format!(
-                        "[get_messages_from_tcp] finished with errors: {:?}",
-                        e
+                        "[get_messages_from_tcp] finished with errors: {e:?}"
                     )))
                     .expect("messaging channel closed... this is irrecoverable");
             },
@@ -80,8 +79,7 @@ async fn process_stream(
             Err(e) => {
                 transmit
                     .send(Message::Error(format!(
-                        "[transmit_commands_to_tcp] finished with errors: {:?}",
-                        e
+                        "[transmit_commands_to_tcp] finished with errors: {e:?}"
                     )))
                     .expect("messaging channel closed... this is irrecoverable");
             },

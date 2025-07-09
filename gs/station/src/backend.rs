@@ -191,7 +191,7 @@ impl Backend {
             .as_str()
             .to_string();
 
-        x.1 = Regex::new(&format!("\nPeople[: ]*\n({}*)\nItems", all))
+        x.1 = Regex::new(&format!("\nPeople[: ]*\n({all}*)\nItems"))
             .unwrap()
             .captures(&content)
             .ok_or_else(|| anyhow!("\nMissing \"People\" field for procedure:\n{:?}", content))?
@@ -200,7 +200,7 @@ impl Backend {
             .as_str()
             .to_string();
 
-        x.2 = Regex::new(&format!("\nItems[: ]*\n({}*)\nProcedures", all))
+        x.2 = Regex::new(&format!("\nItems[: ]*\n({all}*)\nProcedures"))
             .unwrap()
             .captures(&content)
             .ok_or_else(|| anyhow!("\nMissing \"Items\" field for procedure:\n{:?}", content))?
@@ -209,7 +209,7 @@ impl Backend {
             .as_str()
             .to_string();
 
-        x.3 = Regex::new(&format!("\nProcedures[: ]*\n({}*)\n", all))
+        x.3 = Regex::new(&format!("\nProcedures[: ]*\n({all}*)\n"))
             .unwrap()
             .captures(&content)
             .ok_or_else(|| anyhow!("\nMissing \"Procedures\" field for procedure:\n{:?}", content))?

@@ -146,7 +146,7 @@ pub fn save_logs() -> bool {
 
         let path = dirs::download_dir()
             .unwrap_or_else(|| std::env::current_dir().unwrap())
-            .join(format!("log-{}.txt", formatted_time));
+            .join(format!("log-{formatted_time}.txt"));
 
         if Backend::save_to_path(log, path).is_ok() {
             if let Ok(Some(app)) = APP_HANDLE.try_lock().map(|lock| lock.clone()) {
@@ -197,7 +197,7 @@ pub fn procedures() -> Vec<[String; 6]> {
                 "".into(),
                 "".into(),
                 "".into(),
-                format!("{:?}", res),
+                format!("{res:?}"),
             ]]
         }
     } else {

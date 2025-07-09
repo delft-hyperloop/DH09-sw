@@ -2,17 +2,6 @@ use std::ops::DerefMut;
 use std::sync::Mutex;
 use std::time::Duration;
 
-use crossterm::cursor;
-use crossterm::event::read;
-use crossterm::event::Event;
-use crossterm::event::KeyCode;
-use crossterm::execute;
-use crossterm::terminal::disable_raw_mode;
-use crossterm::terminal::enable_raw_mode;
-use crossterm::terminal::Clear;
-use crossterm::terminal::ClearType;
-use crossterm::terminal::EnterAlternateScreen;
-use gslib::Datapoint;
 
 use gslib::Datatype;
 use gslib::Message;
@@ -130,7 +119,7 @@ pub fn tauri_main(backend: Backend) {
 
                         for i in 1..10 {
                             let ss = s.clone();
-                            sh.register(&format!("SHIFT+{}", i), move || {
+                            sh.register(&format!("SHIFT+{i}"), move || {
                                 ss.emit_all(SHORTCUT_CHANNEL, format!("tab_{i}")).unwrap();
                             })
                             .expect("Could not register shortcut");
@@ -161,7 +150,7 @@ pub fn tauri_main(backend: Backend) {
                                     if dp.datatype == Datatype::CANLog {
                                         ss.emit_all(
                                             INFO_CHANNEL,
-                                            format!("Received datapoint on the main PCB: {:?}", dp),
+                                            format!("Received datapoint on the main PCB: {dp:?}"),
                                         )
                                         .expect("Couldn't send message");
                                     }

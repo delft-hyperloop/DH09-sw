@@ -31,7 +31,7 @@ use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
 use lib::config;
-use lib::config::Datatype;
+use lib::config::{Command, Datatype};
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
 use lib::config::DATA_HASH;
@@ -70,6 +70,10 @@ pub struct GsMaster {
     tx_transmitter: PodToGsPublisher<'static>,
     /// Flag that triggers a reconnection (creates a new socket)
     should_reconnect: bool,
+    /// Flag used when reconnecting to indicate if it was a faulty connection (not critical) or we should actually emergency brake (related to the bug where it
+    // only sends a connection established message, but can't send or transmit
+    // anything).
+    connection_is_broken: bool,
 }
 
 impl Debug for GsMaster {
@@ -169,6 +173,7 @@ impl GsMaster {
             rx_transmitter,
             tx_transmitter,
             should_reconnect: false,
+            connection_is_broken: false,
         }
     }
 
@@ -342,6 +347,7 @@ impl GsMaster {
             Err(e) => {
                 warn!("Timeout for sending hashes has expired with error {:?}! Triggering a reconnection!", e);
                 self.should_reconnect = true;
+                self.connection_is_broken = true;
             }
         }
 
@@ -356,6 +362,15 @@ impl GsMaster {
 
         // Performs a hardware reset instead of making a new socket
         // SCB::sys_reset()
+        
+        // If the connection is broken, don't trigger an emergency and attempt to recover.
+        if !self.connection_is_broken {
+            self.rx_transmitter.publish(GsToPodMessage {
+                command: Command::ReconnectEmergency(0),
+            }).await;
+        } else {
+            self.connection_is_broken = false;
+        }
 
         // flush whatever was still written to the socket
         self.socket.flush().await.expect("couldn't flush socket");

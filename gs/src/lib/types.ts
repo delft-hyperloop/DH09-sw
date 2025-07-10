@@ -148,3 +148,8 @@ export const imdWarnings = [
     "Unsafe to Start",
     "Earthlift Open"
 ]
+
+export enum EBSStates {
+    Triggered = "Triggered",
+    Armed = "Armed",
+}

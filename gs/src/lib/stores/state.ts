@@ -1,5 +1,6 @@
 import { writable, type Writable } from 'svelte/store';
-import {PlotBuffer} from "$lib";
+import { PlotBuffer } from '$lib';
+import { EBSStates } from '$lib/types';
 
 export enum ErrorStatus {
   SAFE,
@@ -66,3 +67,4 @@ export const connectionAcknowledged: Writable<boolean> = writable(true);
 export const emergencyModalActive: Writable<boolean> = writable(false);
 
 export const inDropdown: Writable<boolean> = writable(false);
+export const ebsState: Writable<EBSStates> = writable(EBSStates.Triggered);

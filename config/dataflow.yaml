@@ -17,6 +17,10 @@ procedures:
       } else {
         x as f32 // Integer mode
       }
+  decode_bms_voltage_adjusted:
+    input: 'u16'
+    output: 'f32'
+    formula: '(x as f32) / 10.0 * 1.28'
   decode_bms_voltage:
     input: 'u16'
     output: 'f32'
@@ -659,7 +663,7 @@ message-processing:
                   return curr;
               }
         getter: 'u16[0..2]'
-        can-conversion: 'decode_bms_voltage:u16->f32'
+        can-conversion: 'decode_bms_voltage_adjusted:u16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
         display-units: 'V'
@@ -1533,9 +1537,10 @@ message-processing:
                   return curr;
               }
         getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        can-conversion: 'decode_bms_voltage_adjusted:u16->f32'
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: 'gs_2p_float:f32'
+        display-units: 'V'
       - datapoint:
           name: 'IPackLowVoltage'
           id: 0x605

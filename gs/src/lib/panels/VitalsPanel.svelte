@@ -17,7 +17,7 @@
     import MainFSM from '$lib/components/MainFSM.svelte';
     import {
         connectedToMainPCB,
-        debugModeActive,
+        debugModeActive, ebsState,
         inStateAccelerating, inStateBraking,
         inStateCharging,
         inStateLevitating, overrideDependencies,
@@ -54,6 +54,7 @@
     const ptcState = storeManager.getWritable("PTCState");
     const ptcFaultStore = storeManager.getWritable("PTCErrors");
     const imdWarningStore = storeManager.getWritable("IMDWarnings");
+    const lowPressure = storeManager.getWritable("PressureLow");
 
     const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
@@ -157,8 +158,8 @@
                     <Localization showLabels={true}/>
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
-                    <div class="flex flex-wrap justify-between gap-4">
-                        <div class="flex justify-between flex-col">
+                    <div class="flex flex-wrap justify-between gap-4 mb-4">
+                        <div class="flex justify-between flex-col gap-4">
                             <div class="flex gap-2 items-center">
                                 <span>Connection Status:</span>
                                 <div class="flex flex-row items-center gap-1">
@@ -173,20 +174,6 @@
                             </div>
                             <span>Velocity: <Store datatype="Velocity"/></span>
                             <span>Position: <Store datatype="Localization" dataModifier={0.01}/></span>
-                        </div>
-                        <div style="grid-template-columns: 1fr 2fr" class="grid gap-2 items-center">
-                            <span>LV:</span>
-<!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>-->
-<!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
-                            <Battery fill="#3b669c" orientation="horizontal" perc={0}/>
-
-                            <span>HV:</span>
-<!--                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>-->
-<!--                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>-->
-                            <Battery fill="#723f9c" orientation="horizontal" perc={0}/>
-
-                        </div>
-                        <div class="flex flex-col gap-4">
                             <span>
                                 PT Controller State:
                                 <ValueStore
@@ -194,21 +181,40 @@
                                     timestamp={$ptcState.timestamp}
                                 />
                             </span>
+                        </div>
+                        <div style="grid-template-columns: 1fr 2fr" class="grid gap-2 items-center">
+                            <span>LV:</span>
+<!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>-->
+<!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
+                            <Battery fill="#3b669c" orientation="horizontal" perc={0}/>
+                            <span>HV:</span>
+<!--                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>-->
+<!--                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>-->
+                            <Battery fill="#723f9c" orientation="horizontal" perc={0}/>
                             <span>
+                                EBS Status:
+                            </span>
+                            <ValueStore
+                                value={$ebsState}
+                                timestamp={$lowPressure.timestamp}
+                            />
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <span>
                                 PT Controller Fault:
                                 <ValueStore
                                     value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}
                                     timestamp={$ptcFaultStore.timestamp}
                                 />
                             </span>
-                            <span>
+                        <span>
                                 IMD Warning:
                                 <ValueStore
-                                    value={imdWarnings.length === 0 ? "None" : imdWarningMessage.join(", ")}
+                                    value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}
                                     timestamp={$imdWarningStore.timestamp}
                                 />
                             </span>
-                        </div>
                     </div>
                 </Tile>
                 <Tile

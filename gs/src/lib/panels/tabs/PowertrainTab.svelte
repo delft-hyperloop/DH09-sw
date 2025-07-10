@@ -59,7 +59,7 @@
             </div>
         </Tile>
         <Tile containerClass="col-span-full px-10">
-            <div class="grid grid-rows-2 grid-cols-7 gap-2 h-full items-center">
+            <div class="grid grid-rows-2 grid-cols-7 gap-2 h-full w-full items-center">
                 <span class="text-wrap text-center">Powertrain Reset Flags</span>
                 {#each Array.from({ length: resetPowertrainLabels.length }, (_, i) => resetPowertrainLabels.length - 1 - i) as i}
                     <BinaryInput store={ptResetMessage} index={i}/>
@@ -74,7 +74,7 @@
         </Tile>
         <Tile containerClass="col-span-full">
             <div class="flex flex-row gap-4 items-center">
-                <div class="flex flex-col mx-8 gap-2">
+                <div class="flex flex-col mr-8 gap-2">
                     <div class="flex flex-col items-center">
                         <Battery fill="#3b669c" orientation="horizontal" height={40} perc={0} />
                         <!--                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />-->

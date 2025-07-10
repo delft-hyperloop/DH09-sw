@@ -2,8 +2,9 @@ import { EventChannel, GrandDataDistributor, util } from '$lib';
 import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 import { invoke } from '@tauri-apps/api/tauri';
 import { lastHeartbeatTimestamp, modalBody, modalTitle, staleCriticalDatatypes } from '$lib/stores/data';
-import { MODAL_SETTINGS } from '$lib/types';
+import { EBSStates, MODAL_SETTINGS } from '$lib/types';
 import {
+    ebsState,
     emergencyModalActive,
     emsTempsAcknowledged,
     hemsTempsAcknowledged,
@@ -30,6 +31,17 @@ export function registerSubscribers() {
     const emergency = storeManager.getWritable("Emergency");
     const localization = storeManager.getWritable("Localization");
     const emergencyStaleData = storeManager.getWritable("EmergencyStaleCriticalData");
+    const lowPressure = storeManager.getWritable("PressureLow");
+
+    const lowPressureThreshold: number = 30;
+
+    lowPressure.subscribe((store) => {
+        if (store.value > lowPressureThreshold) {
+            ebsState.set(EBSStates.Armed);
+        } else {
+            ebsState.set(EBSStates.Triggered);
+        }
+    })
 
     emergencyStaleData.subscribe(async (store) => {
         if (store.value !== 0) {
@@ -49,6 +61,8 @@ export function registerSubscribers() {
             }
         }
     })
+
+
 
     localization.subscribe((store) => {
         // console.log(`Style: ${store.style}`);

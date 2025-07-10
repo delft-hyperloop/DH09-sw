@@ -252,12 +252,6 @@
                 <!--                    </div>-->
             </div>
         </Tile>
-        <Tile containerClass="col-span-full">
-            <Chart title="Velocity" background="bg-surface-900"/>
-        </Tile>
-        <Tile containerClass="col-span-full">
-            <Chart title="Offset" background="bg-surface-900"/>
-        </Tile>
         <Tile containerClass="col-span-1">
             <Chart title="Propulsion Log 1 - Right Motor" background="bg-surface-900" />
         </Tile>
@@ -269,6 +263,18 @@
         </Tile>
         <Tile containerClass="col-span-1">
             <Chart title="Propulsion Log 2 - Left Motor" background="bg-surface-900" />
+        </Tile>
+        <Tile containerClass="col-span-1">
+            <Chart title="Motor Temperatures Left" background="bg-surface-900"/>
+        </Tile>
+        <Tile containerClass="col-span-1">
+            <Chart title="Motor Temperatures Right" background="bg-surface-900"/>
+        </Tile>
+        <Tile containerClass="col-span-full">
+            <Chart title="Velocity" background="bg-surface-900"/>
+        </Tile>
+        <Tile containerClass="col-span-full">
+            <Chart title="Offset" background="bg-surface-900"/>
         </Tile>
         <Tile containerClass="col-span-1">
             <Chart title="Propulsion Log 3 - Right Motor" background="bg-surface-900" />

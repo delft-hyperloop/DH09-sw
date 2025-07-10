@@ -32,8 +32,12 @@ use main::comms_tasks::gs_heartbeat;
 use main::ethernet::logic::GsMaster;
 use main::ethernet::types::EthPeripherals;
 use main::ethernet::types::GsComms;
-use panic_probe as _;
 use static_cell::StaticCell;
+
+#[cfg(debug_assertions)]
+use panic_probe as _;
+#[cfg(not(debug_assertions))]
+mod panic_handler;
 
 // bind interrupt service routines to the hardware-triggered interrupts of different peripherals
 bind_interrupts!(

@@ -7,8 +7,6 @@
         propControlWord2,
         propulsionConfigSent,
         showcasingStates,
-        RedHVALTurnedOn,
-        GreenHVALTurnedOn,
         inDropdown,
     } from '$lib/stores/state';
     import CollapsibleTile from '$lib/components/generic/CollapsibleTile.svelte';

@@ -21,15 +21,15 @@
     <h2 class="text-2xl font-semibold mb-4">Pneumatics</h2>
 
     <TileGrid columns="3fr 1fr" rows="">
-        <Tile>
+<!--        <Tile>-->
 <!--            <Pneumatics pressure_left={$highPressure.value} max_pressure_left={250}-->
 <!--                        pressure_right={$lowPressure.value} max_pressure_right={100}/>-->
-        </Tile>
-        <Tile>
+<!--        </Tile>-->
+<!--        <Tile>-->
 <!--            <Table background="bg-surface-900" titles={["Section", "Bars"]} tableArr={pressureTable}/>-->
-        </Tile>
+<!--        </Tile>-->
         <Tile containerClass="col-span-full">
-            <Chart title="Breaking Comms"/>
+            <Chart title="Brake Pressure"/>
         </Tile>
     </TileGrid>
 </div>

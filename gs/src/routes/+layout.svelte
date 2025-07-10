@@ -276,6 +276,10 @@
     $chartStore.set("DC Link Voltage", dcLinkVoltageChart);
     powertrainCharts.push("DC Link Voltage");
 
+    let pressureChart = new PlotBuffer(500, 60000, [-500, 500], true, "Pressure Low");
+    pressureChart.addSeries(StrokePresets.hyperLoopGreen("Pressure High"));
+    $chartStore.set("Brake Pressure", pressureChart);
+
     leviChartStore.set(leviCharts);
     propChartStore.set(propCharts);
     powertrainChartStore.set(powertrainCharts);
@@ -1027,6 +1031,20 @@
     gdd.stores.registerStore<number>("TempEMS8", 0, data => {
             const curr = Number(data);
             $chartStore.get("Temperatures EMS")!.addEntry(8, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("PressureLow", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Brake Pressure")!.addEntry(1, curr);
+            return curr;
+        }
+    );
+
+    gdd.stores.registerStore<number>("PressureHigh", 0, data => {
+            const curr = Number(data);
+            $chartStore.get("Brake Pressure")!.addEntry(2, curr);
             return curr;
         }
     );

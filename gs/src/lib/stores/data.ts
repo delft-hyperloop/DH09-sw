@@ -31,6 +31,19 @@ export const modalBody: Writable<string> = writable("");
 
 export const lastHeartbeatTimestamp: Writable<number> = writable(Date.now());
 
-export const propulsionPoints: Writable<PropPoint[]> = writable([]);
+export const propulsionPoints: Writable<PropPoint[]> = writable([
+  {
+    location: 0,
+    imax: 0,
+  },
+  {
+    location: 0,
+    imax: 0,
+  },
+  {
+    location: 0,
+    imax: 0,
+  }
+]);
 
 export const staleCriticalDatatypes: Writable<string[]> = writable([]);

@@ -8,7 +8,10 @@ pub mod config {
         missing_docs,
         unused,
         missing_copy_implementations,
-        missing_debug_implementations
+        missing_debug_implementations,
+        clippy::needless_range_loop,
+        clippy::match_like_matches_macro,
+        clippy::match_single_binding
     )]
     include!(concat!(env!("OUT_DIR"), "/config.rs"));
 }

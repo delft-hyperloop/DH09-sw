@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 use embassy_stm32::can::Frame;
 use embassy_time::Instant;
 use embedded_can::Id;
@@ -52,19 +54,19 @@ impl core::cmp::PartialEq for CanEnvelope {
     }
 }
 
-impl core::cmp::PartialOrd for CanEnvelope {
-    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+impl Ord for CanEnvelope {
+    fn cmp(&self, other: &Self) -> Ordering {
         self.envelope
             .frame
             .id()
-            .partial_cmp(&other.envelope.frame.id())
+            .cmp(other.envelope.frame.id())
     }
 }
 
 impl core::cmp::Eq for CanEnvelope {}
 
-impl core::cmp::Ord for CanEnvelope {
-    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-        self.envelope.frame.id().cmp(&other.envelope.frame.id())
+impl PartialOrd for CanEnvelope {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.envelope.frame.id().cmp(other.envelope.frame.id()))
     }
 }

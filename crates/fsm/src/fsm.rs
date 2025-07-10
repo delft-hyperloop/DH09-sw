@@ -1,5 +1,5 @@
 //! This module contains the struct used for the Main FSM.
-
+#![allow(clippy::match_single_binding)]
 use core::fmt::Debug;
 use core::fmt::Formatter;
 
@@ -13,7 +13,6 @@ use lib::EventSender;
 use lib::States;
 use log::error;
 
-use crate::entry_methods::enter_fault;
 use crate::CheckedSystem;
 use crate::CheckedSystems;
 
@@ -83,7 +82,6 @@ impl FSM {
     /// false. This case should only happen if the FSM receives
     /// the `ShutDown` event.
     pub async fn run(&mut self) {
-        let mut counter = 0;
         loop {
             let event = self.event_receiver.receive().await;
 
@@ -102,25 +100,21 @@ impl FSM {
                 break;
             }
 
-            if counter <= 100 {
-                // Sends the FSM state to the ground station every ~100 ms
+            // Sends the FSM state to the ground station
+            self.event_sender_gs
+                .send(Event::FSMTransition(self.state.to_index()))
+                .await;
+
+            // Checks if the braking line is still high. If not, send an emergency message
+            // to the ground station and transition to fault state.
+            if self.sdc_pin.is_set_low() && self.state != States::Fault {
+                error!("SDC pin is low! Sending emergency to the ground station!");
                 self.event_sender_gs
-                    .send(Event::FSMTransition(self.state.to_index()))
+                    .send(Event::Emergency {
+                        emergency_type: EmergencyType::GeneralEmergency,
+                    })
                     .await;
-
-                // Checks if the braking line is still high. If not, send an emergency message
-                // to the ground station and transition to fault state.
-                if self.sdc_pin.is_set_low() && self.state != States::Fault {
-                    error!("SDC pin is low! Sending emergency to the ground station!");
-                    self.event_sender_gs
-                        .send(Event::Emergency {
-                            emergency_type: EmergencyType::GeneralEmergency,
-                        })
-                        .await;
-                    self.transition(States::Fault).await;
-                }
-
-                counter = 0;
+                self.transition(States::Fault).await;
             }
 
             Timer::after_millis(1).await;
@@ -144,33 +138,33 @@ impl FSM {
     async fn handle_events(&mut self, event: Event) -> bool {
         match (self.state, event) {
             (_, Event::Emergency { emergency_type }) if self.state != States::Fault => {
-                self.transition(States::Fault).await;
-
+                // 1. Trigger emergency using the sdc
+                self.sdc_pin.set_low();
                 error!("Going into Fault state with emergency {:?}", emergency_type);
 
-                // Trigger emergency using the sdc
-                self.sdc_pin.set_low();
-
-                // If going in emergency state, send messages over CAN and to the ground station
+                // 2. send the emergency message to all other devices on the CAN line
                 self.event_sender2
                     .send(Event::Emergency { emergency_type })
                     .await;
+
+                // 3. discharge the batteries
+                self.event_sender2.send(Event::Discharge).await;
+                
+                // 4. inform the ground station about it
                 if emergency_type != EmergencyType::StaleCriticalDataEmergency {
                     self.event_sender_gs
                         .send(Event::Emergency { emergency_type })
                         .await;
                 }
 
-                self.event_sender2.send(Event::Discharge).await;
-            }
-            (_, Event::Fault) if self.state != States::Fault => {
-                error!("Fault triggered!");
-                self.transition(States::Fault).await
+                // lastly, transition to fault state.
+                self.transition(States::Fault).await;
             }
 
             (_, Event::ResetFSM) => {
                 info!("Reset FSM triggered. Resetting the main PCB...");
                 self.event_sender_gs.send(Event::ResetFSM).await;
+                self.sdc_pin.set_low();
                 Timer::after_millis(5).await;
                 cortex_m::peripheral::SCB::sys_reset();
             }
@@ -198,17 +192,17 @@ impl FSM {
             // Go into fault state if any of the system checks fail
             (States::SystemCheck, Event::Prop1SystemCheckFailure) => {
                 error!("Prop 1 system check failure!");
-                self.transition(States::Fault).await;
                 self.event_sender_gs
                     .send(Event::Prop1SystemCheckFailure)
                     .await;
+                self.transition(States::Fault).await;
             }
             (States::SystemCheck, Event::Prop2SystemCheckFailure) => {
                 error!("Prop 2 system check failure!");
-                self.transition(States::Fault).await;
                 self.event_sender_gs
                     .send(Event::Prop2SystemCheckFailure)
                     .await;
+                self.transition(States::Fault).await;
             }
             (States::SystemCheck, Event::LeviSystemCheckFailure) => {
                 error!("Levi system check failure!");
@@ -287,11 +281,6 @@ impl FSM {
         true
     }
 
-    /// Returns the current state of the pod.
-    pub async fn get_state(&self) -> States {
-        self.state
-    }
-
     /// Marks one of the subsystems as checked while in the `SystemCheck` state.
     /// If all of them are checked, marks them as false for the next system
     /// check and transitions to the `Idle` state.
@@ -351,7 +340,7 @@ impl FSM {
     /// whenever a transition happens.
     async fn call_entry_method(&mut self, state: States) {
         match state {
-            States::Fault => enter_fault().await,
+            States::Fault => self.sdc_pin.set_low(),
             States::Boot => {
                 // Reset PCB here
                 // SEND extra "restarting..." msg to gs
@@ -363,8 +352,8 @@ impl FSM {
         }
     }
 
-    ///Matches a state with its exit method and executes it. Should be called
-    /// whenever a transition happens
+    /// Matches a state with its exit method and executes it. 
+    /// Should be called whenever a transition happens
     async fn call_exit_method(&self, state: States) {
         match state {
             _ => {}

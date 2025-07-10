@@ -7,8 +7,6 @@
 #![no_std]
 #![no_main]
 
-mod entry_methods;
-mod exit_methods;
 pub(crate) mod fsm;
 
 // TODO: Move to generated

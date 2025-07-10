@@ -11,6 +11,7 @@
     } from '$lib/stores/state';
     import { inStateBraking, inStateConnectedToGS, inStateDemo, inStateIdle } from '$lib/stores/state.js';
     import type { FsmState } from '$lib/types';
+    import { emergencySources } from '$lib/stores/data';
 
     let boot: FsmState = {
         index: 0,
@@ -82,6 +83,11 @@
         inStateAccelerating.set(index === accelerating.index);
         inStateCharging.set(index === charging.index);
         inStateBraking.set(index == braking.index);
+
+        // If in system check, remove all the emergency sources
+        if (index == system_check.index) {
+            emergencySources.set([]);
+        }
 
         if (index === 9) {
             console.error("FSM in state 9!");

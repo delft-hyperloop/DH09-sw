@@ -47,3 +47,5 @@ export const propulsionPoints: Writable<PropPoint[]> = writable([
 ]);
 
 export const staleCriticalDatatypes: Writable<string[]> = writable([]);
+
+export const emergencySources: Writable<string[]> = writable([]);

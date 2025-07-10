@@ -1,7 +1,13 @@
 import { EventChannel, GrandDataDistributor, util } from '$lib';
 import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 import { invoke } from '@tauri-apps/api/tauri';
-import { lastHeartbeatTimestamp, modalBody, modalTitle, staleCriticalDatatypes } from '$lib/stores/data';
+import {
+    emergencySources,
+    lastHeartbeatTimestamp,
+    modalBody,
+    modalTitle,
+    staleCriticalDatatypes,
+} from '$lib/stores/data';
 import { EBSStates, MODAL_SETTINGS } from '$lib/types';
 import {
     ebsState,
@@ -16,6 +22,12 @@ import {
     rightMotorTempsAcknowledged,
 } from '$lib/stores/state';
 import { get } from 'svelte/store';
+
+export function addEmergencySource(source: string) {
+    let tempEmergencySources = get(emergencySources);
+    tempEmergencySources.push(source);
+    emergencySources.set(tempEmergencySources);
+}
 
 export function registerSubscribers() {
     const storeManager = GrandDataDistributor.getInstance().stores;
@@ -49,24 +61,20 @@ export function registerSubscribers() {
             let temp = get(staleCriticalDatatypes);
             if (!temp.includes(datatype)) {
                 temp.push(datatype);
+
+                addEmergencySource("Stale Critical Data");
+
                 staleCriticalDatatypes.set(temp);
                 if (temp.length > 1) {
                     modalBody.set(`${datatype} has been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`);
                 } else {
-                    modalBody.set(`${temp.join(" and ")} have been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`);
+                    modalBody.set(`${temp.join(", ")} have been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`);
                 }
                 console.error("Stale critical data emergency with id " + store.value);
                 modalTitle.set("Stale critical datatype!")
                 modalStore.trigger(MODAL_SETTINGS);
             }
         }
-    })
-
-
-
-    localization.subscribe((store) => {
-        // console.log(`Style: ${store.style}`);
-        console.log(`upper: ${store.upper}`);
     })
 
     fsmTransitionFail.subscribe(async (store) => {
@@ -232,6 +240,9 @@ export function registerSubscribers() {
     propEmergency1.subscribe((store) => {
         if (store.value !== 0 && get(propEmergency1Acknowledged)) {
             propEmergency1Acknowledged.set(false);
+
+            addEmergencySource("Propulsion Motor 1");
+
             toastStore.trigger({
                 message: `Prop Emergency 1: ${store.value}`,
                 background: "bg-error-400",
@@ -249,6 +260,9 @@ export function registerSubscribers() {
     propEmergency2.subscribe((store) => {
         if (store.value !== 0 && get(propEmergency2Acknowledged)) {
             propEmergency2Acknowledged.set(false);
+
+            addEmergencySource("Propulsion Motor 2");
+
             toastStore.trigger({
                 message: `Prop Emergency 2: ${store.value}`,
                 background: "bg-error-400",
@@ -270,8 +284,8 @@ export function registerSubscribers() {
 
             // Stale critical data emergency should be handled in a different modal to
             // also show the datapoint that cause the emergency. Therefore, it is missing
-            // from here.
-            const sources: String[] = [
+            // from here. (Hint: check above)
+            const sources: string[] = [
                 "General",
                 "Propulsion",
                 "Levitation",
@@ -279,6 +293,9 @@ export function registerSubscribers() {
                 "SenseCon",
                 "Disconnection",
             ]
+
+            addEmergencySource(sources[store.value - 1]);
+
             modalTitle.set(`${sources[store.value - 1]} Emergency!`);
             modalBody.set(
                 `Emergency triggered: ${sources[store.value - 1]} Emergency!

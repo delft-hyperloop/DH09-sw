@@ -46,6 +46,7 @@
     import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
     import { imdWarnings, ptcErrorCodes, ptcStates } from '$lib/types';
     import ValueStore from '$lib/components/generic/ValueStore.svelte';
+    import { emergencySources } from '$lib/stores/data';
 
     let width: number;
 
@@ -158,8 +159,8 @@
                     <Localization showLabels={true}/>
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
-                    <div class="flex flex-wrap justify-between gap-4 mb-4">
-                        <div class="flex justify-between flex-col gap-4">
+                    <div class="flex justify-between gap-4 mb-4">
+                        <div class="flex flex-col gap-4">
                             <div class="flex gap-2 items-center">
                                 <span>Connection Status:</span>
                                 <div class="flex flex-row items-center gap-1">
@@ -182,7 +183,7 @@
                                 />
                             </span>
                         </div>
-                        <div style="grid-template-columns: 1fr 2fr" class="grid gap-2 items-center">
+                        <div style="grid-template-columns: 1fr 1fr" class="grid gap-2 items-center">
                             <span>LV:</span>
 <!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>-->
 <!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
@@ -198,6 +199,12 @@
                                 value={$ebsState}
                                 timestamp={$lowPressure.timestamp}
                             />
+                            <span class="text-wrap">
+                                Emergency Sources:
+                            </span>
+                            <span>
+                                {$emergencySources.length === 0 ? "None" : $emergencySources.join(", ")}
+                            </span>
                         </div>
                     </div>
                     <div class="flex flex-col gap-4">

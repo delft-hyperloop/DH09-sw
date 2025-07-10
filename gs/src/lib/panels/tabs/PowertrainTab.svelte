@@ -43,8 +43,8 @@
     <div class="flex gap-x-2 items-start">
     </div>
     <TileGrid columns="1fr 1fr 1fr 1fr 1fr" rows="auto">
-        <Tile containerClass="col-span-3" insideClass="w-full h-full">
-            <div class="flex flex-row gap-4 w-full h-full items-center justify-center">
+        <Tile containerClass="col-span-full">
+            <div class="flex flex-row gap-4 w-full h-full">
                 <Command
                     cmd="StartHV"
                     text="Start HV"
@@ -58,20 +58,8 @@
                 <Command cmd="StopCharge" icon={StopOutline} dependency={inStateCharging}/>
             </div>
         </Tile>
-        <Tile insideClass="flex flex-row h-full w-full items-center gap-4 justify-center items-center" containerClass="col-span-2 w-full">
-            <div class="flex flex-col items-center">
-                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={0} />
-                <!--                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />-->
-                <p>Low voltage</p>
-            </div>
-            <div class="flex flex-col items-center">
-                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={0} />
-                <!--                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery.value)} />-->
-                <p>High voltage</p>
-            </div>
-        </Tile>
         <Tile containerClass="col-span-full px-10">
-            <div class="grid grid-rows-2 grid-cols-7 gap-2 h-full justify-center items-center">
+            <div class="grid grid-rows-2 grid-cols-7 gap-2 h-full items-center">
                 <span class="text-wrap text-center">Powertrain Reset Flags</span>
                 {#each Array.from({ length: resetPowertrainLabels.length }, (_, i) => resetPowertrainLabels.length - 1 - i) as i}
                     <BinaryInput store={ptResetMessage} index={i}/>
@@ -85,7 +73,20 @@
             </div>
         </Tile>
         <Tile containerClass="col-span-full">
-            <div class="flex flex-col gap-4 ">
+            <div class="flex flex-row gap-4 items-center">
+                <div class="flex flex-col mx-8 gap-2">
+                    <div class="flex flex-col items-center">
+                        <Battery fill="#3b669c" orientation="horizontal" height={40} perc={0} />
+                        <!--                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />-->
+                        <p>Low voltage</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <Battery fill="#723f9c" orientation="horizontal" height={40} perc={0} />
+                        <!--                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery.value)} />-->
+                        <p>High voltage</p>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-4 ">
                 <span>
                     PT Controller State:
                     <ValueStore
@@ -93,20 +94,21 @@
                         timestamp={$ptcState.timestamp}
                     />
                 </span>
-                <span>
+                    <span>
                     PT Controller Fault:
                     <ValueStore
                         value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}
                         timestamp={$ptcFaultStore.timestamp}
                     />
                 </span>
-                <span>
+                    <span>
                     IMD Warning:
                     <ValueStore
                         value={imdWarnings.length === 0 ? "None" : imdWarningMessage.join(", ")}
                         timestamp={$imdWarningStore.timestamp}
                     />
                 </span>
+                </div>
             </div>
         </Tile>
 <!--        <Tile containerClass="col-span-2" insideClass="flex flex-col h-full gap-2 items-center">-->

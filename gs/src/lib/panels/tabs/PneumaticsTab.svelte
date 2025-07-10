@@ -29,7 +29,7 @@
 <!--            <Table background="bg-surface-900" titles={["Section", "Bars"]} tableArr={pressureTable}/>-->
 <!--        </Tile>-->
         <Tile containerClass="col-span-full">
-            <Chart title="Brake Pressure"/>
+            <Chart title="Brake Pressure" background="bg-surface-900" />
         </Tile>
     </TileGrid>
 </div>

@@ -748,7 +748,7 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         }
     }
 
-    writeln!(&mut code, "pub async fn gs_to_can1<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::can1::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
+    writeln!(&mut code, "pub async fn gs_to_can1<F, Fut>(command: Command, mut f: F) where F: FnMut(crate::can::fdcan::CanEnvelope) -> Fut, Fut: Future<Output=()> {{ {proc}\n\nmatch command {{").unwrap();
     for (command_name, id, conversion, trim) in &can1commands {
         writeln!(
             &mut code,

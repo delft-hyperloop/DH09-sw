@@ -64,6 +64,5 @@ export const propEmergency1Acknowledged: Writable<boolean> = writable(true);
 export const propEmergency2Acknowledged: Writable<boolean> = writable(true);
 export const connectionAcknowledged: Writable<boolean> = writable(true);
 export const emergencyModalActive: Writable<boolean> = writable(false);
-export const emergencyStaleDataModalActive: Writable<boolean> = writable(false);
 
 export const inDropdown: Writable<boolean> = writable(false);

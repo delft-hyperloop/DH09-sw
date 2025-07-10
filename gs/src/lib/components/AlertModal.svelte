@@ -1,8 +1,8 @@
 <script lang="ts">
     import { getModalStore } from '@skeletonlabs/skeleton';
-    import { modalBody, modalTitle } from '$lib/stores/data';
+    import { modalBody, modalTitle, staleCriticalDatatypes } from '$lib/stores/data';
     import { Help } from 'carbon-icons-svelte';
-    import { emergencyModalActive, emergencyStaleDataModalActive } from '$lib/stores/state';
+    import { emergencyModalActive } from '$lib/stores/state';
 
     let modalStore = getModalStore();
     let helpComponentVisible: boolean = false;
@@ -10,7 +10,7 @@
     let closeModal = () => {
         modalStore.close();
         emergencyModalActive.set(false);
-        emergencyStaleDataModalActive.set(false);
+        staleCriticalDatatypes.set([]);
     }
 </script>
 

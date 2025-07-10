@@ -539,11 +539,15 @@ pub async fn check_critical_datapoints(
     let mut last_critical_datapoint_check = Instant::now().as_millis();
 
     // Store the timestamps for each checked datapoint
-    let mut critical_datapoints: [(config::Datatype, u64); CRITICAL_DATATYPE_COUNT] =
-        [(config::Datatype::DefaultDatatype, 0); CRITICAL_DATATYPE_COUNT];
+    // u64: the last timestamp when it received the datapoint
+    // bool: if it was sent to the ground station or not. We don't want to send the
+    // same datatypes multiple times to avoid popups infinitely triggering on the ground
+    // station. This value resets whenever we received the datapoint again.
+    let mut critical_datapoints: [(config::Datatype, u64, bool); CRITICAL_DATATYPE_COUNT] =
+        [(config::Datatype::DefaultDatatype, 0, false); CRITICAL_DATATYPE_COUNT];
 
     loop {
-        // Check if the channel for receiving CSN messages is empty
+        // Check if the channel for receiving CAN messages is empty
         if !can_rx.is_empty() {
             let can_frame = can_rx.next_message_pure().await;
 
@@ -567,7 +571,7 @@ pub async fn check_critical_datapoints(
                     loop {
                         let dtt = critical_datapoints[index];
                         if dtt.0 == datatype || dtt.0 == Datatype::DefaultDatatype {
-                            critical_datapoints[index] = (datatype, Instant::now().as_millis());
+                            critical_datapoints[index] = (datatype, Instant::now().as_millis(), true);
                             break;
                         }
 
@@ -589,10 +593,13 @@ pub async fn check_critical_datapoints(
         if now - last_critical_datapoint_check >= 250 {
             last_critical_datapoint_check = now;
 
-            for dtt in critical_datapoints {
+            let mut index = 0;
+            
+            loop {
+                let dtt = critical_datapoints[index];
                 if dtt.0 == Datatype::DefaultDatatype {
                     break;
-                } else if now - dtt.1 >= timeout_time {
+                } else if now - dtt.1 >= timeout_time && dtt.2 {
                     // Send a message to the fsm to enter emergency
                     event_sender
                         .send(Event::Emergency {
@@ -610,6 +617,14 @@ pub async fn check_critical_datapoints(
                             },
                         })
                         .await;
+                    
+                    // Set the bool value to false to indicate that it shouldn't be sent again.
+                    critical_datapoints[index] = (dtt.0, dtt.1, false);
+                }
+                index += 1;
+                
+                if index == CRITICAL_DATATYPE_COUNT {
+                    break;
                 }
             }
         }

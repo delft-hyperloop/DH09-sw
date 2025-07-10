@@ -380,9 +380,7 @@ impl GsMaster {
         self.should_reconnect = false;
     }
 
-    /// Transmits the messages from the PodToGsChannel. If a transmission fails,
-    /// it saves the bytes it was supposed to send in `TX_BYTES` and reattempts
-    /// to send them in the next call.
+    /// Transmits the messages from the PodToGsChannel.
     async fn transmit(&mut self) {
         let msg = self.tx_receiver.receive().await;
 

@@ -1,10 +1,10 @@
 import { EventChannel, GrandDataDistributor, util } from '$lib';
 import { getModalStore, getToastStore } from '@skeletonlabs/skeleton';
 import { invoke } from '@tauri-apps/api/tauri';
-import { lastHeartbeatTimestamp, modalBody, modalTitle } from '$lib/stores/data';
+import { lastHeartbeatTimestamp, modalBody, modalTitle, staleCriticalDatatypes } from '$lib/stores/data';
 import { MODAL_SETTINGS } from '$lib/types';
 import {
-    emergencyModalActive, emergencyStaleDataModalActive,
+    emergencyModalActive,
     emsTempsAcknowledged,
     hemsTempsAcknowledged,
     leftMotorTempsAcknowledged,
@@ -32,13 +32,21 @@ export function registerSubscribers() {
     const emergencyStaleData = storeManager.getWritable("EmergencyStaleCriticalData");
 
     emergencyStaleData.subscribe(async (store) => {
-        if (store.value !== 0 && !get(emergencyStaleDataModalActive)) {
-            emergencyStaleDataModalActive.set(true);
+        if (store.value !== 0) {
             let datatype: string = await invoke("get_datatype_by_id", { id: store.value });
-            console.error("Stale critical data emergency with id " + store.value);
-            modalBody.set(`${datatype} has been stale for more than one second! The main PCB went into the Fault state!`);
-            modalTitle.set("Stale critical datatype!")
-            modalStore.trigger(MODAL_SETTINGS);
+            let temp = get(staleCriticalDatatypes);
+            if (!temp.includes(datatype)) {
+                temp.push(datatype);
+                staleCriticalDatatypes.set(temp);
+                if (temp.length > 1) {
+                    modalBody.set(`${datatype} has been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`);
+                } else {
+                    modalBody.set(`${temp.join(" and ")} have been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`);
+                }
+                console.error("Stale critical data emergency with id " + store.value);
+                modalTitle.set("Stale critical datatype!")
+                modalStore.trigger(MODAL_SETTINGS);
+            }
         }
     })
 

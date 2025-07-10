@@ -9,10 +9,10 @@
     } from '$lib';
     import { imdWarnings, ptcErrorCodes, ptcStates } from '$lib/types';
     import ValueStore from '$lib/components/generic/ValueStore.svelte';
-    import { ChargingStation, Flash, FlashOff, ResetAlt, StopOutline } from 'carbon-icons-svelte';
+    import { ChargingStation, Flash, FlashOff, StopOutline } from 'carbon-icons-svelte';
     import { inStateIdle, ptResetMessage } from '$lib/stores/state';
     import BinaryInput from '$lib/components/BinaryInput.svelte';
-    import { inStateActive, inStateCharging, inStateDemo } from '$lib/stores/state.js';
+    import { inStateActive, inStateCharging } from '$lib/stores/state.js';
     const storeManager = GrandDataDistributor.getInstance().stores;
 
     const ptcState = storeManager.getWritable("PTCState");

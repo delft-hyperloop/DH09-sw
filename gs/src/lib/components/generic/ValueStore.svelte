@@ -4,10 +4,21 @@
     const STALE_DATA_TICKS = 500;
     export let value: number | string;
     export let timestamp: number;
+    export let name: string;
+    export let upper: string | undefined = undefined;
+    export let lower: string | undefined = undefined;
 </script>
 
-<span class="{$latestTimestamp - timestamp > STALE_DATA_TICKS ? 'text-surface-400' : ''}">
-    {value}
-</span>
-
-
+<div class="flex flex-col">
+    <div class="flex flex-row gap-1">
+        <span>{name}: </span>
+        <span class="{$latestTimestamp - timestamp > STALE_DATA_TICKS ? 'text-surface-400' : ''}">
+            {value}
+        </span>
+    </div>
+    {#if lower !== undefined && upper !== undefined}
+        <span class="text-surface-400">
+            Safety Range: [{lower}, {upper}]
+        </span>
+    {/if}
+</div>

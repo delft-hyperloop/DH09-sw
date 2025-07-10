@@ -2,21 +2,42 @@
     import type {NamedDatatype} from "$lib/types";
     import {GrandDataDistributor} from "$lib";
     import {latestTimestamp} from "$lib/stores/state";
+    import { invoke } from '@tauri-apps/api/tauri';
+    import { onMount } from 'svelte';
 
     const STALE_DATA_TICKS = 500;
     export let datatype: NamedDatatype;
+    export let name: string;
     const store = GrandDataDistributor.getInstance().stores.getWritable(datatype);
-    export let dataModifier: number = 1;
+    let range: unknown = "";
+    let unit: unknown = "";
 
-    $: range = typeof $store.value === "number" && $store.lower !== undefined && $store.upper !== undefined ? `[${$store.lower * dataModifier}, ${$store.upper * dataModifier}]` : "";
+    onMount(async () => {
+        unit = await invoke('get_unit_by_datatype', { datatype: datatype }).catch((e) => {
+            console.error(`Couldn't get unit for ${datatype}: ${e}`);
+        });
+        range = await invoke('get_ranges_by_datatype_id', { datatype: datatype }).catch((e) => {
+            console.error(`Couldn't get ranges for ${datatype}: ${e}`);
+        });
+    })
+
     $: store;
 </script>
 
-<span class="{$latestTimestamp - $store.timestamp > STALE_DATA_TICKS ? 'text-surface-400' : $store.style}">
-    {typeof $store.value === "number" ?
-        ($store.value * dataModifier).toFixed(2) : $store.value}
-    {range}
-    {$store.units}
-</span>
-
+<div class="flex flex-col">
+    <div class="flex flex-row gap-1">
+        <span>{name}: </span>
+        <span class="{$latestTimestamp - $store.timestamp > STALE_DATA_TICKS ? 'text-surface-400' : $store.style}">
+        {typeof $store.value === "number" ?
+            ($store.value).toFixed(2) : $store.value}
+            <!--{range}-->
+            {unit}
+    </span>
+    </div>
+    {#if range !== ""}
+        <span class="text-surface-400">
+            Safety Range: {range}
+        </span>
+    {/if}
+</div>
 

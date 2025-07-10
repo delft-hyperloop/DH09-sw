@@ -37,6 +37,10 @@ procedures:
     input: 'i16'
     output: 'f32'
     formula: '(x as f32) / 10.0'
+  scale_100:
+    input: 'i32'
+    output: 'f32'
+    formula: '(x as f32) / 100.0'
   scale_1000:
     input: 'i16'
     output: 'f32'
@@ -750,13 +754,13 @@ message-processing:
                   return curr;
               }
         getter: 'i32[0..4]'
-        can-conversion: 'identity_i32:i32->i32'
+        can-conversion: 'scale_100:i32->f32'
         display-units: 'mm'
         gs:
-          conversion: 'gs_i32:i32'
+          conversion: 'gs_2p_float:f32'
 #        limits:
-#          upper: 400
-#          lower: 0
+#          upper: { warn: 360, err: 420, brake: 450 }
+#          lower: { warn: 280, err: 270, brake: 250 }
       - datapoint:
           name: 'Velocity'
           id: 0x527

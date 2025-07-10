@@ -25,7 +25,9 @@ import { get } from 'svelte/store';
 
 export function addEmergencySource(source: string) {
     let tempEmergencySources = get(emergencySources);
-    tempEmergencySources.push(source);
+    if (!tempEmergencySources.includes(source)) {
+        tempEmergencySources.push(source);
+    }
     emergencySources.set(tempEmergencySources);
 }
 
@@ -62,7 +64,7 @@ export function registerSubscribers() {
             if (!temp.includes(datatype)) {
                 temp.push(datatype);
 
-                addEmergencySource("Stale Critical Data");
+                addEmergencySource(`${datatype} Stale`);
 
                 staleCriticalDatatypes.set(temp);
                 if (temp.length > 1) {

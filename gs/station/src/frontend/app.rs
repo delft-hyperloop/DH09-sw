@@ -39,6 +39,8 @@ pub fn tauri_main(backend: Backend) {
             save_logs,
             get_fsm_state_by_index,
             get_datatype_by_id,
+            get_ranges_by_datatype_id,
+            get_unit_by_datatype,
         ])
         .setup(move |app| {
             let app_handle = app.handle();

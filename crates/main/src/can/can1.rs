@@ -36,7 +36,9 @@ const CAN_RX_SUBSCRIBERS: usize = 4;
 /// todo: docs
 const CAN_RX_PUBLISHERS: usize = 1;
 
-/// todo: docs
+/// a publisher-subscriber channel for the CAN receiving line:
+/// when a message is received over CAN,
+/// it is published here for other tasks to receive
 type CanRxChannel = PubSubChannel<
     NoopRawMutex,
     CanEnvelope,

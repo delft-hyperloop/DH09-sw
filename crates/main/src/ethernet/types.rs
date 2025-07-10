@@ -145,30 +145,19 @@ pub struct PodToGsMessage {
 }
 
 /// The pins used for ethernet
+#[allow(missing_docs)]
 pub struct EthPeripherals {
-    /// todo
     pub eth: Peri<'static, ETH>,
-    /// todo
     pub pa1: Peri<'static, PA1>,
-    /// todo
     pub pa2: Peri<'static, PA2>,
-    /// todo
     pub pc1: Peri<'static, PC1>,
-    /// todo
     pub pa7: Peri<'static, PA7>,
-    /// todo
     pub pc4: Peri<'static, PC4>,
-    /// todo
     pub pc5: Peri<'static, PC5>,
-    /// todo
     pub pb12: Peri<'static, PB12>,
-    /// todo
     pub pg13: Peri<'static, PG13>,
-    /// todo
     pub pb13: Peri<'static, PB13>,
-    /// todo
     pub pb11: Peri<'static, PB11>,
-    /// todo
     pub pg11: Peri<'static, PG11>,
 }
 

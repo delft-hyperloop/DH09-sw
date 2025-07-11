@@ -159,62 +159,64 @@
                     <Localization showLabels={true}/>
                 </Tile>
                 <Tile bgToken={700} containerClass="col-span-2">
-                    <div class="flex justify-between gap-4">
-                        <div class="flex flex-col gap-4">
-                            <div class="flex gap-2 items-center">
-                                <span>Connection Status:</span>
-                                <div class="flex flex-row items-center gap-1">
-                                    {#if !$connectedToMainPCB}
-                                        <ConnectionSignalOff size={20}/>
-                                        <span>Not Connected</span>
-                                    {:else}
-                                        <ConnectionSignal size={20}/>
-                                        <span>Connected</span>
-                                    {/if}
-                                </div>
-                            </div>
-                            <Store datatype="Velocity" name="Velocity"/>
-                            <Store datatype="Localization" name="Localization"/>
-                            <ValueStore
-                                name="PTC State"
-                                value={ptcStates[$ptcState.value]}
-                                timestamp={$ptcState.timestamp}
-                            />
-                        </div>
-                        <div class="gap-4 items-center flex flex-col">
-                            <div class="flex flex-row items-center gap-4">
-                                <span>LV:</span>
-                                <!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>-->
-                                <!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
-                                <Battery fill="#3b669c" orientation="horizontal" perc={0}/>
-                            </div>
-                            <div class="flex flex-row items-center gap-4">
-                                <span>HV:</span>
-                                <!--                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>-->
-                                <!--                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>-->
-                                <Battery fill="#723f9c" orientation="horizontal" perc={0}/>
-                            </div>
-                            <ValueStore
-                                name="EBS Status"
-                                value={$ebsState}
-                                timestamp={$lowPressure.timestamp}
-                            />
-                            <span class="text-wrap">
-                                Emergency Sources: {$emergencySources.length === 0 ? "None" : $emergencySources.join(", ")}
-                            </span>
-                        </div>
-                    </div>
                     <div class="flex flex-col gap-4">
-                        <ValueStore
-                            name="PT Controller Fault"
-                            value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}
-                            timestamp={$ptcFaultStore.timestamp}
-                        />
-                        <ValueStore
-                            name="IMD Warning"
-                            value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}
-                            timestamp={$imdWarningStore.timestamp}
-                        />
+                        <div class="flex justify-between gap-4">
+                            <div class="flex flex-col gap-4">
+                                <div class="flex gap-2 items-center">
+                                    <span>Connection Status:</span>
+                                    <div class="flex flex-row items-center gap-1">
+                                        {#if !$connectedToMainPCB}
+                                            <ConnectionSignalOff size={20}/>
+                                            <span>Not Connected</span>
+                                        {:else}
+                                            <ConnectionSignal size={20}/>
+                                            <span>Connected</span>
+                                        {/if}
+                                    </div>
+                                </div>
+                                <Store datatype="Velocity" name="Velocity"/>
+                                <Store datatype="Localization" name="Localization"/>
+                                <ValueStore
+                                    name="PTC State"
+                                    value={ptcStates[$ptcState.value]}
+                                    timestamp={$ptcState.timestamp}
+                                />
+                            </div>
+                            <div class="gap-4 items-center flex flex-col">
+                                <div class="flex flex-row items-center gap-4">
+                                    <span>LV:</span>
+                                    <!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>-->
+                                    <!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
+                                    <Battery fill="#3b669c" orientation="horizontal" perc={0}/>
+                                </div>
+                                <div class="flex flex-row items-center gap-4">
+                                    <span>HV:</span>
+                                    <!--                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>-->
+                                    <!--                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>-->
+                                    <Battery fill="#723f9c" orientation="horizontal" perc={0}/>
+                                </div>
+                                <ValueStore
+                                    name="EBS Status"
+                                    value={$ebsState}
+                                    timestamp={$lowPressure.timestamp}
+                                />
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-4">
+                        <span class="text-wrap">
+                            Emergency Sources: {$emergencySources.length === 0 ? "None" : $emergencySources.join(", ")}
+                        </span>
+                            <ValueStore
+                                name="PT Controller Fault"
+                                value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}
+                                timestamp={$ptcFaultStore.timestamp}
+                            />
+                            <ValueStore
+                                name="IMD Warning"
+                                value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}
+                                timestamp={$imdWarningStore.timestamp}
+                            />
+                        </div>
                     </div>
                 </Tile>
                 <Tile

@@ -3,7 +3,7 @@
     import {EventChannel, util} from "$lib";
     import {popup} from '@skeletonlabs/skeleton';
     import type {PopupSettings} from "@skeletonlabs/skeleton";
-    import { connectedToMainPCB } from '$lib/stores/state';
+    import { connectedToMainPCB, disconnectFromButton } from '$lib/stores/state';
 
     export let className: string = '';
     export let cmd: 'connect_to_pod' | 'disconnect' | 'procedures' | 'save_logs';
@@ -14,6 +14,11 @@
     export let icon: typeof import("svelte").SvelteComponent | null = null;
 
     export let send = async () => {
+        if (cmd === 'connect_to_pod') {
+            disconnectFromButton.set(false);
+        } else if (cmd === 'disconnect') {
+            disconnectFromButton.set(true);
+        }
         console.log(`Sending command: ${cmd}`);
         await invoke(cmd).then(r => {
             console.log(`Command ${cmd} sent with response: ` + r);

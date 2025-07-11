@@ -45,6 +45,20 @@ export const propulsionPoints: Writable<PropPoint[]> = writable([
     imax: 0,
   }
 ]);
+export const setPropulsionPoints: Writable<PropPoint[]> = writable([
+  {
+    location: 0,
+    imax: 0,
+  },
+  {
+    location: 0,
+    imax: 0,
+  },
+  {
+    location: 0,
+    imax: 0,
+  }
+]);
 
 export const staleCriticalDatatypes: Writable<string[]> = writable([]);
 

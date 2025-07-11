@@ -17,7 +17,7 @@
     } from '$lib/stores/state';
     import { invoke } from '@tauri-apps/api/tauri';
     import PropulsionPoint from '$lib/components/PropulsionPoint.svelte';
-    import { propulsionPoints } from '$lib/stores/data';
+    import { propulsionPoints, setPropulsionPoints } from '$lib/stores/data';
     import { onMount } from 'svelte';
     import type { PropPoint } from '$lib/types';
     import { Meter } from 'carbon-icons-svelte';
@@ -61,9 +61,13 @@
         "State",
     ].reverse().concat(propLabels);
 
+    let currentTrack = $usingTestTrack;
+
     // Look here if values are wrong;
     async function submitRun() {
         goingForward.set(currentDirectionForward);
+        setPropulsionPoints.set($propulsionPoints);
+        currentTrack = $usingTestTrack;
 
         let direction: number = 1;
         if (!$goingForward) {
@@ -179,7 +183,7 @@
                             <span>
                         Track:
                                 {#if $propulsionConfigSent}
-                            {#if usingTestTrack}
+                            {#if currentTrack}
                                 <span>Test Track</span>
                             {:else}
                                 <span>EHC Track</span>

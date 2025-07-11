@@ -1,6 +1,6 @@
 <script lang="ts">
     import { propulsionConfigSent } from '$lib/stores/state';
-    import { propulsionPoints } from '$lib/stores/data';
+    import { setPropulsionPoints } from '$lib/stores/data';
 
     export let index: number;
 
@@ -11,17 +11,17 @@
     {#if $propulsionConfigSent}
         {#if index === 0}
             <span class="flex flex-row gap-4">
-                X<sub>b</sub>: {$propulsionPoints[0].location}
+                X<sub>b</sub>: {$setPropulsionPoints[0].location}
             </span>
             <span>
-                I<sub>max_b</sub>: {$propulsionPoints[0].imax}
+                I<sub>max_b</sub>: {$setPropulsionPoints[0].imax}
             </span>
         {:else}
             <span>
-                X<sub>{index}</sub>: {$propulsionPoints[index].location}
+                X<sub>{index}</sub>: {$setPropulsionPoints[index].location}
             </span>
             <span>
-                I<sub>max_{index}</sub>: {$propulsionPoints[index].imax}
+                I<sub>max_{index}</sub>: {$setPropulsionPoints[index].imax}
             </span>
         {/if}
     {:else}

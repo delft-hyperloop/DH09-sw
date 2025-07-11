@@ -4,7 +4,7 @@
     import {afterUpdate, onDestroy, onMount} from "svelte";
     import {EventChannel, type Log, type LogType} from "$lib/types";
     import {
-        bigErrorStatus, connectedToMainPCB,
+        bigErrorStatus, connectedToMainPCB, disconnectFromButton,
         ErrorStatus,
         logsPanelSize,
         logsScrollAreaSize,
@@ -114,13 +114,16 @@
 
         unlistens[5] = await listen(EventChannel.STATUS, async (event: {payload: string}) => {
             const message:string[] = event.payload.split(";");
-            if (message[0] === "Status: ConnectionClosedByClient" ||
+            if (
+                message[0] === "Status: ConnectionClosedByClient" ||
                 message[0] === "Status: ConnectionClosedByServer" ||
                 message[0] === "Status: ConnectionDropped" ||
                 message[0] === "Status: FailedToReadFromConnection")
             {
-                await invoke("disconnect");
-                await invoke("connect_to_pod");
+                if (!$disconnectFromButton) {
+                    await invoke('disconnect');
+                    await invoke('connect_to_pod');
+                }
                 connectedToMainPCB.set(false);
             } else if (message[0].split(":")[1].trim().toLowerCase().includes("established")) {
                 await invoke('send_command', {cmdName: "ConnectionEstablished", val: 0}).then(() => {

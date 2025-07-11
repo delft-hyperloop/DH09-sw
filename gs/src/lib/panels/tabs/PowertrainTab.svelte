@@ -87,27 +87,21 @@
                     </div>
                 </div>
                 <div class="flex flex-col gap-4 ">
-                <span>
-                    PT Controller State:
                     <ValueStore
+                        name="PT Controller State"
                         value={ptcStates[$ptcState.value]}
                         timestamp={$ptcState.timestamp}
                     />
-                </span>
-                    <span>
-                    PT Controller Fault:
                     <ValueStore
+                        name="PT Controller Fault"
                         value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}
                         timestamp={$ptcFaultStore.timestamp}
                     />
-                </span>
-                    <span>
-                    IMD Warning:
                     <ValueStore
+                        name="IMD Warning"
                         value={imdWarnings.length === 0 ? "None" : imdWarningMessage.join(", ")}
                         timestamp={$imdWarningStore.timestamp}
                     />
-                </span>
                 </div>
             </div>
         </Tile>

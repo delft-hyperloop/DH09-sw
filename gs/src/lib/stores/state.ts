@@ -68,3 +68,5 @@ export const emergencyModalActive: Writable<boolean> = writable(false);
 
 export const inDropdown: Writable<boolean> = writable(false);
 export const ebsState: Writable<EBSStates> = writable(EBSStates.Triggered);
+
+export const disconnectFromButton: Writable<boolean> = writable(false);

@@ -2405,6 +2405,24 @@ message-processing:
         display-units: 'Bar'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'BatteryTemp'
+    can:
+      bus: range
+      id-range-first: 0x900
+      id-range-last: 0x913
+    datapoint-conversion:
+    datapoints:
+      name: 'BatteryTemp'
+      id-range-first: 0x950
+      id-range-last: 0x963
+      datapoint-size-bytes: 1
+      datapoint-type: 'u8'
+      can-conversion: 'decode-temperature:u8->f32'
+      display-units: '°C'
+      store:
+        default: 0
+      gs:
+        conversion: 'gs_2p_float:f32'
 
 commands:
   - name: 'SendHashes'

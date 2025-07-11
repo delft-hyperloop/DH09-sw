@@ -132,6 +132,22 @@ pub struct MessageProcessingSpec {
     pub can: CanSpec,
     pub fsm: Option<FsmSpec>,
     pub datapoint_conversion: Vec<DatapointConversionSpec>,
+    pub datapoints: Option<DatapointRangeConversionSpec>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct DatapointRangeConversionSpec {
+    pub name: String,
+    pub id_range_first: u16,
+    pub id_range_last: u16,
+    pub datapoint_size_bytes: u8,
+    pub datapoint_type: Ty,
+    pub can_conversion: CanConversionSpec,
+    pub display_units: String,
+    pub critical: bool,
+    pub limits: Option<LimitsSpec>,
+    pub gs: DatapointConversionGsSpec,
+    pub store: Option<StoreInfo>,
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -144,6 +160,10 @@ pub enum CanSpec {
         id: u32,
         #[serde(flatten)]
         comes_from_levi: Option<Can2ComesFromLevi>,
+    },
+    Range {
+        id_range_first: u32,
+        id_range_last: u32,
     },
 }
 
@@ -169,7 +189,6 @@ pub struct DatapointConversionSpec {
     pub display_units: Option<String>,
     pub limits: Option<LimitsSpec>,
     pub gs: DatapointConversionGsSpec,
-    pub severity: Option<String>,
     #[serde(rename = "beckhoff")]
     pub comes_from_levi_info: Option<DatapointComesFromLeviInfo>,
 }
@@ -424,6 +443,39 @@ fn make_procedures(df: &DataflowSpec) -> String {
     code
 }
 
+fn make_datapoint_parser_range(spec: &MessageProcessingSpec, name: String) -> String {
+    let mut code = String::new();
+    if let Some(dpc) = &spec.datapoints {
+        for id_index in dpc.id_range_first..dpc.id_range_last + 1 {
+            let mut byte_index = 0;
+            loop {
+                writeln!(&mut code, "let d = data[{byte_index}];").unwrap();
+
+                writeln!(&mut code, "let c = {}(d);", dpc.can_conversion.proc_name).unwrap();
+
+                writeln!(
+                    &mut code,
+                    "f(Datapoint::new(
+                    Datatype::{},
+                    dump_{}(c),
+                    embassy_time::Instant::now().as_ticks(),
+                )).await;",
+                    format!("{}_{}", name, id_index),
+                    dpc.gs.conversion.procedure_suffix
+                ).unwrap();
+                
+                byte_index += dpc.datapoint_size_bytes;
+                if byte_index == 8 {
+                    break;
+                } else if byte_index > 8 {
+                    panic!("Invalid size for datapoint {}_{}", name, id_index);
+                }
+            }
+        }
+    }
+    code
+}
+
 fn make_datapoint_parser(spec: &MessageProcessingSpec) -> String {
     let mut code = String::new();
     for dpc in &spec.datapoint_conversion {
@@ -475,6 +527,22 @@ pub fn collect_data_types(df: &DataflowSpec) -> crate::datatypes::Config {
                 priority: None,
                 store: dpc.datapoint.store.clone(),
             });
+        }
+        if let Some(datapoints) = &mp.datapoints {
+            for (index, id) in
+                (datapoints.id_range_first..(datapoints.id_range_last + 1)).enumerate()
+            {
+                data_types.Datatype.push(crate::datatypes::Datatype {
+                    id,
+                    name: format!("{}_{}", &mp.name, index),
+                    lower: datapoints.limits.as_ref().map(|l| l.lower).unwrap_or(Limit::No), // TODO: Check
+                    upper: datapoints.limits.as_ref().map(|l| l.upper).unwrap_or(Limit::No),
+                    critical: datapoints.critical,
+                    display_units: Some(datapoints.display_units.clone()),
+                    priority: None,
+                    store: datapoints.store.clone(),
+                });
+            }
         }
     }
     for sd in &df.standard_datapoints {
@@ -623,6 +691,9 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
                         );
                     }
                 },
+                _ => {
+                    // I don't think the ranges should be converted to fsm events 
+                }
             }
         }
     }
@@ -681,57 +752,52 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
 
     writeln!(&mut code, "pub async fn parse_datapoints_can_2<F, Fut>(id: u32, data: &[u8], mut f: F) where F: FnMut(Datapoint) -> Fut, Fut: Future<Output=()> {{ {proc} match id {{").unwrap();
     for mp in &df.message_processing {
-        if let CanSpec::Can2 { id, .. } = mp.can {
-            writeln!(
-                &mut code,
-                "{id} => {{
+        match mp.can {
+            CanSpec::Can2 { id, .. } => {
+                writeln!(
+                    &mut code,
+                    "\t{id} => {{
                     "
-            )
-            .unwrap();
+                )
+                .unwrap();
 
-            code.push_str(&make_datapoint_parser(mp));
+                code.push_str(&make_datapoint_parser(mp));
 
-            writeln!(
-                &mut code,
-                "}}
+                writeln!(
+                    &mut code,
+                    "}}
                 "
-            )
-            .unwrap();
+                )
+                .unwrap();
+            },
+            CanSpec::Range { id_range_first, id_range_last } => {
+                for id in id_range_first..(id_range_last + 1) {
+                    writeln!(
+                        &mut code,
+                        "\t{id} => {{
+                        "
+                    )
+                    .unwrap();
+
+                    code.push_str(&make_datapoint_parser_range(mp, mp.name.clone()));
+
+                    //TODO: Finish this (just take the same method and apply it to all datapoints in a for loop.
+                    // Use index + mp.name to get the datapoint and index % 8 for the getter,
+                    // use datapoint size to iterate over them. They will also have the same procedures for
+                    // decoding, and use the same time stamp embassy_time::Instant::now().as_ticks()
+
+                    writeln!(
+                        &mut code,
+                        "}}
+                    "
+                    )
+                    .unwrap();
+                }
+            },
+            _ => {},
         }
     }
     writeln!(&mut code, "_ => {{}}}}}}").unwrap();
-
-    writeln!(&mut code, "pub fn match_can_to_datatypes(id: u32) -> [Datatype; 8] {{ match id {{")
-        .unwrap();
-    for mp in &df.message_processing {
-        if let CanSpec::Can2 { id, .. } = mp.can {
-            writeln!(&mut code, "{id} => [ ").unwrap();
-
-            let mut count = 0;
-            for dpc in &mp.datapoint_conversion {
-                write!(&mut code, "Datatype::{}, ", dpc.datapoint.name).unwrap();
-                count += 1;
-            }
-
-            loop {
-                if count < 8 {
-                    write!(&mut code, "Datatype::DefaultDatatype, ").unwrap();
-                } else {
-                    break;
-                }
-                count += 1;
-            }
-
-            writeln!(&mut code, "],").unwrap();
-        }
-    }
-
-    writeln!(
-        &mut code,
-        "_ => [{}Datatype::DefaultDatatype],}}}}",
-        "Datatype::DefaultDatatype, ".repeat(7)
-    )
-    .unwrap();
 
     let mut can1commands = vec![];
     let mut can2commands = vec![];
@@ -995,7 +1061,6 @@ END_IF
 }
 
 pub fn make_logging_pcb_code(_df: &DataflowSpec) -> String {
-    // TODO
     String::new()
 }
 

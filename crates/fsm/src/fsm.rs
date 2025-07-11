@@ -6,7 +6,6 @@ use core::fmt::Formatter;
 use defmt::info;
 use embassy_futures::select::select;
 use embassy_futures::select::Either;
-use embassy_futures::select::Select;
 use embassy_stm32::gpio::Output;
 use embassy_time::Timer;
 use lib::EmergencyType;

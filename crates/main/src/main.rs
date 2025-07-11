@@ -36,7 +36,7 @@ use main::ethernet::types::GsComms;
 use panic_probe as _;
 use static_cell::StaticCell;
 #[cfg(not(debug_assertions))]
-mod panic_handler;
+mod panic_handler; // trigger emergency braking and reboot in release mode
 
 // bind interrupt service routines to the hardware-triggered interrupts of
 // different peripherals

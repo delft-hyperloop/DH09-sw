@@ -2,8 +2,9 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use chrono::Local;
-use gslib::{Datapoint, Limit};
+use gslib::Datapoint;
 use gslib::Datatype;
+use gslib::Limit;
 use gslib::Message;
 use gslib::ProcessedData;
 use gslib::States;
@@ -76,11 +77,15 @@ pub fn get_ranges_by_datatype_id(datatype: String) -> String {
         (Limit::Single(upper), Limit::Single(lower)) => format!("[{}, {}]", lower, upper),
         (Limit::Multiple(severities_upper), Limit::Multiple(severities_lower)) => {
             if severities_lower.brake.is_some() && severities_upper.brake.is_some() {
-                return format!("[{}, {}]", severities_lower.brake.unwrap(), severities_upper.brake.unwrap())
+                return format!(
+                    "[{}, {}]",
+                    severities_lower.brake.unwrap(),
+                    severities_upper.brake.unwrap()
+                );
             }
             "".to_string()
-        }
-        _ => "".to_string()
+        },
+        _ => "".to_string(),
     }
 }
 

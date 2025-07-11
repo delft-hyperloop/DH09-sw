@@ -102,7 +102,7 @@
                 />
                 <ValueStore
                     name="IMD Warning"
-                    value={imdWarnings.length === 0 ? "None" : imdWarningMessage.join(", ")}
+                    value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}
                     timestamp={$imdWarningStore.timestamp}
                 />
             </div>

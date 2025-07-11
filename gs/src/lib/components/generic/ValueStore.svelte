@@ -2,6 +2,8 @@
     import {latestTimestamp} from "$lib/stores/state";
 
     const STALE_DATA_TICKS = 500;
+
+    export let displayName: boolean = true;
     export let value: number | string;
     export let timestamp: number;
     export let name: string;
@@ -11,7 +13,9 @@
 
 <div class="flex flex-col">
     <div class="flex flex-row gap-1">
-        <span>{name}: </span>
+        {#if displayName}
+            <span>{name}: </span>
+        {/if}
         <span class="{$latestTimestamp - timestamp > STALE_DATA_TICKS ? 'text-surface-400' : ''}">
             {value}
         </span>

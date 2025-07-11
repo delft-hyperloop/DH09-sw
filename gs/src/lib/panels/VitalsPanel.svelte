@@ -38,13 +38,13 @@
         ConnectionSignal,
         ConnectionSignalOff,
         StopOutline,
-        Tools
+        Tools, DownToBottom,
     } from 'carbon-icons-svelte';
     import type { SvelteComponent } from 'svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
     import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
-    import { imdWarnings, NamedDatatypeValues, ptcErrorCodes, ptcStates } from '$lib/types';
+    import { imdWarnings, ptcErrorCodes, ptcStates } from '$lib/types';
     import ValueStore from '$lib/components/generic/ValueStore.svelte';
     import { emergencySources } from '$lib/stores/data';
 
@@ -108,7 +108,7 @@
         });
     }
 
-    $: bmsTableTitles = [
+    const bmsTableTitles = [
         "",
         "Highest Voltage",
         "Lowest Voltage",
@@ -122,6 +122,24 @@
         ],
         [
             "Low Voltage:", "LvVHigh", "LvVLow", "VPackLowVoltage", "IPackLowVoltage"
+        ]
+    ]
+
+    const pressureTableTitles = [
+        "",
+        "Low Pressure",
+        "",
+        "High Pressure",
+        "",
+    ]
+
+    $: pressureTableValues = [
+        [
+            "Braking Pressures",
+            "PressureLow",
+            "",
+            "PressureHigh",
+            "",
         ]
     ]
 
@@ -172,79 +190,73 @@
         </div>
     {:else}
         <div class="snap-x scroll-px-0.5 snap-mandatory overflow-x-auto h-[90vh]">
-            <TileGrid className="p-4 w-full" columns="1fr 1fr" rows="">
-                <Tile bgToken={800} containerClass="col-span-2">
+            <TileGrid className="p-4 w-full" columns="1fr 1fr 1fr" rows="">
+                <Tile bgToken={800} containerClass="col-span-full">
                     <Localization showLabels={true}/>
                 </Tile>
-                <Tile bgToken={700} containerClass="col-span-2">
-                    <div class="flex flex-col gap-4">
-                        <div class="flex justify-between gap-4">
-                            <div class="flex flex-col gap-4">
-                                <div class="flex gap-2 items-center">
-                                    <span>Connection Status:</span>
-                                    <div class="flex flex-row items-center gap-1">
-                                        {#if !$connectedToMainPCB}
-                                            <ConnectionSignalOff size={20}/>
-                                            <span>Not Connected</span>
-                                        {:else}
-                                            <ConnectionSignal size={20}/>
-                                            <span>Connected</span>
-                                        {/if}
-                                    </div>
-                                </div>
-                                <Store datatype="Velocity" name="Velocity"/>
-                                <Store datatype="Localization" name="Localization"/>
-                                <ValueStore
-                                    name="PTC State"
-                                    value={ptcStates[$ptcState.value]}
-                                    timestamp={$ptcState.timestamp}
-                                />
-                            </div>
-                            <div class="gap-4 items-center flex flex-col">
-                                <div class="flex flex-row items-center gap-4">
-                                    <span>LV:</span>
-                                    <!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)}/>-->
-                                    <!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
-                                    <Battery fill="#3b669c" orientation="horizontal" perc={0}/>
-                                </div>
-                                <div class="flex flex-row items-center gap-4">
-                                    <span>HV:</span>
-                                    <!--                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>-->
-                                    <!--                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>-->
-                                    <Battery fill="#723f9c" orientation="horizontal" perc={0}/>
-                                </div>
-                                <ValueStore
-                                    name="EBS Status"
-                                    value={$ebsState}
-                                    timestamp={$lowPressure.timestamp}
-                                />
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-4">
-                        <span class="text-wrap">
-                            Emergency Sources: {$emergencySources.length === 0 ? "None" : $emergencySources.join(", ")}
-                        </span>
-                            <ValueStore
-                                name="PT Controller Fault"
-                                value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}
-                                timestamp={$ptcFaultStore.timestamp}
-                            />
-                            <ValueStore
-                                name="IMD Warning"
-                                value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}
-                                timestamp={$imdWarningStore.timestamp}
-                            />
-                        </div>
+                <Tile insideClass="grid grid-cols-2 gap-y-2 auto-rows-min" heading="Statuses" containerClass="col-span-1" bgToken={800}>
+                    <span>Connection</span>
+                    <div class="flex flex-row items-center gap-1">
+                        {#if !$connectedToMainPCB}
+<!--                            <ConnectionSignalOff size={20}/>-->
+                            <span>Not Connected</span>
+                        {:else}
+<!--                            <ConnectionSignal size={20}/>-->
+                            <span>Connected</span>
+                        {/if}
                     </div>
+                    <span>PTC State</span>
+<!--                    <Status on="Active" off="Off" status={ptcStates[$ptcState.value]}/>-->
+                    <ValueStore
+                        name="PTC State"
+                        value={ptcStates[$ptcState.value]}
+                        timestamp={$ptcState.timestamp}
+                        displayName={false}
+                    />
+                    <span>EBS State</span>
+                    <ValueStore
+                        name="EBS Status"
+                        value={$ebsState}
+                        timestamp={$lowPressure.timestamp}
+                        displayName={false}
+                    />
+                </Tile>
+                <Tile containerClass="col-span-1" insideClass="gap-4 items-center flex flex-col w-full h-full justify-center" bgToken={800}>
+                    <div class="flex flex-row items-center gap-4">
+                        <span>LV:</span>
+                        <!--                            <Battery fill="#3b669c" orientation="horizontal" perc={Number($lvBattery.value)} height={40}/>-->
+                        <!--                            <span>Total: <Store datatype="BMSVoltageLow" /></span>-->
+                        <Battery fill="#3b669c" orientation="horizontal" perc={0} height={40}/>
+                    </div>
+                    <div class="flex flex-row items-center gap-4">
+                        <span>HV:</span>
+                        <!--                            <Battery fill="#723f9c" orientation="horizontal" perc={Number($hvBattery.value)}/>-->
+                        <!--                            <span>Total: <Store datatype="BMSVoltageHigh" /></span>-->
+                        <Battery fill="#723f9c" orientation="horizontal" perc={0} height={40}/>
+                    </div>
+                </Tile>
+                <Tile containerClass="col-span-1" insideClass="flex flex-col gap-2" bgToken={800}>
+                    <Store datatype="Velocity" name="Velocity"/>
+                    <Store datatype="Localization" name="Localization"/>
+                    <Store datatype="VDCLink" name="DC Link Voltage"/>
+                    <Store datatype="IsolationResistance" name="Isolation Resistance"/>
+                    <Store datatype="BusCurrent" name="Bus Current"/>
+                </Tile>
+                <Tile bgToken={800} containerClass="col-span-full">
+                    <Table titles={bmsTableTitles} tableArr={bmsTableValues}/>
+                    <Table
+                        titles={pressureTableTitles}
+                        tableArr={pressureTableValues}
+                    />
                 </Tile>
                 <Tile
                     bgToken={800}
-                    containerClass="col-span-2 {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : $connectedToMainPCB ? '' : ''}">
+                    containerClass="col-span-full {$fsmState.value === 13 || $showcaseStateCounter === 13 && $showcasingStates ? 'shadow-[inset_0_0_10px_5px_rgba(214,17,17,1)]' : $connectedToMainPCB ? '' : ''}">
                     <MainFSM/>
                 </Tile>
                 <Tile
-                    bgToken={700}
-                    containerClass={"col-span-2"}
+                    bgToken={800}
+                    containerClass={"col-span-full"}
                 >
                     <div class="gap-4 justify-center grid grid-cols-4">
                         {#if !$serverStatus}
@@ -318,10 +330,34 @@
                         {/if}
                         <Command cmd="SystemReset" icon={Reset}/>
                         <Command cmd="FaultFixed" icon={Tools}/>
+                        <Command
+                            cmd="LeviDropdown"
+                            text="Dropdown"
+                            icon={DownToBottom}
+                            dependency={inStateDemo}
+                            dependencyTitle="Wrong State!"
+                            dependencyMessage="The pod should be in the Demo state to perform a dropdown!"
+                        />
                     </div>
                 </Tile>
                 <Tile bgToken={800} containerClass="col-span-full">
-                    <Table titles={bmsTableTitles} tableArr={bmsTableValues}/>
+                    <div class="flex flex-col gap-4">
+                        <div class="flex flex-col gap-4">
+                            <span class="text-wrap">
+                                Emergency Sources: {$emergencySources.length === 0 ? "None" : $emergencySources.join(", ")}
+                            </span>
+                            <ValueStore
+                                name="PT Controller Fault"
+                                value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}
+                                timestamp={$ptcFaultStore.timestamp}
+                            />
+                            <ValueStore
+                                name="IMD Warning"
+                                value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}
+                                timestamp={$imdWarningStore.timestamp}
+                            />
+                        </div>
+                    </div>
                 </Tile>
                 {#if $debugModeActive}
                     <Tile containerClass="col-span-full bg-surface-800" bgToken={700}>
@@ -329,7 +365,7 @@
                             Pass System Check
                         </button>
                     </Tile>
-                    <Tile bgToken={700} containerClass="col-span-2 bg-surface-800" heading="Propulsion FSM Update Commands" headingOnLeft={true}>
+                    <Tile bgToken={700} containerClass="col-span-full bg-surface-800" heading="Propulsion FSM Update Commands" headingOnLeft={true}>
                         <div class="flex gap-4 flex-wrap">
                             <Command cmd="FSMUpdate" text="Initialization" val={200} className="py-3 bg-primary-500 text-surface-900"/>
                             <Command cmd="FSMUpdate" text="Idle" val={201}/>
@@ -337,7 +373,7 @@
                             <Command cmd="FSMUpdate" text="Braking" val={203}/>
                         </div>
                     </Tile>
-                    <Tile bgToken={700} containerClass="col-span-2 bg-surface-800" heading="Powertrain FSM Update Commands" headingOnLeft={true}>
+                    <Tile bgToken={700} containerClass="col-span-full bg-surface-800" heading="Powertrain FSM Update Commands" headingOnLeft={true}>
                         <div class="flex gap-4 flex-wrap">
                             <Command cmd="FSMUpdate" text="HV On" val={4} className="py-3 bg-primary-500 text-surface-900"/>
                             <Command cmd="FSMUpdate" text="Idle" val={11}/>

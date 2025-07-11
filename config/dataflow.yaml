@@ -2413,12 +2413,11 @@ message-processing:
     datapoint-conversion:
     datapoints:
       name: 'BatteryTemp'
-      id-range-first: 0x950
-      id-range-last: 0x963
       datapoint-size-bytes: 1
       datapoint-type: 'u8'
-      can-conversion: 'decode-temperature:u8->f32'
+      can-conversion: 'decode_temperature:u8->f32'
       display-units: '°C'
+      critical: false
       store:
         default: 0
       gs:

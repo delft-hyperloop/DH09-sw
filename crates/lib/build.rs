@@ -99,7 +99,7 @@ fn main() -> Result<()> {
     let mut content = String::from("//@generated\n");
 
     let df = std::fs::read_to_string(DATAFLOW_PATH)?;
-    let df = goose_utils::dataflow::parse_from(&df);
+    let df = goose_utils::dataflow::parse_from(&df)?;
 
     // content.push_str(&check_config(DATAFLOW_PATH, )?);
     content.push_str(&hash_config(CONFIG_PATH)?);

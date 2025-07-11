@@ -136,10 +136,9 @@ pub struct MessageProcessingSpec {
 }
 
 #[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub struct DatapointRangeConversionSpec {
     pub name: String,
-    pub id_range_first: u16,
-    pub id_range_last: u16,
     pub datapoint_size_bytes: u8,
     pub datapoint_type: Ty,
     pub can_conversion: CanConversionSpec,
@@ -161,9 +160,10 @@ pub enum CanSpec {
         #[serde(flatten)]
         comes_from_levi: Option<Can2ComesFromLevi>,
     },
+    #[serde(rename_all = "kebab-case")]
     Range {
-        id_range_first: u32,
-        id_range_last: u32,
+        id_range_first: u16,
+        id_range_last: u16,
     },
 }
 
@@ -443,33 +443,33 @@ fn make_procedures(df: &DataflowSpec) -> String {
     code
 }
 
-fn make_datapoint_parser_range(spec: &MessageProcessingSpec, name: String) -> String {
+fn make_datapoint_parser_range(spec: &MessageProcessingSpec, can_index: usize) -> String {
     let mut code = String::new();
     if let Some(dpc) = &spec.datapoints {
-        for id_index in dpc.id_range_first..dpc.id_range_last + 1 {
-            let mut byte_index = 0;
-            loop {
-                writeln!(&mut code, "let d = data[{byte_index}];").unwrap();
+        let mut byte_index = 0;
+        let mut counter = 0;
+        loop {
+            writeln!(&mut code, "let d = data[{byte_index}];").unwrap();
 
-                writeln!(&mut code, "let c = {}(d);", dpc.can_conversion.proc_name).unwrap();
+            writeln!(&mut code, "let c = {}(d);", dpc.can_conversion.proc_name).unwrap();
 
-                writeln!(
-                    &mut code,
-                    "f(Datapoint::new(
-                    Datatype::{},
+            writeln!(
+                &mut code,
+                "f(Datapoint::new(
+                    Datatype::{}{}_{},
                     dump_{}(c),
                     embassy_time::Instant::now().as_ticks(),
                 )).await;",
-                    format!("{}_{}", name, id_index),
-                    dpc.gs.conversion.procedure_suffix
-                ).unwrap();
-                
-                byte_index += dpc.datapoint_size_bytes;
-                if byte_index == 8 {
-                    break;
-                } else if byte_index > 8 {
-                    panic!("Invalid size for datapoint {}_{}", name, id_index);
-                }
+                dpc.name, can_index, counter, dpc.gs.conversion.procedure_suffix
+            )
+            .unwrap();
+
+            byte_index += dpc.datapoint_size_bytes;
+            counter += 1;
+            match byte_index {
+                0..8 => {},
+                8 => break,
+                _ => panic!("Invalid size for datapoint {}{}_{}", dpc.name, can_index, counter),
             }
         }
     }
@@ -529,19 +529,21 @@ pub fn collect_data_types(df: &DataflowSpec) -> crate::datatypes::Config {
             });
         }
         if let Some(datapoints) = &mp.datapoints {
-            for (index, id) in
-                (datapoints.id_range_first..(datapoints.id_range_last + 1)).enumerate()
-            {
-                data_types.Datatype.push(crate::datatypes::Datatype {
-                    id,
-                    name: format!("{}_{}", &mp.name, index),
-                    lower: datapoints.limits.as_ref().map(|l| l.lower).unwrap_or(Limit::No), // TODO: Check
-                    upper: datapoints.limits.as_ref().map(|l| l.upper).unwrap_or(Limit::No),
-                    critical: datapoints.critical,
-                    display_units: Some(datapoints.display_units.clone()),
-                    priority: None,
-                    store: datapoints.store.clone(),
-                });
+            if let CanSpec::Range { id_range_first, id_range_last } = mp.can {
+                for (can_index, _can_id) in (id_range_first..=id_range_last).enumerate() {
+                    for datatype_index in 0..8 / datapoints.datapoint_size_bytes {
+                        data_types.Datatype.push(crate::datatypes::Datatype {
+                            id: id_range_last + can_index as u16 * datatype_index as u16 + 1,
+                            name: format!("{}{}_{}", &mp.name, can_index, datatype_index),
+                            lower: datapoints.limits.as_ref().map(|l| l.lower).unwrap_or(Limit::No), // TODO: Check
+                            upper: datapoints.limits.as_ref().map(|l| l.upper).unwrap_or(Limit::No),
+                            critical: datapoints.critical,
+                            display_units: Some(datapoints.display_units.clone()),
+                            priority: None,
+                            store: datapoints.store.clone(),
+                        });
+                    }
+                }
             }
         }
     }
@@ -692,8 +694,8 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
                     }
                 },
                 _ => {
-                    // I don't think the ranges should be converted to fsm events 
-                }
+                    // I don't think the ranges should be converted to fsm events
+                },
             }
         }
     }
@@ -771,7 +773,7 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
                 .unwrap();
             },
             CanSpec::Range { id_range_first, id_range_last } => {
-                for id in id_range_first..(id_range_last + 1) {
+                for (can_index, id) in (id_range_first..=id_range_last).enumerate() {
                     writeln!(
                         &mut code,
                         "\t{id} => {{
@@ -779,7 +781,7 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
                     )
                     .unwrap();
 
-                    code.push_str(&make_datapoint_parser_range(mp, mp.name.clone()));
+                    code.push_str(&make_datapoint_parser_range(mp, can_index));
 
                     //TODO: Finish this (just take the same method and apply it to all datapoints in a for loop.
                     // Use index + mp.name to get the datapoint and index % 8 for the getter,
@@ -798,6 +800,38 @@ fn apply_trim_8(data: [u8; 8], ctxt: &str) -> [u8; 0] {
         }
     }
     writeln!(&mut code, "_ => {{}}}}}}").unwrap();
+
+    writeln!(&mut code, "pub fn match_can_id_to_datatypes(id: u32) -> [Datatype; 8] {{ match id {{")
+        .unwrap();
+    for mp in &df.message_processing {
+        if let CanSpec::Can2 { id, .. } = mp.can {
+            writeln!(&mut code, "{id} => [ ").unwrap();
+
+            let mut count = 0;
+            for dpc in &mp.datapoint_conversion {
+                write!(&mut code, "Datatype::{}, ", dpc.datapoint.name).unwrap();
+                count += 1;
+            }
+
+            loop {
+                if count < 8 {
+                    write!(&mut code, "Datatype::DefaultDatatype, ").unwrap();
+                } else {
+                    break;
+                }
+                count += 1;
+            }
+
+            writeln!(&mut code, "],").unwrap();
+        }
+    }
+
+    writeln!(
+        &mut code,
+        "_ => [{}Datatype::DefaultDatatype],}}}}",
+        "Datatype::DefaultDatatype, ".repeat(7)
+    )
+        .unwrap();
 
     let mut can1commands = vec![];
     let mut can2commands = vec![];
@@ -1060,9 +1094,7 @@ END_IF
     )
 }
 
-pub fn make_logging_pcb_code(_df: &DataflowSpec) -> String {
-    String::new()
-}
+pub fn make_logging_pcb_code(_df: &DataflowSpec) -> String { String::new() }
 
 pub fn make_gs_code(df: &DataflowSpec) -> String {
     let mut code = String::new();
@@ -1203,4 +1235,4 @@ export const NamedDatatypeValues = ["#
     code
 }
 
-pub fn parse_from(data: &str) -> DataflowSpec { serde_yaml::from_str(data).unwrap() }
+pub fn parse_from(data: &str) -> anyhow::Result<DataflowSpec> { Ok(serde_yaml::from_str(data)?) }

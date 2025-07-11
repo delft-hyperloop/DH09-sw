@@ -42,8 +42,6 @@ pub enum Event {
     StopCharge,
     /// Resets the FSM to the `Boot` state
     ResetFSM,
-    /// Fault happened
-    Fault,
     /// Emergency event that must trigger the emergency braking system
     Emergency {
         /// The type of emergency
@@ -52,8 +50,6 @@ pub enum Event {
     /// Used to transition from `Fault` to `SystemCheck` when the fault is fixed
     /// and no reboot is required
     FaultFixed,
-    ///
-    HighVoltageOnCanRelay,
     /// Event sent when transitioning. Used to send the `FSMUpdate` CAN message.
     /// - `u8`: State in which the FSM transitioned
     FSMTransition(u8),

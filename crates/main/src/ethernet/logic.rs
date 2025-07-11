@@ -2,7 +2,6 @@
 //! socket used for communications.
 
 use core::fmt::Debug;
-use core::ops::Rem;
 
 use cortex_m::peripheral::SCB;
 use defmt::*;
@@ -24,21 +23,21 @@ use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::mutex::Mutex;
 use embassy_sync::signal::Signal;
 use embassy_time::Duration;
-use embassy_time::Instant;
 use embassy_time::Timer;
 use embassy_time::WithTimeout;
 use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
 use lib::config;
-use lib::config::{Command, Datatype};
+use lib::config::Command;
+use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
 use lib::config::DATA_HASH;
 use lib::Datapoint;
 use static_cell::StaticCell;
 
-use crate::ethernet::types::EthDevice;
+use crate::ethernet::types::ticks;
 use crate::ethernet::types::EthPeripherals;
 use crate::ethernet::types::GsToPodMessage;
 use crate::ethernet::types::GsToPodPublisher;
@@ -48,6 +47,7 @@ use crate::ethernet::types::PodToGsSubscriber;
 use crate::ethernet::types::RX_BUFFER_SIZE;
 use crate::ethernet::types::SOCKET_KEEP_ALIVE;
 use crate::ethernet::types::TX_BUFFER_SIZE;
+use crate::ethernet::EthDevice;
 
 /// Boolean used to check if the hashes have been sent or not.
 /// Shared between the `timeout_for_sending_hashes` task and the `connect`
@@ -70,7 +70,9 @@ pub struct GsMaster {
     tx_transmitter: PodToGsPublisher<'static>,
     /// Flag that triggers a reconnection (creates a new socket)
     should_reconnect: bool,
-    /// Flag used when reconnecting to indicate if it was a faulty connection (not critical) or we should actually emergency brake (related to the bug where it
+    /// Flag used when reconnecting to indicate if it was a faulty connection
+    /// (not critical) or we should actually emergency brake (related to the bug
+    /// where it
     // only sends a connection established message, but can't send or transmit
     // anything).
     connection_is_broken: bool,
@@ -84,9 +86,9 @@ impl Debug for GsMaster {
 }
 
 /// Buffer used by the TCP stack when receiving
-static mut RX_BUFFER: [u8; RX_BUFFER_SIZE] = [0; RX_BUFFER_SIZE];
+static mut RX_BUFFER: [u8; RX_BUFFER_SIZE] = [0u8; RX_BUFFER_SIZE];
 /// Buffer used by the TCP stack when transmitting
-static mut TX_BUFFER: [u8; TX_BUFFER_SIZE] = [0; TX_BUFFER_SIZE];
+static mut TX_BUFFER: [u8; TX_BUFFER_SIZE] = [0u8; TX_BUFFER_SIZE];
 
 // /// Buffer used to retransmit a message that failed to transmit because of a
 // /// connection reset error
@@ -163,7 +165,10 @@ impl GsMaster {
 
         // Create a new socket for the connection. Pass static mutable references to the
         // buffers that should be used for transmitting and receiving.
-        let socket: TcpSocket = unsafe { TcpSocket::new(stack, &mut RX_BUFFER, &mut TX_BUFFER) };
+        // SAFETY: see explanation under reconnect()
+        #[allow(static_mut_refs)]
+        let socket: TcpSocket =
+            unsafe { TcpSocket::new(stack, RX_BUFFER.as_mut(), TX_BUFFER.as_mut()) };
 
         Self {
             stack,
@@ -217,17 +222,20 @@ impl GsMaster {
     ///   remote TCP received the acknowledgment of its connection termination
     ///   request.
     /// - `CLOSED` represents no connection state at all
-    pub async fn run(&mut self, signal: &'static Signal<NoopRawMutex, bool>) -> ! {
+    pub async fn run_net_fsm(
+        &'static mut self,
+        signal_connected: &'static Signal<NoopRawMutex, bool>,
+    ) -> ! {
         info!("Running the ethernet fsm");
 
         info!("Connecting to the GS");
         self.connect().await;
-        signal.signal(true);
+        signal_connected.signal(true);
         info!("Connected to the GS");
 
         loop {
             if self.should_reconnect {
-                info!("Should reconnect triggered");
+                info!("Should-reconnect triggered");
                 self.reconnect().await;
             }
             let state = self.socket.state();
@@ -264,12 +272,10 @@ impl GsMaster {
 
         let mut index: usize = 0;
         loop {
-            let mut counter = 0usize;
-
             // Try to connect to a different IP address every time the socket can't reach
             // the server
             let remote = self.remotes[index];
-            // info!("Trying to connect to {:?}", remote);
+            debug!("Trying to connect to {:?}", remote);
 
             match self.socket.connect(remote).await {
                 Ok(()) => {
@@ -286,33 +292,15 @@ impl GsMaster {
                 }
                 Err(e) => {
                     debug!(
-                        "Connect error (probably waiting for the GS server to start): {}",
+                        "Connect error (probably waiting for the GS server to start) {}",
                         e
                     );
-                    // Don't remove this timer!
-                    counter = counter.wrapping_add(1);
-                    if counter.rem(200) == 0 {
-                        warn!(
-                            "Couldn't connect to GS. Pulling down SDC. socket state={}",
-                            self.socket.state()
-                        );
-                    }
-                    // Switch to a different IP address
                     index = (index + 1) % config::IP_ADDRESS_COUNT;
                 }
             }
         }
-        fn ticks() -> u64 {
-            Instant::now().as_ticks()
-        }
 
         debug!("handshaking (sending hashes)");
-
-        // Spawns the task that checks if the hashes have been sent in less than a
-        // second. If not, it performs a hardware reset (related to the bug where it
-        // only sends a connection established message, but can't send or transmit
-        // anything)
-        // unwrap!(self.spawner.spawn(hardware_reset_timeout()));
 
         // Sends the hash messages to the ground station. If the first one doesn't get
         // sent in 200 milliseconds, it triggers a reconnection (related to the bug
@@ -360,33 +348,44 @@ impl GsMaster {
     async fn reconnect(&mut self) {
         info!("Reconnecting to the GS");
 
-        // Performs a hardware reset instead of making a new socket
-        // SCB::sys_reset()
-        
-        // If the connection is broken, don't trigger an emergency and attempt to recover.
+        // If the connection is broken, don't trigger an emergency and attempt to
+        // recover.
         if !self.connection_is_broken {
-            self.rx_transmitter.publish(GsToPodMessage {
-                command: Command::ReconnectEmergency(0),
-            }).await;
+            self.rx_transmitter
+                .publish(GsToPodMessage {
+                    command: Command::ReconnectEmergency(0),
+                })
+                .await;
         } else {
             self.connection_is_broken = false;
         }
 
         // flush whatever was still written to the socket
-        self.socket.flush().await.expect("couldn't flush socket");
+        if let Err(e) = self.socket.flush().await {
+            defmt::error!("could not flush socket: {:?}", e);
+            #[cfg(debug_assertions)]
+            defmt::assert!(false, "could not flush socket: {}/{:?}", e, e);
+        }
 
-        // This closes the connection, which may not be necessary?
-        // close the socket
-        // self.socket.abort();
-
+        // without an allocator (feature="alloc") smoltcp can only hold 1 active socket
+        // at a time. In order to create a brand new connection, we also need a
+        // socket, which requires dropping the previous one in order to
+        // accomodate for it.
+        #[allow(static_mut_refs)]
         // SAFETY: replace the socket in memory with a new socket.
         unsafe {
+            // TcpSocket::new takes the &mut [u8] that we give (rx and tx buffers) and
+            // transmutes it to a &'static mut [u8].
+            // The destructor (impl Drop) for TcpSocket removes the socket from the
+            // SocketSet of the stack. This in turn drops the &'static mut [u8]
+            // reference that pointed to the buffers. Thus, a new &mut [u8] to the same
+            // memory is safe, since we know the last one is now gone.
             core::ptr::drop_in_place(&mut self.socket as *mut TcpSocket<'_>);
-            RX_BUFFER = [0; RX_BUFFER_SIZE];
-            TX_BUFFER = [0; TX_BUFFER_SIZE];
+            RX_BUFFER.fill(0);
+            TX_BUFFER.fill(0);
             core::ptr::write(
                 &mut self.socket as *mut TcpSocket<'_>,
-                TcpSocket::new(self.stack, &mut RX_BUFFER, &mut TX_BUFFER),
+                TcpSocket::new(self.stack, RX_BUFFER.as_mut(), TX_BUFFER.as_mut()),
             );
         }
 
@@ -418,7 +417,6 @@ impl GsMaster {
         let mut buf = [0; GsToPodMessage::SIZE];
 
         if !self.socket.can_recv() {
-            // Timer::after_millis(5).await;
             return;
         }
 
@@ -431,7 +429,11 @@ impl GsMaster {
         match read_result {
             Ok(()) => {}
             Err(ReadExactError::UnexpectedEof) => {
-                defmt::panic!("wut happened? the GS crashed mid-transmission?!")
+                // we have never encountered this
+                #[cfg(debug_assertions)]
+                defmt::panic!("wut happened? the GS crashed mid-transmission?!");
+                #[cfg(not(debug_assertions))]
+                defmt::error!("tcp read error: UnexpectedEof");
             }
             Err(
                 e @ embedded_io_async::ReadExactError::Other(
@@ -475,5 +477,6 @@ async fn hardware_reset_timeout() {
     if !*mutex_lock {
         SCB::sys_reset()
     }
+    // how does this ever run if you've reset??
     *mutex_lock = false;
 }

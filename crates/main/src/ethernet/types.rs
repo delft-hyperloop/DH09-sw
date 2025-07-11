@@ -3,8 +3,6 @@
 use core::fmt::Debug;
 use core::fmt::Formatter;
 
-use embassy_stm32::eth::Ethernet;
-use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::peripherals::ETH;
 use embassy_stm32::peripherals::PA1;
 use embassy_stm32::peripherals::PA2;
@@ -24,6 +22,7 @@ use embassy_sync::pubsub::PubSubChannel;
 use embassy_sync::pubsub::Publisher;
 use embassy_sync::pubsub::Subscriber;
 use embassy_time::Duration;
+use embassy_time::Instant;
 use lib::config::Command;
 use lib::Datapoint;
 
@@ -38,7 +37,7 @@ const CAP: usize = 8;
 const SUBS: usize = 4;
 /// max number of publishers
 const PUBS: usize = 1;
-///
+/// the max number of messages that can be pending in a channel at a given time.
 const TX_CAP: usize = 1024;
 
 /// pub-sub channel for gs->pod
@@ -56,9 +55,6 @@ pub type PodToGsPublisher<'a> =
 /// pod -> gs subscriber
 pub type PodToGsSubscriber<'a> =
     embassy_sync::channel::Receiver<'a, NoopRawMutex, PodToGsMessage, TX_CAP>;
-
-/// TODO: docs
-pub type EthDevice = Ethernet<'static, ETH, GenericPhy>;
 
 /// Struct used to store the communication channels between the GsMaster and the
 /// outside
@@ -112,9 +108,13 @@ impl GsComms {
     }
 }
 
-/// todo: docs
+/// size in bytes of the TCP incoming buffer, i.e. how many bytes can the
+/// network stack receive from the peripheral without us doing socket.recv
 pub(crate) const RX_BUFFER_SIZE: usize = 8192;
-/// todo: docs
+/// same as [`RX_BUFFER_SIZE`] but for transmitting.
+/// the main pcb doesn't expect to receive a lot of data, in fact only commands
+/// come through tcp, so the transmit buffer is much larger to accomodate
+/// outgoing telemetry.
 pub(crate) const TX_BUFFER_SIZE: usize = 32768;
 
 /// Struct used to represent a message from the ground station to the pod
@@ -125,11 +125,11 @@ pub struct GsToPodMessage {
 }
 
 impl GsToPodMessage {
-    /// TODO: docs
+    /// the size in bytes of a single message.
     pub(crate) const SIZE: usize = 20;
 
-    /// Reads from the buffer
-    /// - `buf`: the buffer
+    /// read a new instance of [`GsToPodMessage`] from a byte slice of size
+    /// exactly [`GsToPodMessage::SIZE`].
     pub fn read_from_buf(buf: &[u8; Self::SIZE]) -> Self {
         let command = Command::from_bytes(buf);
 
@@ -145,30 +145,19 @@ pub struct PodToGsMessage {
 }
 
 /// The pins used for ethernet
+#[allow(missing_docs)]
 pub struct EthPeripherals {
-    /// todo
     pub eth: Peri<'static, ETH>,
-    /// todo
     pub pa1: Peri<'static, PA1>,
-    /// todo
     pub pa2: Peri<'static, PA2>,
-    /// todo
     pub pc1: Peri<'static, PC1>,
-    /// todo
     pub pa7: Peri<'static, PA7>,
-    /// todo
     pub pc4: Peri<'static, PC4>,
-    /// todo
     pub pc5: Peri<'static, PC5>,
-    /// todo
     pub pb12: Peri<'static, PB12>,
-    /// todo
     pub pg13: Peri<'static, PG13>,
-    /// todo
     pub pb13: Peri<'static, PB13>,
-    /// todo
     pub pb11: Peri<'static, PB11>,
-    /// todo
     pub pg11: Peri<'static, PG11>,
 }
 
@@ -176,4 +165,9 @@ impl Debug for EthPeripherals {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(f, "EthPeripherals")
     }
+}
+
+/// shorthand for embassy_time ticks
+pub fn ticks() -> u64 {
+    Instant::now().as_ticks()
 }

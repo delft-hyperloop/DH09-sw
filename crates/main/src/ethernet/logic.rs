@@ -3,7 +3,6 @@
 
 use core::fmt::Debug;
 
-use cortex_m::peripheral::SCB;
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_net::tcp::ConnectError;
@@ -18,9 +17,7 @@ use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::eth::InterruptHandler;
 use embassy_stm32::eth::PacketQueue;
 use embassy_stm32::interrupt;
-use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::mutex::Mutex;
 use embassy_sync::signal::Signal;
 use embassy_time::Duration;
 use embassy_time::Timer;
@@ -37,22 +34,18 @@ use lib::config::DATA_HASH;
 use lib::Datapoint;
 use static_cell::StaticCell;
 
-use crate::ethernet::types::ticks;
+use crate::ethernet::get_remote_endpoints;
+use crate::ethernet::network_stack_task;
+use crate::ethernet::ticks;
 use crate::ethernet::types::EthPeripherals;
 use crate::ethernet::types::GsToPodMessage;
 use crate::ethernet::types::GsToPodPublisher;
 use crate::ethernet::types::PodToGsMessage;
 use crate::ethernet::types::PodToGsPublisher;
 use crate::ethernet::types::PodToGsSubscriber;
-use crate::ethernet::types::RX_BUFFER_SIZE;
-use crate::ethernet::types::SOCKET_KEEP_ALIVE;
-use crate::ethernet::types::TX_BUFFER_SIZE;
-use crate::ethernet::EthDevice;
-
-/// Boolean used to check if the hashes have been sent or not.
-/// Shared between the `timeout_for_sending_hashes` task and the `connect`
-/// method from the `GsMaster`
-static HASH_TIMEOUT_FLAG: Mutex<CriticalSectionRawMutex, bool> = Mutex::new(false);
+use crate::ethernet::RX_BUFFER;
+use crate::ethernet::SOCKET_KEEP_ALIVE;
+use crate::ethernet::TX_BUFFER;
 
 /// Struct used to communicate over ethernet with the GS.
 pub struct GsMaster {
@@ -71,10 +64,9 @@ pub struct GsMaster {
     /// Flag that triggers a reconnection (creates a new socket)
     should_reconnect: bool,
     /// Flag used when reconnecting to indicate if it was a faulty connection
-    /// (not critical) or we should actually emergency brake (related to the bug
-    /// where it
-    // only sends a connection established message, but can't send or transmit
-    // anything).
+    /// (not critical) or we should actually emergency brake
+    /// (related to the bug where it only sends a connection established
+    /// message, but can't send or transmit anything).
     connection_is_broken: bool,
 }
 
@@ -84,15 +76,6 @@ impl Debug for GsMaster {
         core::write!(f, "GsMaster with socket {:?}:{:?}", ep.addr, ep.port)
     }
 }
-
-/// Buffer used by the TCP stack when receiving
-static mut RX_BUFFER: [u8; RX_BUFFER_SIZE] = [0u8; RX_BUFFER_SIZE];
-/// Buffer used by the TCP stack when transmitting
-static mut TX_BUFFER: [u8; TX_BUFFER_SIZE] = [0u8; TX_BUFFER_SIZE];
-
-// /// Buffer used to retransmit a message that failed to transmit because of a
-// /// connection reset error
-// static mut TX_BYTES: [u8; 20] = [0; 20];
 
 impl GsMaster {
     /// Initializes the TCP stack and spawns a task for its runner.
@@ -157,7 +140,7 @@ impl GsMaster {
             embassy_net::new(device, config, RESOURCES.init(StackResources::new()), seed);
 
         // Spawn the task that runs the TCP stack
-        unwrap!(spawner.spawn(eth_task(runner)));
+        unwrap!(spawner.spawn(network_stack_task(runner)));
 
         info!("Waiting for ethernet peripheral to be configured");
         stack.wait_config_up().await;
@@ -451,32 +434,4 @@ impl GsMaster {
             .await;
         Timer::after_millis(5).await;
     }
-}
-
-/// get ground station [`Ipv4Address`]
-fn get_remote_endpoints() -> [(Ipv4Address, u16); config::IP_ADDRESS_COUNT] {
-    let ips = config::GS_IP_ADDRESSES;
-    ips.map(|x| (Ipv4Address::new(x.0[0], x.0[1], x.0[2], x.0[3]), x.1))
-}
-
-/// Task that runs the network stack
-#[embassy_executor::task]
-async fn eth_task(mut runner: embassy_net::Runner<'static, EthDevice>) -> ! {
-    info!("Running the TCP stack");
-    runner.run().await
-}
-
-/// Task that triggers a hardware reset 1 second after it gets spawned.
-#[allow(dead_code)]
-#[embassy_executor::task]
-async fn hardware_reset_timeout() {
-    info!("Starting watchdog for hashes");
-
-    Timer::after_secs(1).await;
-    let mut mutex_lock = HASH_TIMEOUT_FLAG.lock().await;
-    if !*mutex_lock {
-        SCB::sys_reset()
-    }
-    // how does this ever run if you've reset??
-    *mutex_lock = false;
 }

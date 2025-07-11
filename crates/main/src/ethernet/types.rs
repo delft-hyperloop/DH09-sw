@@ -3,6 +3,8 @@
 use core::fmt::Debug;
 use core::fmt::Formatter;
 
+use embassy_stm32::eth::Ethernet;
+use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::peripherals::ETH;
 use embassy_stm32::peripherals::PA1;
 use embassy_stm32::peripherals::PA2;
@@ -21,24 +23,16 @@ use embassy_sync::channel::Channel;
 use embassy_sync::pubsub::PubSubChannel;
 use embassy_sync::pubsub::Publisher;
 use embassy_sync::pubsub::Subscriber;
-use embassy_time::Duration;
-use embassy_time::Instant;
 use lib::config::Command;
 use lib::Datapoint;
 
-/// if nothing is sent over tcp for [timeout], send an RST and close the
-/// connection. keep alive will send a TCP_KEEP_ALIVE frame every [duration]
-/// milliseconds.
-pub const SOCKET_KEEP_ALIVE: Duration = Duration::from_millis(300);
+use crate::ethernet::CAP;
+use crate::ethernet::PUBS;
+use crate::ethernet::SUBS;
+use crate::ethernet::TX_CAP;
 
-/// max references
-const CAP: usize = 8;
-/// max number of subscribers
-const SUBS: usize = 4;
-/// max number of publishers
-const PUBS: usize = 1;
-/// the max number of messages that can be pending in a channel at a given time.
-const TX_CAP: usize = 1024;
+/// an ethernet device peripheral, abstract over the specific PHY used
+pub type EthDevice = Ethernet<'static, ETH, GenericPhy>;
 
 /// pub-sub channel for gs->pod
 pub type GsToPodChannel = PubSubChannel<NoopRawMutex, GsToPodMessage, CAP, SUBS, PUBS>;
@@ -108,15 +102,6 @@ impl GsComms {
     }
 }
 
-/// size in bytes of the TCP incoming buffer, i.e. how many bytes can the
-/// network stack receive from the peripheral without us doing socket.recv
-pub(crate) const RX_BUFFER_SIZE: usize = 8192;
-/// same as [`RX_BUFFER_SIZE`] but for transmitting.
-/// the main pcb doesn't expect to receive a lot of data, in fact only commands
-/// come through tcp, so the transmit buffer is much larger to accomodate
-/// outgoing telemetry.
-pub(crate) const TX_BUFFER_SIZE: usize = 32768;
-
 /// Struct used to represent a message from the ground station to the pod
 #[derive(Clone, Debug, defmt::Format, Copy)]
 pub struct GsToPodMessage {
@@ -165,9 +150,4 @@ impl Debug for EthPeripherals {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         write!(f, "EthPeripherals")
     }
-}
-
-/// shorthand for embassy_time ticks
-pub fn ticks() -> u64 {
-    Instant::now().as_ticks()
 }

@@ -1,7 +1,7 @@
 //! Contains all the files used for ethernet
+use embassy_stm32::eth::Ethernet;
 use embassy_stm32::eth::GenericPhy;
 use embassy_stm32::peripherals::ETH;
-use embassy_stm32::eth::Ethernet;
 
 pub mod logic;
 pub mod types;

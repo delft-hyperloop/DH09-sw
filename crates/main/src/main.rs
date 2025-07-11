@@ -32,14 +32,14 @@ use main::comms_tasks::gs_heartbeat;
 use main::ethernet::logic::GsMaster;
 use main::ethernet::types::EthPeripherals;
 use main::ethernet::types::GsComms;
-use static_cell::StaticCell;
-
 #[cfg(debug_assertions)]
 use panic_probe as _;
+use static_cell::StaticCell;
 #[cfg(not(debug_assertions))]
 mod panic_handler;
 
-// bind interrupt service routines to the hardware-triggered interrupts of different peripherals
+// bind interrupt service routines to the hardware-triggered interrupts of
+// different peripherals
 bind_interrupts!(
     struct Irqs {
         ETH => eth::InterruptHandler;
@@ -52,7 +52,6 @@ bind_interrupts!(
         FDCAN2_IT1 => can::IT1InterruptHandler<peripherals::FDCAN2>;
     }
 );
-
 
 /// fsm priority channel for events
 static EVENT_CHANNEL_FSM: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
@@ -90,8 +89,8 @@ async fn run_fsm(
 
 /// task responsible for running ethernet/tcp/groundstation communication.
 ///
-/// when a connection has been established for the first time, a signal is fired, indicating that
-/// the pod control is operational
+/// when a connection has been established for the first time, a signal is
+/// fired, indicating that the pod control is operational
 #[embassy_executor::task]
 async fn run_gs_master(
     gs_master: &'static mut GsMaster,
@@ -100,20 +99,22 @@ async fn run_gs_master(
     gs_master.run_net_fsm(signal_connected).await;
 }
 
-/// actual entry point of the program, and the first task picked up by the executor.
+/// actual entry point of the program, and the first task picked up by the
+/// executor.
 #[embassy_executor::main]
 async fn main(spawner: Spawner) -> ! {
     defmt::println!("Hello, world!");
 
-    // configure embassy's Peripherals according to the hardware specifications of the PCB this
-    // code is to be ran on. These configurations are for DH09 custom main pcb, which is meant to
-    // be equivalent to a STM Nucleo H743ZI2 / H53ZI2 (chip stm32h743zit6u)
+    // configure embassy's Peripherals according to the hardware specifications of
+    // the PCB this code is to be ran on. These configurations are for DH09
+    // custom main pcb, which is meant to be equivalent to a STM Nucleo H743ZI2
+    // / H53ZI2 (chip stm32h743zit6u)
     let mut config = embassy_stm32::Config::default();
     {
         use embassy_stm32::rcc;
 
-        // configure the high-speed-internal clock (hsi) phase-locked-loop (pll) and the scalers,
-        // in order to provide an appropriate signal for CAN.
+        // configure the high-speed-internal clock (hsi) phase-locked-loop (pll) and the
+        // scalers, in order to provide an appropriate signal for CAN.
         config.rcc.hsi = Some(rcc::HSIPrescaler::DIV1);
         config.rcc.pll1 = Some(rcc::Pll {
             source: rcc::PllSource::HSI,
@@ -177,8 +178,8 @@ async fn main(spawner: Spawner) -> ! {
     //     can2.new_sender(),
     // )).unwrap();
 
-    // SDC = ShutDown Circuit. Pin PB0 triggers the brakes and shuts off high voltage,
-    // pin PA10 rearms the system.
+    // SDC = ShutDown Circuit. Pin PB0 triggers the brakes and shuts off high
+    // voltage, pin PA10 rearms the system.
     let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
     let mut sdc_pin = Output::new(p.PB0, Level::High, Speed::Medium);
 
@@ -213,8 +214,8 @@ async fn main(spawner: Spawner) -> ! {
     let gs_tx_transmitter = gs_comms.tx_publisher();
     let gs_rx_transmitter = gs_comms.rx_publisher();
 
-    // the ethernet task gets ownership of all the ethernet peripherals (incl all pins for talking
-    // to the PHY) so no other part of the code can use them.
+    // the ethernet task gets ownership of all the ethernet peripherals (incl all
+    // pins for talking to the PHY) so no other part of the code can use them.
     let eth_peripherals = EthPeripherals {
         eth: p.ETH,
         pa1: p.PA1,
@@ -230,7 +231,8 @@ async fn main(spawner: Spawner) -> ! {
         pg11: p.PG11,
     };
 
-    // all the eth/tcp/gs communication stuff is held within the static cell of GS_MASTER
+    // all the eth/tcp/gs communication stuff is held within the static cell of
+    // GS_MASTER
     let gs_master = GS_MASTER.init(
         GsMaster::init(
             eth_peripherals,
@@ -243,9 +245,9 @@ async fn main(spawner: Spawner) -> ! {
         .await,
     );
 
-    // pass a signal that will get triggered when the first connection is established, so after
-    // that we may start checking for stale data (critical data that we didnt receive within a
-    // timeout)
+    // pass a signal that will get triggered when the first connection is
+    // established, so after that we may start checking for stale data (critical
+    // data that we didnt receive within a timeout)
     let signal = SIGNAL_CONNECTED.init(Signal::new());
 
     unwrap!(spawner.spawn(run_gs_master(gs_master, signal)));

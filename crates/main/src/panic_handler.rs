@@ -32,7 +32,7 @@ fn panic(info: &PanicInfo) -> ! {
     // 3. wait.
     // * stm32h743zit6u runs at ~400MHz, with a max of 480MHz,
     // * we want to wait for ~30 seconds before rebooting,
-    // 
+    //
     // + subs r0, r0, #1   ; 1 cycle
     // + bne 1b            ; ~2 cycles
     cortex_m::asm::delay(4_000_000_000);

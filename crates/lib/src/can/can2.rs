@@ -56,10 +56,7 @@ impl core::cmp::PartialEq for CanEnvelope {
 
 impl Ord for CanEnvelope {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.envelope
-            .frame
-            .id()
-            .cmp(other.envelope.frame.id())
+        self.envelope.frame.id().cmp(other.envelope.frame.id())
     }
 }
 

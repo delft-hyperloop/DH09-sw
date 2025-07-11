@@ -29,7 +29,8 @@ use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
 use lib::config;
-use lib::config::{Command, Datatype};
+use lib::config::Command;
+use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
 use lib::config::DATA_HASH;
@@ -69,7 +70,9 @@ pub struct GsMaster {
     tx_transmitter: PodToGsPublisher<'static>,
     /// Flag that triggers a reconnection (creates a new socket)
     should_reconnect: bool,
-    /// Flag used when reconnecting to indicate if it was a faulty connection (not critical) or we should actually emergency brake (related to the bug where it
+    /// Flag used when reconnecting to indicate if it was a faulty connection
+    /// (not critical) or we should actually emergency brake (related to the bug
+    /// where it
     // only sends a connection established message, but can't send or transmit
     // anything).
     connection_is_broken: bool,
@@ -164,7 +167,8 @@ impl GsMaster {
         // buffers that should be used for transmitting and receiving.
         // SAFETY: see explanation under reconnect()
         #[allow(static_mut_refs)]
-        let socket: TcpSocket = unsafe { TcpSocket::new(stack, RX_BUFFER.as_mut(), TX_BUFFER.as_mut()) };
+        let socket: TcpSocket =
+            unsafe { TcpSocket::new(stack, RX_BUFFER.as_mut(), TX_BUFFER.as_mut()) };
 
         Self {
             stack,
@@ -344,11 +348,14 @@ impl GsMaster {
     async fn reconnect(&mut self) {
         info!("Reconnecting to the GS");
 
-        // If the connection is broken, don't trigger an emergency and attempt to recover.
+        // If the connection is broken, don't trigger an emergency and attempt to
+        // recover.
         if !self.connection_is_broken {
-            self.rx_transmitter.publish(GsToPodMessage {
-                command: Command::ReconnectEmergency(0),
-            }).await;
+            self.rx_transmitter
+                .publish(GsToPodMessage {
+                    command: Command::ReconnectEmergency(0),
+                })
+                .await;
         } else {
             self.connection_is_broken = false;
         }
@@ -363,16 +370,16 @@ impl GsMaster {
         // without an allocator (feature="alloc") smoltcp can only hold 1 active socket
         // at a time. In order to create a brand new connection, we also need a
         // socket, which requires dropping the previous one in order to
-        // accomodate for it. 
+        // accomodate for it.
         #[allow(static_mut_refs)]
         // SAFETY: replace the socket in memory with a new socket.
         unsafe {
-            // TcpSocket::new takes the &mut [u8] that we give (rx and tx buffers) and transmutes
-            // it to a &'static mut [u8]. 
-            // The destructor (impl Drop) for TcpSocket removes the socket from the SocketSet of
-            // the stack. This in turn drops the &'static mut [u8]
-            // reference that pointed to the buffers. Thus, a new &mut [u8] to the same memory is
-            // safe, since we know the last one is now gone.
+            // TcpSocket::new takes the &mut [u8] that we give (rx and tx buffers) and
+            // transmutes it to a &'static mut [u8].
+            // The destructor (impl Drop) for TcpSocket removes the socket from the
+            // SocketSet of the stack. This in turn drops the &'static mut [u8]
+            // reference that pointed to the buffers. Thus, a new &mut [u8] to the same
+            // memory is safe, since we know the last one is now gone.
             core::ptr::drop_in_place(&mut self.socket as *mut TcpSocket<'_>);
             RX_BUFFER.fill(0);
             TX_BUFFER.fill(0);

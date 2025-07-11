@@ -4,6 +4,9 @@ use core::fmt::Debug;
 use core::fmt::Formatter;
 
 use defmt::info;
+use embassy_futures::select::select;
+use embassy_futures::select::Either;
+use embassy_futures::select::Select;
 use embassy_stm32::gpio::Output;
 use embassy_time::Timer;
 use lib::EmergencyType;
@@ -83,41 +86,50 @@ impl FSM {
     /// the `ShutDown` event.
     pub async fn run(&mut self) {
         loop {
-            let event = self.event_receiver.receive().await;
+            match select(self.event_receiver.receive(), Timer::after_millis(100)).await {
+                Either::First(event) => {
+                    if self.state != States::Braking && event != Event::Stopped
+                        || self.state == States::Braking
+                    {
+                        defmt::info!(
+                            "FSM {{ state: {} }}: Received event: {:?}",
+                            self.state,
+                            event
+                        );
+                    }
 
-            if self.state != States::Braking && event != Event::Stopped
-                || self.state == States::Braking
-            {
-                defmt::info!(
-                    "FSM {{ state: {} }}: Received event: {:?}",
-                    self.state,
-                    event
-                );
+                    if !self.handle_events(event).await {
+                        defmt::info!("{}: Stopping", core::any::type_name::<Self>());
+                        break;
+                    }
+
+                    // Sends the FSM state to the ground station
+                    self.event_sender_gs
+                        .send(Event::FSMTransition(self.state.to_index()))
+                        .await;
+
+                    // Checks if the braking line is still high. If not, send an emergency message
+                    // to the ground station and transition to fault state.
+                    if self.sdc_pin.is_set_low() && self.state != States::Fault {
+                        error!("SDC pin is low! Sending emergency to the ground station!");
+                        self.event_sender_gs
+                            .send(Event::Emergency {
+                                emergency_type: EmergencyType::GeneralEmergency,
+                            })
+                            .await;
+                        self.transition(States::Fault).await;
+                    }
+
+                    Timer::after_micros(100).await;
+                }
+                Either::Second(_timeout) => {
+                    // ensure the ground station knows the current fsm state
+                    // by sending it every at least 100ms
+                    self.event_sender_gs
+                        .send(Event::FSMTransition(self.state.to_index()))
+                        .await;
+                }
             }
-
-            if !self.handle_events(event).await {
-                defmt::info!("{}: Stopping", core::any::type_name::<Self>());
-                break;
-            }
-
-            // Sends the FSM state to the ground station
-            self.event_sender_gs
-                .send(Event::FSMTransition(self.state.to_index()))
-                .await;
-
-            // Checks if the braking line is still high. If not, send an emergency message
-            // to the ground station and transition to fault state.
-            if self.sdc_pin.is_set_low() && self.state != States::Fault {
-                error!("SDC pin is low! Sending emergency to the ground station!");
-                self.event_sender_gs
-                    .send(Event::Emergency {
-                        emergency_type: EmergencyType::GeneralEmergency,
-                    })
-                    .await;
-                self.transition(States::Fault).await;
-            }
-
-            Timer::after_micros(100).await;
         }
     }
 

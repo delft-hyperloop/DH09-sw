@@ -285,4 +285,154 @@ export function registerSubscribers() {
             util.log(`Emergency triggered: ${sources[store.value - 1]} Emergency!`, EventChannel.ERROR);
         }
     })
+
+    // --- Ported logic from PneumaticsTab.svelte ---
+    const BRAKES_DEPLOYED_STATES = [0, 1, 2, 3, 4, 9, 10, 11, 12]; // boot, connected to gs, system check, idle, precharge, discharge, braking, charging, fault
+    let brakePressureAcknowledged = true;
+    let brakeWarningAcknowledged = true;
+    let brakeDeployedAcknowledged = true;
+    let brakeFaultAcknowledged = true;
+    let brakeEmergencyActive = false;
+    let lastFsmState = 0;
+    let brakeShouldBeDeployedErrorAcknowledged = true;
+    let brakePressureWarningActive = false;
+    let lastPressure = 1000;
+
+    const pressureBrakes = storeManager.getWritable("PressureBrakes1");
+    const fsmState = storeManager.getWritable("FSMState");
+
+    // Initialize FSM state
+    const currentFsmState = get(fsmState);
+    if (
+        currentFsmState === undefined ||
+        currentFsmState === null ||
+        (typeof currentFsmState === 'object' && (currentFsmState as any).value === undefined || (currentFsmState as any).value === null)
+    ) {
+        lastFsmState = 0;
+    } else {
+        lastFsmState = (typeof currentFsmState === 'object' && 'value' in currentFsmState)
+            ? (currentFsmState as any).value as number
+            : currentFsmState as number;
+    }
+
+    fsmState.subscribe((val: any) => {
+        let newState = val.value ?? val;
+        if (newState === undefined || newState === null) {
+            newState = 0;
+        }
+        lastFsmState = newState as number;
+    });
+
+    pressureBrakes.subscribe(async (val: any) => {
+        const pressure = val.value ?? val;
+        let fsmStateForLogic = lastFsmState;
+        if (fsmStateForLogic === undefined || fsmStateForLogic === null) {
+            fsmStateForLogic = 0;
+        }
+        const brakesShouldBeDeployed = BRAKES_DEPLOYED_STATES.includes(fsmStateForLogic);
+        const brakesDeployed = pressure < 1;
+        const brakesRetracted = pressure > 50;
+        // --- Emergency: below 10, only if brakes should NOT be deployed ---
+        if (pressure < 10 && brakePressureAcknowledged && !brakesShouldBeDeployed) {
+            brakePressureAcknowledged = false;
+            brakeEmergencyActive = true;
+            try {
+                await invoke('send_command', {cmdName: "EmergencyBrake", val: 0});
+                util.log("EmergencyBrake triggered due to low brake pressure!", EventChannel.ERROR);
+            } catch (e) {
+                console.error("Failed to trigger EmergencyBrake:", e);
+            }
+            toastStore.trigger({
+                message: "BRAKE PRESSURE CRITICAL! Emergency brake triggered. Pressure: " + pressure.toFixed(1) + " bar. Check brakes immediately!",
+                background: "bg-error-400",
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        brakeEmergencyActive = false;
+                        if (pressure > 12) brakePressureAcknowledged = true;
+                    }
+                },
+            });
+        } else if (pressure < 30 && brakeWarningAcknowledged && pressure >= 10 && !brakesShouldBeDeployed) {
+            brakeWarningAcknowledged = false;
+            toastStore.trigger({
+                message: "Brake pressure low! Pressure: " + pressure.toFixed(1) + " bar.",
+                background: "bg-warning-400",
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        if (pressure > 32) brakeWarningAcknowledged = true;
+                    }
+                },
+            });
+        } else if (pressure > 32) {
+            brakePressureAcknowledged = true;
+            brakeWarningAcknowledged = true;
+        }
+        // --- Orange warning if pressure drops below 30 (transition) ---
+        if (lastPressure >= 30 && pressure < 30 && !brakePressureWarningActive) {
+            brakePressureWarningActive = true;
+            toastStore.trigger({
+                message: 'WARNING: Brake pressure has dropped below 30 bar. Possible leak detected.',
+                background: 'bg-warning-400',
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        if (pressure > 32) brakePressureWarningActive = false;
+                    }
+                },
+            });
+        } else if (pressure > 32) {
+            brakePressureWarningActive = false;
+        }
+        lastPressure = pressure;
+        // --- Brakes deployed popup (orange) ---
+        if (brakesDeployed && brakeDeployedAcknowledged) {
+            brakeDeployedAcknowledged = false;
+            toastStore.trigger({
+                message: "Brakes deployed.",
+                background: "bg-warning-400",
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        brakeDeployedAcknowledged = true;
+                    }
+                },
+            });
+        } else if (!brakesDeployed) {
+            brakeDeployedAcknowledged = true;
+        }
+        // --- Brakes deployed in wrong FSM state (red) ---
+        if (brakesDeployed && !brakesShouldBeDeployed && brakeFaultAcknowledged && !brakeEmergencyActive) {
+            brakeFaultAcknowledged = false;
+            toastStore.trigger({
+                message: `FAULT: Brakes are deployed in FSM state ${fsmStateForLogic} where they should NOT be! Check for leaks or system issues.`,
+                background: "bg-error-400",
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        brakeFaultAcknowledged = true;
+                    }
+                },
+            });
+        } else if (!brakesDeployed || brakesShouldBeDeployed) {
+            brakeFaultAcknowledged = true;
+        }
+        // --- Brakes should be deployed but are NOT (red error) ---
+        if (brakesShouldBeDeployed && !brakesDeployed && brakeShouldBeDeployedErrorAcknowledged) {
+            brakeShouldBeDeployedErrorAcknowledged = false;
+            toastStore.trigger({
+                message: 'ERROR: Brakes should be deployed in this state, but pressure indicates they are not! Check brake system.',
+                background: 'bg-error-400',
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        if (brakesDeployed || !brakesShouldBeDeployed) brakeShouldBeDeployedErrorAcknowledged = true;
+                    }
+                },
+            });
+        } else if (brakesDeployed || !brakesShouldBeDeployed) {
+            brakeShouldBeDeployedErrorAcknowledged = true;
+        }
+    });
 }

@@ -32,7 +32,7 @@
     }
 
     // --- Brake Pressure and FSM State Logic ---
-    const BRAKES_DEPLOYED_STATES = [0, 2, 3, 10, 13]; // boot, system_check, idle, braking, fault
+    const BRAKES_DEPLOYED_STATES = [0, 1, 2, 3, 4, 9, 10, 11, 12]; // boot, connected to gs, system check, idle, precharge, discharge, braking, charging, fault
     let pressureBrakesValue = 0;
     let fsmStateValue = 0;
     let storesReady = false;
@@ -62,6 +62,45 @@
         unsubscribeFSM && unsubscribeFSM();
     });
 
+    let brakeShouldBeDeployedErrorAcknowledged = true;
+    let brakePressureWarningActive = false;
+    let lastPressure = 1000;
+    $: if (storesReady) {
+        const brakesShouldBeDeployed = BRAKES_DEPLOYED_STATES.includes(fsmStateValue);
+        const brakesDeployed = pressureBrakesValue < 1;
+        if (brakesShouldBeDeployed && !brakesDeployed && brakeShouldBeDeployedErrorAcknowledged) {
+            brakeShouldBeDeployedErrorAcknowledged = false;
+            // Show red error popup
+            window?.gdd?.toastStore?.trigger?.({
+                message: 'ERROR: Brakes should be deployed in this state, but pressure indicates they are not! Check brake system.',
+                background: 'bg-error-400',
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        if (brakesDeployed || !brakesShouldBeDeployed) brakeShouldBeDeployedErrorAcknowledged = true;
+                    }
+                },
+            });
+        } else if (brakesDeployed || !brakesShouldBeDeployed) {
+            brakeShouldBeDeployedErrorAcknowledged = true;
+        }
+        if (lastPressure >= 30 && pressureBrakesValue < 30 && !brakePressureWarningActive) {
+            brakePressureWarningActive = true;
+            window?.gdd?.toastStore?.trigger?.({
+                message: 'WARNING: Brake pressure has dropped below 30 bar. Possible leak detected.',
+                background: 'bg-warning-400',
+                autohide: false,
+                callback: response => {
+                    if (response.status == 'closed') {
+                        if (pressureBrakesValue > 32) brakePressureWarningActive = false;
+                    }
+                },
+            });
+        } else if (pressureBrakesValue > 32) {
+            brakePressureWarningActive = false;
+        }
+        lastPressure = pressureBrakesValue;
+    }
     $: brakesShouldBeDeployed = BRAKES_DEPLOYED_STATES.includes(fsmStateValue);
     $: brakesDeployed = pressureBrakesValue < 1;
     $: brakesRetracted = pressureBrakesValue > 50;
@@ -73,9 +112,35 @@
         ? "Brakes should be DEPLOYED, but pressure indicates otherwise!"
         : "Brakes should be RETRACTED, but pressure indicates otherwise!";
     $: isNormal = !showWarning;
-    $: statusMsg = isNormal ? 'Brakes status: NORMAL' : 'Brakes status: FAULT';
+    $: statusMsg = isNormal ? 'Brakes status: NORMAL' : 'Brakes status: NOT NORMAL';
     $: statusMsgColor = isNormal ? 'text-green-500' : 'text-red-500';
     $: indicatorColor = isNormal ? 'bg-green-600' : 'bg-red-600';
+
+    let fakeDataInterval: ReturnType<typeof setInterval> | null = null;
+
+    function startFakeData() {
+        let t = 0;
+        stopFakeData(); // Ensure no duplicate intervals
+        fakeDataInterval = setInterval(() => {
+            // Generate a fake pressure value (e.g., sine wave between 0 and 60)
+            const value = 30 + 30 * Math.sin(t / 10);
+            pressureBrakes.set({ value });
+            // Optionally, update FSM state as well (e.g., alternate between 10 and 3)
+            fsmState.set({ value: t % 20 < 10 ? 10 : 3 });
+            // Push to chart if available
+            if (window.gdd && window.gdd.$chartStore) {
+                window.gdd.$chartStore.get("Breaking Comms")?.addEntry(1, value);
+            }
+            t++;
+        }, 500); // every 0.5 seconds
+    }
+
+    function stopFakeData() {
+        if (fakeDataInterval) {
+            clearInterval(fakeDataInterval);
+            fakeDataInterval = null;
+        }
+    }
 </script>
 
 {#if storesReady}

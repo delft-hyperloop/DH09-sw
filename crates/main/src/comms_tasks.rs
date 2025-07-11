@@ -24,7 +24,7 @@ use lib::Event;
 use lib::EventReceiver;
 use lib::EventSender;
 
-use crate::can::can2;
+use crate::can as can2;
 use crate::ethernet;
 use crate::ethernet::types::PodToGsMessage;
 

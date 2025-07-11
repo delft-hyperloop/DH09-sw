@@ -20,7 +20,7 @@ use fsm::FSM;
 use lib::EventChannel;
 use lib::EventReceiver;
 use lib::EventSender;
-use main::can::can2;
+use main::can as can2;
 use main::comms_tasks::check_critical_datapoints;
 use main::comms_tasks::forward_can2_messages_to_fsm;
 use main::comms_tasks::forward_can2_messages_to_gs;

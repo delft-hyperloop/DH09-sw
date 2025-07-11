@@ -82,7 +82,6 @@ impl FSM {
     /// false. This case should only happen if the FSM receives
     /// the `ShutDown` event.
     pub async fn run(&mut self) {
-        let mut counter = 0u64;
         loop {
             let event = self.event_receiver.receive().await;
 
@@ -101,12 +100,10 @@ impl FSM {
                 break;
             }
 
-            // Sends the FSM state to the ground station every 100 iterations
-            if counter.rem_euclid(100) == 0 {
-                self.event_sender_gs
-                    .send(Event::FSMTransition(self.state.to_index()))
-                    .await;
-            }
+            // Sends the FSM state to the ground station
+            self.event_sender_gs
+                .send(Event::FSMTransition(self.state.to_index()))
+                .await;
 
             // Checks if the braking line is still high. If not, send an emergency message
             // to the ground station and transition to fault state.
@@ -121,7 +118,6 @@ impl FSM {
             }
 
             Timer::after_micros(100).await;
-            counter = counter.wrapping_add(1);
         }
     }
 

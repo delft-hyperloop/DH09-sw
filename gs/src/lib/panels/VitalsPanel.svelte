@@ -44,7 +44,7 @@
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
     import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
-    import { imdWarnings, ptcErrorCodes, ptcStates } from '$lib/types';
+    import { imdWarnings, NamedDatatypeValues, ptcErrorCodes, ptcStates } from '$lib/types';
     import ValueStore from '$lib/components/generic/ValueStore.svelte';
     import { emergencySources } from '$lib/stores/data';
 
@@ -107,6 +107,24 @@
             console.error(`Error sending command MockProp2Ack: ${e}`);
         });
     }
+
+    $: bmsTableTitles = [
+        "",
+        "Highest Voltage",
+        "Lowest Voltage",
+        "Pack Voltage",
+        "Pack Current",
+    ]
+
+    $: bmsTableValues = [
+        [
+            "High Voltage:", "HvVHigh", "HvVLow", "VPack", "IPack"
+        ],
+        [
+            "Low Voltage:", "LvVHigh", "LvVLow", "VPackLowVoltage", "IPackLowVoltage"
+        ]
+    ]
+
 </script>
 
 <div bind:clientWidth={width} class="h-full bg-surface-700 text-surface-50">
@@ -301,6 +319,9 @@
                         <Command cmd="SystemReset" icon={Reset}/>
                         <Command cmd="FaultFixed" icon={Tools}/>
                     </div>
+                </Tile>
+                <Tile bgToken={800} containerClass="col-span-full">
+                    <Table titles={bmsTableTitles} tableArr={bmsTableValues}/>
                 </Tile>
                 {#if $debugModeActive}
                     <Tile containerClass="col-span-full bg-surface-800" bgToken={700}>

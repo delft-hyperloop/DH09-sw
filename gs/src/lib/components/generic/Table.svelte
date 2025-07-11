@@ -26,7 +26,7 @@
                         {#if typeof cell === "number"}
                             <span class="font-mono">{cell.toFixed(2)}</span>
                         {:else if NamedDatatypeValues.includes(cell)}
-                            <Store datatype={cell}/>
+                            <Store datatype={cell} name={cell} displayName={false}/>
                         {:else}
                             {cell}
                         {/if}

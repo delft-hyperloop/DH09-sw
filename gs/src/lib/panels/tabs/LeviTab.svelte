@@ -13,14 +13,14 @@
     <h2 class="text-2xl font-semibold mb-4">Levitation</h2>
 
     <TileGrid columns="1fr 1fr" rows="">
-        <div class="flex gap-x-4 col-span-full mb-2">
+        <Tile insideClass="flex gap-x-4 col-span-full" containerClass="col-span-full">
             <Command cmd="LevitationOn" icon={StartLevitatingIcon}/>
             <Command cmd="LevitationOff" icon={StopLevitatingIcon}/>
             <Command cmd="LeviDropdown" text="Dropdown" icon={DownToBottom}/>
             <Command cmd="ResetLevitation" icon={IbmCloudBackupServiceVpc}/>
 <!--            <Command cmd="vertical_0_current" text="Vertical 0 Current"/>-->
 <!--            <Command cmd="vert_0_current_reset" text="Reset Vertical 0 Current"/>-->
-        </div>
+        </Tile>
         <Tile containerClass="col-span-2">
             <Chart title="HEMS Current" background="bg-surface-900" />
         </Tile>

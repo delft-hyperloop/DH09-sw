@@ -8,6 +8,9 @@
     const STALE_DATA_TICKS = 500;
     export let datatype: NamedDatatype;
     export let name: string;
+    export let displayName: boolean = true;
+    export let rangesNearValue: boolean = false;
+
     const store = GrandDataDistributor.getInstance().stores.getWritable(datatype);
     let range: unknown = "";
     let unit: unknown = "";
@@ -26,15 +29,19 @@
 
 <div class="flex flex-col">
     <div class="flex flex-row gap-1">
-        <span>{name}: </span>
+        {#if displayName}
+            <span>{name}: </span>
+        {/if}
         <span class="{$latestTimestamp - $store.timestamp > STALE_DATA_TICKS ? 'text-surface-400' : $store.style}">
         {typeof $store.value === "number" ?
             ($store.value).toFixed(2) : $store.value}
-            <!--{range}-->
+            {#if rangesNearValue}
+                {range}
+            {/if}
             {unit}
     </span>
     </div>
-    {#if range !== ""}
+    {#if range !== "" && !rangesNearValue}
         <span class="text-surface-400">
             Safety Range: {range}
         </span>

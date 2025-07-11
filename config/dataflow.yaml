@@ -744,7 +744,6 @@ message-processing:
       - datapoint:
           name: 'Localization'
           id: 0x321
-          critical: true
           store:
             default: 0
             callback: |
@@ -1438,6 +1437,7 @@ message-processing:
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
+        display-units: 'V'
       - datapoint:
           name: 'LvVLow'
           critical: true
@@ -1454,6 +1454,7 @@ message-processing:
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
+        display-units: 'V'
       - datapoint:
           name: 'THigh'
           id: 0x602
@@ -1561,6 +1562,7 @@ message-processing:
         can-conversion: 'identity_u16:u16->u16'
         gs:
           conversion: 'gs_u16:u16'
+        display-units: 'A'
   - name: 'PtSystemCheckResponse'
     can:
       id: 0x4E9

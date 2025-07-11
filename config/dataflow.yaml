@@ -686,8 +686,8 @@ message-processing:
                   $chartStore.get("Bus Current")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'decode_bms_voltage:u16->f32'
+        getter: 'i16[2..4]'
+        can-conversion: 'decode_bms_voltage:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
         display-units: 'A'
@@ -706,8 +706,8 @@ message-processing:
                   $chartStore.get("DC Link Voltage")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
-        can-conversion: 'decode_bms_voltage:u16->f32'
+        getter: 'i32[4..7]'
+        can-conversion: 'decode_bms_voltage:i32->f32'
         display-units: 'V'
         gs:
           conversion: 'gs_2p_float:f32'

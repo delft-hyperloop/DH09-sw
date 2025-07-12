@@ -66,7 +66,7 @@ fn main() -> Result<()> {
     content.push_str(&configure_gs(&config));
     content.push_str(&configure_gs_ips(&config.gs.ips, config.gs.port));
     let df = fs::read_to_string(DATAFLOW_PATH)?;
-    let df = goose_utils::dataflow::parse_from(&df);
+    let df = goose_utils::dataflow::parse_from(&df)?;
     let dt = goose_utils::dataflow::collect_data_types(&df);
     let dt = generate_data_types_from_config(&dt, true)?;
     content.push_str(&dt);

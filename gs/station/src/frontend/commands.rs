@@ -56,8 +56,6 @@ pub fn generate_test_data() -> Vec<Datapoint> {
 #[tauri::command]
 pub fn get_fsm_state_by_index(index: u8) -> String { format!("{:?}", States::from_index(index)) }
 
-#[macro_export]
-#[allow(unused)]
 #[tauri::command]
 pub fn get_datatype_by_id(id: u16) -> String { format!("{:?}", Datatype::from_id(id)) }
 
@@ -74,7 +72,7 @@ pub fn get_unit_by_datatype(datatype: String) -> String {
 pub fn get_ranges_by_datatype_id(datatype: String) -> String {
     let bounds = Datatype::from_str(&datatype).bounds();
     match bounds {
-        (Limit::Single(upper), Limit::Single(lower)) => format!("[{}, {}]", lower, upper),
+        (Limit::Single(upper), Limit::Single(lower)) => format!("[{lower}, {upper}]"),
         (Limit::Multiple(severities_upper), Limit::Multiple(severities_lower)) => {
             if severities_lower.brake.is_some() && severities_upper.brake.is_some() {
                 return format!(

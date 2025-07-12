@@ -44,7 +44,14 @@
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
     import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
-    import { bmsErrors, imdWarnings, ptcErrorCodes, ptcStates, senorHubEmergencies } from '$lib/types';
+    import {
+        bmsErrors,
+        imdWarnings,
+        leviErrorMessages,
+        ptcErrorCodes,
+        ptcStates,
+        senorHubEmergencies,
+    } from '$lib/types';
     import ValueStore from '$lib/components/generic/ValueStore.svelte';
     import { emergencySources } from '$lib/stores/data';
 

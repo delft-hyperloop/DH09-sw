@@ -2,8 +2,8 @@
 #![allow(clippy::match_single_binding)]
 use core::fmt::Debug;
 use core::fmt::Formatter;
-
-use defmt::info;
+use core::time::Duration;
+use defmt::{info, Format};
 use embassy_futures::select::select;
 use embassy_futures::select::Either;
 use embassy_stm32::gpio::Output;
@@ -109,7 +109,7 @@ impl FSM {
 
                     // Checks if the braking line is still high. If not, send an emergency message
                     // to the ground station and transition to fault state.
-                    if self.sdc_pin.is_set_low() && self.state != States::Fault {
+                    if self.sdc_pin.is_set_low() && self.state != States::Fault && self.state != States::Discharge {
                         error!("SDC pin is low! Sending emergency to the ground station!");
                         self.event_sender_gs
                             .send(Event::Emergency {
@@ -242,7 +242,15 @@ impl FSM {
                 Timer::after_millis(100).await;
                 self.rearm_sdc_pin.set_low();
             }
-            (States::Demo, Event::Discharge) => self.transition(States::Discharge).await,
+            (States::Demo, Event::Discharge) => {
+                // Pull the SDC pin low to engage the brakes since you can't have the brakes retracted without high voltage turned on. 
+                self.sdc_pin.set_low();
+                self.transition(States::Discharge).await;
+                
+                // After 50 milliseconds, pull it back high to
+                Timer::after_millis(50).await;
+                self.sdc_pin.set_high();
+            },
             (States::Demo, Event::Levitate) => self.transition(States::Levitating).await,
             (States::Levitating, Event::StopLevitating) => self.transition(States::Demo).await,
             (States::Levitating, Event::Accelerate) => self.transition(States::Accelerating).await,

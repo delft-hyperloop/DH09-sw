@@ -8,7 +8,7 @@ import {
     modalTitle,
     staleCriticalDatatypes,
 } from '$lib/stores/data';
-import { EBSStates, MODAL_SETTINGS } from '$lib/types';
+import { bmsErrors, EBSStates, leviErrorMessages, MODAL_SETTINGS } from '$lib/types';
 import {
     ebsState,
     emergencyModalActive,
@@ -45,6 +45,8 @@ export function registerSubscribers() {
     const emergency = storeManager.getWritable("Emergency");
     const emergencyStaleData = storeManager.getWritable("EmergencyStaleCriticalData");
     const lowPressure = storeManager.getWritable("PressureLow");
+    const leviFault = storeManager.getWritable("LeviFault");
+    const leviFaultDriveNumber = storeManager.getWritable("LeviFaultDriveNumber");
 
     const lowPressureThreshold: number = 30;
 
@@ -53,6 +55,20 @@ export function registerSubscribers() {
             ebsState.set(EBSStates.Armed);
         } else {
             ebsState.set(EBSStates.Triggered);
+        }
+    })
+
+    leviFault.subscribe((store) => {
+        if (store.value !== 0) {
+            let drive = get(leviFaultDriveNumber);
+            let leviErrorMessage = leviErrorMessages.filter((x, index) =>
+                (((store.value >> index) & 1) === 1)
+            );
+
+            modalTitle.set("Levi Fault!");
+            modalBody.set(`Levitation drive ${drive} signaled a fault with message: ${leviErrorMessage.join(", ")}`);
+            console.error(`Levitation drive ${drive} signaled a fault with message: ${leviErrorMessage.join(", ")}`);
+            modalStore.trigger(MODAL_SETTINGS);
         }
     })
 

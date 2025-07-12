@@ -1624,6 +1624,15 @@ message-processing:
         can-conversion: 'identity_u8:u8->u8'
         gs:
           conversion: 'gs_u8:u8'
+      - datapoint:
+          name: 'LeviFaultDriveNumber'
+          id: 0x777
+          store:
+            default: 0
+        getter: 'u8[1..2]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
   - name: 'LeviHeartbeat'
     can:
       id: 0x388

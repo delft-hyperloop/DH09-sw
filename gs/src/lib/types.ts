@@ -171,3 +171,14 @@ export enum EBSStates {
     Triggered = "Triggered",
     Armed = "Armed",
 }
+
+export const leviErrorMessages = [
+    "Resettable Drive Error",
+    "Non-Resettable Drive Error",
+    "DC Link Undervoltage",
+    "Lase Offset Sensor Disconnected",
+    "Drive Current Following Error",
+    "Levi Error because SenseCon went into Fault",
+    "Drive Error Reset Failed",
+    "Other",
+]

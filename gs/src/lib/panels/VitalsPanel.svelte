@@ -17,10 +17,13 @@
     import MainFSM from '$lib/components/MainFSM.svelte';
     import {
         connectedToMainPCB,
-        debugModeActive, ebsState,
-        inStateAccelerating, inStateBraking,
+        debugModeActive,
+        ebsState,
+        inStateAccelerating,
+        inStateBraking,
         inStateCharging,
-        inStateLevitating, overrideDependencies,
+        inStateLevitating,
+        overrideDependencies,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
@@ -35,10 +38,10 @@
         SettingsCheck,
         Meter,
         RightPanelClose,
-        ConnectionSignal,
-        ConnectionSignalOff,
+        SkipForward,
         StopOutline,
-        Tools, DownToBottom,
+        Tools,
+        DownToBottom,
     } from 'carbon-icons-svelte';
     import type { SvelteComponent } from 'svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
@@ -47,13 +50,12 @@
     import {
         bmsErrors,
         imdWarnings,
-        leviErrorMessages,
         ptcErrorCodes,
         ptcStates,
         senorHubEmergencies,
     } from '$lib/types';
     import ValueStore from '$lib/components/generic/ValueStore.svelte';
-    import { emergencySources } from '$lib/stores/data';
+    import { emergencySources, nextRecommendedStateCmd, nextStateMessage } from '$lib/stores/data';
 
     let width: number;
 
@@ -346,6 +348,32 @@
                             dependencyTitle="Wrong State!"
                             dependencyMessage="The pod should be in the Demo state to perform a dropdown!"
                         />
+<!--                        <button class="btn rounded-md text-wrap">-->
+<!--                            <SkipForward size={20}/>-->
+<!--                            -->
+<!--                        </button>-->
+                        <Command
+                            cmd={$nextRecommendedStateCmd}
+                            text={`Next State: ${$nextStateMessage}`}
+                            icon={SkipForward}
+                            className="col-span-2 bg-primary-500 text-surface-900"
+                        />
+<!--                        <button-->
+<!--                            class="btn rounded-md text-wrap overflow-hidden-->
+<!--                                bg-primary-500 text-surface-900 flex flex-row gap-2 col-span-2-->
+<!--                                justify-center items-center"-->
+<!--                            on:click={nextState}-->
+<!--                        >-->
+<!--                            <SkipForward size={20}/>-->
+<!--                            <span class="flex flex-col w-full h-full text-center gap-2">-->
+<!--                                <span class="font-normal">-->
+<!--                                    Next State: {$nextRecommendedState}-->
+<!--                                </span>-->
+<!--                                <span class="font-light">-->
+<!--                                    {$nextStateMessage}-->
+<!--                                </span>-->
+<!--                            </span>-->
+<!--                        </button>-->
                     </div>
                 </Tile>
                 <Tile bgToken={800} containerClass="col-span-full">

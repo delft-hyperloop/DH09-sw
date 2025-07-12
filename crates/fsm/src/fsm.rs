@@ -247,8 +247,8 @@ impl FSM {
                 self.sdc_pin.set_low();
                 self.transition(States::Discharge).await;
                 
-                // After 50 milliseconds, pull it back high to
-                Timer::after_millis(50).await;
+                // After 25 milliseconds, pull it back high to
+                Timer::after_millis(25).await;
                 self.sdc_pin.set_high();
             },
             (States::Demo, Event::Levitate) => self.transition(States::Levitating).await,

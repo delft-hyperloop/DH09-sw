@@ -65,9 +65,13 @@ export function registerSubscribers() {
                 (((store.value >> index) & 1) === 1)
             );
 
+            const leviFaultMessage = `Levitation drive ${drive} signaled a fault with message: ${leviErrorMessage.join(", ")}`;
+
+            addEmergencySource(`Levi drive ${drive}: ${leviErrorMessage.join(", ")}`);
+
             modalTitle.set("Levi Fault!");
-            modalBody.set(`Levitation drive ${drive} signaled a fault with message: ${leviErrorMessage.join(", ")}`);
-            console.error(`Levitation drive ${drive} signaled a fault with message: ${leviErrorMessage.join(", ")}`);
+            modalBody.set(leviFaultMessage);
+            console.error(leviFaultMessage);
             modalStore.trigger(MODAL_SETTINGS);
         }
     })

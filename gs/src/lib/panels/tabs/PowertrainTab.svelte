@@ -59,7 +59,7 @@
             </div>
         </Tile>
         <Tile containerClass="col-span-full px-10">
-            <div class="grid grid-rows-2 grid-cols-7 gap-2 h-full w-full items-center">
+            <div class="grid grid-rows-2 grid-cols-7 gap-2 h-full w-full items-center mt-5">
                 <span class="text-wrap text-center">Powertrain Reset Flags</span>
                 {#each Array.from({ length: resetPowertrainLabels.length }, (_, i) => resetPowertrainLabels.length - 1 - i) as i}
                     <BinaryInput store={ptResetMessage} index={i}/>
@@ -73,41 +73,41 @@
             </div>
         </Tile>
     </TileGrid>
-    <TileGrid columns="1fr 1fr 1fr 1fr 1fr 1fr" rows="auto" className="mt-2">
-        <Tile containerClass="col-span-1" insideClass="gap-4 items-center">
-            <div class="flex flex-col gap-2">
-                <div class="flex flex-col items-center">
-                    <Battery fill="#3b669c" orientation="horizontal" height={40} perc={0} />
-                    <!--                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />-->
-                    <p>Low voltage</p>
-                </div>
-                <div class="flex flex-col items-center">
-                    <Battery fill="#723f9c" orientation="horizontal" height={40} perc={0} />
-                    <!--                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery.value)} />-->
-                    <p>High voltage</p>
-                </div>
-            </div>
-        </Tile>
-        <Tile containerClass="col-span-5">
-            <div class="flex flex-col gap-4 ">
-                <ValueStore
-                    name="PT Controller State"
-                    value={ptcStates[$ptcState.value]}
-                    timestamp={$ptcState.timestamp}
-                />
-                <ValueStore
-                    name="PT Controller Fault"
-                    value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}
-                    timestamp={$ptcFaultStore.timestamp}
-                />
-                <ValueStore
-                    name="IMD Warning"
-                    value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}
-                    timestamp={$imdWarningStore.timestamp}
-                />
-            </div>
-        </Tile>
-    </TileGrid>
+<!--    <TileGrid columns="1fr 1fr 1fr 1fr 1fr 1fr" rows="auto" className="mt-2">-->
+<!--        <Tile containerClass="col-span-1" insideClass="gap-4 items-center">-->
+<!--            <div class="flex flex-col gap-2">-->
+<!--                <div class="flex flex-col items-center">-->
+<!--                    <Battery fill="#3b669c" orientation="horizontal" height={40} perc={0} />-->
+<!--                    &lt;!&ndash;                <Battery fill="#3b669c" orientation="horizontal" height={40} perc={Number($lvBattery.value)} />&ndash;&gt;-->
+<!--                    <p>Low voltage</p>-->
+<!--                </div>-->
+<!--                <div class="flex flex-col items-center">-->
+<!--                    <Battery fill="#723f9c" orientation="horizontal" height={40} perc={0} />-->
+<!--                    &lt;!&ndash;                <Battery fill="#723f9c" orientation="horizontal" height={40} perc={Number($hvBattery.value)} />&ndash;&gt;-->
+<!--                    <p>High voltage</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </Tile>-->
+<!--        <Tile containerClass="col-span-5">-->
+<!--            <div class="flex flex-col gap-4 ">-->
+<!--                <ValueStore-->
+<!--                    name="PT Controller State"-->
+<!--                    value={ptcStates[$ptcState.value]}-->
+<!--                    timestamp={$ptcState.timestamp}-->
+<!--                />-->
+<!--                <ValueStore-->
+<!--                    name="PT Controller Fault"-->
+<!--                    value={ptcFaultMessage.length === 0 ? "None" : ptcFaultMessage.join(", ")}-->
+<!--                    timestamp={$ptcFaultStore.timestamp}-->
+<!--                />-->
+<!--                <ValueStore-->
+<!--                    name="IMD Warning"-->
+<!--                    value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}-->
+<!--                    timestamp={$imdWarningStore.timestamp}-->
+<!--                />-->
+<!--            </div>-->
+<!--        </Tile>-->
+<!--    </TileGrid>-->
     <TileGrid columns="1fr 1fr 1fr 1fr" rows="auto 1fr auto" className="mt-2">
         <Tile containerClass="col-span-full">
             <Chart title="BMS Voltages" background="bg-surface-900" />

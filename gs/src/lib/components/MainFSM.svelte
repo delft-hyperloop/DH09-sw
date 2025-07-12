@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onDestroy, onMount } from 'svelte';
-    import { GrandDataDistributor } from '$lib';
+    import { GrandDataDistributor, type NamedCommand } from '$lib';
     import {
         inStateAccelerating,
         inStateActive,
@@ -11,7 +11,7 @@
     } from '$lib/stores/state';
     import { inStateBraking, inStateConnectedToGS, inStateDemo, inStateIdle } from '$lib/stores/state.js';
     import type { FsmState } from '$lib/types';
-    import { emergencySources } from '$lib/stores/data';
+    import { emergencySources, nextRecommendedStateCmd, nextStateMessage } from '$lib/stores/data';
 
     let boot: FsmState = {
         index: 0,
@@ -83,6 +83,43 @@
         inStateAccelerating.set(index === accelerating.index);
         inStateCharging.set(index === charging.index);
         inStateBraking.set(index == braking.index);
+
+        const nextStateMessages = [
+            "Connect to the Pod", // 0
+            "Run a System Check", // 1
+            "Wait for System Check to Pass", // 2
+            "Turn On High Voltage", // 3
+            "Running precharge sequence...", // 4
+            "Rearm the SDC", // 5
+            "Turn on Levitation", // 6
+            "Turn on Propulsion", // 7
+            "Brake with the Motor", // 8
+            "", // 9
+            "Wait for the pod to stop", // 10
+            "Wait for the pod to discharge", // 11
+            "Stop Charging", // 12
+            "Fix Fault", // 13
+        ]
+
+        const nextStateCmds: NamedCommand[] = [
+            "DefaultCommand", // 0
+            "SystemCheck", // 1
+            "DefaultCommand", // 2
+            "StartHV", // 3
+            "DefaultCommand", // 4
+            "RearmSDC", // 5
+            "LevitationOn", // 6
+            "PropulsionOn", // 7
+            "MotorBrake", // 8
+            "DefaultCommand", // 9
+            "DefaultCommand", // 10
+            "DefaultCommand", // 11
+            "StopCharge", // 12
+            "FaultFixed", // 13
+        ]
+
+        nextRecommendedStateCmd.set(nextStateCmds[index]);
+        nextStateMessage.set(nextStateMessages[index]);
 
         // If in system check, remove all the emergency sources
         if (index == system_check.index) {

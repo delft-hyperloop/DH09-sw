@@ -1,6 +1,6 @@
 // src/lib/stores/data.ts
 
-import type { Procedure, PropPoint } from '$lib/types';
+import type { NamedCommand, Procedure, PropPoint } from '$lib/types';
 import {writable, type Writable} from 'svelte/store';
 import {invoke} from "@tauri-apps/api/tauri";
 import {parseProcedure} from "$lib/util/parsers";
@@ -63,3 +63,5 @@ export const setPropulsionPoints: Writable<PropPoint[]> = writable([
 export const staleCriticalDatatypes: Writable<string[]> = writable([]);
 
 export const emergencySources: Writable<string[]> = writable([]);
+export const nextStateMessage: Writable<string> = writable("explanation");
+export const nextRecommendedStateCmd: Writable<NamedCommand> = writable("DefaultCommand");

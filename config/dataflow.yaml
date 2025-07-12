@@ -20,7 +20,7 @@ procedures:
   decode_bms_voltage_adjusted:
     input: 'u16'
     output: 'f32'
-    formula: '(x as f32) * 0.128 / 10000.0'
+    formula: '(x as f32) * 0.128 / 10.0'
   decode_bms_voltage:
     input: 'u16'
     output: 'f32'

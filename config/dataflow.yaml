@@ -20,11 +20,19 @@ procedures:
   decode_bms_voltage_adjusted:
     input: 'u16'
     output: 'f32'
-    formula: '(x as f32) / 10.0 * 1.28'
+    formula: '(x as f32) * 0.128'
   decode_bms_voltage:
     input: 'u16'
     output: 'f32'
+    formula: '(x as f32) / 10000.0'
+  decode_bms_voltage_i16:
+    input: 'i16'
+    output: 'f32'
     formula: '(x as f32) / 10.0'
+  decode_bms_voltage_i32:
+    input: 'i32'
+    output: 'f32'
+    formula: '(x as f32) / 1000.0'
   decode_bms_temperature:
     input: 'u16'
     output: 'f32'
@@ -69,6 +77,11 @@ procedures:
     input: 'i32'
     output: 'i32'
     formula: 'x'
+
+  convert_i32_f32:
+    input: 'i32'
+    output: 'f32'
+    formula: 'x as f32'
 
 #  f16_to_f32:
 #    input: 'f16'
@@ -687,7 +700,7 @@ message-processing:
                   return curr;
               }
         getter: 'i16[2..4]'
-        can-conversion: 'decode_bms_voltage:i16->f32'
+        can-conversion: 'decode_bms_voltage_i16:i16->f32'
         gs:
           conversion: 'gs_2p_float:f32'
         display-units: 'A'
@@ -706,8 +719,8 @@ message-processing:
                   $chartStore.get("DC Link Voltage")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i32[4..7]'
-        can-conversion: 'decode_bms_voltage:i32->f32'
+        getter: 'i32[4..8]'
+        can-conversion: 'decode_bms_voltage_i32:i32->f32'
         display-units: 'V'
         gs:
           conversion: 'gs_2p_float:f32'

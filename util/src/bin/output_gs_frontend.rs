@@ -35,7 +35,7 @@ fn main() -> anyhow::Result<()> {
 
     drop(ts_file);
 
-    File::create(ts_path).unwrap().write_all(output.as_bytes()).unwrap();
+    File::create(ts_path)?.write_all(output.as_bytes())?;
 
     let stores = goose_utils::dataflow::frontend::generate_stores(&df);
 
@@ -54,7 +54,7 @@ fn main() -> anyhow::Result<()> {
 
     drop(stores_file);
 
-    File::create(stores_path).unwrap().write_all(output.as_bytes()).unwrap();
+    File::create(stores_path)?.write_all(output.as_bytes())?;
 
     Ok(())
 }

@@ -4,9 +4,8 @@ pub fn generate_types(df: &DataflowSpec) -> String {
     let mut code = String::new();
     write!(
         &mut code,
-        r#"
-/* BEGIN AUTO GENERATED TYPES */
-export type NamedCommand = "#
+        "/* BEGIN AUTO GENERATED TYPES */
+export type NamedCommand = "
     )
     .unwrap();
 
@@ -72,10 +71,8 @@ pub fn generate_stores(df: &DataflowSpec) -> String {
 
     writeln!(
         &mut code,
-        r#"
-        // gdd stores registration
-        // auto-generated with npm run generate:gs
-        "#
+        "\t// BEGIN AUTO GENERATED STORES
+        "
     )
     .unwrap();
 
@@ -84,7 +81,7 @@ pub fn generate_stores(df: &DataflowSpec) -> String {
             write!(
                 &mut code,
                 r#"
-            gdd.stores.registerStore<{type}>("{name}", {default}"#,
+    gdd.stores.registerStore<{type}>("{name}", {default}"#,
                 type = store.ty,
                 name = d.name,
                 default = store.default,
@@ -95,11 +92,11 @@ pub fn generate_stores(df: &DataflowSpec) -> String {
             }
             match (d.lower, d.upper) {
                 (Limit::Single(lower), Limit::Single(upper)) => {
-                    writeln!(&mut code, ", undefined, {lower}, {upper}").unwrap()
+                    write!(&mut code, ", undefined, {lower}, {upper}").unwrap()
                 },
                 (Limit::Multiple(lower_severities), Limit::Multiple(upper_severities)) => {
                     if lower_severities.brake.is_some() && upper_severities.brake.is_some() {
-                        writeln!(
+                        write!(
                             &mut code,
                             ", undefined, {}, {}",
                             lower_severities.brake.unwrap(),

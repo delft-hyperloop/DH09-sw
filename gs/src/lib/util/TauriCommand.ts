@@ -4,7 +4,4 @@
  *
  * @see https://refactoring.guru/design-patterns/command
  */
-interface TauriCommand {
-
-}
-
+interface TauriCommand {}

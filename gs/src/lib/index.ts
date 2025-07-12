@@ -1,47 +1,53 @@
 // Panels
-import VitalsPanel from "$lib/panels/VitalsPanel.svelte";
-import LogsPanel from "$lib/panels/LogsPanel.svelte";
-import DetailsPanel from "$lib/panels/DetailsPanel.svelte";
+import VitalsPanel from '$lib/panels/VitalsPanel.svelte';
+import LogsPanel from '$lib/panels/LogsPanel.svelte';
+import DetailsPanel from '$lib/panels/DetailsPanel.svelte';
 
 // Tabs
 import PowertrainTab from '$lib/panels/tabs/PowertrainTab.svelte';
-import LeviTab from "$lib/panels/tabs/LeviTab.svelte";
-import HomeTab from "$lib/panels/tabs/HomeTab.svelte";
-import LocationTab from "$lib/panels/tabs/LocationTab.svelte";
-import ProceduresTab from "$lib/panels/tabs/ProceduresTab.svelte";
+import LeviTab from '$lib/panels/tabs/LeviTab.svelte';
+import HomeTab from '$lib/panels/tabs/HomeTab.svelte';
+import LocationTab from '$lib/panels/tabs/LocationTab.svelte';
+import ProceduresTab from '$lib/panels/tabs/ProceduresTab.svelte';
 import PropulsionTab from '$lib/panels/tabs/PropulsionTab.svelte';
-import DebugTab from "$lib/panels/tabs/DebugTab.svelte";
-import PneumaticsTab from "$lib/panels/tabs/PneumaticsTab.svelte";
+import DebugTab from '$lib/panels/tabs/DebugTab.svelte';
+import PneumaticsTab from '$lib/panels/tabs/PneumaticsTab.svelte';
 
 // Components
-import Battery from "$lib/components/Battery.svelte";
-import BottomBar from "$lib/components/BottomBar.svelte";
-import Localiser from "$lib/components/Localiser.svelte";
-import Pneumatics from "$lib/components/Pneumatics.svelte";
-import TitleBar from "$lib/components/TitleBar.svelte";
-import Chart from "$lib/components/generic/Chart.svelte";
-import Table from "$lib/components/generic/Table.svelte";
-import Command from "$lib/components/abstract/Command.svelte";
-import Status from "$lib/components/generic/Status.svelte";
-import Tile from "$lib/components/generic/Tile.svelte";
-import TileGrid from "$lib/components/generic/TileGrid.svelte";
-import ToggleCommand from "$lib/components/abstract/ToggleCommand.svelte";
-import TauriCommand from "$lib/components/abstract/TauriCommand.svelte";
-import Store from "$lib/components/generic/Store.svelte";
+import Battery from '$lib/components/Battery.svelte';
+import BottomBar from '$lib/components/BottomBar.svelte';
+import Localiser from '$lib/components/Localiser.svelte';
+import Pneumatics from '$lib/components/Pneumatics.svelte';
+import TitleBar from '$lib/components/TitleBar.svelte';
+import Chart from '$lib/components/generic/Chart.svelte';
+import Table from '$lib/components/generic/Table.svelte';
+import Command from '$lib/components/abstract/Command.svelte';
+import Status from '$lib/components/generic/Status.svelte';
+import Tile from '$lib/components/generic/Tile.svelte';
+import TileGrid from '$lib/components/generic/TileGrid.svelte';
+import ToggleCommand from '$lib/components/abstract/ToggleCommand.svelte';
+import TauriCommand from '$lib/components/abstract/TauriCommand.svelte';
+import Store from '$lib/components/generic/Store.svelte';
 
 // Utils
-import {PlotBuffer, StrokePresets} from "$lib/util/PlotBuffer";
-import {GrandDataDistributor} from "$lib/util/GrandDataDistributor";
-import util from "$lib/util/util";
-import {tempParse, voltParse, addEntryToChart,pressureParse,sensorParse} from "$lib/util/parsers";
+import { PlotBuffer, StrokePresets } from '$lib/util/PlotBuffer';
+import { GrandDataDistributor } from '$lib/util/GrandDataDistributor';
+import util from '$lib/util/util';
+import {
+    tempParse,
+    voltParse,
+    addEntryToChart,
+    pressureParse,
+    sensorParse,
+} from '$lib/util/parsers';
 
 // Types
-import type {NamedCommand, Log, LogType} from "$lib/types";
-import {EventChannel} from "$lib/types";
+import type { NamedCommand, Log, LogType } from '$lib/types';
+import { EventChannel } from '$lib/types';
 
 // Stores
-import {detailTabSet, serverStatus} from "$lib/stores/state";
-import uPlot from "uplot";
+import { detailTabSet, serverStatus } from '$lib/stores/state';
+import uPlot from 'uplot';
 
 export const chartDataStore = new Map<string, uPlot.AlignedData>();
 export const VIEWPORT_HEIGHT_NORMALIZING_VALUE = 1068;
@@ -85,5 +91,5 @@ export {
     Localiser,
     EventChannel,
     Store,
-}
-export type {NamedCommand, Log, LogType}
+};
+export type { NamedCommand, Log, LogType };

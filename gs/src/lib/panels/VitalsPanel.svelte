@@ -17,10 +17,13 @@
     import MainFSM from '$lib/components/MainFSM.svelte';
     import {
         connectedToMainPCB,
-        debugModeActive, ebsState,
-        inStateAccelerating, inStateBraking,
+        debugModeActive,
+        ebsState,
+        inStateAccelerating,
+        inStateBraking,
         inStateCharging,
-        inStateLevitating, overrideDependencies,
+        inStateLevitating,
+        overrideDependencies,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
@@ -35,18 +38,24 @@
         SettingsCheck,
         Meter,
         RightPanelClose,
-        ConnectionSignal,
-        ConnectionSignalOff,
+        SkipForward,
         StopOutline,
-        Tools, DownToBottom,
+        Tools,
+        DownToBottom,
     } from 'carbon-icons-svelte';
     import type { SvelteComponent } from 'svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
     import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
-    import { imdWarnings, ptcErrorCodes, ptcStates } from '$lib/types';
+    import {
+        bmsErrors,
+        imdWarnings,
+        ptcErrorCodes,
+        ptcStates,
+        senorHubEmergencies,
+    } from '$lib/types';
     import ValueStore from '$lib/components/generic/ValueStore.svelte';
-    import { emergencySources } from '$lib/stores/data';
+    import { emergencySources, nextRecommendedStateCmd, nextStateMessage } from '$lib/stores/data';
 
     let width: number;
 
@@ -56,6 +65,9 @@
     const ptcFaultStore = storeManager.getWritable("PTCErrors");
     const imdWarningStore = storeManager.getWritable("IMDWarnings");
     const lowPressure = storeManager.getWritable("PressureLow");
+    const sensorHubEmergency = storeManager.getWritable("SensorHubEmergency");
+    const bmsErrorLowVoltage = storeManager.getWritable("BmsErrorLowVoltage");
+    const bmsErrorHighVoltage = storeManager.getWritable("BmsErrorHighVoltage");
 
     const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
@@ -83,6 +95,18 @@
 
     $: imdWarningMessage = imdWarnings.filter((x, index) =>
         ((($imdWarningStore.value >> index - 1) & 1) == 1)
+    );
+
+    $: sensorHubEmergencyMessage = senorHubEmergencies.filter((x, index) =>
+        ((($sensorHubEmergency.value >> index - 1) & 1) == 1)
+    );
+
+    $: bmsLowVoltageErrorMessage = bmsErrors.filter((x, index) =>
+        ((($bmsErrorLowVoltage.value >> index - 1) & 1) == 1)
+    );
+
+    $: bmsHighVoltageErrorMessage = bmsErrors.filter((x, index) =>
+        ((($bmsErrorHighVoltage.value >> index - 1) & 1) == 1)
     );
 
     async function sendSystemCheckMocks() {
@@ -122,24 +146,6 @@
         ],
         [
             "Low Voltage:", "LvVHigh", "LvVLow", "VPackLowVoltage", "IPackLowVoltage"
-        ]
-    ]
-
-    const pressureTableTitles = [
-        "",
-        "Low Pressure",
-        "",
-        "High Pressure",
-        "",
-    ]
-
-    $: pressureTableValues = [
-        [
-            "Braking Pressures",
-            "PressureLow",
-            "",
-            "PressureHigh",
-            "",
         ]
     ]
 
@@ -235,19 +241,23 @@
                         <Battery fill="#723f9c" orientation="horizontal" perc={0} height={40}/>
                     </div>
                 </Tile>
-                <Tile containerClass="col-span-1" insideClass="flex flex-col gap-2" bgToken={800}>
+                <Tile containerClass="col-span-1" insideClass="flex flex-col justify-between h-full" bgToken={800}>
                     <Store datatype="Velocity" name="Velocity"/>
                     <Store datatype="Localization" name="Localization"/>
-                    <Store datatype="VDCLink" name="DC Link Voltage"/>
-                    <Store datatype="IsolationResistance" name="Isolation Resistance"/>
-                    <Store datatype="BusCurrent" name="Bus Current"/>
+                    <Store datatype="PressureLow" name="Low Pressure"/>
+                    <Store datatype="PressureHigh" name="High Pressure"/>
                 </Tile>
                 <Tile bgToken={800} containerClass="col-span-full">
                     <Table titles={bmsTableTitles} tableArr={bmsTableValues}/>
-                    <Table
-                        titles={pressureTableTitles}
-                        tableArr={pressureTableValues}
-                    />
+<!--                    <Table-->
+<!--                        titles={pressureTableTitles}-->
+<!--                        tableArr={pressureTableValues}-->
+<!--                    />-->
+                    <div class="flex flex-row justify-between mt-4 px-2">
+                        <Store datatype="VDCLink" name="DC Link Voltage"/>
+                        <Store datatype="IsolationResistance" name="Isolation Resistance"/>
+                        <Store datatype="BusCurrent" name="Bus Current"/>
+                    </div>
                 </Tile>
                 <Tile
                     bgToken={800}
@@ -338,6 +348,32 @@
                             dependencyTitle="Wrong State!"
                             dependencyMessage="The pod should be in the Demo state to perform a dropdown!"
                         />
+<!--                        <button class="btn rounded-md text-wrap">-->
+<!--                            <SkipForward size={20}/>-->
+<!--                            -->
+<!--                        </button>-->
+                        <Command
+                            cmd={$nextRecommendedStateCmd}
+                            text={`Next State: ${$nextStateMessage}`}
+                            icon={SkipForward}
+                            className="col-span-2 bg-primary-500 text-surface-900"
+                        />
+<!--                        <button-->
+<!--                            class="btn rounded-md text-wrap overflow-hidden-->
+<!--                                bg-primary-500 text-surface-900 flex flex-row gap-2 col-span-2-->
+<!--                                justify-center items-center"-->
+<!--                            on:click={nextState}-->
+<!--                        >-->
+<!--                            <SkipForward size={20}/>-->
+<!--                            <span class="flex flex-col w-full h-full text-center gap-2">-->
+<!--                                <span class="font-normal">-->
+<!--                                    Next State: {$nextRecommendedState}-->
+<!--                                </span>-->
+<!--                                <span class="font-light">-->
+<!--                                    {$nextStateMessage}-->
+<!--                                </span>-->
+<!--                            </span>-->
+<!--                        </button>-->
                     </div>
                 </Tile>
                 <Tile bgToken={800} containerClass="col-span-full">
@@ -352,9 +388,24 @@
                                 timestamp={$ptcFaultStore.timestamp}
                             />
                             <ValueStore
+                                name="BMS Low Voltage Fault"
+                                value={bmsLowVoltageErrorMessage.length === 0 ? "None" : bmsLowVoltageErrorMessage.join(", ")}
+                                timestamp={$bmsErrorLowVoltage.timestamp}
+                            />
+                            <ValueStore
+                                name="BMS High Voltage Fault"
+                                value={bmsHighVoltageErrorMessage.length === 0 ? "None" : bmsHighVoltageErrorMessage.join(", ")}
+                                timestamp={$bmsErrorHighVoltage.timestamp}
+                            />
+                            <ValueStore
                                 name="IMD Warning"
                                 value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}
                                 timestamp={$imdWarningStore.timestamp}
+                            />
+                            <ValueStore
+                                name="Sensor Hub Fault"
+                                value={sensorHubEmergencyMessage.length === 0 ? "None" : sensorHubEmergencyMessage.join(", ")}
+                                timestamp={$sensorHubEmergency.timestamp}
                             />
                         </div>
                     </div>

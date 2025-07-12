@@ -1,7 +1,11 @@
-import {invoke} from "@tauri-apps/api/tauri";
-import {get, type Writable, writable} from "svelte/store";
-import {type dataConvFun, type Datapoint, type NamedDatatype} from "$lib/types";
-import {latestTimestamp} from "$lib/stores/state";
+import { invoke } from '@tauri-apps/api/tauri';
+import { get, type Writable, writable } from 'svelte/store';
+import {
+    type dataConvFun,
+    type Datapoint,
+    type NamedDatatype,
+} from '$lib/types';
+import { latestTimestamp } from '$lib/stores/state';
 
 /**
  * The GrandDataDistributor class is responsible for fetching data from the backend
@@ -31,7 +35,7 @@ import {latestTimestamp} from "$lib/stores/state";
  */
 export class GrandDataDistributor {
     private intervalId: NodeJS.Timeout | null = null;
-    private readonly StoreManager:StoreManager;
+    private readonly StoreManager: StoreManager;
     private static instance: GrandDataDistributor;
 
     static getInstance() {
@@ -58,12 +62,13 @@ export class GrandDataDistributor {
      * @note this method will start the interval and fetch data from the backend
      * at the specified interval
      */
-    public start(interval:number) {
-        if (!this.intervalId) this.intervalId = setInterval(() => this.fetchData(), interval);
+    public start(interval: number) {
+        if (!this.intervalId)
+            this.intervalId = setInterval(() => this.fetchData(), interval);
     }
 
     public async fetchTestOnce() {
-        const data:Datapoint[] = await invoke('generate_test_data');
+        const data: Datapoint[] = await invoke('generate_test_data');
         this.processData(data);
     }
 
@@ -79,7 +84,7 @@ export class GrandDataDistributor {
      * @private
      */
     private async fetchData() {
-        const data:Datapoint[] = await invoke('unload_buffer');
+        const data: Datapoint[] = await invoke('unload_buffer');
         this.processData(data);
     }
 
@@ -132,11 +137,24 @@ class StoreManager {
         name: NamedDatatype,
         initial: T,
         processFunction?: dataConvFun<T>,
-        initialUnits?:string,
+        initialUnits?: string,
         lower?: number,
-        upper?: number,
+        upper?: number
     ) {
-        this.stores.set(name, writable<Store<T>>(new Store(initial, '', initialUnits || '', 0, processFunction, lower, upper)));
+        this.stores.set(
+            name,
+            writable<Store<T>>(
+                new Store(
+                    initial,
+                    '',
+                    initialUnits || '',
+                    0,
+                    processFunction,
+                    lower,
+                    upper
+                )
+            )
+        );
     }
 
     /**
@@ -161,17 +179,29 @@ class StoreManager {
         const store = this.stores.get(name);
         if (store) {
             const storeVal = get(store);
-            store.set(new Store(storeVal.processFunction(data, storeVal.value), style, units, timestamp, storeVal.processFunction, lower, upper))
+            store.set(
+                new Store(
+                    storeVal.processFunction(data, storeVal.value),
+                    style,
+                    units,
+                    timestamp,
+                    storeVal.processFunction,
+                    lower,
+                    upper
+                )
+            );
         }
     }
 
-    public getValue(name: NamedDatatype):any {
-        if (!this.stores.has(name)) throw new Error(`Store with name ${name} does not exist`);
+    public getValue(name: NamedDatatype): any {
+        if (!this.stores.has(name))
+            throw new Error(`Store with name ${name} does not exist`);
         return get(this.stores.get(name)!).value;
     }
 
-    public getWritable(name: NamedDatatype):Writable<Store<any>> {
-        if (!this.stores.has(name)) throw new Error(`Store with name ${name} does not exist`);
+    public getWritable(name: NamedDatatype): Writable<Store<any>> {
+        if (!this.stores.has(name))
+            throw new Error(`Store with name ${name} does not exist`);
         return this.stores.get(name)!;
     }
 }
@@ -191,13 +221,14 @@ class Store<T> {
     private _upper: number | undefined;
 
     constructor(
-        initial:T,
-        style:string,
-        units:string,
+        initial: T,
+        style: string,
+        units: string,
         timestamp: number,
-        processFunction: dataConvFun<T> = (data) => data.valueOf() as unknown as T,
+        processFunction: dataConvFun<T> = (data) =>
+            data.valueOf() as unknown as T,
         lower: number | undefined,
-        upper: number | undefined,
+        upper: number | undefined
     ) {
         this._value = initial;
         this.processFunction = processFunction;
@@ -214,11 +245,11 @@ class Store<T> {
     //     this._units = units;
     // }
 
-    public get value():T {
+    public get value(): T {
         return this._value;
     }
 
-    public get style():string {
+    public get style(): string {
         return this._style;
     }
 
@@ -226,12 +257,11 @@ class Store<T> {
         return this._units;
     }
 
-
     get timestamp(): number {
         return this._timestamp;
     }
 
-    get upper() : number | undefined {
+    get upper(): number | undefined {
         return this._upper;
     }
 

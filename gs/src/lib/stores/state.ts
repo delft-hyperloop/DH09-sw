@@ -3,9 +3,9 @@ import { PlotBuffer } from '$lib';
 import { EBSStates } from '$lib/types';
 
 export enum ErrorStatus {
-  SAFE,
-  WARNING,
-  UNSAFE,
+    SAFE,
+    WARNING,
+    UNSAFE,
 }
 
 export const detailTabSet: Writable<number> = writable(0);

@@ -4,13 +4,13 @@ This document will describe the Grand Data Distributor (GDD) system. The GDD is 
 data to the various places on the front-end that need it. The GDD will also be responsible for managing the data that is
 received from the back-end and storing it in a way that is easily accessible to the front-end.
 
-To see a concrete documentation on the API of GDD, please refer to [its  API Documentation](./api/apiGDD.md).
+To see a concrete documentation on the API of GDD, please refer to [its API Documentation](./api/apiGDD.md).
 
 ## Structure
 
 ![UML Diagram of GDD](gddUml.png)
 
-The GDD is a singleton that constantly calls the `unload_buffer` command on the back-end to get the latest data given an 
+The GDD is a singleton that constantly calls the `unload_buffer` command on the back-end to get the latest data given an
 interval. By default, the interval is set to 100ms. This is regulated in `/gs/src/lib/routes/+layout.svelte`.
 
 ```typescript
@@ -23,12 +23,15 @@ gdd.start(100);
 
 ## Registering Stores
 
-This system is designed to work on the Datatypes defined in `/config/datatypes.toml`. The ground station UI defines a 
+This system is designed to work on the Datatypes defined in `/config/datatypes.toml`. The ground station UI defines a
 TypeScript type `NamedDatatype`:
 
 ```typescript
 /*AUTO GENERATED USING npm run generate:datatypes */
-export type NamedDatatype = "DefaultDatatype" | "PropulsionTemperature" | "LevitationTemperature" //...;
+export type NamedDatatype =
+    | 'DefaultDatatype'
+    | 'PropulsionTemperature'
+    | 'LevitationTemperature'; //...;
 ```
 
 ### Preface (auto-generating the `NamedDatatype` type)
@@ -45,12 +48,13 @@ This script will populate the `NamedDatatype` type with all the datatypes define
 ### Registering a Store
 
 As pointed in the UML diagram, the GDD has a method called `registerStore` that is used to register a store. It takes a
-`name:NamedDatatype` which will be the name of the datatype, an `initial:T` value of the store and an optional 
+`name:NamedDatatype` which will be the name of the datatype, an `initial:T` value of the store and an optional
 `dataConvFun` function that has 2 parameters: the data received from the back-end and the current store value.
 
 #### NamedDatatype
-Here you use the auto-generated `NamedDatatype` type to ensure that the datatype you are registering is valid (since upon 
-receiving a packet from the back-end, the datatype of the packet will be used to update the according store. This datatype 
+
+Here you use the auto-generated `NamedDatatype` type to ensure that the datatype you are registering is valid (since upon
+receiving a packet from the back-end, the datatype of the packet will be used to update the according store. This datatype
 is exactly a string that can be either of these auto-generated
 datatypes.)
 
@@ -67,18 +71,18 @@ table (2D array), the `dataConvFun` will convert the bigint to a 2D array like s
  * @param data The data received from the back-end
  * @param old The current 2D array
  */
-(data:bigint, old:BmsModuleTemperature[]) => {
-    let {id, max, min, avg} = moduleTemperature(data);
+(data: bigint, old: BmsModuleTemperature[]) => {
+    let { id, max, min, avg } = moduleTemperature(data);
 
-    let updatedArray = [...old]
-    updatedArray[Number(id)] = {id, max, min, avg};
+    let updatedArray = [...old];
+    updatedArray[Number(id)] = { id, max, min, avg };
     return updatedArray;
-}
+};
 ```
 
 ## Listening to a store
 
-After registering a store to listen to and defining its type, one can later subscribe to its value on any part of the 
+After registering a store to listen to and defining its type, one can later subscribe to its value on any part of the
 front-end! This is done using the `$storeName` syntax. For example, if you have a store named `BatteryBalanceLow`:
 
 ```sveltehtml
@@ -103,19 +107,19 @@ when registering the store. Your `dataConvFun` can also modify some state like s
 
 ```typescript
 let gdd = GrandDataDistributor.getInstance();
-gdd.stores.registerStore<bigint>("CurrentVelocity", BigInt(-1), data => {
+gdd.stores.registerStore<bigint>('CurrentVelocity', BigInt(-1), (data) => {
     // using the Tauri api for its emit function and emit it to the chart over the event channel
-    emit('speed', {data: data})
+    emit('speed', { data: data });
     return data;
 });
 ```
 
-The default behaviour of the Chart is to append the data, received on `event.payload.data` to the chart. You can of 
+The default behaviour of the Chart is to append the data, received on `event.payload.data` to the chart. You can of
 course modify this to support multiple series in a chart:
 
 ```typescript
-gdd.stores.registerStore<bigint>("BatteryCurrentHigh", BigInt(-1), data => {
-    emit('current_hv', {x: 50, y: data})
+gdd.stores.registerStore<bigint>('BatteryCurrentHigh', BigInt(-1), (data) => {
+    emit('current_hv', { x: 50, y: data });
     return data;
 });
 ```
@@ -126,18 +130,18 @@ And then when creating the chart:
 
 <script>
     import {Chart} from "$lib";
-    
+
     let offsetXChart:PlotBuffer;
 </script>
 
 <Chart bind:chart={offsetXChart}
        eventCallback={(event) => {
             // Append the data to the chart. We send {x: 1, y: data} to the chart
-            // so, we can get them at event.payload.x and event.payload.y 
-            
+            // so, we can get them at event.payload.x and event.payload.y
+
             // @ts-ignore
             offsetXChart.addEntry(1, z.number().parse(event.payload.x));
-    
+
             // @ts-ignore
             offsetXChart.addEntry(2, z.number().parse(event.payload.y));
        }}

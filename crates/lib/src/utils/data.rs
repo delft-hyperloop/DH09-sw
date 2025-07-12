@@ -106,8 +106,12 @@ pub enum EmergencyType {
     EmergencyLevitation,
     /// Emergency triggered by the powertrain controller
     EmergencyPTC,
+    /// Emergency triggered by the BMS
+    EmergencyBMS,
     /// Emergency triggered by SenseCon
     EmergencySenseCon,
+    /// Emergency triggered by the Sensor Hub
+    EmergencySensorHub,
     /// Emergency triggered when we lose connection to the main PCB
     DisconnectionEmergency,
     /// Emergency triggered if one of the critical datapoints has been stale for

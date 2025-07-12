@@ -76,7 +76,7 @@ fn main() -> Result<()> {
     content.push_str(&generate_fsm_states(&config));
     content.push_str(&configure_channels(&config));
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, true)?);
-    content.push_str(&goose_utils::dataflow::make_gs_code(&df));
+    content.push_str(&goose_utils::dataflow::gs::make_gs_code(&df));
 
     fs::write(dest_path.clone(), content).unwrap_or_else(|_| {
         panic!("Couldn't write to {}! Build failed.", dest_path.to_str().unwrap());

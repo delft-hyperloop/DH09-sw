@@ -120,7 +120,7 @@ fn main() -> Result<()> {
     content.push_str(&dt);
     content.push_str(&configure_heartbeats(&config, &dt)?);
 
-    content.push_str(&goose_utils::dataflow::make_main_pcb_code(&df));
+    content.push_str(&goose_utils::dataflow::mainpcb::make_main_pcb_code(&df));
     // content.push_str(&*can::main(&id_list));
 
     fs::write(dest_path.clone(), content).unwrap_or_else(|e| {

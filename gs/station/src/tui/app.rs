@@ -15,6 +15,8 @@ use crossterm::event::Event;
 use crossterm::event::KeyCode;
 use crossterm::event::KeyEventKind;
 use crossterm::event::KeyModifiers;
+use crossterm::event::MouseEvent;
+use crossterm::event::MouseEventKind;
 use crossterm::event::{self};
 use gslib::Datatype;
 use gslib::ProcessedData;
@@ -114,6 +116,11 @@ impl App {
     fn handle_keyboard_events(&mut self) -> std::io::Result<()> {
         if poll(Duration::from_micros(2000))? {
             match event::read()? {
+                Event::Mouse(MouseEvent { kind, .. }) => match kind {
+                    MouseEventKind::ScrollUp => self.scroll_up(1),
+                    MouseEventKind::ScrollDown => self.scroll_down(1),
+                    _ => {},
+                },
                 // it's important to check that the event is a key press event as
                 // crossterm also emits key release and repeat events on Windows.
                 Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
@@ -122,15 +129,8 @@ impl App {
                             KeyCode::Char('q') | KeyCode::Char('c') => {
                                 self.is_running = false;
                             },
-                            KeyCode::Up | KeyCode::Char('k') => {
-                                self.scroll = self.scroll.saturating_sub(1);
-                            },
-                            KeyCode::Down | KeyCode::Char('j') => {
-                                self.scroll = self
-                                    .scroll
-                                    .wrapping_add(1)
-                                    .min(self.data.len().saturating_sub(1));
-                            },
+                            KeyCode::Up | KeyCode::Char('k') => self.scroll_up(1),
+                            KeyCode::Down | KeyCode::Char('j') => self.scroll_down(1),
                             KeyCode::Esc => self.cur_search = String::new(),
                             KeyCode::Char('/') => self.input_mode = InputMode::Editing,
                             _ => {},
@@ -154,15 +154,8 @@ impl App {
                             KeyCode::Char(c) => {
                                 self.cur_search.push(c);
                             },
-                            KeyCode::Up => {
-                                self.scroll = self.scroll.saturating_sub(1);
-                            },
-                            KeyCode::Down => {
-                                self.scroll = self
-                                    .scroll
-                                    .wrapping_add(1)
-                                    .min(self.data.len().saturating_sub(1));
-                            },
+                            KeyCode::Up => self.scroll_up(1),
+                            KeyCode::Down => self.scroll_down(1),
                             _ => {},
                         },
                     }
@@ -173,6 +166,12 @@ impl App {
             // timeout expired
         }
         Ok(())
+    }
+
+    fn scroll_up(&mut self, by: usize) { self.scroll = self.scroll.saturating_sub(by); }
+
+    fn scroll_down(&mut self, by: usize) {
+        self.scroll = self.scroll.wrapping_add(by).min(self.data.len().saturating_sub(1));
     }
 }
 

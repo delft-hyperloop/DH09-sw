@@ -291,783 +291,784 @@
     ////////////////////////////////////////////////////////////////
 
     // gdd stores registration
-    // auto-generated with npm run generate:gs
-
-
-    gdd.stores.registerStore<number>("TempMotorLeft0", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Left")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorLeft1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Left")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorLeft2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Left")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorLeft3", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Left")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorLeft4", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Left")!.addEntry(5, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorLeft5", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Left")!.addEntry(6, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorLeft6", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Left")!.addEntry(7, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorLeft7", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Left")!.addEntry(8, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorRight0", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Right")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorRight1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Right")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorRight2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Right")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorRight3", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Right")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorRight4", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Right")!.addEntry(5, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorRight5", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Right")!.addEntry(6, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorRight6", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Right")!.addEntry(7, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempMotorRight7", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Motor Temperatures Right")!.addEntry(8, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("PTCState", 0);
-
-    gdd.stores.registerStore<number>("HVALState", 0);
-
-    gdd.stores.registerStore<number>("IMDWarnings", 0);
-
-    gdd.stores.registerStore<number>("PTCErrors", 0);
-
-    gdd.stores.registerStore<number>("HvVHigh", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("BMS Voltages")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("HvVLow", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("BMS Voltages")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("BMSTemperatureHigh", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("BMS Temperatures")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("BMSTemperatureLow", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("BMS Temperatures")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VPack", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("HV Pack Voltage")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IPack", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Bus Current")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VDCLink", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("DC Link Voltage")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempRangeStart", 0);
-
-    gdd.stores.registerStore<number>("TempRangeEnd", 0);
-
-    gdd.stores.registerStore<number>("Localization", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Localization")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Velocity", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Velocity")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("PPInitFault1", 255);
-
-    gdd.stores.registerStore<number>("PPInitFault2", 255);
-
-    gdd.stores.registerStore<number>("PPEmergency1", 0);
-
-    gdd.stores.registerStore<number>("PPEmergency2", 0);
-
-    gdd.stores.registerStore<number>("Word1", 0);
-
-    gdd.stores.registerStore<number>("Word2", 0);
-
-    gdd.stores.registerStore<number>("IqMeasured1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IqReference1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IdMeasured1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IdReference1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IqMeasured2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IqReference2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IdMeasured2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IdReference2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Vq_Log1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Vd_Log1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Vbus1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Ibus1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("CANLog", 0);
-
-    gdd.stores.registerStore<number>("Vq_Log2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Vd_Log2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Vbus2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Ibus2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Ta1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Tb1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Tc1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TCASE1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Ta2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Tb2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Tc2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TCASE2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("FSMAckProp1", 0);
-
-    gdd.stores.registerStore<number>("FSMAckProp2", 0);
-
-    gdd.stores.registerStore<number>("FSMAckLevi", 0);
-
-    gdd.stores.registerStore<number>("ClearFaultAckLevi", 0);
-
-    gdd.stores.registerStore<number>("Offset1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Offset")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Offset2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Offset")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Offset3", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Offset")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Offset4", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Offset")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("LeviSystemCheckResponse", 0);
-
-    gdd.stores.registerStore<number>("LvVHigh", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("BMS Voltages")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("LvVLow", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("BMS Voltages")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("THigh", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("BMS Temperatures")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TLow", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("BMS Temperatures")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IsolationResistance", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Isolation Resistance")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("BusCurrent", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Bus Current")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VPackLowVoltage", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("LV Pack Voltage")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("IPackLowVoltage", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("LV Pack Current")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("PtSystemCheckResponse", 0);
-
-    gdd.stores.registerStore<number>("LeviFault", 0);
-
-    gdd.stores.registerStore<number>("LeviHeartbeat", 0);
-
-    gdd.stores.registerStore<number>("LeviFSMStateChanged", 0);
-
-    gdd.stores.registerStore<number>("LevitationState", 0);
-
-    gdd.stores.registerStore<number>("NonCriticalLeviError", 0);
-
-    gdd.stores.registerStore<number>("Vertical", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Air Gaps")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Lateral", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Air Gaps")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Roll", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Angles")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Pitch", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Angles")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("Yaw", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Angles")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VFL1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("HEMS Current")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VFL2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("HEMS Current")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VFR1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("HEMS Current")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VFR2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("HEMS Current")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VBL1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("HEMS Current")!.addEntry(5, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VBL2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("HEMS Current")!.addEntry(6, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VBR1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("HEMS Current")!.addEntry(7, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("VBR2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("HEMS Current")!.addEntry(8, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("LF1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("EMS Current")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("LF2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("EMS Current")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("LB1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("EMS Current")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("LB2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("EMS Current")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("ZRequested", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Requested Force Vertical")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("RollRequested", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Requested Force Vertical")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("PitchRequested", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Requested Force Vertical")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("YRequested", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Requested Force Horizontal")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("YawRequested", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Requested Force Horizontal")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempHEMS1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures HEMS")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempHEMS2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures HEMS")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempHEMS3", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures HEMS")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempHEMS4", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures HEMS")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempHEMS5", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures HEMS")!.addEntry(5, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempHEMS6", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures HEMS")!.addEntry(6, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempHEMS7", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures HEMS")!.addEntry(7, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempHEMS8", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures HEMS")!.addEntry(8, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempEMS1", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures EMS")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempEMS2", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures EMS")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempEMS3", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures EMS")!.addEntry(3, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempEMS4", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures EMS")!.addEntry(4, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempEMS5", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures EMS")!.addEntry(5, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempEMS6", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures EMS")!.addEntry(6, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempEMS7", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures EMS")!.addEntry(7, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("TempEMS8", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Temperatures EMS")!.addEntry(8, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("PressureLow", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Brake Pressure")!.addEntry(1, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("PressureHigh", 0, data => {
-            const curr = Number(data);
-            $chartStore.get("Brake Pressure")!.addEntry(2, curr);
-            return curr;
-        }
-    );
-
-    gdd.stores.registerStore<number>("FSMState", 0);
-
-    gdd.stores.registerStore<number>("FSMTransitionFail", 100);
-
-    gdd.stores.registerStore<number>("Emergency", 0);
-
-    gdd.stores.registerStore<number>("LeviSystemCheckSuccess", 0);
-
-    gdd.stores.registerStore<number>("LeviSystemCheckFailure", 0);
-
-    gdd.stores.registerStore<number>("Prop1SystemCheckSuccess", 0);
-
-    gdd.stores.registerStore<number>("Prop1SystemCheckFailure", 0);
-
-    gdd.stores.registerStore<number>("Prop2SystemCheckSuccess", 0);
-
-    gdd.stores.registerStore<number>("Prop2SystemCheckFailure", 0);
-
-    // End of generated
+
+        // gdd stores registration
+        // auto-generated with npm run generate:gs
+        
+
+            gdd.stores.registerStore<number>("TempMotorLeft0", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Left")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorLeft1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Left")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorLeft2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Left")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorLeft3", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Left")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorLeft4", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Left")!.addEntry(5, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorLeft5", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Left")!.addEntry(6, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorLeft6", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Left")!.addEntry(7, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorLeft7", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Left")!.addEntry(8, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorRight0", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Right")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorRight1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Right")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorRight2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Right")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorRight3", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Right")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorRight4", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Right")!.addEntry(5, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorRight5", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Right")!.addEntry(6, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorRight6", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Right")!.addEntry(7, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempMotorRight7", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Motor Temperatures Right")!.addEntry(8, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("PTCState", 0);
+
+            gdd.stores.registerStore<number>("HVALState", 0);
+
+            gdd.stores.registerStore<number>("IMDWarnings", 0);
+
+            gdd.stores.registerStore<number>("PTCErrors", 0);
+
+            gdd.stores.registerStore<number>("HvVHigh", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("BMS Voltages")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("HvVLow", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("BMS Voltages")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("BMSTemperatureHigh", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("BMS Temperatures")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("BMSTemperatureLow", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("BMS Temperatures")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VPack", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("HV Pack Voltage")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IPack", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Bus Current")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VDCLink", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("DC Link Voltage")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempRangeStart", 0);
+
+            gdd.stores.registerStore<number>("TempRangeEnd", 0);
+
+            gdd.stores.registerStore<number>("Localization", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Localization")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Velocity", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Velocity")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("PPInitFault1", 255);
+
+            gdd.stores.registerStore<number>("PPInitFault2", 255);
+
+            gdd.stores.registerStore<number>("PPEmergency1", 0);
+
+            gdd.stores.registerStore<number>("PPEmergency2", 0);
+
+            gdd.stores.registerStore<number>("Word1", 0);
+
+            gdd.stores.registerStore<number>("Word2", 0);
+
+            gdd.stores.registerStore<number>("IqMeasured1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IqReference1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IdMeasured1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IdReference1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IqMeasured2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IqReference2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IdMeasured2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IdReference2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Vq_Log1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Vd_Log1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Vbus1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Ibus1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("CANLog", 0);
+
+            gdd.stores.registerStore<number>("Vq_Log2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Vd_Log2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Vbus2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Ibus2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Ta1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Tb1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Tc1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TCASE1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Ta2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Tb2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Tc2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TCASE2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("FSMAckProp1", 0);
+
+            gdd.stores.registerStore<number>("FSMAckProp2", 0);
+
+            gdd.stores.registerStore<number>("FSMAckLevi", 0);
+
+            gdd.stores.registerStore<number>("ClearFaultAckLevi", 0);
+
+            gdd.stores.registerStore<number>("Offset1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Offset")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Offset2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Offset")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Offset3", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Offset")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Offset4", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Offset")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("LeviSystemCheckResponse", 0);
+
+            gdd.stores.registerStore<number>("LvVHigh", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("BMS Voltages")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("LvVLow", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("BMS Voltages")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("THigh", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("BMS Temperatures")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TLow", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("BMS Temperatures")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IsolationResistance", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Isolation Resistance")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("BusCurrent", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Bus Current")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VPackLowVoltage", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("LV Pack Voltage")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("IPackLowVoltage", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("LV Pack Current")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("PtSystemCheckResponse", 0);
+
+            gdd.stores.registerStore<number>("LeviFault", 0);
+
+            gdd.stores.registerStore<number>("LeviHeartbeat", 0);
+
+            gdd.stores.registerStore<number>("LeviFSMStateChanged", 0);
+
+            gdd.stores.registerStore<number>("LevitationState", 0);
+
+            gdd.stores.registerStore<number>("NonCriticalLeviError", 0);
+
+            gdd.stores.registerStore<number>("Vertical", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Air Gaps")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Lateral", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Air Gaps")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Roll", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Angles")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Pitch", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Angles")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("Yaw", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Angles")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VFL1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("HEMS Current")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VFL2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("HEMS Current")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VFR1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("HEMS Current")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VFR2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("HEMS Current")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VBL1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("HEMS Current")!.addEntry(5, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VBL2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("HEMS Current")!.addEntry(6, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VBR1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("HEMS Current")!.addEntry(7, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("VBR2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("HEMS Current")!.addEntry(8, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("LF1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("EMS Current")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("LF2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("EMS Current")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("LB1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("EMS Current")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("LB2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("EMS Current")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("ZRequested", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Requested Force Vertical")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("RollRequested", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Requested Force Vertical")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("PitchRequested", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Requested Force Vertical")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("YRequested", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Requested Force Horizontal")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("YawRequested", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Requested Force Horizontal")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempHEMS1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures HEMS")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempHEMS2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures HEMS")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempHEMS3", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures HEMS")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempHEMS4", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures HEMS")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempHEMS5", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures HEMS")!.addEntry(5, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempHEMS6", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures HEMS")!.addEntry(6, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempHEMS7", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures HEMS")!.addEntry(7, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempHEMS8", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures HEMS")!.addEntry(8, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempEMS1", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures EMS")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempEMS2", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures EMS")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempEMS3", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures EMS")!.addEntry(3, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempEMS4", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures EMS")!.addEntry(4, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempEMS5", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures EMS")!.addEntry(5, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempEMS6", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures EMS")!.addEntry(6, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempEMS7", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures EMS")!.addEntry(7, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("TempEMS8", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Temperatures EMS")!.addEntry(8, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("PressureLow", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Brake Pressure")!.addEntry(1, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("PressureHigh", 0, data => {
+    const curr = Number(data);
+    $chartStore.get("Brake Pressure")!.addEntry(2, curr);
+    return curr;
+}
+);
+
+            gdd.stores.registerStore<number>("FSMState", 0);
+
+            gdd.stores.registerStore<number>("FSMTransitionFail", 100);
+
+            gdd.stores.registerStore<number>("Emergency", 0);
+
+            gdd.stores.registerStore<number>("LeviSystemCheckSuccess", 0);
+
+            gdd.stores.registerStore<number>("LeviSystemCheckFailure", 0);
+
+            gdd.stores.registerStore<number>("Prop1SystemCheckSuccess", 0);
+
+            gdd.stores.registerStore<number>("Prop1SystemCheckFailure", 0);
+
+            gdd.stores.registerStore<number>("Prop2SystemCheckSuccess", 0);
+
+            gdd.stores.registerStore<number>("Prop2SystemCheckFailure", 0);
+    // END AUTO GENERATED STORES
 
     gdd.stores.registerStore<number>("FrontendHeartbeating", 0);
 

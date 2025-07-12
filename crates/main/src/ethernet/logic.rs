@@ -32,6 +32,9 @@ use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
 use lib::config::DATA_HASH;
 use lib::Datapoint;
+use lib::EmergencyType;
+use lib::Event;
+use lib::EventSender;
 use static_cell::StaticCell;
 
 use crate::ethernet::get_remote_endpoints;
@@ -61,6 +64,8 @@ pub struct GsMaster {
     rx_transmitter: GsToPodPublisher<'static>,
     /// Transmitter for the transmission channel
     tx_transmitter: PodToGsPublisher<'static>,
+    /// send events to the FSM
+    event_sender: EventSender,
     /// Flag that triggers a reconnection (creates a new socket)
     should_reconnect: bool,
     /// Flag used when reconnecting to indicate if it was a faulty connection
@@ -89,6 +94,7 @@ impl GsMaster {
         tx_receiver: PodToGsSubscriber<'static>,
         rx_transmitter: GsToPodPublisher<'static>,
         tx_transmitter: PodToGsPublisher<'static>,
+        event_sender: EventSender,
     ) -> Self {
         // Get the mac address of the pod
         let mac_addr = lib::config::POD_MAC_ADDRESS;
@@ -160,6 +166,7 @@ impl GsMaster {
             tx_receiver,
             rx_transmitter,
             tx_transmitter,
+            event_sender,
             should_reconnect: false,
             connection_is_broken: false,
         }
@@ -329,6 +336,16 @@ impl GsMaster {
 
     /// Reconnects to the GS if the connection drops by creating a new socket.
     async fn reconnect(&mut self) {
+        // trigger emergency braking first,
+        self.event_sender
+            .send(Event::Emergency {
+                emergency_type: EmergencyType::DisconnectionEmergency,
+            })
+            .await;
+        // and wait a bit before doing anything else,
+        // so the fsm task can process it and brakes can be extended.
+        Timer::after_micros(10).await;
+        // proceed to reconnect
         info!("Reconnecting to the GS");
 
         // If the connection is broken, don't trigger an emergency and attempt to

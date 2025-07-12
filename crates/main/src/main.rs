@@ -241,6 +241,7 @@ async fn main(spawner: Spawner) -> ! {
             gs_tx_receiver,
             gs_rx_transmitter,
             gs_tx_transmitter,
+            event_channel_fsm.sender().into(),
         )
         .await,
     );

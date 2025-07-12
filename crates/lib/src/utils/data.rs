@@ -2,9 +2,27 @@
 //! their implementations.
 
 /// Enum representing different types of events that the FSMs should handle.
+///
+/// Since events are sent over a priority channel,
+/// they are prioritised by the order they're defined in here,
+/// with events defined earlier being higher priority.
 #[derive(Clone, PartialEq, Eq, Debug, Copy, defmt::Format, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum Event {
+    /// Emergency event that must trigger the emergency braking system
+    Emergency {
+        /// The type of emergency
+        emergency_type: EmergencyType,
+    },
+    /// Propulsion motor 2 failed the system check
+    Prop2SystemCheckFailure,
+    /// Propulsion motor 1 failed the system check
+    Prop1SystemCheckFailure,
+    /// Levi failed the system check
+    LeviSystemCheckFailure,
+    /// Event sent by the FSM whenever a transition fails
+    /// - `u8`: The state in which the FSM didn't transition.
+    TransitionFail(u8),
     /// No event happened
     NoEvent,
     /// Connection to the Ground Station has been established
@@ -42,20 +60,12 @@ pub enum Event {
     StopCharge,
     /// Resets the FSM to the `Boot` state
     ResetFSM,
-    /// Emergency event that must trigger the emergency braking system
-    Emergency {
-        /// The type of emergency
-        emergency_type: EmergencyType,
-    },
     /// Used to transition from `Fault` to `SystemCheck` when the fault is fixed
     /// and no reboot is required
     FaultFixed,
     /// Event sent when transitioning. Used to send the `FSMUpdate` CAN message.
     /// - `u8`: State in which the FSM transitioned
     FSMTransition(u8),
-    /// Event sent by the FSM whenever a transition fails
-    /// - `u8`: The state in which the FSM didn't transition.
-    TransitionFail(u8),
     /// Acknowledgement received from levi that their FSM also transitioned to
     /// new state
     LeviAck,
@@ -72,16 +82,10 @@ pub enum Event {
     ClearFaultAckLevi,
     /// Acknowledgement that levi passed the system check
     LeviSystemCheckSuccess,
-    /// Levi failed the system check
-    LeviSystemCheckFailure,
     /// Acknowledgement that propulsion motor 1 passed the system check
     Prop1SystemCheckSuccess,
-    /// Propulsion motor 1 failed the system check
-    Prop1SystemCheckFailure,
     /// Acknowledgement that propulsion motor 2 passed the system check
     Prop2SystemCheckSuccess,
-    /// Propulsion motor 2 failed the system check
-    Prop2SystemCheckFailure,
     /// Override event for rearming the sdc (only used for testing)
     OverrideRearmSdc,
 

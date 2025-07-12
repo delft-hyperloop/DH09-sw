@@ -80,8 +80,7 @@ pub fn generate_stores(df: &DataflowSpec) -> String {
         if let Some(store) = &d.store {
             write!(
                 &mut code,
-                r#"
-    gdd.stores.registerStore<{type}>("{name}", {default}"#,
+                "\n\t\tgdd.stores.registerStore<{type}>(\"{name}\", {default}",
                 type = store.ty,
                 name = d.name,
                 default = store.default,

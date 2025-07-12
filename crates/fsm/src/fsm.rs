@@ -3,7 +3,9 @@
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use core::time::Duration;
-use defmt::{info, Format};
+
+use defmt::info;
+use defmt::Format;
 use embassy_futures::select::select;
 use embassy_futures::select::Either;
 use embassy_stm32::gpio::Output;
@@ -109,7 +111,10 @@ impl FSM {
 
                     // Checks if the braking line is still high. If not, send an emergency message
                     // to the ground station and transition to fault state.
-                    if self.sdc_pin.is_set_low() && self.state != States::Fault && self.state != States::Discharge {
+                    if self.sdc_pin.is_set_low()
+                        && self.state != States::Fault
+                        && self.state != States::Discharge
+                    {
                         error!("SDC pin is low! Sending emergency to the ground station!");
                         self.event_sender_gs
                             .send(Event::Emergency {
@@ -243,16 +248,34 @@ impl FSM {
                 self.rearm_sdc_pin.set_low();
             }
             (States::Demo, Event::Discharge) => {
-                // Pull the SDC pin low to engage the brakes since you can't have the brakes retracted without high voltage turned on. 
+                // Pull the SDC pin low to engage the brakes since you can't have the brakes
+                // retracted without high voltage turned on.
                 self.sdc_pin.set_low();
                 self.transition(States::Discharge).await;
-                
+
                 // After 25 milliseconds, pull it back high to
                 Timer::after_millis(25).await;
                 self.sdc_pin.set_high();
-            },
-            (States::Demo, Event::Levitate) => self.transition(States::Levitating).await,
-            (States::Levitating, Event::StopLevitating) => self.transition(States::Demo).await,
+            }
+            
+            // Start levitating
+            (States::Demo, Event::Levitate) => {
+                self.event_sender2
+                    .send(Event::FSMTransition(States::Levitating.to_index()))
+                    .await;
+            }
+            (States::Demo, Event::LeviOnAck) => {
+                self.transition(States::Levitating).await;
+            }
+            
+            // Stop levitating
+            (States::Levitating, Event::StopLevitating) => {
+                self.event_sender2.send(Event::FSMTransition(States::Demo.to_index()))
+            }
+            (States::Levitating, Event::LeviOffAck) => {
+                self.transition(States::Demo).await;
+            }
+            
             (States::Levitating, Event::Accelerate) => self.transition(States::Accelerating).await,
             (States::Accelerating, Event::Brake) => self.transition(States::Braking).await,
             (States::Braking, Event::Stopped) => self.transition(States::Levitating).await,
@@ -269,6 +292,27 @@ impl FSM {
                 | States::Braking,
                 Event::PTCIdleAck,
             ) => self.transition(States::Idle).await,
+
+            (_, Event::PTCFailure) => {
+                // 1. Trigger emergency using the sdc
+                self.sdc_pin.set_low();
+                error!("Going into Fault state with emergency PTC Failure");
+
+                // 2. send the emergency message to all other devices on the CAN line
+                self.event_sender2
+                    .send(Event::Emergency {
+                        emergency_type: EmergencyType::EmergencyPTC,
+                    })
+                    .await;
+
+                self.event_sender_gs
+                    .send(Event::Emergency {
+                        emergency_type: EmergencyType::EmergencyPTC,
+                    })
+                    .await;
+
+                self.transition(States::Fault).await
+            }
 
             // Send a message to the GS with the state in which it failed to transition in case it
             // receives a wrong event. Doesn't apply for `Event::Stopped` since that is sent

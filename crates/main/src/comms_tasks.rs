@@ -238,14 +238,35 @@ pub async fn forward_can2_messages_to_fsm(
 /// the payload or an emergency which also requires the type of emergency.
 fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
     match id {
+        // Float fuck
+        831 => {
+            let pressure_low = u16::from_be_bytes([payload[0], payload[1]]) as f32 * 100.0;
+            if pressure_low < 15.0 {
+                Event::Emergency {
+                    emergency_type: EmergencyType::EmergencyLowPressure,
+                }
+            } else {
+                Event::NoEvent
+            }
+        }
+
         // If it gets a ptc logs message from the powertrain controller with state HV
         // on, send ack to fsm
-        1251 if payload[0] == 2 => Event::HVOnAck,
         1251 if payload[0] == 0 => Event::PTCIdleAck,
+        1251 if payload[0] == 2 => Event::HVOnAck,
+        1251 if payload[0] == 3 => Event::PTCFailure,
 
         // Check if the velocity is 0, which means that the pod is not moving (used for
         // transitioning from the braking state to the levitating state)
         826 if i16::from_be_bytes([payload[4], payload[5]]) == 0 => Event::Stopped,
+        
+        // Levi FSM update ack
+        905 if payload[0] == 2 => {
+            Event::LeviOnAck
+        }
+        905 if payload[0] == 1 => {
+            Event::LeviOffAck
+        }
 
         // Response from levi to the system check
         906 => {

@@ -14,6 +14,8 @@ pub enum Event {
         /// The type of emergency
         emergency_type: EmergencyType,
     },
+    /// Triggered whenever the PTC goes into failure
+    PTCFailure,
     /// Propulsion motor 2 failed the system check
     Prop2SystemCheckFailure,
     /// Propulsion motor 1 failed the system check
@@ -39,9 +41,9 @@ pub enum Event {
     PTCIdleAck,
     /// Enters the demo state armed brakes, SDC still closed
     EnterDemo,
-    /// Starts levitating
+    /// Command from the ground station to start levitating. Will wait for acknowledgement.
     Levitate,
-    /// Stops levitating
+    /// Command from the ground station to stop levitating. Will wait for acknowledgement.
     StopLevitating,
     /// Starts accelerating
     Accelerate,
@@ -66,9 +68,10 @@ pub enum Event {
     /// Event sent when transitioning. Used to send the `FSMUpdate` CAN message.
     /// - `u8`: State in which the FSM transitioned
     FSMTransition(u8),
-    /// Acknowledgement received from levi that their FSM also transitioned to
-    /// new state
-    LeviAck,
+    /// Acknowledgement received from levi that we are levitating
+    LeviOnAck,
+    /// Acknowledgement that levi is off (not levitating)
+    LeviOffAck,
     /// Acknowledgement received from the first propulsion motor that their FSM
     /// also transitioned to new state
     PropulsionAck1,
@@ -114,6 +117,9 @@ pub enum EmergencyType {
     EmergencySensorHub,
     /// Emergency triggered when we lose connection to the main PCB
     DisconnectionEmergency,
+    /// Emergency triggered when the readings of the low pressure sensors are
+    /// smaller than 15 bars
+    EmergencyLowPressure,
     /// Emergency triggered if one of the critical datapoints has been stale for
     /// more than one second
     StaleCriticalDataEmergency,

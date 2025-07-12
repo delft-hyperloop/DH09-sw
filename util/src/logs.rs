@@ -1,6 +1,5 @@
-
 pub fn diy_ln() -> String {
-r#"
+    r#"
 pub mod log_32 {
     /* origin: FreeBSD /usr/src/lib/msun/src/e_logf.c */
     /*
@@ -191,5 +190,6 @@ pub mod log_64 {
         s * (hfsq + r) + dk * LN2_LO - hfsq + f + dk * LN2_HI
     }
 }
-"#.to_string()
+"#
+    .to_string()
 }

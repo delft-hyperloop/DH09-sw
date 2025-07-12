@@ -334,7 +334,7 @@ export function registerSubscribers() {
                 'SenseCon',
                 'SensorHub',
                 'Disconnection',
-                'Low Pressure Leak',
+                'Wrong EBS State',
             ];
 
             addEmergencySource(sources[store.value - 1]);

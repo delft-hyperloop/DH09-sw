@@ -25,10 +25,12 @@ pub enum Event {
     /// Event sent by the FSM whenever a transition fails
     /// - `u8`: The state in which the FSM didn't transition.
     TransitionFail(u8),
-    /// No event happened
-    NoEvent,
     /// Connection to the Ground Station has been established
     ConnectToGS,
+    /// Pressure readings indicate that the EBS should be deployed
+    EbsPressureDeployed,
+    /// Pressure readings indicate that the EBS should be retracted  
+    EbsPressureRetracted,
     /// Start system check
     StartSystemCheck,
     /// Enters `Idle` state from `Discharge` state
@@ -41,9 +43,11 @@ pub enum Event {
     PTCIdleAck,
     /// Enters the demo state armed brakes, SDC still closed
     EnterDemo,
-    /// Command from the ground station to start levitating. Will wait for acknowledgement.
+    /// Command from the ground station to start levitating. Will wait for
+    /// acknowledgement.
     Levitate,
-    /// Command from the ground station to stop levitating. Will wait for acknowledgement.
+    /// Command from the ground station to stop levitating. Will wait for
+    /// acknowledgement.
     StopLevitating,
     /// Starts accelerating
     Accelerate,
@@ -91,6 +95,8 @@ pub enum Event {
     Prop2SystemCheckSuccess,
     /// Override event for rearming the sdc (only used for testing)
     OverrideRearmSdc,
+    /// No event happened
+    NoEvent,
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]
@@ -117,9 +123,9 @@ pub enum EmergencyType {
     EmergencySensorHub,
     /// Emergency triggered when we lose connection to the main PCB
     DisconnectionEmergency,
-    /// Emergency triggered when the readings of the low pressure sensors are
-    /// smaller than 15 bars
-    EmergencyLowPressure,
+    /// Emergency triggered when the EBS is in the wrong state, measured with
+    /// low pressure.
+    EmergencyWrongEbsState,
     /// Emergency triggered if one of the critical datapoints has been stale for
     /// more than one second
     StaleCriticalDataEmergency,

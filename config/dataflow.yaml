@@ -68,10 +68,10 @@ procedures:
     output: "f32"
     formula: "(x as f32) / 10000.0"
 
-  multiply_100:
+  divide_100:
     input: "u16"
     output: "f32"
-    formula: "(x as f32) * 100.0"
+    formula: "(x as f32) / 100.0"
 
   identity_u8:
     input: "u8"
@@ -2424,7 +2424,7 @@ message-processing:
                   return curr;
               }
         getter: "u16[0..2]"
-        can-conversion: "multiply_100:u16->f32"
+        can-conversion: "divide_100:u16->f32"
         display-units: "Bar"
         gs:
           conversion: "gs_2p_float:f32"
@@ -2441,7 +2441,7 @@ message-processing:
                   return curr;
               }
         getter: "u16[2..4]"
-        can-conversion: "multiply_100:u16->f32"
+        can-conversion: "divide_100:u16->f32"
         display-units: "Bar"
         gs:
           conversion: "gs_2p_float:f32"

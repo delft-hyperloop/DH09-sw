@@ -257,7 +257,7 @@ impl FSM {
                 Timer::after_millis(25).await;
                 self.sdc_pin.set_high();
             }
-            
+
             // Start levitating
             (States::Demo, Event::Levitate) => {
                 self.event_sender2
@@ -267,21 +267,22 @@ impl FSM {
             (States::Demo, Event::LeviOnAck) => {
                 self.transition(States::Levitating).await;
             }
-            
+
             // Stop levitating
-            (States::Levitating, Event::StopLevitating) => {
-                self.event_sender2.send(Event::FSMTransition(States::Demo.to_index()))
-            }
+            (States::Levitating, Event::StopLevitating) => self
+                .event_sender2
+                .send(Event::FSMTransition(States::Demo.to_index())),
             (States::Levitating, Event::LeviOffAck) => {
                 self.transition(States::Demo).await;
             }
-            
+
             (States::Levitating, Event::Accelerate) => self.transition(States::Accelerating).await,
             (States::Accelerating, Event::Brake) => self.transition(States::Braking).await,
             (States::Braking, Event::Stopped) => self.transition(States::Levitating).await,
             (States::Discharge, Event::EnterIdle) => self.transition(States::Idle).await,
             (States::Idle, Event::ShutDown) => return false,
 
+            // If the PTC goes back into Idle at any point, transition back to Idle
             (
                 States::PreCharge
                 | States::Active
@@ -292,6 +293,41 @@ impl FSM {
                 | States::Braking,
                 Event::PTCIdleAck,
             ) => self.transition(States::Idle).await,
+
+            // If the low pressure sensors indicate that the EBS is in the wrong state, transition
+            // to fault
+            (
+                States::Boot
+                | States::ConnectedToGS
+                | States::SystemCheck
+                | States::Idle
+                | States::PreCharge
+                | States::Active
+                | States::Charging
+                | States::Fault,
+                Event::EbsPressureRetracted,
+            ) => {
+                self.event_sender_gs
+                    .send(Event::Emergency {
+                        emergency_type: EmergencyType::EmergencyWrongEbsState,
+                    })
+                    .await;
+                self.transition(States::Fault).await;
+            }
+            (
+                States::Demo
+                | States::Levitating
+                | States::Accelerating
+                | States::Braking,
+                Event::EbsPressureDeployed
+            ) => {
+                self.event_sender_gs
+                    .send(Event::Emergency {
+                        emergency_type: EmergencyType::EmergencyWrongEbsState,
+                    })
+                    .await;
+                self.transition(States::Fault).await;
+            }
 
             (_, Event::PTCFailure) => {
                 // 1. Trigger emergency using the sdc

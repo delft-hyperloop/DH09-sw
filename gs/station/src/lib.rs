@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![allow(dead_code, clippy::match_like_matches_macro)]
 #[cfg(feature = "tui")]
 use std::str::FromStr;
 use std::sync::mpsc::Receiver;

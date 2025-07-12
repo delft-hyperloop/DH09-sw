@@ -221,15 +221,15 @@ pub struct CanConversionSpec {
 }
 
 impl FromStr for CanConversionSpec {
-    type Err = &'static str;
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let Some((proc_name, proc_ty)) = s.split_once(':') else {
-            return Err("missing colon");
+            return Err(format!("missing colon in {s:?}"));
         };
 
         let Some((input_ty, output_ty)) = proc_ty.split_once("->") else {
-            return Err("missing conversion arrow");
+            return Err(format!("missing conversion arrow in {s:?}"));
         };
 
         let input = input_ty.parse::<Ty>()?;
@@ -240,7 +240,7 @@ impl FromStr for CanConversionSpec {
 }
 
 impl TryFrom<String> for CanConversionSpec {
-    type Error = &'static str;
+    type Error = String;
 
     fn try_from(s: String) -> Result<Self, Self::Error> { s.parse() }
 }
@@ -258,10 +258,10 @@ pub struct ConversionGsSpec {
 }
 
 impl FromStr for ConversionGsSpec {
-    type Err = &'static str;
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        s.split_once(':').map_or(Err("missing colon"), |(suffix, ty_str)| {
+        s.split_once(':').map_or(Err(format!("missing colon in {s:?}")), |(suffix, ty_str)| {
             let input = ty_str.parse::<Ty>()?;
             Ok(Self { procedure_suffix: suffix.to_string(), input })
         })
@@ -269,7 +269,7 @@ impl FromStr for ConversionGsSpec {
 }
 
 impl TryFrom<String> for ConversionGsSpec {
-    type Error = &'static str;
+    type Error = String;
 
     fn try_from(s: String) -> Result<Self, Self::Error> { s.parse() }
 }
@@ -315,11 +315,11 @@ fn zero_trim() -> Trim { Trim(0) }
 pub struct Trim(usize);
 
 impl TryFrom<usize> for Trim {
-    type Error = &'static str;
+    type Error = String;
 
     fn try_from(value: usize) -> Result<Self, Self::Error> {
         if value > 8 {
-            Err("trim value must be between 0 and 8")
+            Err(format!("trim value must be between 0 and 8, found {value}."))
         } else {
             Ok(Trim(value))
         }
@@ -380,27 +380,31 @@ impl GetterSpec {
 }
 
 impl FromStr for GetterSpec {
-    type Err = &'static str;
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let Some((ty_str, range_and_closing_delim)) = s.split_once('[') else {
-            return Err("missing opening bracket");
+            return Err(format!("missing opening bracket `[` in {s:?}"));
         };
 
         let ty = ty_str.parse::<Ty>()?;
         let Some(range) = range_and_closing_delim.strip_suffix(']') else {
-            return Err("missing closing bracket");
+            return Err(format!("missing closing bracket `]` in {s:?}"));
         };
 
         let Some((start, end)) = range.split_once("..") else {
-            return Err("missing range delimiter");
+            return Err(format!("missing range delimiter `..` in {s:?}"));
         };
 
-        let start = start.parse().map_err(|_| "invalid range start")?;
-        let end = end.parse().map_err(|_| "invalid range end")?;
+        let start = start.parse().map_err(|e| format!("invalid range start ({e}) in {s:?}"))?;
+        let end = end.parse().map_err(|e| format!("invalid range end ({e}) in {s:?}"))?;
 
         if end - start != ty.ty_size() {
-            return Err("range size does not match type size");
+            return Err(format!(
+                "range size does not match type size: expected {} but found {} in {s:?}",
+                end - start,
+                ty.ty_size()
+            ));
         }
 
         Ok(Self { ty, can_payload_range: start..end })
@@ -408,7 +412,7 @@ impl FromStr for GetterSpec {
 }
 
 impl TryFrom<String> for GetterSpec {
-    type Error = &'static str;
+    type Error = String;
 
     fn try_from(s: String) -> Result<Self, Self::Error> { s.parse() }
 }
@@ -420,13 +424,20 @@ fn make_datapoint_parser(spec: &MessageProcessingSpec) -> String {
         writeln!(&mut code, "let d = {s};").unwrap();
 
         if dpc.getter.ty != dpc.can_conversion.input {
-            panic!("getter type does not match can conversion input type");
+            panic!(
+                "getter type does not match can conversion input type ({} ≠ {}) for datapoint {}",
+                dpc.getter.ty, dpc.can_conversion.input, dpc.datapoint.name
+            );
         }
 
         writeln!(&mut code, "let c = {}(d);", dpc.can_conversion.proc_name).unwrap();
 
         if dpc.can_conversion.output != dpc.gs.conversion.input {
-            panic!("can conversion output type does not match gs conversion input type");
+            panic!(
+                "can conversion output type does not match gs conversion input type\
+                    ({} ≠ {}) for datapoint {}",
+                dpc.can_conversion.output, dpc.gs.conversion.input, dpc.datapoint.name
+            );
         }
 
         writeln!(

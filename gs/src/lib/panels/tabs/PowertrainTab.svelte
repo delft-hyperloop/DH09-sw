@@ -1,31 +1,21 @@
 <script lang="ts">
-    import {
-        Battery,
-        Chart,
-        Command,
-        GrandDataDistributor,
-        Tile,
-        TileGrid,
-    } from '$lib';
-    import { imdWarnings, ptcErrorCodes, ptcStates } from '$lib/types';
-    import ValueStore from '$lib/components/generic/ValueStore.svelte';
+    import { Chart, Command, Tile, TileGrid } from '$lib';
     import { ChargingStation, Flash, FlashOff, StopOutline } from 'carbon-icons-svelte';
     import { inStateIdle, ptResetMessage } from '$lib/stores/state';
     import BinaryInput from '$lib/components/BinaryInput.svelte';
     import { inStateActive, inStateCharging } from '$lib/stores/state.js';
-    const storeManager = GrandDataDistributor.getInstance().stores;
 
-    const ptcState = storeManager.getWritable("PTCState");
-    const ptcFaultStore = storeManager.getWritable("PTCErrors");
-    const imdWarningStore = storeManager.getWritable("IMDWarnings");
+    // const ptcState = storeManager.getWritable("PTCState");
+    // const ptcFaultStore = storeManager.getWritable("PTCErrors");
+    // const imdWarningStore = storeManager.getWritable("IMDWarnings");
 
-    $: ptcFaultMessage = ptcErrorCodes.filter((x, index) =>
-        ((($ptcFaultStore.value >> index - 1) & 1) == 1)
-    );
-
-    $: imdWarningMessage = imdWarnings.filter((x, index) =>
-        ((($imdWarningStore.value >> index - 1) & 1) == 1)
-    );
+    // $: ptcFaultMessage = ptcErrorCodes.filter((x, index) =>
+    //     ((($ptcFaultStore.value >> index - 1) & 1) == 1)
+    // );
+    //
+    // $: imdWarningMessage = imdWarnings.filter((x, index) =>
+    //     ((($imdWarningStore.value >> index - 1) & 1) == 1)
+    // );
 
     const resetPowertrainLabels = [
         "Precharge",

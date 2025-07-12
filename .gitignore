@@ -2,3 +2,6 @@
 .DS_Store
 .idea
 help/
+node_modules
+Cargo.lock
+

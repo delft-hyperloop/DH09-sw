@@ -1,20 +1,7 @@
 <script lang="ts">
     import '../app.postcss';
-    import {
-        BottomBar,
-        EventChannel,
-        GrandDataDistributor,
-        PlotBuffer,
-        StrokePresets,
-        TitleBar,
-        util
-    } from '$lib';
-    import {
-        initializeStores,
-        Modal,
-        type ModalComponent,
-        Toast,
-    } from '@skeletonlabs/skeleton';
+    import { BottomBar, EventChannel, GrandDataDistributor, PlotBuffer, StrokePresets, TitleBar, util } from '$lib';
+    import { initializeStores, Modal, type ModalComponent, storePopup, Toast } from '@skeletonlabs/skeleton';
     import {
         chartStore,
         debugModeActive,
@@ -31,15 +18,7 @@
     import { onDestroy, onMount } from 'svelte';
     import { listen } from '@tauri-apps/api/event';
     import { parseShortCut } from '$lib/util/parsers';
-    import {
-        computePosition,
-        autoUpdate,
-        offset,
-        shift,
-        flip,
-        arrow,
-    } from '@floating-ui/dom';
-    import { storePopup } from '@skeletonlabs/skeleton';
+    import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
     import AlertModal from '$lib/components/AlertModal.svelte';
     import { invoke } from '@tauri-apps/api/tauri';
     import { registerSubscribers } from '$lib/util/subscribers';
@@ -57,7 +36,7 @@
     initProcedures();
 
     const unlisten = listen('shortcut_channel', (event: { payload: string }) =>
-        parseShortCut(event.payload, $debugModeActive, $logsVisible)
+        parseShortCut(event.payload, $debugModeActive, $logsVisible),
     );
 
     //////////////////////////////
@@ -70,7 +49,7 @@
         3 * 60000,
         [0, 20],
         true,
-        'Id measured'
+        'Id measured',
     );
     propLog1LeftMotorChart.addSeries(StrokePresets.yellow('Id reference'));
     propLog1LeftMotorChart.addSeries(StrokePresets.blue('Iq measured'));
@@ -84,7 +63,7 @@
         3 * 60000,
         [0, 20],
         true,
-        'Id measured'
+        'Id measured',
     );
     propLog1RightMotorChart.addSeries(StrokePresets.yellow('Id reference'));
     propLog1RightMotorChart.addSeries(StrokePresets.blue('Iq measured'));
@@ -131,7 +110,7 @@
     motorLeftTemp.addSeries(StrokePresets.hyperLoopGreen('Motor Left 5'));
     motorLeftTemp.addSeries(StrokePresets.hyperloopGreenDashed('Motor Left 6'));
     motorLeftTemp.addSeries(StrokePresets.yellowDashed('Motor Left 7'));
-    motorLeftTemp.addSeries(StrokePresets.theoretical('Motor Left 8'))
+    motorLeftTemp.addSeries(StrokePresets.theoretical('Motor Left 8'));
     $chartStore.set('Motor Temperatures Left', motorLeftTemp);
     propCharts.push('Motor Temperatures Left');
 
@@ -158,7 +137,7 @@
         60000,
         [0, 30],
         true,
-        'Vertical Air Gap'
+        'Vertical Air Gap',
     );
     airGapChart.addSeries(StrokePresets.theoretical('Lateral Air Gap'));
     $chartStore.set('Air Gaps', airGapChart);
@@ -175,7 +154,7 @@
         3 * 60000,
         [-11.3, 11.3],
         true,
-        'VFL1'
+        'VFL1',
     );
     hemsCurrentChart.addSeries(StrokePresets.blue('VFL2'));
     hemsCurrentChart.addSeries(StrokePresets.theoretical('VFR1'));
@@ -201,8 +180,8 @@
     propCharts.push('Velocity');
 
     let localizationChart = new PlotBuffer(500, 60000, [0, 13000], false);
-    localizationChart.addSeries(StrokePresets.yellow("Localization"))
-    $chartStore.set("Localization", localizationChart);
+    localizationChart.addSeries(StrokePresets.yellow('Localization'));
+    $chartStore.set('Localization', localizationChart);
 
     let leviRequestForceVerticalChart = new PlotBuffer(500, 60000, [0, 100], true, 'Z');
     leviRequestForceVerticalChart.addSeries(StrokePresets.yellow('Roll'));
@@ -237,48 +216,48 @@
     $chartStore.set('Temperatures EMS', emsTempChart);
     leviCharts.push('Temperatures EMS');
 
-    let isolationChart = new PlotBuffer(500, 60000, [-500, 500], true, "Isolation Resistance");
-    $chartStore.set("Isolation Resistance", isolationChart);
-    powertrainCharts.push("Isolation Resistance");
+    let isolationChart = new PlotBuffer(500, 60000, [-500, 500], true, 'Isolation Resistance');
+    $chartStore.set('Isolation Resistance', isolationChart);
+    powertrainCharts.push('Isolation Resistance');
 
-    let busCurrentChart = new PlotBuffer(500, 60000, [-500, 500], true, "Bus Current");
-    busCurrentChart.addSeries(StrokePresets.blue("HV Pack Current"));
-    $chartStore.set("Bus Current", busCurrentChart);
-    powertrainCharts.push("Bus Current");
+    let busCurrentChart = new PlotBuffer(500, 60000, [-500, 500], true, 'Bus Current');
+    busCurrentChart.addSeries(StrokePresets.blue('HV Pack Current'));
+    $chartStore.set('Bus Current', busCurrentChart);
+    powertrainCharts.push('Bus Current');
 
-    let bmsTempsChart = new PlotBuffer(500, 60000, [-500, 500], true, "HV Highest Temperature");
-    bmsTempsChart.addSeries(StrokePresets.blue("HV Lowest Temperatures"));
-    bmsTempsChart.addSeries(StrokePresets.theoretical("LV Highest Temperature"));
-    bmsTempsChart.addSeries(StrokePresets.hyperLoopGreen("LV Lowest Temperature"));
-    $chartStore.set("BMS Temperatures", bmsTempsChart);
-    powertrainCharts.push("BMS Temperatures");
+    let bmsTempsChart = new PlotBuffer(500, 60000, [-500, 500], true, 'HV Highest Temperature');
+    bmsTempsChart.addSeries(StrokePresets.blue('HV Lowest Temperatures'));
+    bmsTempsChart.addSeries(StrokePresets.theoretical('LV Highest Temperature'));
+    bmsTempsChart.addSeries(StrokePresets.hyperLoopGreen('LV Lowest Temperature'));
+    $chartStore.set('BMS Temperatures', bmsTempsChart);
+    powertrainCharts.push('BMS Temperatures');
 
-    let bmsVoltagesChart = new PlotBuffer(500, 60000, [-500, 500], true, "HV Highest Voltage");
-    bmsVoltagesChart.addSeries(StrokePresets.blue("HV Lowest Voltage"));
-    bmsVoltagesChart.addSeries(StrokePresets.theoretical("LV Highest Voltage"));
-    bmsVoltagesChart.addSeries(StrokePresets.hyperLoopGreen("LV Lowest Voltage"));
-    $chartStore.set("BMS Voltages", bmsVoltagesChart);
-    powertrainCharts.push("BMS Voltages");
+    let bmsVoltagesChart = new PlotBuffer(500, 60000, [-500, 500], true, 'HV Highest Voltage');
+    bmsVoltagesChart.addSeries(StrokePresets.blue('HV Lowest Voltage'));
+    bmsVoltagesChart.addSeries(StrokePresets.theoretical('LV Highest Voltage'));
+    bmsVoltagesChart.addSeries(StrokePresets.hyperLoopGreen('LV Lowest Voltage'));
+    $chartStore.set('BMS Voltages', bmsVoltagesChart);
+    powertrainCharts.push('BMS Voltages');
 
-    let hvPackVoltageChart = new PlotBuffer(500, 60000, [-500, 500], true, "HV Pack Voltage");
-    $chartStore.set("HV Pack Voltage", hvPackVoltageChart);
-    powertrainCharts.push("HV Pack Voltage");
+    let hvPackVoltageChart = new PlotBuffer(500, 60000, [-500, 500], true, 'HV Pack Voltage');
+    $chartStore.set('HV Pack Voltage', hvPackVoltageChart);
+    powertrainCharts.push('HV Pack Voltage');
 
-    let lvPackVoltageChart = new PlotBuffer(500, 60000, [-500, 500], true, "LV Pack Voltage");
-    $chartStore.set("LV Pack Voltage", lvPackVoltageChart);
-    powertrainCharts.push("LV Pack Voltage");
+    let lvPackVoltageChart = new PlotBuffer(500, 60000, [-500, 500], true, 'LV Pack Voltage');
+    $chartStore.set('LV Pack Voltage', lvPackVoltageChart);
+    powertrainCharts.push('LV Pack Voltage');
 
-    let lvPackCurrentChart = new PlotBuffer(500, 60000, [-500, 500], true, "LV Pack Current");
-    $chartStore.set("LV Pack Current", lvPackCurrentChart);
-    powertrainCharts.push("LV Pack Current");
+    let lvPackCurrentChart = new PlotBuffer(500, 60000, [-500, 500], true, 'LV Pack Current');
+    $chartStore.set('LV Pack Current', lvPackCurrentChart);
+    powertrainCharts.push('LV Pack Current');
 
-    let dcLinkVoltageChart = new PlotBuffer(500, 60000, [-500, 500], true, "DC Link Voltage");
-    $chartStore.set("DC Link Voltage", dcLinkVoltageChart);
-    powertrainCharts.push("DC Link Voltage");
+    let dcLinkVoltageChart = new PlotBuffer(500, 60000, [-500, 500], true, 'DC Link Voltage');
+    $chartStore.set('DC Link Voltage', dcLinkVoltageChart);
+    powertrainCharts.push('DC Link Voltage');
 
-    let pressureChart = new PlotBuffer(500, 60000, [-500, 500], true, "Pressure Low");
-    pressureChart.addSeries(StrokePresets.hyperLoopGreen("Pressure High"));
-    $chartStore.set("Brake Pressure", pressureChart);
+    let pressureChart = new PlotBuffer(500, 60000, [-500, 500], true, 'Pressure Low');
+    pressureChart.addSeries(StrokePresets.hyperLoopGreen('Pressure High'));
+    $chartStore.set('Brake Pressure', pressureChart);
 
     leviChartStore.set(leviCharts);
     propChartStore.set(propCharts);
@@ -1079,9 +1058,9 @@
     gdd.stores.registerStore<number>("Prop2SystemCheckFailure", 0);
     // END AUTO GENERATED STORES
 
-    gdd.stores.registerStore<number>("FrontendHeartbeating", 0);
+    gdd.stores.registerStore<number>('FrontendHeartbeating', 0);
 
-    gdd.stores.registerStore<number>("EmergencyStaleCriticalData", 0);
+    gdd.stores.registerStore<number>('EmergencyStaleCriticalData', 0);
 
     gdd.start(50);
 
@@ -1101,7 +1080,7 @@
             if ($inDropdown) {
                 let val = 0;
                 console.log(`Sending command: LeviDropdown`);
-                await invoke('send_command', {cmdName: "LeviDropdown", val}).then(() => {
+                await invoke('send_command', { cmdName: 'LeviDropdown', val }).then(() => {
                     console.log(`Command LeviDropdown sent`);
                 }).catch((e) => {
                     console.error(`Error sending command LeviDropdown: ${e}`);

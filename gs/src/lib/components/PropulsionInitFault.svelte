@@ -7,14 +7,14 @@
     const storeManager = GrandDataDistributor.getInstance().stores;
     const faultStore = storeManager.getWritable(storeName);
     let labels: string[] = [
-        "Initialized",
-        "Bus Voltage",
-        "Temperature",
-        "Localization",
-        "Current Angle",
-        "Control Data",
-        "Gate Drivers",
-        "Fault Cleared",
+        'Initialized',
+        'Bus Voltage',
+        'Temperature',
+        'Localization',
+        'Current Angle',
+        'Control Data',
+        'Gate Drivers',
+        'Fault Cleared',
     ];
 
 </script>
@@ -26,9 +26,9 @@
         <span class="text-center">{($faultStore.value >> i) & 1}</span>
     {/each}
 
-    <span/>
+    <span />
     {#each labels as l}
         <span class="text-center">{l}</span>
     {/each}
-    <span/>
+    <span />
 </div>

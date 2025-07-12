@@ -60,6 +60,7 @@ fn main() -> Result<()> {
 
     let mut content = String::from("//@generated\n");
 
+    content.push_str(&goose_utils::logs::diy_ln());
     // content.push_str(&check_config(EVENTS_PATH, CONFIG_PATH)?);
     content.push_str(&hash_config(CONFIG_PATH)?);
 

@@ -14,6 +14,7 @@ pub mod fsm_states;
 pub mod info;
 pub mod ip;
 pub mod limits;
+pub mod logs;
 
 use anyhow::Result;
 

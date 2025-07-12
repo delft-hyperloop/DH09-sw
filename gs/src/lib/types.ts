@@ -1,7 +1,5 @@
 import type { ModalSettings } from '@skeletonlabs/skeleton';
 
-
-
 /* BEGIN AUTO GENERATED TYPES */
 export type NamedCommand = "SendHashes" | "LeviDropdown" | "DefaultCommand" | "GeneralEmergency" | "FSMUpdate" | "SystemCheck" | "ResetSenseCon" | "ResetPowertrain" | "ResetPropulsion" | "ResetLevitation" | "ResetLocalization" | "Heartbeat" | "FrontendHeartbeat" | "EmitEvent" | "StartHV" | "StopHV" | "LevitationOn" | "LevitationOff" | "PropulsionOn" | "MotorBrake" | "SendPropulsionControlWord1" | "SendPropulsionControlWord2" | "PPControlParams" | "PPDebugParams1" | "PPDebugParams2" | "PPTestControlParams" | "PPRunParametersB" | "PPRunParameters1" | "PPRunParameters2" | "Shutdown" | "EmergencyBrake" | "SystemReset" | "RearmSDC" | "ConnectionEstablished" | "ConnectionClosed" | "MockLeviAck" | "MockProp1Ack" | "MockProp2Ack" | "MockHVOn" | "Charge" | "StopCharge" | "FaultFixed" | "FailLeviSystemCheck" | "FailProp1SystemCheck" | "FailProp2SystemCheck" | "ReconnectEmergency" | "OverrideRearmSdc";
 export const NamedCommandValues:NamedCommand[] = [
@@ -150,6 +148,23 @@ export const imdWarnings = [
     "Undervoltage Alarm",
     "Unsafe to Start",
     "Earthlift Open"
+]
+
+export const senorHubEmergencies = [
+    "Localization Timeout/Disconnect",
+    "Temperature Timeout/Disconnect",
+    "Pressure Leak"
+]
+
+export const bmsErrors = [
+    "OVP",
+    "UVP",
+    "OTP",
+    "OCP",
+    "OVP_trip",
+    "UVP_trip",
+    "OTP_trip",
+    "OCP_trip",
 ]
 
 export enum EBSStates {

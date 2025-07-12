@@ -2438,6 +2438,52 @@ message-processing:
         display-units: 'Bar'
         gs:
           conversion: 'gs_2p_float:f32'
+  - name: 'SensorHubEmergency'
+    can:
+      id: 0x1A
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'SensorHubEmergency'
+          id: 0x696
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+  - name: 'PowertrainEmergency'
+    can:
+      id: 0x33
+      bus: can2
+    datapoint-conversion:
+      - datapoint:
+          name: 'PtcErrorEmergency'
+          id: 0x697
+          store:
+            default: 0
+        getter: 'u8[0..1]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+      - datapoint:
+          name: 'BmsErrorLowVoltage'
+          id: 0x698
+          store:
+            default: 0
+        getter: 'u8[1..2]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
+      - datapoint:
+          name: 'BmsErrorHighVoltage'
+          id: 0x699
+          store:
+            default: 0
+        getter: 'u8[2..3]'
+        can-conversion: 'identity_u8:u8->u8'
+        gs:
+          conversion: 'gs_u8:u8'
 
 commands:
   - name: 'SendHashes'

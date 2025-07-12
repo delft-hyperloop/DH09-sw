@@ -290,6 +290,24 @@ fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
             emergency_type: EmergencyType::EmergencyLevitation,
         },
 
+        // Powertrain emergency
+        51 => {
+            if payload[1] != 0 || payload[2] != 0 {
+                Event::Emergency {
+                    emergency_type: EmergencyType::EmergencyBMS,
+                }
+            } else {
+                Event::Emergency {
+                    emergency_type: EmergencyType::EmergencyPTC,
+                }
+            }
+        }
+
+        // Sensor Hub emergency
+        26 => Event::Emergency {
+            emergency_type: EmergencyType::EmergencySensorHub,
+        },
+
         _ => Event::NoEvent,
     }
 }

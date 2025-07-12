@@ -43,7 +43,6 @@ export function registerSubscribers() {
     const propEmergency2 = storeManager.getWritable("PPEmergency2");
     const heartbeat = storeManager.getWritable("FrontendHeartbeating");
     const emergency = storeManager.getWritable("Emergency");
-    const localization = storeManager.getWritable("Localization");
     const emergencyStaleData = storeManager.getWritable("EmergencyStaleCriticalData");
     const lowPressure = storeManager.getWritable("PressureLow");
 
@@ -292,7 +291,9 @@ export function registerSubscribers() {
                 "Propulsion",
                 "Levitation",
                 "Powertrain Controller",
+                "BMS",
                 "SenseCon",
+                "SensorHub",
                 "Disconnection",
             ]
 

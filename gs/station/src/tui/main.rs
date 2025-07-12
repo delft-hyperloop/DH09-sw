@@ -4,8 +4,11 @@ mod render;
 
 use std::io::stdout;
 use std::io::Stdout;
+use std::process::Child;
 
 use crossterm::execute;
+use nix::libc::killpg;
+use nix::unistd::Pid;
 use ratatui::prelude::*;
 
 use crate::app::App;
@@ -19,7 +22,7 @@ pub fn tui_main() -> anyhow::Result<()> {
     app.run(&mut terminal)?;
     ratatui::try_restore()?;
     let _ = execute!(stdout(), crossterm::cursor::Show);
-    app.child.kill()?;
+    kill_tree(&mut app.child);
     Ok(())
 }
 
@@ -31,4 +34,20 @@ fn main() -> anyhow::Result<()> {
     tui_main()?;
     println!("tui exiting");
     Ok(())
+}
+
+fn kill_tree(child: &mut Child) {
+    let pgid = Pid::from_raw(child.id() as i32);
+    // send SIGTERM to the whole group
+    unsafe {
+        killpg(pgid.as_raw(), 15 /* sigterm */)
+    };
+    // wait a bit and SIGKILL
+    std::thread::sleep(std::time::Duration::from_millis(100));
+    unsafe {
+        killpg(pgid.as_raw(), 9 /* sigkill */)
+    };
+    // now reap the root child.
+    // this will also reap zombies of its children
+    let _ = child.wait();
 }

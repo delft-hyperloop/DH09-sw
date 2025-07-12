@@ -1,6 +1,7 @@
 #![allow(clippy::manual_flatten)]
 use std::collections::BTreeMap;
 use std::io::BufRead;
+use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Child;
 use std::process::Command;
@@ -48,13 +49,20 @@ impl App {
 
         eprintln!("Spawning GUI from: {}", gui_dir.display());
 
-        let mut child = Command::new("npm")
-            .current_dir(&gui_dir)
-            .args(["run", "gui"])
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .expect("Failed to spawn gui");
+        let mut child = unsafe {
+            Command::new("npm")
+                .current_dir(&gui_dir)
+                .args(["run", "gui"])
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .pre_exec(|| {
+                    // equivalent to C setsid()
+                    nix::unistd::setsid().map_err(std::io::Error::other)?;
+                    Ok(())
+                })
+                .spawn()
+                .expect("Failed to spawn gui")
+        };
 
         let map = BTreeMap::new();
 

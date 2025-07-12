@@ -34,7 +34,7 @@ impl Datapoint {
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default)]
 pub struct ProcessedData {
     pub datatype: Datatype,
     pub value: f64,

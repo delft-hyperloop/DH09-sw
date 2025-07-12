@@ -4,5 +4,5 @@ fn main() {
     let df = goose_utils::dataflow::parse_from(&df);
 
     let output = goose_utils::dataflow::levi::make_levi_beckhoff_code(&df);
-    println!("{}", output);
+    println!("{output}");
 }

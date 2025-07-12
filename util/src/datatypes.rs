@@ -252,7 +252,13 @@ impl Datatype {{
         "pub static DATA_IDS : [u16;{}] = [{}];\n",
         data_ids.len(),
         data_ids.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(", ")
-    ) + &format!("\npub const DATA_HASH: u64 = {hash};"))
+    ) + "
+
+impl Default for Datatype {
+    fn default() -> Self {
+        Self::DefaultDatatype
+    }
+}" + &format!("\npub const DATA_HASH: u64 = {hash};"))
 }
 
 pub fn generate_datatypes(path: &str, drv: bool) -> Result<String> {

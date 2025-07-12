@@ -437,7 +437,7 @@ fn make_datapoint_parser(spec: &MessageProcessingSpec) -> String {
         writeln!(&mut code, "let c = {}(d);", dpc.can_conversion.proc_name).unwrap();
 
         if dpc.can_conversion.output != dpc.gs.conversion.input {
-            panic!("can conversion output type does not match gs conversion input type");
+            panic!("can conversion output type does not match gs conversion input type in {} ({:?} ≠ {:?})", dpc.datapoint.name, dpc.can_conversion.output, dpc.gs.conversion.input);
         }
 
         writeln!(

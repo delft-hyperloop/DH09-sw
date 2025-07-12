@@ -8,7 +8,7 @@ import {
     modalTitle,
     staleCriticalDatatypes,
 } from '$lib/stores/data';
-import { bmsErrors, EBSStates, leviErrorMessages, MODAL_SETTINGS } from '$lib/types';
+import { EBSStates, leviErrorMessages, MODAL_SETTINGS } from '$lib/types';
 import {
     ebsState,
     emergencyModalActive,
@@ -36,17 +36,21 @@ export function registerSubscribers() {
     const modalStore = getModalStore();
     const toastStore = getToastStore();
 
-    const fsmTransitionFail = storeManager.getWritable("FSMTransitionFail");
-    const propInitFault1 = storeManager.getWritable("PPInitFault1");
-    const propEmergency1 = storeManager.getWritable("PPEmergency1");
-    const propInitFault2 = storeManager.getWritable("PPInitFault2");
-    const propEmergency2 = storeManager.getWritable("PPEmergency2");
-    const heartbeat = storeManager.getWritable("FrontendHeartbeating");
-    const emergency = storeManager.getWritable("Emergency");
-    const emergencyStaleData = storeManager.getWritable("EmergencyStaleCriticalData");
-    const lowPressure = storeManager.getWritable("PressureLow");
-    const leviFault = storeManager.getWritable("LeviFault");
-    const leviFaultDriveNumber = storeManager.getWritable("LeviFaultDriveNumber");
+    const fsmTransitionFail = storeManager.getWritable('FSMTransitionFail');
+    const propInitFault1 = storeManager.getWritable('PPInitFault1');
+    const propEmergency1 = storeManager.getWritable('PPEmergency1');
+    const propInitFault2 = storeManager.getWritable('PPInitFault2');
+    const propEmergency2 = storeManager.getWritable('PPEmergency2');
+    const heartbeat = storeManager.getWritable('FrontendHeartbeating');
+    const emergency = storeManager.getWritable('Emergency');
+    const emergencyStaleData = storeManager.getWritable(
+        'EmergencyStaleCriticalData'
+    );
+    const lowPressure = storeManager.getWritable('PressureLow');
+    const leviFault = storeManager.getWritable('LeviFault');
+    const leviFaultDriveNumber = storeManager.getWritable(
+        'LeviFaultDriveNumber'
+    );
 
     const lowPressureThreshold: number = 30;
 
@@ -56,29 +60,33 @@ export function registerSubscribers() {
         } else {
             ebsState.set(EBSStates.Triggered);
         }
-    })
+    });
 
     leviFault.subscribe((store) => {
         if (store.value !== 0) {
             let drive = get(leviFaultDriveNumber);
-            let leviErrorMessage = leviErrorMessages.filter((x, index) =>
-                (((store.value >> index) & 1) === 1)
+            let leviErrorMessage = leviErrorMessages.filter(
+                (x, index) => ((store.value >> index) & 1) === 1
             );
 
-            const leviFaultMessage = `Levitation drive ${drive} signaled a fault with message: ${leviErrorMessage.join(", ")}`;
+            const leviFaultMessage = `Levitation drive ${drive} signaled a fault with message: ${leviErrorMessage.join(', ')}`;
 
-            addEmergencySource(`Levi drive ${drive}: ${leviErrorMessage.join(", ")}`);
+            addEmergencySource(
+                `Levi drive ${drive}: ${leviErrorMessage.join(', ')}`
+            );
 
-            modalTitle.set("Levi Fault!");
+            modalTitle.set('Levi Fault!');
             modalBody.set(leviFaultMessage);
             console.error(leviFaultMessage);
             modalStore.trigger(MODAL_SETTINGS);
         }
-    })
+    });
 
     emergencyStaleData.subscribe(async (store) => {
         if (store.value !== 0) {
-            let datatype: string = await invoke("get_datatype_by_id", { id: store.value });
+            let datatype: string = await invoke('get_datatype_by_id', {
+                id: store.value,
+            });
             let temp = get(staleCriticalDatatypes);
             if (!temp.includes(datatype)) {
                 temp.push(datatype);
@@ -87,151 +95,162 @@ export function registerSubscribers() {
 
                 staleCriticalDatatypes.set(temp);
                 if (temp.length > 1) {
-                    modalBody.set(`${datatype} has been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`);
+                    modalBody.set(
+                        `${datatype} has been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`
+                    );
                 } else {
-                    modalBody.set(`${temp.join(", ")} have been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`);
+                    modalBody.set(
+                        `${temp.join(', ')} have been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`
+                    );
                 }
-                console.error("Stale critical data emergency with id " + store.value);
-                modalTitle.set("Stale critical datatype!")
+                console.error(
+                    'Stale critical data emergency with id ' + store.value
+                );
+                modalTitle.set('Stale critical datatype!');
                 modalStore.trigger(MODAL_SETTINGS);
             }
         }
-    })
+    });
 
     fsmTransitionFail.subscribe(async (store) => {
-        let state: string = await invoke('get_fsm_state_by_index', { index: store.value });
-        if (state !== "UnknownState") {
+        let state: string = await invoke('get_fsm_state_by_index', {
+            index: store.value,
+        });
+        if (state !== 'UnknownState') {
             toastStore.trigger({
                 message: `Transition to state ${state} failed!`,
                 background: 'bg-error-400',
                 autohide: false,
             });
             console.error(`Transition to state ${state} failed!`);
-            util.log(`Transition to state ${state} failed!`, EventChannel.ERROR);
+            util.log(
+                `Transition to state ${state} failed!`,
+                EventChannel.ERROR
+            );
         }
     });
 
     heartbeat.subscribe(() => {
         lastHeartbeatTimestamp.set(Date.now());
-    })
+    });
 
     let emsTemps = [
-        storeManager.getWritable("TempEMS1"),
-        storeManager.getWritable("TempEMS2"),
-        storeManager.getWritable("TempEMS3"),
-        storeManager.getWritable("TempEMS4"),
-        storeManager.getWritable("TempEMS5"),
-        storeManager.getWritable("TempEMS6"),
-        storeManager.getWritable("TempEMS7"),
-        storeManager.getWritable("TempEMS8"),
-    ]
+        storeManager.getWritable('TempEMS1'),
+        storeManager.getWritable('TempEMS2'),
+        storeManager.getWritable('TempEMS3'),
+        storeManager.getWritable('TempEMS4'),
+        storeManager.getWritable('TempEMS5'),
+        storeManager.getWritable('TempEMS6'),
+        storeManager.getWritable('TempEMS7'),
+        storeManager.getWritable('TempEMS8'),
+    ];
     let hemsTemps = [
-        storeManager.getWritable("TempHEMS1"),
-        storeManager.getWritable("TempHEMS2"),
-        storeManager.getWritable("TempHEMS3"),
-        storeManager.getWritable("TempHEMS4"),
-        storeManager.getWritable("TempHEMS5"),
-        storeManager.getWritable("TempHEMS6"),
-        storeManager.getWritable("TempHEMS7"),
-        storeManager.getWritable("TempHEMS8"),
-    ]
+        storeManager.getWritable('TempHEMS1'),
+        storeManager.getWritable('TempHEMS2'),
+        storeManager.getWritable('TempHEMS3'),
+        storeManager.getWritable('TempHEMS4'),
+        storeManager.getWritable('TempHEMS5'),
+        storeManager.getWritable('TempHEMS6'),
+        storeManager.getWritable('TempHEMS7'),
+        storeManager.getWritable('TempHEMS8'),
+    ];
     let leftMotorTemps = [
-        storeManager.getWritable("TempMotorLeft0"),
-        storeManager.getWritable("TempMotorLeft1"),
-        storeManager.getWritable("TempMotorLeft2"),
-        storeManager.getWritable("TempMotorLeft3"),
-        storeManager.getWritable("TempMotorLeft4"),
-        storeManager.getWritable("TempMotorLeft5"),
-        storeManager.getWritable("TempMotorLeft6"),
-        storeManager.getWritable("TempMotorLeft7"),
-    ]
+        storeManager.getWritable('TempMotorLeft0'),
+        storeManager.getWritable('TempMotorLeft1'),
+        storeManager.getWritable('TempMotorLeft2'),
+        storeManager.getWritable('TempMotorLeft3'),
+        storeManager.getWritable('TempMotorLeft4'),
+        storeManager.getWritable('TempMotorLeft5'),
+        storeManager.getWritable('TempMotorLeft6'),
+        storeManager.getWritable('TempMotorLeft7'),
+    ];
     let rightMotorTemps = [
-        storeManager.getWritable("TempMotorRight0"),
-        storeManager.getWritable("TempMotorRight1"),
-        storeManager.getWritable("TempMotorRight2"),
-        storeManager.getWritable("TempMotorRight3"),
-        storeManager.getWritable("TempMotorRight4"),
-        storeManager.getWritable("TempMotorRight5"),
-        storeManager.getWritable("TempMotorRight6"),
-        storeManager.getWritable("TempMotorRight7"),
-    ]
+        storeManager.getWritable('TempMotorRight0'),
+        storeManager.getWritable('TempMotorRight1'),
+        storeManager.getWritable('TempMotorRight2'),
+        storeManager.getWritable('TempMotorRight3'),
+        storeManager.getWritable('TempMotorRight4'),
+        storeManager.getWritable('TempMotorRight5'),
+        storeManager.getWritable('TempMotorRight6'),
+        storeManager.getWritable('TempMotorRight7'),
+    ];
 
     leftMotorTemps.forEach((store) => {
         store.subscribe((value) => {
             if (value.value >= 60 && get(leftMotorTempsAcknowledged)) {
                 leftMotorTempsAcknowledged.set(false);
                 toastStore.trigger({
-                    message: "Temperature on the left motor is too high!",
-                    background: "bg-error-400",
+                    message: 'Temperature on the left motor is too high!',
+                    background: 'bg-error-400',
                     autohide: false,
-                    callback: response => {
+                    callback: (response) => {
                         if (response.status == 'closed') {
                             leftMotorTempsAcknowledged.set(true);
                         }
                     },
                 });
             }
-        })
+        });
     });
     rightMotorTemps.forEach((store) => {
         store.subscribe((value) => {
             if (value.value >= 60 && get(rightMotorTempsAcknowledged)) {
                 rightMotorTempsAcknowledged.set(false);
                 toastStore.trigger({
-                    message: "Temperature on the right motor is too high!",
-                    background: "bg-error-400",
+                    message: 'Temperature on the right motor is too high!',
+                    background: 'bg-error-400',
                     autohide: false,
-                    callback: response => {
+                    callback: (response) => {
                         if (response.status == 'closed') {
                             rightMotorTempsAcknowledged.set(true);
                         }
                     },
                 });
             }
-        })
+        });
     });
     emsTemps.forEach((store) => {
         store.subscribe((value) => {
             if (value.value >= 60 && get(emsTempsAcknowledged)) {
                 emsTempsAcknowledged.set(false);
                 toastStore.trigger({
-                    message: "Temperature on EMS is too high!",
-                    background: "bg-error-400",
+                    message: 'Temperature on EMS is too high!',
+                    background: 'bg-error-400',
                     autohide: false,
-                    callback: response => {
+                    callback: (response) => {
                         if (response.status == 'closed') {
                             emsTempsAcknowledged.set(true);
                         }
                     },
                 });
             }
-        })
+        });
     });
     hemsTemps.forEach((store) => {
         store.subscribe((value) => {
             if (value.value >= 60 && get(hemsTempsAcknowledged)) {
                 hemsTempsAcknowledged.set(false);
                 toastStore.trigger({
-                    message: "Temperature on HEMS is too high!",
-                    background: "bg-error-400",
+                    message: 'Temperature on HEMS is too high!',
+                    background: 'bg-error-400',
                     autohide: false,
-                    callback: response => {
+                    callback: (response) => {
                         if (response.status == 'closed') {
                             hemsTempsAcknowledged.set(true);
                         }
                     },
                 });
             }
-        })
+        });
     });
     propInitFault1.subscribe((store) => {
         if (store.value !== 255 && get(propInitFault1Acknowledged)) {
             propInitFault1Acknowledged.set(false);
             toastStore.trigger({
                 message: `PropInitFault 1: ${store.value}`,
-                background: "bg-error-400",
+                background: 'bg-error-400',
                 autohide: false,
-                callback: response => {
+                callback: (response) => {
                     if (response.status == 'closed') {
                         propInitFault1Acknowledged.set(true);
                     }
@@ -246,9 +265,9 @@ export function registerSubscribers() {
             propInitFault2Acknowledged.set(false);
             toastStore.trigger({
                 message: `PropInitFault 2: ${store.value}`,
-                background: "bg-error-400",
+                background: 'bg-error-400',
                 autohide: false,
-                callback: response => {
+                callback: (response) => {
                     if (response.status == 'closed') {
                         propInitFault2Acknowledged.set(true);
                     }
@@ -262,13 +281,13 @@ export function registerSubscribers() {
         if (store.value !== 0 && get(propEmergency1Acknowledged)) {
             propEmergency1Acknowledged.set(false);
 
-            addEmergencySource("Propulsion Motor 1");
+            addEmergencySource('Propulsion Motor 1');
 
             toastStore.trigger({
                 message: `Prop Emergency 1: ${store.value}`,
-                background: "bg-error-400",
+                background: 'bg-error-400',
                 autohide: false,
-                callback: response => {
+                callback: (response) => {
                     if (response.status == 'closed') {
                         propEmergency1Acknowledged.set(true);
                     }
@@ -282,13 +301,13 @@ export function registerSubscribers() {
         if (store.value !== 0 && get(propEmergency2Acknowledged)) {
             propEmergency2Acknowledged.set(false);
 
-            addEmergencySource("Propulsion Motor 2");
+            addEmergencySource('Propulsion Motor 2');
 
             toastStore.trigger({
                 message: `Prop Emergency 2: ${store.value}`,
-                background: "bg-error-400",
+                background: 'bg-error-400',
                 autohide: false,
-                callback: response => {
+                callback: (response) => {
                     if (response.status == 'closed') {
                         propEmergency2Acknowledged.set(true);
                     }
@@ -307,15 +326,15 @@ export function registerSubscribers() {
             // also show the datapoint that cause the emergency. Therefore, it is missing
             // from here. (Hint: check above)
             const sources: string[] = [
-                "General",
-                "Propulsion",
-                "Levitation",
-                "Powertrain Controller",
-                "BMS",
-                "SenseCon",
-                "SensorHub",
-                "Disconnection",
-            ]
+                'General',
+                'Propulsion',
+                'Levitation',
+                'Powertrain Controller',
+                'BMS',
+                'SenseCon',
+                'SensorHub',
+                'Disconnection',
+            ];
 
             addEmergencySource(sources[store.value - 1]);
 
@@ -326,8 +345,13 @@ export function registerSubscribers() {
                 Always double check if it succeeded.`
             );
             modalStore.trigger(MODAL_SETTINGS);
-            console.error(`Emergency triggered with source ${store.value - 1}!`);
-            util.log(`Emergency triggered: ${sources[store.value - 1]} Emergency!`, EventChannel.ERROR);
+            console.error(
+                `Emergency triggered with source ${store.value - 1}!`
+            );
+            util.log(
+                `Emergency triggered: ${sources[store.value - 1]} Emergency!`,
+                EventChannel.ERROR
+            );
         }
     });
 }

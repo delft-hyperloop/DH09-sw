@@ -3,12 +3,12 @@
 procedures:
   # ====== Decode =======
   decode_offset:
-    input: 'u16'
-    output: 'f32'
-    formula: 'x as f32'
+    input: "u16"
+    output: "f32"
+    formula: "x as f32"
   decode_temperature:
-    input: 'u8'
-    output: 'f32'
+    input: "u8"
+    output: "f32"
     formula: |
       let precision_range_start: f32 = 70.0;
       if x & 0x80 != 0 {
@@ -18,284 +18,282 @@ procedures:
         x as f32 // Integer mode
       }
   decode_bms_voltage_adjusted:
-    input: 'u16'
-    output: 'f32'
-    formula: '(x as f32) * 0.128 / 10.0'
+    input: "u16"
+    output: "f32"
+    formula: "(x as f32) * 0.128 / 10.0"
   decode_bms_voltage:
-    input: 'u16'
-    output: 'f32'
-    formula: '(x as f32) / 10000.0'
+    input: "u16"
+    output: "f32"
+    formula: "(x as f32) / 10000.0"
   decode_bms_voltage_i16:
-    input: 'i16'
-    output: 'f32'
-    formula: '(x as f32) / 10.0'
+    input: "i16"
+    output: "f32"
+    formula: "(x as f32) / 10.0"
   decode_bms_voltage_i32:
-    input: 'i32'
-    output: 'f32'
-    formula: '(x as f32) / 1000.0'
+    input: "i32"
+    output: "f32"
+    formula: "(x as f32) / 1000.0"
   decode_bms_pack_current:
-    input: 'i16'
-    output: 'f32'
-    formula: '(x as f32) / 1000.0'
+    input: "i16"
+    output: "f32"
+    formula: "(x as f32) / 1000.0"
   decode_bms_temperature:
-    input: 'u16'
-    output: 'f32'
-    formula: 'x as f32'
+    input: "u16"
+    output: "f32"
+    formula: "x as f32"
   convert_i16_to_u64:
-    input: 'i16'
-    output: 'u64'
-    formula: 'x as u64 * 1000'
+    input: "i16"
+    output: "u64"
+    formula: "x as u64 * 1000"
   scale_10:
-    input: 'i16'
-    output: 'f32'
-    formula: '(x as f32) / 10.0'
+    input: "i16"
+    output: "f32"
+    formula: "(x as f32) / 10.0"
   scale_100:
-    input: 'i32'
-    output: 'f32'
-    formula: '(x as f32) / 100.0'
+    input: "i32"
+    output: "f32"
+    formula: "(x as f32) / 100.0"
   scale_1000:
-    input: 'i16'
-    output: 'f32'
-    formula: '(x as f32) / 1000.0'
+    input: "i16"
+    output: "f32"
+    formula: "(x as f32) / 1000.0"
 
   scale_1000_i32:
-    input: 'i32'
-    output: 'i32'
-    formula: 'x / 1000'
+    input: "i32"
+    output: "i32"
+    formula: "x / 1000"
 
   scale_10000_u16:
-    input: 'u16'
-    output: 'f32'
-    formula: '(x as f32) / 10000.0'
+    input: "u16"
+    output: "f32"
+    formula: "(x as f32) / 10000.0"
 
   multiply_100:
-    input: 'u16'
-    output: 'f32'
-    formula: '(x as f32) * 100.0'
-  
+    input: "u16"
+    output: "f32"
+    formula: "(x as f32) * 100.0"
+
   identity_u8:
-    input: 'u8'
-    output: 'u8'
-    formula: 'x'
+    input: "u8"
+    output: "u8"
+    formula: "x"
 
   identity_i16:
-    input: 'i16'
-    output: 'i16'
-    formula: 'x'
-  
+    input: "i16"
+    output: "i16"
+    formula: "x"
+
   identity_u16:
-    input: 'u16'
-    output: 'u16'
-    formula: 'x'
-  
+    input: "u16"
+    output: "u16"
+    formula: "x"
+
   identity_i32:
-    input: 'i32'
-    output: 'i32'
-    formula: 'x'
+    input: "i32"
+    output: "i32"
+    formula: "x"
 
   convert_i32_f32:
-    input: 'i32'
-    output: 'f32'
-    formula: 'x as f32'
-  
-  the_fucking_nils_formula_stupid_powertrain:
-    input: 'u16'
-    output: 'f32'
-    formula: 'x as f32'
+    input: "i32"
+    output: "f32"
+    formula: "x as f32"
 
-#  f16_to_f32:
-#    input: 'f16'
-#    output: 'f32'
-#    formula: 'x as f32'
+  the_fucking_nils_formula_stupid_powertrain:
+    input: "u16"
+    output: "f32"
+    formula: "x as f32"
+
+  #  f16_to_f32:
+  #    input: 'f16'
+  #    output: 'f32'
+  #    formula: 'x as f32'
 
   # ======= GS communication =======
   # dump = convert Main PCB values to u64, to dump over ethernet (on main PCB)
   # parse = convert the u64 values received from ethernet to f64 (for display, on GS)
   dump-gs_2p_float:
-    input: 'f32'
-    output: 'u64'
-    formula: '((10000.0 + x) * 100.0) as u64'
+    input: "f32"
+    output: "u64"
+    formula: "((10000.0 + x) * 100.0) as u64"
   parse-gs_2p_float:
-    input: 'u64'
-    output: 'f64'
-    formula: '((x as f64) / 100.0) - 10000.0'
-  
-  dump-gs_u64:
-    input: 'u64'
-    output: 'u64'
-    formula: 'x'
-  parse-gs_u64:
-    input: 'u64'
-    output: 'f64'
-    formula: 'x as f64'
-  
-  dump-gs_bool_u8:
-    input: 'u8'
-    output: 'u64'
-    formula: 'x as u64'
-  
-  parse-gs_bool_u8:
-    input: 'u64'
-    output: 'f64'
-    formula: 'x as f64'
+    input: "u64"
+    output: "f64"
+    formula: "((x as f64) / 100.0) - 10000.0"
 
-  
+  dump-gs_u64:
+    input: "u64"
+    output: "u64"
+    formula: "x"
+  parse-gs_u64:
+    input: "u64"
+    output: "f64"
+    formula: "x as f64"
+
+  dump-gs_bool_u8:
+    input: "u8"
+    output: "u64"
+    formula: "x as u64"
+
+  parse-gs_bool_u8:
+    input: "u64"
+    output: "f64"
+    formula: "x as f64"
+
   dump-gs_u8:
-    input: 'u8'
-    output: 'u64'
-    formula: 'x as u64'
-  
+    input: "u8"
+    output: "u64"
+    formula: "x as u64"
+
   parse-gs_u8:
-    input: 'u64'
-    output: 'f64'
-    formula: 'x as f64'
+    input: "u64"
+    output: "f64"
+    formula: "x as f64"
 
   dump-gs_u16:
-    input: 'u16'
-    output: 'u64'
-    formula: 'x as u64'
-  
+    input: "u16"
+    output: "u64"
+    formula: "x as u64"
+
   parse-gs_u16:
-    input: 'u64'
-    output: 'f64'
-    formula: 'x as f64'
-  
+    input: "u64"
+    output: "f64"
+    formula: "x as f64"
+
   dump-gs_i16:
-    input: 'i16'
-    output: 'u64'
-    formula: 'x as u64'
-  
+    input: "i16"
+    output: "u64"
+    formula: "x as u64"
+
   parse-gs_i16:
-    input: 'u64'
-    output: 'f64'
-    formula: 'x as f64'
+    input: "u64"
+    output: "f64"
+    formula: "x as f64"
 
   dump-gs_i32:
-    input: 'i32'
-    output: 'u64'
-    formula: 'x as u64'
-  
+    input: "i32"
+    output: "u64"
+    formula: "x as u64"
+
   parse-gs_i32:
-    input: 'u64'
-    output: 'f64'
-    formula: 'x as f64'
+    input: "u64"
+    output: "f64"
+    formula: "x as f64"
 
   default_command_process:
-    input: 'u64'
-    output: '[u8; 8]'
-    formula: 'x.to_be_bytes()'
-
+    input: "u64"
+    output: "[u8; 8]"
+    formula: "x.to_be_bytes()"
 
 standard-datapoints:
   - datapoint:
-      name: 'DefaultDatatype'
+      name: "DefaultDatatype"
       id: 0x00
     # upper: 42002
   - datapoint:
-      name: 'CommandHash'
+      name: "CommandHash"
       id: 0x167
     priority: 1
 
   - datapoint:
-      name: 'DataHash'
+      name: "DataHash"
       id: 0x169
     priority: 1
 
   - datapoint:
-      name: 'ConfigHash'
+      name: "ConfigHash"
       id: 0x171
     priority: 1
 
   - datapoint:
-      name: 'ValueError'
+      name: "ValueError"
       id: 0x16a
     priority: 1
 
   - datapoint:
-      name: 'ValueWarning'
+      name: "ValueWarning"
       id: 0x16b
     priority: 1
 
   - datapoint:
-      name: 'ValueCausedBraking'
+      name: "ValueCausedBraking"
       id: 0x16c
     priority: 1
 
   - datapoint:
-      name: 'LocalisationHeartbeat'
+      name: "LocalisationHeartbeat"
       id: 0x16e
 
   - datapoint:
-      name: 'SensorHubHeartbeat'
+      name: "SensorHubHeartbeat"
       id: 0x16f
 
   - datapoint:
-      name: 'FrontendHeartbeating'
+      name: "FrontendHeartbeating"
       id: 0x170
     priority: 1
 
   - datapoint:
-      name: 'FSMState'
+      name: "FSMState"
       id: 0x202
       store:
         default: 0
 
   - datapoint:
-      name: 'FSMTransitionFail'
+      name: "FSMTransitionFail"
       id: 0x204
       store:
         default: 100
 
   - datapoint:
-      name: 'Emergency'
+      name: "Emergency"
       id: 0x205
       store:
         default: 0
   - datapoint:
-      name: 'LeviSystemCheckSuccess'
+      name: "LeviSystemCheckSuccess"
       id: 0x220
       store:
         default: 0
   - datapoint:
-      name: 'LeviSystemCheckFailure'
+      name: "LeviSystemCheckFailure"
       id: 0x221
       store:
         default: 0
   - datapoint:
-      name: 'Prop1SystemCheckSuccess'
+      name: "Prop1SystemCheckSuccess"
       id: 0x222
       store:
         default: 0
   - datapoint:
-      name: 'Prop1SystemCheckFailure'
+      name: "Prop1SystemCheckFailure"
       id: 0x223
       store:
         default: 0
   - datapoint:
-      name: 'Prop2SystemCheckSuccess'
+      name: "Prop2SystemCheckSuccess"
       id: 0x224
       store:
         default: 0
   - datapoint:
-      name: 'Prop2SystemCheckFailure'
+      name: "Prop2SystemCheckFailure"
       id: 0x225
       store:
         default: 0
   - datapoint:
-      name: 'ResetFSM'
+      name: "ResetFSM"
       id: 0x226
   - datapoint:
-      name: 'EmergencyStaleCriticalData'
+      name: "EmergencyStaleCriticalData"
       id: 0x227
 
 message-processing:
-  - name: 'TempMotorLeft'
+  - name: "TempMotorLeft"
     can:
       id: 0x33B
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'TempMotorLeft0'
+          name: "TempMotorLeft0"
           id: 0x4B0
           store:
             default: 0
@@ -305,13 +303,13 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u8[0..1]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[0..1]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempMotorLeft1'
+          name: "TempMotorLeft1"
           id: 0x4B1
           store:
             default: 0
@@ -321,13 +319,13 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u8[1..2]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[1..2]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempMotorLeft2'
+          name: "TempMotorLeft2"
           id: 0x4B2
           store:
             default: 0
@@ -337,13 +335,13 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u8[2..3]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[2..3]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempMotorLeft3'
+          name: "TempMotorLeft3"
           id: 0x4B3
           store:
             default: 0
@@ -353,14 +351,14 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u8[3..4]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[3..4]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
 
       - datapoint:
-          name: 'TempMotorLeft4'
+          name: "TempMotorLeft4"
           id: 0x4B4
           store:
             default: 0
@@ -370,14 +368,14 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(5, curr);
                   return curr;
               }
-        getter: 'u8[4..5]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[4..5]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
 
       - datapoint:
-          name: 'TempMotorLeft5'
+          name: "TempMotorLeft5"
           id: 0x4B5
           store:
             default: 0
@@ -387,13 +385,13 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(6, curr);
                   return curr;
               }
-        getter: 'u8[5..6]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[5..6]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempMotorLeft6'
+          name: "TempMotorLeft6"
           id: 0x556
           store:
             default: 0
@@ -403,13 +401,13 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(7, curr);
                   return curr;
               }
-        getter: 'u8[6..7]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[6..7]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempMotorLeft7'
+          name: "TempMotorLeft7"
           id: 0x557
           store:
             default: 0
@@ -419,18 +417,18 @@ message-processing:
                   $chartStore.get("Motor Temperatures Left")!.addEntry(8, curr);
                   return curr;
               }
-        getter: 'u8[7..8]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[7..8]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'TempMotorRight'
+          conversion: "gs_2p_float:f32"
+  - name: "TempMotorRight"
     can:
       id: 0x33C
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'TempMotorRight0'
+          name: "TempMotorRight0"
           id: 0x520
           store:
             default: 0
@@ -440,13 +438,13 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u8[0..1]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[0..1]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempMotorRight1'
+          name: "TempMotorRight1"
           id: 0x50A
           store:
             default: 0
@@ -456,13 +454,13 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u8[1..2]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[1..2]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempMotorRight2'
+          name: "TempMotorRight2"
           id: 0x50B
           store:
             default: 0
@@ -472,14 +470,14 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u8[2..3]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[2..3]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
 
       - datapoint:
-          name: 'TempMotorRight3'
+          name: "TempMotorRight3"
           id: 0x50C
           store:
             default: 0
@@ -489,14 +487,14 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u8[3..4]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[3..4]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
 
       - datapoint:
-          name: 'TempMotorRight4'
+          name: "TempMotorRight4"
           id: 0x50D
           store:
             default: 0
@@ -506,14 +504,14 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(5, curr);
                   return curr;
               }
-        getter: 'u8[4..5]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[4..5]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
 
       - datapoint:
-          name: 'TempMotorRight5'
+          name: "TempMotorRight5"
           id: 0x50E
           store:
             default: 0
@@ -523,14 +521,14 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(6, curr);
                   return curr;
               }
-        getter: 'u8[5..6]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[5..6]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
 
       - datapoint:
-          name: 'TempMotorRight6'
+          name: "TempMotorRight6"
           id: 0x50F
           store:
             default: 0
@@ -540,13 +538,13 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(7, curr);
                   return curr;
               }
-        getter: 'u8[6..7]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[6..7]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempMotorRight7'
+          name: "TempMotorRight7"
           id: 0x555
           store:
             default: 0
@@ -556,54 +554,54 @@ message-processing:
                   $chartStore.get("Motor Temperatures Right")!.addEntry(8, curr);
                   return curr;
               }
-        getter: 'u8[7..8]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[7..8]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'PTCLogs'
+          conversion: "gs_2p_float:f32"
+  - name: "PTCLogs"
     can:
       id: 0x4E3
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PTCState'
+          name: "PTCState"
           id: 0x3A3
           critical: true
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
+          conversion: "gs_u8:u8"
       - datapoint:
-          name: 'HVALState'
+          name: "HVALState"
           id: 0x3A4
           store:
             default: 0
-        getter: 'u8[1..2]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[1..2]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
+          conversion: "gs_u8:u8"
       - datapoint:
-          name: 'IMDWarnings'
+          name: "IMDWarnings"
           id: 0x3B0
           store:
             default: 0
-        getter: 'u16[2..4]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[2..4]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
       - datapoint:
-          name: 'PTCErrors'
+          name: "PTCErrors"
           id: 0x3B1
           store:
             default: 0
-        getter: 'u8[4..5]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[4..5]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'BMSLog1'
+          conversion: "gs_u8:u8"
+  - name: "BMSLog1"
     can:
       id: 0x4E5
       bus: can2
@@ -611,7 +609,7 @@ message-processing:
     #   event: 'ShutDown'
     datapoint-conversion:
       - datapoint:
-          name: 'HvVHigh'
+          name: "HvVHigh"
           id: 0x3A1
           critical: true
           store:
@@ -622,16 +620,16 @@ message-processing:
                   $chartStore.get("BMS Voltages")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'decode_bms_voltage:u16->f32'
+        getter: "u16[0..2]"
+        can-conversion: "decode_bms_voltage:u16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-        display-units: 'V'
-#        limits:
-#          upper: { warn: 360, err: 420 }
-#          lower: { warn: 280, err: 270 }
+          conversion: "gs_2p_float:f32"
+        display-units: "V"
+      #        limits:
+      #          upper: { warn: 360, err: 420 }
+      #          lower: { warn: 280, err: 270 }
       - datapoint:
-          name: 'HvVLow'
+          name: "HvVLow"
           id: 0x19D
           critical: true
           store:
@@ -642,16 +640,16 @@ message-processing:
                   $chartStore.get("BMS Voltages")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'decode_bms_voltage:u16->f32'
+        getter: "u16[2..4]"
+        can-conversion: "decode_bms_voltage:u16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-        display-units: 'V'
-#        limits:
-#          upper: { warn: 360, err: 420 }
-#          lower: { warn: 280, err: 270 }
+          conversion: "gs_2p_float:f32"
+        display-units: "V"
+      #        limits:
+      #          upper: { warn: 360, err: 420 }
+      #          lower: { warn: 280, err: 270 }
       - datapoint:
-          name: 'BMSTemperatureHigh'
+          name: "BMSTemperatureHigh"
           id: 0x3A2
           store:
             default: 0
@@ -661,13 +659,13 @@ message-processing:
                   $chartStore.get("BMS Temperatures")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
-        can-conversion: 'the_fucking_nils_formula_stupid_powertrain:u16->f32'
-        display-units: '°C'
+        getter: "u16[4..6]"
+        can-conversion: "the_fucking_nils_formula_stupid_powertrain:u16->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'BMSTemperatureLow'
+          name: "BMSTemperatureLow"
           id: 0x19E
           store:
             default: 0
@@ -677,18 +675,18 @@ message-processing:
                   $chartStore.get("BMS Temperatures")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[6..8]'
-        can-conversion: 'the_fucking_nils_formula_stupid_powertrain:u16->f32'
-        display-units: '°C'
+        getter: "u16[6..8]"
+        can-conversion: "the_fucking_nils_formula_stupid_powertrain:u16->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'BMSLog2'
+          conversion: "gs_2p_float:f32"
+  - name: "BMSLog2"
     can:
       id: 0x4E6
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'VPack'
+          name: "VPack"
           id: 0x3A5
           critical: true
           store:
@@ -699,16 +697,16 @@ message-processing:
                   $chartStore.get("HV Pack Voltage")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'decode_bms_voltage_adjusted:u16->f32'
+        getter: "u16[0..2]"
+        can-conversion: "decode_bms_voltage_adjusted:u16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-        display-units: 'V'
-#        limits:
-#          upper: { warn: 360, err: 420 }
-#          lower: { warn: 280, err: 270 }
+          conversion: "gs_2p_float:f32"
+        display-units: "V"
+      #        limits:
+      #          upper: { warn: 360, err: 420 }
+      #          lower: { warn: 280, err: 270 }
       - datapoint:
-          name: 'IPack'
+          name: "IPack"
           id: 0x3A6
           critical: true
           store:
@@ -719,16 +717,16 @@ message-processing:
                   $chartStore.get("Bus Current")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'i16[2..4]'
-        can-conversion: 'decode_bms_pack_current:i16->f32'
+        getter: "i16[2..4]"
+        can-conversion: "decode_bms_pack_current:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-        display-units: 'A'
-#        limits:
-#          upper: { warn: 360, err: 420 }
-#          lower: { warn: 280, err: 270 }
+          conversion: "gs_2p_float:f32"
+        display-units: "A"
+      #        limits:
+      #          upper: { warn: 360, err: 420 }
+      #          lower: { warn: 280, err: 270 }
       - datapoint:
-          name: 'VDCLink'
+          name: "VDCLink"
           id: 0x3A7
           critical: true
           store:
@@ -739,43 +737,43 @@ message-processing:
                   $chartStore.get("DC Link Voltage")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i32[4..8]'
-        can-conversion: 'decode_bms_voltage_i32:i32->f32'
-        display-units: 'V'
+        getter: "i32[4..8]"
+        can-conversion: "decode_bms_voltage_i32:i32->f32"
+        display-units: "V"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'TemperaturePrecisionRange'
+          conversion: "gs_2p_float:f32"
+  - name: "TemperaturePrecisionRange"
     can:
       id: 0x1B4
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'TempRangeStart'
+          name: "TempRangeStart"
           id: 0x510
           store:
             default: 0
-        getter: 'i16[0..2]'
-        can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        getter: "i16[0..2]"
+        can-conversion: "identity_i16:i16->i16"
+        display-units: "°C"
         gs:
-          conversion: 'gs_i16:i16'
+          conversion: "gs_i16:i16"
       - datapoint:
-          name: 'TempRangeEnd'
+          name: "TempRangeEnd"
           id: 0x511
           store:
             default: 0
-        getter: 'i16[2..4]'
-        can-conversion: 'identity_i16:i16->i16'
-        display-units: '°C'
+        getter: "i16[2..4]"
+        can-conversion: "identity_i16:i16->i16"
+        display-units: "°C"
         gs:
-          conversion: 'gs_i16:i16'
-  - name: 'Localization'
+          conversion: "gs_i16:i16"
+  - name: "Localization"
     can:
       id: 0x33A
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Localization'
+          name: "Localization"
           id: 0x321
           store:
             default: 0
@@ -785,16 +783,16 @@ message-processing:
                   $chartStore.get("Localization")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i32[0..4]'
-        can-conversion: 'scale_100:i32->f32'
-        display-units: 'mm'
+        getter: "i32[0..4]"
+        can-conversion: "scale_100:i32->f32"
+        display-units: "mm"
         gs:
-          conversion: 'gs_2p_float:f32'
-#        limits:
-#          upper: { warn: 360, err: 420, brake: 450 }
-#          lower: { warn: 280, err: 270, brake: 250 }
+          conversion: "gs_2p_float:f32"
+      #        limits:
+      #          upper: { warn: 360, err: 420, brake: 450 }
+      #          lower: { warn: 280, err: 270, brake: 250 }
       - datapoint:
-          name: 'Velocity'
+          name: "Velocity"
           id: 0x527
           store:
             default: 0
@@ -804,107 +802,107 @@ message-processing:
                   $chartStore.get("Velocity")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i16[4..6]'
-        can-conversion: 'identity_i16:i16->i16'
-        display-units: 'm/s'
+        getter: "i16[4..6]"
+        can-conversion: "identity_i16:i16->i16"
+        display-units: "m/s"
         gs:
-          conversion: 'gs_i16:i16'
-#        limits:
-#          upper: { warn: 250, err: 300, brake: 1000 }
-#          lower: { warn: 0, err: 0, brake: 200}
-  - name: 'PPInitFault1'
+          conversion: "gs_i16:i16"
+  #        limits:
+  #          upper: { warn: 250, err: 300, brake: 1000 }
+  #          lower: { warn: 0, err: 0, brake: 200}
+  - name: "PPInitFault1"
     can:
       id: 0x505
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PPInitFault1'
+          name: "PPInitFault1"
           id: 0x507
           store:
             default: 255
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'PPInitFault2'
+          conversion: "gs_u8:u8"
+  - name: "PPInitFault2"
     can:
       id: 0x506
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PPInitFault2'
+          name: "PPInitFault2"
           id: 0x508
           store:
             default: 255
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'PPEmergency1'
+          conversion: "gs_u8:u8"
+  - name: "PPEmergency1"
     can:
       id: 0x4C
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PPEmergency1'
+          name: "PPEmergency1"
           id: 0x04
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'PPEmergency2'
+          conversion: "gs_u8:u8"
+  - name: "PPEmergency2"
     can:
       id: 0x4D
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PPEmergency2'
+          name: "PPEmergency2"
           id: 0x003
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'Word1'
+          conversion: "gs_u8:u8"
+  - name: "Word1"
     can:
       id: 0x4FC
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Word1'
+          name: "Word1"
           id: 0x5B8
           critical: true
           store:
             default: 0
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
-  - name: 'Word2'
+          conversion: "gs_u16:u16"
+  - name: "Word2"
     can:
       id: 0x500
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Word2'
+          name: "Word2"
           id: 0x4B6
           critical: true
           store:
             default: 0
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
-  - name: 'Log1RightMotor'
+          conversion: "gs_u16:u16"
+  - name: "Log1RightMotor"
     can:
       id: 0x4FD
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'IqMeasured1'
+          name: "IqMeasured1"
           id: 0x4B7
           store:
             default: 0
@@ -914,12 +912,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'i16[0..2]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[0..2]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'IqReference1'
+          name: "IqReference1"
           id: 0x4B8
           store:
             default: 0
@@ -929,12 +927,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'i16[2..4]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[2..4]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'IdMeasured1'
+          name: "IdMeasured1"
           id: 0x4B9
           store:
             default: 0
@@ -944,12 +942,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i16[4..6]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[4..6]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'IdReference1'
+          name: "IdReference1"
           id: 0x4BA
           store:
             default: 0
@@ -959,17 +957,17 @@ message-processing:
                   $chartStore.get("Propulsion Log 1 - Right Motor")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'i16[6..8]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[6..8]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'Log1LeftMotor'
+          conversion: "gs_2p_float:f32"
+  - name: "Log1LeftMotor"
     can:
       id: 0x502
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'IqMeasured2'
+          name: "IqMeasured2"
           id: 0x4BB
           store:
             default: 0
@@ -979,12 +977,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'i16[0..2]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[0..2]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'IqReference2'
+          name: "IqReference2"
           id: 0x4BC
           store:
             default: 0
@@ -994,12 +992,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'i16[2..4]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[2..4]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'IdMeasured2'
+          name: "IdMeasured2"
           id: 0x4BD
           store:
             default: 0
@@ -1009,12 +1007,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i16[4..6]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[4..6]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'IdReference2'
+          name: "IdReference2"
           id: 0x4BE
           store:
             default: 0
@@ -1024,17 +1022,17 @@ message-processing:
                   $chartStore.get("Propulsion Log 1 - Left Motor")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'i16[6..8]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[6..8]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'Log2RightMotor'
+          conversion: "gs_2p_float:f32"
+  - name: "Log2RightMotor"
     can:
       id: 0x4FE
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Vq_Log1'
+          name: "Vq_Log1"
           id: 0x4BF
           store:
             default: 0
@@ -1044,12 +1042,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i16[0..2]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[0..2]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Vd_Log1'
+          name: "Vd_Log1"
           id: 0x521
           store:
             default: 0
@@ -1059,12 +1057,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'i16[2..4]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[2..4]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Vbus1'
+          name: "Vbus1"
           id: 0x4C1
           store:
             default: 0
@@ -1074,12 +1072,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'i16[4..6]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[4..6]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Ibus1'
+          name: "Ibus1"
           id: 0x4C2
           store:
             default: 0
@@ -1089,11 +1087,11 @@ message-processing:
                   $chartStore.get("Propulsion Log 2 - Right Motor")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'i16[6..8]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[6..8]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'CANLog'
+          conversion: "gs_2p_float:f32"
+  - name: "CANLog"
     can:
       id: 0xFFE
       bus: can2
@@ -1103,17 +1101,17 @@ message-processing:
           id: 0xFFD
           store:
             default: 0
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
-  - name: 'Log2LeftMotor'
+          conversion: "gs_u16:u16"
+  - name: "Log2LeftMotor"
     can:
       id: 0x503
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Vq_Log2'
+          name: "Vq_Log2"
           id: 0x4C3
           store:
             default: 0
@@ -1123,12 +1121,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i16[0..2]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[0..2]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Vd_Log2'
+          name: "Vd_Log2"
           id: 0x4C4
           store:
             default: 0
@@ -1138,12 +1136,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'i16[2..4]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[2..4]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Vbus2'
+          name: "Vbus2"
           id: 0x4C5
           store:
             default: 0
@@ -1153,12 +1151,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'i16[4..6]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[4..6]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Ibus2'
+          name: "Ibus2"
           id: 0x4C6
           store:
             default: 0
@@ -1168,17 +1166,17 @@ message-processing:
                   $chartStore.get("Propulsion Log 2 - Left Motor")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'i16[6..8]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[6..8]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'Log3RightMotor'
+          conversion: "gs_2p_float:f32"
+  - name: "Log3RightMotor"
     can:
       id: 0x4FF
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Ta1'
+          name: "Ta1"
           id: 0x4C7
           store:
             default: 0
@@ -1188,12 +1186,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i16[0..2]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[0..2]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Tb1'
+          name: "Tb1"
           id: 0x4C8
           store:
             default: 0
@@ -1203,12 +1201,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'i16[2..4]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[2..4]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Tc1'
+          name: "Tc1"
           id: 0x4C9
           store:
             default: 0
@@ -1218,12 +1216,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'i16[4..6]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[4..6]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TCASE1'
+          name: "TCASE1"
           id: 0x4CA
           store:
             default: 0
@@ -1233,17 +1231,17 @@ message-processing:
                   $chartStore.get("Propulsion Log 3 - Right Motor")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'i16[6..8]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[6..8]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'Log3LeftMotor'
+          conversion: "gs_2p_float:f32"
+  - name: "Log3LeftMotor"
     can:
       id: 0x504
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Ta2'
+          name: "Ta2"
           id: 0x4CB
           store:
             default: 0
@@ -1253,12 +1251,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i16[0..2]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[0..2]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Tb2'
+          name: "Tb2"
           id: 0x4CC
           store:
             default: 0
@@ -1268,12 +1266,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'i16[2..4]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[2..4]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Tc2'
+          name: "Tc2"
           id: 0x4CD
           store:
             default: 0
@@ -1283,12 +1281,12 @@ message-processing:
                   $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'i16[4..6]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[4..6]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TCASE2'
+          name: "TCASE2"
           id: 0x4CE
           store:
             default: 0
@@ -1298,81 +1296,81 @@ message-processing:
                   $chartStore.get("Propulsion Log 3 - Left Motor")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'i16[6..8]'
-        can-conversion: 'scale_10:i16->f32'
+        getter: "i16[6..8]"
+        can-conversion: "scale_10:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'FSMAckProp1'
+          conversion: "gs_2p_float:f32"
+  - name: "FSMAckProp1"
     can:
       id: 0x36C
       bus: can2
     fsm:
-      event: 'PropulsionAck1'
+      event: "PropulsionAck1"
     datapoint-conversion:
       - datapoint:
-          name: 'FSMAckProp1'
+          name: "FSMAckProp1"
           id: 0x525
           store:
             default: 0
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
-  - name: 'FSMAckProp2'
+          conversion: "gs_u16:u16"
+  - name: "FSMAckProp2"
     can:
       id: 0x36D
       bus: can2
     fsm:
-      event: 'PropulsionAck2'
+      event: "PropulsionAck2"
     datapoint-conversion:
       - datapoint:
-          name: 'FSMAckProp2'
+          name: "FSMAckProp2"
           id: 0x526
           store:
             default: 0
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
-  - name: 'FSMAckLevi'
+          conversion: "gs_u16:u16"
+  - name: "FSMAckLevi"
     can:
       id: 0x385
       bus: can2
     fsm:
-      event: 'LeviAck'
+      event: "LeviAck"
     datapoint-conversion:
       - datapoint:
-          name: 'FSMAckLevi'
+          name: "FSMAckLevi"
           id: 0x52A
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'ClearFaultAckLevi'
+          conversion: "gs_u8:u8"
+  - name: "ClearFaultAckLevi"
     can:
       id: 0x386
       bus: can2
     fsm:
-      event: 'ClearFaultAckLevi'
+      event: "ClearFaultAckLevi"
     datapoint-conversion:
       - datapoint:
-          name: 'ClearFaultAckLevi'
+          name: "ClearFaultAckLevi"
           id: 0x52B
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'Offset'
+          conversion: "gs_u8:u8"
+  - name: "Offset"
     can:
       id: 0x387
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'Offset1'
+          name: "Offset1"
           id: 0x848
           store:
             default: 0
@@ -1382,13 +1380,13 @@ message-processing:
                   $chartStore.get("Offset")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'decode_offset:u16->f32'
-        display-units: 'mm'
+        getter: "u16[0..2]"
+        can-conversion: "decode_offset:u16->f32"
+        display-units: "mm"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Offset2'
+          name: "Offset2"
           id: 0x849
           store:
             default: 0
@@ -1398,13 +1396,13 @@ message-processing:
                   $chartStore.get("Offset")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'decode_offset:u16->f32'
-        display-units: 'mm'
+        getter: "u16[2..4]"
+        can-conversion: "decode_offset:u16->f32"
+        display-units: "mm"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Offset3'
+          name: "Offset3"
           id: 0x84A
           store:
             default: 0
@@ -1414,13 +1412,13 @@ message-processing:
                   $chartStore.get("Offset")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
-        can-conversion: 'decode_offset:u16->f32'
-        display-units: 'mm'
+        getter: "u16[4..6]"
+        can-conversion: "decode_offset:u16->f32"
+        display-units: "mm"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'Offset4'
+          name: "Offset4"
           id: 0x84B
           store:
             default: 0
@@ -1430,32 +1428,32 @@ message-processing:
                   $chartStore.get("Offset")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u16[6..8]'
-        can-conversion: 'decode_offset:u16->f32'
-        display-units: 'mm'
+        getter: "u16[6..8]"
+        can-conversion: "decode_offset:u16->f32"
+        display-units: "mm"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'LeviSystemCheckResponse'
+          conversion: "gs_2p_float:f32"
+  - name: "LeviSystemCheckResponse"
     can:
       id: 0x38A
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LeviSystemCheckResponse'
+          name: "LeviSystemCheckResponse"
           id: 0x569
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'LVBMSLog1'
+          conversion: "gs_u8:u8"
+  - name: "LVBMSLog1"
     can:
       id: 0x4E7
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LvVHigh'
+          name: "LvVHigh"
           id: 0x600
           critical: true
           store:
@@ -1466,13 +1464,13 @@ message-processing:
                   $chartStore.get("BMS Voltages")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'scale_10000_u16:u16->f32'
+        getter: "u16[0..2]"
+        can-conversion: "scale_10000_u16:u16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-        display-units: 'V'
+          conversion: "gs_2p_float:f32"
+        display-units: "V"
       - datapoint:
-          name: 'LvVLow'
+          name: "LvVLow"
           critical: true
           id: 0x601
           store:
@@ -1483,13 +1481,13 @@ message-processing:
                   $chartStore.get("BMS Voltages")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'scale_10000_u16:u16->f32'
+        getter: "u16[2..4]"
+        can-conversion: "scale_10000_u16:u16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-        display-units: 'V'
+          conversion: "gs_2p_float:f32"
+        display-units: "V"
       - datapoint:
-          name: 'THigh'
+          name: "THigh"
           id: 0x602
           store:
             default: 0
@@ -1499,12 +1497,12 @@ message-processing:
                   $chartStore.get("BMS Temperatures")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
-        can-conversion: 'the_fucking_nils_formula_stupid_powertrain:u16->f32'
+        getter: "u16[4..6]"
+        can-conversion: "the_fucking_nils_formula_stupid_powertrain:u16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TLow'
+          name: "TLow"
           id: 0x603
           store:
             default: 0
@@ -1514,17 +1512,17 @@ message-processing:
                   $chartStore.get("BMS Temperatures")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u16[6..8]'
-        can-conversion: 'the_fucking_nils_formula_stupid_powertrain:u16->f32'
+        getter: "u16[6..8]"
+        can-conversion: "the_fucking_nils_formula_stupid_powertrain:u16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
   - name: "PtIsoResistanceBusCurrent"
     can:
       id: 0x4E4
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'IsolationResistance'
+          name: "IsolationResistance"
           id: 0x610
           critical: true
           store:
@@ -1535,13 +1533,13 @@ message-processing:
                   $chartStore.get("Isolation Resistance")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
-        display-units: 'kOhm'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
+        display-units: "kOhm"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
       - datapoint:
-          name: 'BusCurrent'
+          name: "BusCurrent"
           id: 0x611
           critical: true
           store:
@@ -1552,18 +1550,18 @@ message-processing:
                   $chartStore.get("Bus Current")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i32[2..6]'
-        can-conversion: 'scale_1000_i32:i32->i32'
-        display-units: 'mA'
+        getter: "i32[2..6]"
+        can-conversion: "scale_1000_i32:i32->i32"
+        display-units: "mA"
         gs:
-          conversion: 'gs_i32:i32'
-  - name: 'LVBMSLog2'
+          conversion: "gs_i32:i32"
+  - name: "LVBMSLog2"
     can:
       id: 0x4E8
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'VPackLowVoltage'
+          name: "VPackLowVoltage"
           id: 0x604
           critical: true
           store:
@@ -1574,13 +1572,13 @@ message-processing:
                   $chartStore.get("LV Pack Voltage")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'decode_bms_voltage_adjusted:u16->f32'
+        getter: "u16[0..2]"
+        can-conversion: "decode_bms_voltage_adjusted:u16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-        display-units: 'V'
+          conversion: "gs_2p_float:f32"
+        display-units: "V"
       - datapoint:
-          name: 'IPackLowVoltage'
+          name: "IPackLowVoltage"
           id: 0x605
           critical: true
           store:
@@ -1591,110 +1589,110 @@ message-processing:
                   $chartStore.get("LV Pack Current")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'i16[2..4]'
-        can-conversion: 'decode_bms_pack_current:i16->f32'
+        getter: "i16[2..4]"
+        can-conversion: "decode_bms_pack_current:i16->f32"
         gs:
-          conversion: 'gs_2p_float:f32'
-        display-units: 'A'
-  - name: 'PtSystemCheckResponse'
+          conversion: "gs_2p_float:f32"
+        display-units: "A"
+  - name: "PtSystemCheckResponse"
     can:
       id: 0x4E9
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PtSystemCheckResponse'
+          name: "PtSystemCheckResponse"
           id: 0x56A
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'LeviFault'
+          conversion: "gs_u8:u8"
+  - name: "LeviFault"
     can:
       id: 0x65
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LeviFault'
+          name: "LeviFault"
           id: 0x568
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
+          conversion: "gs_u8:u8"
       - datapoint:
-          name: 'LeviFaultDriveNumber'
+          name: "LeviFaultDriveNumber"
           id: 0x777
           store:
             default: 0
-        getter: 'u8[1..2]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[1..2]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'LeviHeartbeat'
+          conversion: "gs_u8:u8"
+  - name: "LeviHeartbeat"
     can:
       id: 0x388
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LeviHeartbeat'
+          name: "LeviHeartbeat"
           id: 0x567
           critical: true
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'LeviFSMStateChanged'
+          conversion: "gs_u8:u8"
+  - name: "LeviFSMStateChanged"
     can:
       id: 0x389
       bus: can2
     fsm:
-      event: 'LeviAck'
+      event: "LeviAck"
     datapoint-conversion:
       - datapoint:
-          name: 'LeviFSMStateChanged'
+          name: "LeviFSMStateChanged"
           id: 0x566
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'LevitationState'
+          conversion: "gs_u8:u8"
+  - name: "LevitationState"
     can:
       id: 0x515
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LevitationState'
+          name: "LevitationState"
           id: 0x528
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
+          conversion: "gs_u8:u8"
       - datapoint:
-          name: 'NonCriticalLeviError'
+          name: "NonCriticalLeviError"
           id: 0x529
           store:
             default: 0
-        getter: 'u8[1..2]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[1..2]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'Airgaps'
+          conversion: "gs_u8:u8"
+  - name: "Airgaps"
     can:
       id: 0x516
       bus: can2
       log_period: 100
     datapoint-conversion:
       - datapoint:
-          name: 'Vertical'
+          name: "Vertical"
           id: 0x52C
           store:
             default: 0
@@ -1704,16 +1702,16 @@ message-processing:
                   $chartStore.get("Air Gaps")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'Vertical-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 100)'
+          name: "Vertical-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 100)"
       - datapoint:
-          name: 'Lateral'
+          name: "Lateral"
           id: 0x52D
           store:
             default: 0
@@ -1723,22 +1721,22 @@ message-processing:
                   $chartStore.get("Air Gaps")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[2..4]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'Lateral-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 100)'
-  - name: 'Angles'
+          name: "Lateral-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 100)"
+  - name: "Angles"
     can:
       id: 0x517
       bus: can2
       log_period: 100
     datapoint-conversion:
       - datapoint:
-          name: 'Roll'
+          name: "Roll"
           id: 0x52E
           store:
             default: 0
@@ -1748,16 +1746,16 @@ message-processing:
                   $chartStore.get("Angles")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'Roll'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 1000000)'
+          name: "Roll"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 1000000)"
       - datapoint:
-          name: 'Pitch'
+          name: "Pitch"
           id: 0x52F
           store:
             default: 0
@@ -1767,16 +1765,16 @@ message-processing:
                   $chartStore.get("Angles")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[2..4]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'Pitch'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 1000000)'
+          name: "Pitch"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 1000000)"
       - datapoint:
-          name: 'Yaw'
+          name: "Yaw"
           id: 0x530
           store:
             default: 0
@@ -1786,21 +1784,21 @@ message-processing:
                   $chartStore.get("Angles")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[4..6]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'Yaw'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 1000000)'
-  - name: 'CurrentHEMSFront'
+          name: "Yaw"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 1000000)"
+  - name: "CurrentHEMSFront"
     can:
       id: 0x518
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'VFL1'
+          name: "VFL1"
           id: 0x531
           store:
             default: 0
@@ -1810,16 +1808,16 @@ message-processing:
                   $chartStore.get("HEMS Current")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'VFL1-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
+          name: "VFL1-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
       - datapoint:
-          name: 'VFL2'
+          name: "VFL2"
           id: 0x532
           store:
             default: 0
@@ -1829,16 +1827,16 @@ message-processing:
                   $chartStore.get("HEMS Current")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[2..4]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'VFL2-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
+          name: "VFL2-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
       - datapoint:
-          name: 'VFR1'
+          name: "VFR1"
           id: 0x533
           store:
             default: 0
@@ -1848,16 +1846,16 @@ message-processing:
                   $chartStore.get("HEMS Current")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[4..6]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'VFR1-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
+          name: "VFR1-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
       - datapoint:
-          name: 'VFR2'
+          name: "VFR2"
           id: 0x534
           store:
             default: 0
@@ -1867,21 +1865,21 @@ message-processing:
                   $chartStore.get("HEMS Current")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u16[6..8]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[6..8]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'VFR2-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
-  - name: 'CurrentHEMSBack'
+          name: "VFR2-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
+  - name: "CurrentHEMSBack"
     can:
       id: 0x519
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'VBL1'
+          name: "VBL1"
           id: 0x562
           store:
             default: 0
@@ -1891,16 +1889,16 @@ message-processing:
                   $chartStore.get("HEMS Current")!.addEntry(5, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'VBL1-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
+          name: "VBL1-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
       - datapoint:
-          name: 'VBL2'
+          name: "VBL2"
           id: 0x563
           store:
             default: 0
@@ -1910,16 +1908,16 @@ message-processing:
                   $chartStore.get("HEMS Current")!.addEntry(6, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[2..4]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'VBL2-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
+          name: "VBL2-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
       - datapoint:
-          name: 'VBR1'
+          name: "VBR1"
           id: 0x564
           store:
             default: 0
@@ -1929,16 +1927,16 @@ message-processing:
                   $chartStore.get("HEMS Current")!.addEntry(7, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[4..6]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'VBR1-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
+          name: "VBR1-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
       - datapoint:
-          name: 'VBR2'
+          name: "VBR2"
           id: 0x565
           store:
             default: 0
@@ -1948,21 +1946,21 @@ message-processing:
                   $chartStore.get("HEMS Current")!.addEntry(8, curr);
                   return curr;
               }
-        getter: 'u16[6..8]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[6..8]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'VBR2-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
-  - name: 'CurrentEMS'
+          name: "VBR2-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
+  - name: "CurrentEMS"
     can:
       id: 0x51A
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'LF1'
+          name: "LF1"
           id: 0x535
           store:
             default: 0
@@ -1972,16 +1970,16 @@ message-processing:
                   $chartStore.get("EMS Current")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'LF1-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
+          name: "LF1-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
       - datapoint:
-          name: 'LF2'
+          name: "LF2"
           id: 0x536
           store:
             default: 0
@@ -1991,16 +1989,16 @@ message-processing:
                   $chartStore.get("EMS Current")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[2..4]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'LF2-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
+          name: "LF2-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
       - datapoint:
-          name: 'LB1'
+          name: "LB1"
           id: 0x560
           store:
             default: 0
@@ -2010,16 +2008,16 @@ message-processing:
                   $chartStore.get("EMS Current")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[4..6]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'LB1-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
+          name: "LB1-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
       - datapoint:
-          name: 'LB2'
+          name: "LB2"
           id: 0x561
           store:
             default: 0
@@ -2029,21 +2027,21 @@ message-processing:
                   $chartStore.get("EMS Current")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u16[6..8]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[6..8]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'LB2-Beckhoff'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 10)'
-  - name: 'RequestedForceVerticalLevi'
+          name: "LB2-Beckhoff"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 10)"
+  - name: "RequestedForceVerticalLevi"
     can:
       id: 0x51C
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'ZRequested'
+          name: "ZRequested"
           id: 0x537
           store:
             default: 0
@@ -2053,16 +2051,16 @@ message-processing:
                   $chartStore.get("Requested Force Vertical")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'Z'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 100)'
+          name: "Z"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 100)"
       - datapoint:
-          name: 'RollRequested'
+          name: "RollRequested"
           id: 0x538
           store:
             default: 0
@@ -2072,16 +2070,16 @@ message-processing:
                   $chartStore.get("Requested Force Vertical")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[2..4]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'RollRequested'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 100)'
+          name: "RollRequested"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 100)"
       - datapoint:
-          name: 'PitchRequested'
+          name: "PitchRequested"
           id: 0x539
           store:
             default: 0
@@ -2091,21 +2089,21 @@ message-processing:
                   $chartStore.get("Requested Force Vertical")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u16[4..6]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[4..6]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'PitchRequested'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 100)'
-  - name: 'RequestedForceHorizontalLevi'
+          name: "PitchRequested"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 100)"
+  - name: "RequestedForceHorizontalLevi"
     can:
       id: 0x51D
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'YRequested'
+          name: "YRequested"
           id: 0x53A
           store:
             default: 0
@@ -2115,16 +2113,16 @@ message-processing:
                   $chartStore.get("Requested Force Horizontal")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[0..2]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'YRequested'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 100)'
+          name: "YRequested"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 100)"
       - datapoint:
-          name: 'YawRequested'
+          name: "YawRequested"
           id: 0x53B
           store:
             default: 0
@@ -2134,21 +2132,21 @@ message-processing:
                   $chartStore.get("Requested Force Horizontal")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'identity_u16:u16->u16'
+        getter: "u16[2..4]"
+        can-conversion: "identity_u16:u16->u16"
         gs:
-          conversion: 'gs_u16:u16'
+          conversion: "gs_u16:u16"
         beckhoff:
-          name: 'YawRequested'
-          levi_type: 'LReal'
-          formula: 'LREAL_TO_UINT($ * 100)'
-  - name: 'TempHEMS'
+          name: "YawRequested"
+          levi_type: "LReal"
+          formula: "LREAL_TO_UINT($ * 100)"
+  - name: "TempHEMS"
     can:
       id: 0x33D
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'TempHEMS1'
+          name: "TempHEMS1"
           id: 0x53C
           store:
             default: 0
@@ -2158,13 +2156,13 @@ message-processing:
                   $chartStore.get("Temperatures HEMS")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u8[0..1]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[0..1]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempHEMS2'
+          name: "TempHEMS2"
           id: 0x53D
           store:
             default: 0
@@ -2174,13 +2172,13 @@ message-processing:
                   $chartStore.get("Temperatures HEMS")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u8[1..2]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[1..2]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempHEMS3'
+          name: "TempHEMS3"
           id: 0x53E
           store:
             default: 0
@@ -2190,13 +2188,13 @@ message-processing:
                   $chartStore.get("Temperatures HEMS")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u8[2..3]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[2..3]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempHEMS4'
+          name: "TempHEMS4"
           id: 0x53F
           store:
             default: 0
@@ -2206,13 +2204,13 @@ message-processing:
                   $chartStore.get("Temperatures HEMS")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u8[3..4]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[3..4]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempHEMS5'
+          name: "TempHEMS5"
           id: 0x540
           store:
             default: 0
@@ -2222,13 +2220,13 @@ message-processing:
                   $chartStore.get("Temperatures HEMS")!.addEntry(5, curr);
                   return curr;
               }
-        getter: 'u8[4..5]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[4..5]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempHEMS6'
+          name: "TempHEMS6"
           id: 0x541
           store:
             default: 0
@@ -2238,13 +2236,13 @@ message-processing:
                   $chartStore.get("Temperatures HEMS")!.addEntry(6, curr);
                   return curr;
               }
-        getter: 'u8[5..6]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[5..6]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempHEMS7'
+          name: "TempHEMS7"
           id: 0x542
           store:
             default: 0
@@ -2254,13 +2252,13 @@ message-processing:
                   $chartStore.get("Temperatures HEMS")!.addEntry(7, curr);
                   return curr;
               }
-        getter: 'u8[6..7]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[6..7]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempHEMS8'
+          name: "TempHEMS8"
           id: 0x543
           store:
             default: 0
@@ -2270,18 +2268,18 @@ message-processing:
                   $chartStore.get("Temperatures HEMS")!.addEntry(8, curr);
                   return curr;
               }
-        getter: 'u8[7..8]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[7..8]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'TempEMS'
+          conversion: "gs_2p_float:f32"
+  - name: "TempEMS"
     can:
       id: 0x33E
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'TempEMS1'
+          name: "TempEMS1"
           id: 0x544
           store:
             default: 0
@@ -2291,13 +2289,13 @@ message-processing:
                   $chartStore.get("Temperatures EMS")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u8[0..1]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[0..1]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempEMS2'
+          name: "TempEMS2"
           id: 0x545
           store:
             default: 0
@@ -2307,13 +2305,13 @@ message-processing:
                   $chartStore.get("Temperatures EMS")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u8[1..2]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[1..2]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempEMS3'
+          name: "TempEMS3"
           id: 0x546
           store:
             default: 0
@@ -2323,13 +2321,13 @@ message-processing:
                   $chartStore.get("Temperatures EMS")!.addEntry(3, curr);
                   return curr;
               }
-        getter: 'u8[2..3]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[2..3]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempEMS4'
+          name: "TempEMS4"
           id: 0x547
           store:
             default: 0
@@ -2339,13 +2337,13 @@ message-processing:
                   $chartStore.get("Temperatures EMS")!.addEntry(4, curr);
                   return curr;
               }
-        getter: 'u8[3..4]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[3..4]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempEMS5'
+          name: "TempEMS5"
           id: 0x548
           store:
             default: 0
@@ -2355,13 +2353,13 @@ message-processing:
                   $chartStore.get("Temperatures EMS")!.addEntry(5, curr);
                   return curr;
               }
-        getter: 'u8[4..5]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[4..5]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempEMS6'
+          name: "TempEMS6"
           id: 0x549
           store:
             default: 0
@@ -2371,13 +2369,13 @@ message-processing:
                   $chartStore.get("Temperatures EMS")!.addEntry(6, curr);
                   return curr;
               }
-        getter: 'u8[5..6]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[5..6]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempEMS7'
+          name: "TempEMS7"
           id: 0x54A
           store:
             default: 0
@@ -2387,13 +2385,13 @@ message-processing:
                   $chartStore.get("Temperatures EMS")!.addEntry(7, curr);
                   return curr;
               }
-        getter: 'u8[6..7]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[6..7]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'TempEMS8'
+          name: "TempEMS8"
           id: 0x54B
           store:
             default: 0
@@ -2403,18 +2401,18 @@ message-processing:
                   $chartStore.get("Temperatures EMS")!.addEntry(8, curr);
                   return curr;
               }
-        getter: 'u8[7..8]'
-        can-conversion: 'decode_temperature:u8->f32'
-        display-units: '°C'
+        getter: "u8[7..8]"
+        can-conversion: "decode_temperature:u8->f32"
+        display-units: "°C"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'PressureBrakes'
+          conversion: "gs_2p_float:f32"
+  - name: "PressureBrakes"
     can:
       id: 0x33F
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PressureLow'
+          name: "PressureLow"
           id: 0x666
           critical: true
           store:
@@ -2425,13 +2423,13 @@ message-processing:
                   $chartStore.get("Brake Pressure")!.addEntry(1, curr);
                   return curr;
               }
-        getter: 'u16[0..2]'
-        can-conversion: 'multiply_100:u16->f32'
-        display-units: 'Bar'
+        getter: "u16[0..2]"
+        can-conversion: "multiply_100:u16->f32"
+        display-units: "Bar"
         gs:
-          conversion: 'gs_2p_float:f32'
+          conversion: "gs_2p_float:f32"
       - datapoint:
-          name: 'PressureHigh'
+          name: "PressureHigh"
           id: 0x667
           critical: true
           store:
@@ -2442,210 +2440,210 @@ message-processing:
                   $chartStore.get("Brake Pressure")!.addEntry(2, curr);
                   return curr;
               }
-        getter: 'u16[2..4]'
-        can-conversion: 'multiply_100:u16->f32'
-        display-units: 'Bar'
+        getter: "u16[2..4]"
+        can-conversion: "multiply_100:u16->f32"
+        display-units: "Bar"
         gs:
-          conversion: 'gs_2p_float:f32'
-  - name: 'SensorHubEmergency'
+          conversion: "gs_2p_float:f32"
+  - name: "SensorHubEmergency"
     can:
       id: 0x1A
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'SensorHubEmergency'
+          name: "SensorHubEmergency"
           id: 0x696
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
-  - name: 'PowertrainEmergency'
+          conversion: "gs_u8:u8"
+  - name: "PowertrainEmergency"
     can:
       id: 0x33
       bus: can2
     datapoint-conversion:
       - datapoint:
-          name: 'PtcErrorEmergency'
+          name: "PtcErrorEmergency"
           id: 0x697
           store:
             default: 0
-        getter: 'u8[0..1]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[0..1]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
+          conversion: "gs_u8:u8"
       - datapoint:
-          name: 'BmsErrorLowVoltage'
+          name: "BmsErrorLowVoltage"
           id: 0x698
           store:
             default: 0
-        getter: 'u8[1..2]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[1..2]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
+          conversion: "gs_u8:u8"
       - datapoint:
-          name: 'BmsErrorHighVoltage'
+          name: "BmsErrorHighVoltage"
           id: 0x699
           store:
             default: 0
-        getter: 'u8[2..3]'
-        can-conversion: 'identity_u8:u8->u8'
+        getter: "u8[2..3]"
+        can-conversion: "identity_u8:u8->u8"
         gs:
-          conversion: 'gs_u8:u8'
+          conversion: "gs_u8:u8"
 
 commands:
-  - name: 'SendHashes'
+  - name: "SendHashes"
     id: 0x888
-  - name: 'LeviDropdown'
+  - name: "LeviDropdown"
     id: 0x1BA
     can:
       id: 0x1BA
       bus: can2
-  - name: 'DefaultCommand'
+  - name: "DefaultCommand"
     id: 0xFFF
-  - name: 'GeneralEmergency'
+  - name: "GeneralEmergency"
     id: 0x1
     can:
       id: 0x1
       bus: can2
-  - name: 'FSMUpdate'
+  - name: "FSMUpdate"
     id: 0x190
     can:
       id: 0x190
       bus: can2
       trim: 7
-  - name: 'SystemCheck'
+  - name: "SystemCheck"
     id: 0x191
     can:
       id: 0x191
       bus: can2
-  - name: 'ResetSenseCon'
+  - name: "ResetSenseCon"
     id: 0x1AA
     can:
-        id: 0x1AA
-        bus: can2
-  - name: 'ResetPowertrain'
+      id: 0x1AA
+      bus: can2
+  - name: "ResetPowertrain"
     id: 0x1AB
     can:
       id: 0x1AB
       bus: can2
-  - name: 'ResetPropulsion'
+  - name: "ResetPropulsion"
     id: 0x1AC
     can:
       id: 0x1AC
       bus: can2
-  - name: 'ResetLevitation'
+  - name: "ResetLevitation"
     id: 0x1AD
     can:
       id: 0x1AD
       bus: can2
-  - name: 'ResetLocalization'
+  - name: "ResetLocalization"
     id: 0x1B5
     can:
       id: 0x1B5
       bus: can2
-  - name: 'Heartbeat'
+  - name: "Heartbeat"
     id: 0x042
-  - name: 'FrontendHeartbeat'
+  - name: "FrontendHeartbeat"
     id: 0x043
-  - name: 'EmitEvent'
+  - name: "EmitEvent"
     id: 0x7A0
-  - name: 'StartHV'
+  - name: "StartHV"
     id: 0x60
-  - name: 'StopHV'
+  - name: "StopHV"
     id: 0x61
-  - name: 'LevitationOn'
+  - name: "LevitationOn"
     id: 0x407
-  - name: 'LevitationOff'
+  - name: "LevitationOff"
     id: 0x408
-  - name: 'PropulsionOn'
+  - name: "PropulsionOn"
     id: 0x6c
-  - name: 'MotorBrake'
+  - name: "MotorBrake"
     id: 0x6d
-  - name: 'SendPropulsionControlWord1'
+  - name: "SendPropulsionControlWord1"
     id: 0x1AE
     can:
       id: 0x1AE
       bus: can2
-  - name: 'SendPropulsionControlWord2'
+  - name: "SendPropulsionControlWord2"
     id: 0x1AF
     can:
       id: 0x1AF
       bus: can2
-  - name: 'PPControlParams'
+  - name: "PPControlParams"
     id: 0x1B0
     can:
       id: 0x1B0
       bus: can2
-  - name: 'PPDebugParams1'
+  - name: "PPDebugParams1"
     id: 0x1B1
     can:
       id: 0x1B1
       bus: can2
-  - name: 'PPDebugParams2'
+  - name: "PPDebugParams2"
     id: 0x1B2
     can:
       id: 0x1B2
       bus: can2
-  - name: 'PPTestControlParams'
+  - name: "PPTestControlParams"
     id: 0x1B3
     can:
       id: 0x1B3
       bus: can2
-  - name: 'PPRunParametersB'
+  - name: "PPRunParametersB"
     id: 0x1B7
     can:
       id: 0x1B7
       bus: can2
-  - name: 'PPRunParameters1'
+  - name: "PPRunParameters1"
     id: 0x1B8
     can:
       id: 0x1B8
       bus: can2
-  - name: 'PPRunParameters2'
+  - name: "PPRunParameters2"
     id: 0x1B9
     can:
       id: 0x1B9
       bus: can2
-  - name: 'Shutdown'
+  - name: "Shutdown"
     id: 0x5f
-  - name: 'EmergencyBrake'
+  - name: "EmergencyBrake"
     id: 0xff
     can:
       id: 0x002
       bus: can2
-  - name: 'SystemReset'
+  - name: "SystemReset"
     id: 0x192
-  - name: 'RearmSDC'
+  - name: "RearmSDC"
     id: 0x1B6
-  - name: 'ConnectionEstablished'
+  - name: "ConnectionEstablished"
     id: 0x206
-  - name: 'ConnectionClosed'
+  - name: "ConnectionClosed"
     id: 0x207
-  - name: 'MockLeviAck'
+  - name: "MockLeviAck"
     id: 0x209
-  - name: 'MockProp1Ack'
+  - name: "MockProp1Ack"
     id: 0x210
-  - name: 'MockProp2Ack'
+  - name: "MockProp2Ack"
     id: 0x208
-  - name: 'MockHVOn'
+  - name: "MockHVOn"
     id: 0x211
-  - name: 'Charge'
+  - name: "Charge"
     id: 0x213
-  - name: 'StopCharge'
+  - name: "StopCharge"
     id: 0x214
-  - name: 'FaultFixed'
+  - name: "FaultFixed"
     id: 0x215
-  - name: 'FailLeviSystemCheck'
+  - name: "FailLeviSystemCheck"
     id: 0x216
-  - name: 'FailProp1SystemCheck'
+  - name: "FailProp1SystemCheck"
     id: 0x217
-  - name: 'FailProp2SystemCheck'
+  - name: "FailProp2SystemCheck"
     id: 0x218
-  - name: 'ReconnectEmergency'
+  - name: "ReconnectEmergency"
     id: 0x219
-  - name: 'OverrideRearmSdc'
+  - name: "OverrideRearmSdc"
     id: 0x21A
 
 beckhoff:

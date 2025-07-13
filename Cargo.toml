@@ -48,8 +48,10 @@ panic-rtt-target = "*"
 goose_utils = { path = "util" }
 
 [workspace.dependencies.embassy-stm32]
-git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+path = "/Users/andtsa/loop/9/dhembassy/embassy/embassy-stm32/"
+# git = "https://github.com/delft-hyperloop/embassy"
+# rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+# branch = "main"
 features = [
     "defmt",
     "stm32h743zi",
@@ -61,22 +63,30 @@ features = [
 ]
 
 [workspace.dependencies.embassy-boot]
-git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+path = "/Users/andtsa/loop/9/dhembassy/embassy/embassy-boot/"
+# git = "https://github.com/delft-hyperloop/embassy"
+# rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+# branch = "main"
 
 [workspace.dependencies.embassy-boot-stm32]
-git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+path = "/Users/andtsa/loop/9/dhembassy/embassy/embassy-boot-stm32/"
+# git = "https://github.com/delft-hyperloop/embassy"
+# rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+# branch = "main"
 
 
 [workspace.dependencies.embassy-sync]
-git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+path = "/Users/andtsa/loop/9/dhembassy/embassy/embassy-sync/"
+# git = "https://github.com/delft-hyperloop/embassy"
+# rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+# branch = "main"
 features = ["defmt"]
 
 [workspace.dependencies.embassy-executor]
-git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+path = "/Users/andtsa/loop/9/dhembassy/embassy/embassy-executor/"
+# git = "https://github.com/delft-hyperloop/embassy"
+# rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+# branch = "main"
 features = [
     # "task-arena-size-32768",
     "arch-cortex-m",
@@ -86,21 +96,29 @@ features = [
 ]
 
 [workspace.dependencies.embassy-net]
-git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+path = "/Users/andtsa/loop/9/dhembassy/embassy/embassy-net/"
+# git = "https://github.com/delft-hyperloop/embassy"
+# branch = "main"
+# rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
 features = ["medium-ethernet", "proto-ipv4", "tcp", "dns", "dhcpv4", "defmt", "packet-trace", "icmp", "udp"]
 
 [workspace.dependencies.embassy-net-driver]
-git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+path = "/Users/andtsa/loop/9/dhembassy/embassy/embassy-net-driver/"
+# git = "https://github.com/delft-hyperloop/embassy"
+# rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+# branch = "main"
 
 [workspace.dependencies.embassy-time]
-git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+path = "/Users/andtsa/loop/9/dhembassy/embassy/embassy-time/"
+# git = "https://github.com/delft-hyperloop/embassy"
+# rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+# branch = "main"
 
 [workspace.dependencies.embassy-futures]
-git = "https://github.com/delft-hyperloop/embassy"
-rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+path = "/Users/andtsa/loop/9/dhembassy/embassy/embassy-futures/"
+# git = "https://github.com/delft-hyperloop/embassy"
+# rev = "4d9b41714da77d82811f39bd6feabe161e93552c"
+# branch = "main"
 
 [workspace.dependencies.smoltcp]
 git = "https://github.com/smoltcp-rs/smoltcp"

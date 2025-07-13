@@ -385,8 +385,8 @@ impl GsMaster {
         }
 
         // Connect to the GS
-        self.should_reconnect = false;
         self.connect().await;
+        self.should_reconnect = false;
     }
 
     /// Transmits the messages from the PodToGsChannel.

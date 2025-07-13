@@ -91,6 +91,8 @@ impl FSM {
                         || self.state == States::Braking)
                         && event != Event::PTCIdleAck
                         && event != Event::PTCFailure
+                        && event != Event::EbsPressureDeployed
+                        && event != Event::EbsPressureRetracted
                     {
                         defmt::info!(
                             "FSM {{ state: {} }}: Received event: {:?}",

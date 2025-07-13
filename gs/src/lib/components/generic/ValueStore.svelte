@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {latestTimestamp} from "$lib/stores/state";
+    import { latestTimestamp } from '$lib/stores/state';
 
     const STALE_DATA_TICKS = 500;
 
@@ -9,10 +9,11 @@
     export let name: string;
     export let upper: string | undefined = undefined;
     export let lower: string | undefined = undefined;
+    export let className: string = "";
 </script>
 
 <div class="flex flex-col">
-    <div class="flex flex-row gap-1">
+    <div class="flex flex-row gap-1 {className}">
         {#if displayName}
             <span>{name}: </span>
         {/if}

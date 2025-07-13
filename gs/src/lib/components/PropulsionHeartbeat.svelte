@@ -1,6 +1,7 @@
 <script lang="ts">
     import { GrandDataDistributor } from '$lib';
     import type { NamedDatatype } from '$lib/types';
+    import ValueStore from '$lib/components/generic/ValueStore.svelte';
 
     export let storeName: NamedDatatype;
     export let labels: string[] = [""];
@@ -11,12 +12,12 @@
 
 <div class="grid grid-cols-11 gap-2 items-center">
     <span class="text-center">Heartbeat:</span>
-    <span class="text-center">{($ppControlWordStore.value >> 2 & 1) + ($ppControlWordStore.value >> 3 & 1) * 2}</span>
-    <span class="text-center">{$ppControlWordStore.value >> 1 & 1}</span>
-    <span class="text-center">{$ppControlWordStore.value & 1}</span>
+    <ValueStore className="justify-center" value={($ppControlWordStore.value >> 2 & 1) + ($ppControlWordStore.value >> 3 & 1) * 2} timestamp={$ppControlWordStore.timestamp} name="" displayName={false}/>
+    <ValueStore className="justify-center" value={$ppControlWordStore.value >> 1 & 1} timestamp={$ppControlWordStore.timestamp} name="" displayName={false}/>
+    <ValueStore className="justify-center" value={$ppControlWordStore.value & 1} timestamp={$ppControlWordStore.timestamp} name="" displayName={false}/>
 
     {#each Array.from({ length: 7 }, (_, i) => labels.length - i) as i}
-        <span class="text-center">{$ppControlWordStore.value >> (i + 4) & 1}</span>
+        <ValueStore className="justify-center" value={$ppControlWordStore.value >> (i + 4) & 1} timestamp={$ppControlWordStore.timestamp} displayName={false} name=""/>
     {/each}
 
     <span/>

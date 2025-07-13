@@ -6,13 +6,19 @@ use ratatui::widgets::*;
 
 use crate::app::App;
 use crate::app::InputMode;
+use crate::timestamp;
 
 impl Widget for &App {
     fn render(self, area: Rect, buf: &mut Buffer) {
         // split top and bottom for content & search bar
 
-        let [content_area, input_area] =
-            Layout::vertical([Constraint::Min(10), Constraint::Length(3)]).areas(area);
+        let [content_area, commands_area, stats_area, input_area] = Layout::vertical([
+            Constraint::Min(10),
+            Constraint::Length(6),
+            Constraint::Length(8),
+            Constraint::Length(3),
+        ])
+        .areas(area);
 
         // first get the rows we should render
         let mut entries: Vec<(&Datatype, &ProcessedData)> = self.data.iter().collect();
@@ -85,5 +91,59 @@ impl Widget for &App {
         let inner = sb.inner(input_area);
         sb.render(input_area, buf);
         search.render(inner, buf);
+
+        let commands_list = self
+            .commands
+            .iter()
+            .map(|c| format!("{c:?}").split_once("(").unwrap().0.to_string())
+            .collect::<Vec<String>>();
+
+        let longest = commands_list.iter().map(|x| x.len()).max().unwrap_or(40);
+
+        let columns = if area.width as usize >= (2 * longest + 4) {
+            area.width as usize / (longest + 2)
+        } else {
+            1
+        };
+        let chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(
+                std::iter::repeat_n(Constraint::Percentage(100 / columns as u16), columns)
+                    .collect::<Vec<_>>(),
+            )
+            .split(commands_area);
+        for (i, chunk_area) in chunks.iter().enumerate() {
+            let slice = if i * chunk_size < commands_list.len() {
+                &commands_list
+                    [i * chunk_size..std::cmp::min((i + 1) * chunk_size, commands_list.len())]
+            } else {
+                &[]
+            };
+
+            let rows = slice.iter().map(|key| {
+                let row = Row::new(vec![key.clone(), timestamp()]);
+                if !key.is_empty()
+                    && !self.cur_search.is_empty()
+                    && key.to_lowercase().contains(&self.cur_search)
+                {
+                    row.on_yellow().black()
+                } else {
+                    row
+                }
+            });
+
+            let table_col_widths = vec![Constraint::Percentage(50), Constraint::Percentage(50)];
+            let table = Table::new(rows, table_col_widths)
+                .header(Row::new(vec!["command", "timestamp"]))
+                .block(Block::default().borders(Borders::ALL).title(format!(
+                    "commands sent to pod ({}/{})",
+                    i + 1,
+                    columns
+                )))
+                .column_spacing(1)
+                .highlight_symbol(">>");
+
+            ratatui::widgets::Widget::render(table, *chunk_area, buf);
+        }
     }
 }

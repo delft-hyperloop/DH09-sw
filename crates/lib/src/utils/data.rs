@@ -99,6 +99,8 @@ pub enum Event {
     Heartbeat,
     /// No event happened
     NoEvent,
+    /// Event used to resend the hashes to the ground station
+    SendHashes,
 
     /// Used as upper bound when transmuting
     #[doc(hidden)]

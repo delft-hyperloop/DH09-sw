@@ -88,7 +88,7 @@ impl FromStr for Ty {
             "f32" => Ok(Self::F32),
             "f64" => Ok(Self::F64),
             s if s.starts_with("[u8;") && s.ends_with(']') => {
-                let n = s[4..s.len() - 1].trim().parse().map_err(|_| "invalid array size")?;
+                let n = s[4..s.len() - 1].trim().parse().map_err(|_| "invalid array size").unwrap();
                 Ok(Self::U8Arr(n))
             },
             _ => Err("invalid type"),
@@ -232,8 +232,8 @@ impl FromStr for CanConversionSpec {
             return Err(format!("missing conversion arrow in {s:?}"));
         };
 
-        let input = input_ty.parse::<Ty>()?;
-        let output = output_ty.parse::<Ty>()?;
+        let input = input_ty.parse::<Ty>().unwrap();
+        let output = output_ty.parse::<Ty>().unwrap();
 
         Ok(Self { proc_name: proc_name.to_string(), input, output })
     }
@@ -262,7 +262,7 @@ impl FromStr for ConversionGsSpec {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         s.split_once(':').map_or(Err(format!("missing colon in {s:?}")), |(suffix, ty_str)| {
-            let input = ty_str.parse::<Ty>()?;
+            let input = ty_str.parse::<Ty>().unwrap();
             Ok(Self { procedure_suffix: suffix.to_string(), input })
         })
     }
@@ -387,7 +387,7 @@ impl FromStr for GetterSpec {
             return Err(format!("missing opening bracket `[` in {s:?}"));
         };
 
-        let ty = ty_str.parse::<Ty>()?;
+        let ty = ty_str.parse::<Ty>().unwrap();
         let Some(range) = range_and_closing_delim.strip_suffix(']') else {
             return Err(format!("missing closing bracket `]` in {s:?}"));
         };
@@ -396,8 +396,8 @@ impl FromStr for GetterSpec {
             return Err(format!("missing range delimiter `..` in {s:?}"));
         };
 
-        let start = start.parse().map_err(|e| format!("invalid range start ({e}) in {s:?}"))?;
-        let end = end.parse().map_err(|e| format!("invalid range end ({e}) in {s:?}"))?;
+        let start = start.parse().map_err(|e| format!("invalid range start ({e}) in {s:?}")).unwrap();
+        let end = end.parse().map_err(|e| format!("invalid range end ({e}) in {s:?}")).unwrap();
 
         if end - start != ty.ty_size() {
             return Err(format!(

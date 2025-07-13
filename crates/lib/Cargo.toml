@@ -26,6 +26,7 @@ defmt-rtt.workspace = true
 # defmt-rtt = {workspace = true, optional = true}
 # defmt-semihosting = {workspace = true, optional = true}
 embedded-can.workspace = true
+no-panic = "0.1"
 
 [build-dependencies]
 goose_utils.workspace = true

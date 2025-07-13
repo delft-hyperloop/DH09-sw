@@ -2,10 +2,8 @@
 #![allow(clippy::match_single_binding)]
 use core::fmt::Debug;
 use core::fmt::Formatter;
-use core::time::Duration;
 
 use defmt::info;
-use defmt::Format;
 use embassy_futures::select::select;
 use embassy_futures::select::Either;
 use embassy_stm32::gpio::Output;
@@ -315,11 +313,8 @@ impl FSM {
                 self.transition(States::Fault).await;
             }
             (
-                States::Demo
-                | States::Levitating
-                | States::Accelerating
-                | States::Braking,
-                Event::EbsPressureDeployed
+                States::Demo | States::Levitating | States::Accelerating | States::Braking,
+                Event::EbsPressureDeployed,
             ) => {
                 self.event_sender_gs
                     .send(Event::Emergency {

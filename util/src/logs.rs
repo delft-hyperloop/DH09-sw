@@ -1,5 +1,6 @@
 pub fn diy_ln() -> String {
     r#"
+#[allow(clippy::excessive_precision)]
 pub mod log_32 {
     /* origin: FreeBSD /usr/src/lib/msun/src/e_logf.c */
     /*
@@ -25,7 +26,7 @@ pub mod log_32 {
     const LG4: f32 = 0.24279078841; /*  0xf89e26.0p-26 */
     
     /// The natural logarithm of `x` (f32).
-    #[cfg_attr(all(test, assert_no_panic), no_panic::no_panic)]
+    #[no_panic::no_panic]
     pub fn logf(mut x: f32) -> f32 {
         let x1p25 = f32::from_bits(0x4c000000); // 0x1p25f === 2 ^ 25
     
@@ -38,7 +39,8 @@ pub mod log_32 {
                 return -1. / (x * x); /* log(+-0)=-inf */
             }
             if (ix >> 31) != 0 {
-                return (x - x) / 0.; /* log(-#) = NaN */
+                // return (x - x) / 0.; /* log(-#) = NaN */
+                return f32::NAN;
             }
             /* subnormal number, scale up x */
             k -= 25;
@@ -69,6 +71,7 @@ pub mod log_32 {
     }
 }
 
+#[allow(clippy::excessive_precision)]
 pub mod log_64 {
     /* origin: FreeBSD /usr/src/lib/msun/src/e_log.c */
     /*
@@ -132,7 +135,6 @@ pub mod log_64 {
      * compiler will convert from decimal to binary accurately enough
      * to produce the hexadecimal values shown.
      */
-    
     const LN2_HI: f64 = 6.93147180369123816490e-01; /* 3fe62e42 fee00000 */
     const LN2_LO: f64 = 1.90821492927058770002e-10; /* 3dea39ef 35793c76 */
     const LG1: f64 = 6.666666666666735130e-01; /* 3FE55555 55555593 */
@@ -144,7 +146,7 @@ pub mod log_64 {
     const LG7: f64 = 1.479819860511658591e-01; /* 3FC2F112 DF3E5244 */
     
     /// The natural logarithm of `x` (f64).
-    #[cfg_attr(all(test, assert_no_panic), no_panic::no_panic)]
+    #[no_panic::no_panic]
     pub fn log(mut x: f64) -> f64 {
         let x1p54 = f64::from_bits(0x4350000000000000); // 0x1p54 === 2 ^ 54
     
@@ -158,7 +160,8 @@ pub mod log_64 {
                 return -1. / (x * x); /* log(+-0)=-inf */
             }
             if hx >> 31 != 0 {
-                return (x - x) / 0.0; /* log(-#) = NaN */
+                // return (x - x) / 0.0; /* log(-#) = NaN */
+                return f64::NAN;
             }
             /* subnormal number, scale x up */
             k -= 54;

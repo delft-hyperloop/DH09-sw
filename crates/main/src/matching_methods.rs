@@ -12,6 +12,7 @@ use lib::Event;
 /// the payload or an emergency which also requires the type of emergency.
 pub fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
     match id {
+        // Pressure brakes
         831 => {
             let pressure_low = u16::from_be_bytes([payload[0], payload[1]]);
             if pressure_low < 3500 {
@@ -23,9 +24,14 @@ pub fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
 
         // If it gets a ptc logs message from the powertrain controller with state HV
         // on, send ack to fsm
-        1251 if payload[0] == 0 => Event::PTCIdleAck,
-        1251 if payload[0] == 2 => Event::HVOnAck,
-        1251 if payload[0] == 3 => Event::PTCFailure,
+        1251 => {
+            match payload[0] { 
+                0 => Event::PTCIdleAck,
+                2 => Event::HVOnAck,
+                3 => Event::PTCFailure,
+                _ => Event::NoEvent,
+            }
+        }
 
         // Check if the velocity is 0, which means that the pod is not moving (used for
         // transitioning from the braking state to the levitating state)

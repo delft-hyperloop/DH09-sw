@@ -16,7 +16,7 @@ use embassy_stm32::gpio::Speed;
 use embassy_stm32::peripherals;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::signal::Signal;
-use embassy_time::Timer;
+use embassy_time::{Instant, Timer};
 use fsm::FSM;
 use lib::EventChannel;
 use lib::EventReceiver;
@@ -252,10 +252,18 @@ async fn main(spawner: Spawner) -> ! {
         p.DWT.enable_cycle_counter();
     }
 
+    let measure_start = Instant::now();
+
+    let mut next = DWT::cycle_count();
+    let mut prev: u32;
     // keep main running, or program exits!
     loop {
-        defmt::warn!("total cycles: {}", DWT::cycle_count());
-        defmt::warn!("total sleep: {}", DWT::sleep_count());
+        prev = next;
+        let next = DWT::cycle_count();
+        defmt::warn!("total cycles: {}->{}", prev, next);
+        defmt::warn!("delta: {}", next - prev);
+        defmt::warn!("total elapsed {}", measure_start.elapsed().as_micros());
+        defmt::warn!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         Timer::after_millis(1000).await;
     }
 }

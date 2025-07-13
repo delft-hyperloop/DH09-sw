@@ -2,6 +2,7 @@
 //! GS.
 
 use defmt::*;
+use embassy_futures::yield_now;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::pubsub::WaitResult;
 use embassy_sync::signal::Signal;
@@ -47,6 +48,7 @@ pub async fn forward_can_datapoints(
             WaitResult::Message(envelope) => envelope,
             WaitResult::Lagged(i) => {
                 warn!("Lagged {} messages", i);
+                yield_now().await;
                 continue;
             }
         };
@@ -123,11 +125,8 @@ pub async fn forward_fsm_events(
         let event = event_receiver.receive().await;
 
         // Match the event to a CAN envelope and send it
-        let envelope = match_event_to_can_envelope(event.clone());
-        match envelope {
-            Some(envelope) => can_tx.send(envelope).await,
-            None => {}
-        }
+        let envelope = match_event_to_can_envelope(event);
+        if let Some(envelope) = envelope { can_tx.send(envelope).await }
 
         // Send hashes to the ground station
         if let Event::SendHashes = event {

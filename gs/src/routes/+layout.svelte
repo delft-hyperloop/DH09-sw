@@ -1078,7 +1078,7 @@
     }, 200));
 
     onMount(() => setInterval(async () => {
-        await invoke('send_command', { cmd_name: 'FrontendHeartbeat' }).catch((e) => {
+        await invoke('send_command', { cmdName: 'FrontendHeartbeat', val: 0 }).catch((e) => {
             console.error(`Couldn't send frontend heartbeat to the pod: ${e}`);
         });
     }, 200));

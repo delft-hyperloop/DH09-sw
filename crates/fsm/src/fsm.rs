@@ -139,12 +139,12 @@ impl FSM {
             }
 
             // check heartbeat
-            if self.last_heartbeat.elapsed().as_millis() > IP_TIMEOUT
-                && self.state != States::Boot
-                && self.state != States::Fault
-            {
-                self.transition(States::Fault).await;
-            }
+            // if self.last_heartbeat.elapsed().as_millis() > IP_TIMEOUT
+            //     && self.state != States::Boot
+            //     && self.state != States::Fault
+            // {
+            //     self.transition(States::Fault).await;
+            // }
         }
     }
 

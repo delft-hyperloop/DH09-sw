@@ -18,20 +18,15 @@
     const colorOff = "bg-surface-800";
     $: color = "bg-[#000]";
 
-    let blinkOn: boolean = false;
-
     let stores = GrandDataDistributor.getInstance().stores;
     let hvalSTate = stores.getWritable("HVALState");
 
     $: {
-        console.log("Changed hval value to " + $hvalSTate.value);
         switch($hvalSTate.value) {
             case 1: {
                 if (isGreen) {
                     color = green;
                     shadow = greenShadow;
-
-                    // console.log("Color should be green");
                 } else {
                     color = colorOff;
                     shadow = colorOff;

@@ -246,24 +246,22 @@ async fn main(spawner: Spawner) -> ! {
     //     can2.new_subscriber()
     // )));
 
+    let measure_start = Instant::now();
     unsafe {
         let mut p = cortex_m::Peripherals::steal();
         p.DCB.enable_trace();
         p.DWT.enable_cycle_counter();
     }
 
-    let measure_start = Instant::now();
-
-    let mut next = DWT::cycle_count();
-    let mut prev: u32;
     // keep main running, or program exits!
+    let mut next = DWT::cycle_count();
     loop {
-        prev = next;
-        let next = DWT::cycle_count();
-        defmt::warn!("total cycles: {}->{}", prev, next);
-        defmt::warn!("delta: {}", next - prev);
-        defmt::warn!("total elapsed {}", measure_start.elapsed().as_micros());
-        defmt::warn!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        let prev = next;
+        next = DWT::cycle_count();
+        // defmt::warn!("total cycles: {}->{}", prev, next);
+        // defmt::warn!("delta={}", next - prev);
+        // defmt::warn!("total sleep: {}", DWT::sleep_count());
+        // defmt::warn!("total elapsed: {}μs", measure_start.elapsed().as_micros());
         Timer::after_millis(1000).await;
     }
 }

@@ -1,11 +1,11 @@
 <script lang="ts">
-    import type {NamedDatatype} from "$lib/types";
-    import {GrandDataDistributor} from "$lib";
-    import {latestTimestamp} from "$lib/stores/state";
+    import type { NamedDatatype } from '$lib/types';
+    import { GrandDataDistributor } from '$lib';
+    import { latestTimestamp } from '$lib/stores/state';
     import { invoke } from '@tauri-apps/api/tauri';
     import { onMount } from 'svelte';
 
-    const STALE_DATA_TICKS = 500;
+    const STALE_DATA_TICKS = 650;
     export let datatype: NamedDatatype;
     export let name: string;
     export let displayName: boolean = true;

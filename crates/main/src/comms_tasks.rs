@@ -29,6 +29,19 @@ use crate::ethernet;
 use crate::ethernet::ticks;
 use crate::ethernet::types::PodToGsMessage;
 
+
+pub async fn forward_can2() {
+    
+}
+
+pub async fn forward_gs() {
+    
+}
+
+pub async fn forward_fsm() {
+    
+}
+
 /// Forward the messages received from the GS to the FSM.
 ///
 /// -`gs_rx`: Receiver object for the GS

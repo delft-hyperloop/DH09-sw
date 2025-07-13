@@ -1341,8 +1341,8 @@ message-processing:
     can:
       id: 0x385
       bus: can2
-    fsm:
-      event: "LeviAck"
+    # fsm:
+    #   event: "LeviAck"
     datapoint-conversion:
       - datapoint:
           name: "FSMAckLevi"
@@ -1655,8 +1655,8 @@ message-processing:
     can:
       id: 0x389
       bus: can2
-    fsm:
-      event: "LeviAck"
+    # fsm:
+    #   event: "LeviAck"
     datapoint-conversion:
       - datapoint:
           name: "LeviFSMStateChanged"

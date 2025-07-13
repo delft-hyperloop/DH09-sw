@@ -267,9 +267,11 @@ impl FSM {
             }
 
             // Stop levitating
-            (States::Levitating, Event::StopLevitating) => self
-                .event_sender2
-                .send(Event::FSMTransition(States::Demo.to_index())),
+            (States::Levitating, Event::StopLevitating) => {
+                self.event_sender2
+                    .send(Event::FSMTransition(States::Demo.to_index()))
+                    .await
+            }
             (States::Levitating, Event::LeviOffAck) => {
                 self.transition(States::Demo).await;
             }

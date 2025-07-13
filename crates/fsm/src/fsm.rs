@@ -7,7 +7,9 @@ use defmt::info;
 use embassy_futures::select::select;
 use embassy_futures::select::Either;
 use embassy_stm32::gpio::Output;
+use embassy_time::Instant;
 use embassy_time::Timer;
+use lib::config::IP_TIMEOUT;
 use lib::EmergencyType;
 use lib::Event;
 use lib::EventReceiver;
@@ -30,6 +32,8 @@ pub struct FSM {
     event_sender_gs: EventSender,
     /// The systems that should be checked in the `SystemCheck` state
     systems: CheckedSystems,
+    /// the last time we received a heartbeat from the frontend
+    last_heartbeat: Instant,
     /// The pin on the main PCB used for rearming the sdc
     rearm_sdc_pin: Output<'static>,
     /// The pin on the main PCB used for controlling the sdc
@@ -73,6 +77,8 @@ impl FSM {
                 propulsion1: false,
                 propulsion2: false,
             },
+            // this is a lie but i don't really care.
+            last_heartbeat: Instant::now(),
             rearm_sdc_pin,
             sdc_pin,
         }
@@ -83,7 +89,7 @@ impl FSM {
     /// `handle_events` method. It stops the loop if `handle_events` returns
     /// false. This case should only happen if the FSM receives
     /// the `ShutDown` event.
-    pub async fn run(&mut self) {
+    pub async fn run(&mut self) -> ! {
         loop {
             match select(self.event_receiver.receive(), Timer::after_millis(100)).await {
                 Either::First(event) => {
@@ -101,10 +107,7 @@ impl FSM {
                         );
                     }
 
-                    if !self.handle_events(event).await {
-                        defmt::info!("{}: Stopping", core::any::type_name::<Self>());
-                        break;
-                    }
+                    self.handle_events(event).await;
 
                     // Sends the FSM state to the ground station
                     self.event_sender_gs
@@ -135,6 +138,11 @@ impl FSM {
                         .send(Event::FSMTransition(self.state.to_index()))
                         .await;
                 }
+            }
+
+            // check heartbeat
+            if self.last_heartbeat.elapsed().as_millis() > IP_TIMEOUT {
+                self.transition(States::Fault).await;
             }
         }
     }
@@ -351,6 +359,8 @@ impl FSM {
 
                 self.transition(States::Fault).await
             }
+
+            (_, Event::Heartbeat) => self.last_heartbeat = Instant::now(),
 
             // Send a message to the GS with the state in which it failed to transition in case it
             // receives a wrong event. Doesn't apply for `Event::Stopped` since that is sent

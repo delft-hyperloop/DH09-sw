@@ -26,6 +26,7 @@ use lib::EventSender;
 
 use crate::can as can2;
 use crate::ethernet;
+use crate::ethernet::ticks;
 use crate::ethernet::types::PodToGsMessage;
 
 /// Forward the messages received from the GS to the FSM.
@@ -109,6 +110,8 @@ fn match_cmd_to_event(command: Command) -> Event {
 
         Command::OverrideRearmSdc(_) => Event::OverrideRearmSdc,
 
+        Command::FrontendHeartbeat(_) => Event::Heartbeat,
+
         _ => Event::NoEvent,
     }
 }
@@ -130,10 +133,6 @@ pub async fn forward_gs_to_can2(
 
         // Sends the hashes if the GS asks for them
         if let Command::SendHashes(_) = command {
-            fn ticks() -> u64 {
-                Instant::now().as_ticks()
-            }
-
             gs_tx
                 .send(PodToGsMessage {
                     dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),

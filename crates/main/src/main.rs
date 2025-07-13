@@ -75,7 +75,7 @@ async fn run_fsm(
     event_sender_gs: EventSender,
     rearm_sdc_pin: Output<'static>,
     sdc_pin: Output<'static>,
-) {
+) -> ! {
     let mut fsm = FSM::new(
         event_receiver,
         event_sender2,

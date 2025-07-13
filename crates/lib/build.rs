@@ -13,12 +13,10 @@
 
 #![allow(non_snake_case)]
 
-use anyhow::anyhow;
 use goose_utils::fmt::run_fmt;
 
 extern crate serde;
 
-use std::collections::BTreeMap;
 use std::env;
 use std::fs;
 use std::path::Path;
@@ -55,7 +53,6 @@ struct Pod {
     net: NetConfig,
     internal: InternalConfig,
     comm: Comm,
-    heartbeats: BTreeMap<String, u64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -70,9 +67,7 @@ struct NetConfig {
     ip: [u8; 4],
     port: u16,
     dhcp: bool,
-    // udp_port: u16,
     mac_addr: [u8; 6],
-    keep_alive: u64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -119,7 +114,6 @@ fn main() -> Result<()> {
     let dt = goose_utils::dataflow::collect_data_types(&df);
     let dt = goose_utils::datatypes::generate_data_types_from_config(&dt, false)?;
     content.push_str(&dt);
-    content.push_str(&configure_heartbeats(&config, &dt)?);
 
     content.push_str(&goose_utils::dataflow::mainpcb::make_main_pcb_code(&df));
     // content.push_str(&*can::main(&id_list));
@@ -164,24 +158,6 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn configure_heartbeats(config: &Config, dt: &str) -> Result<String> {
-    let mut x = format!(
-        "\npub const HEARTBEATS_LEN: usize = {};\npub const HEARTBEATS: [(Datatype, u64); HEARTBEATS_LEN] = [",
-        config.pod.heartbeats.len()
-    );
-    for (key, val) in &config.pod.heartbeats {
-        if !dt.contains(key) {
-            return Err(anyhow!(
-                "\n\nFound heartbeat for non-existing datatype: {:?}\nYou can only add a timeout for datatypes present in /config/datatypes.toml (check your spelling)\n",
-                key
-            ));
-        }
-        x.push_str(&format!("(Datatype::{key}, {val}), "));
-    }
-    x.push_str("];\n");
-    Ok(x)
-}
-
 fn configure_ip(config: &Config) -> String {
     format!(
         "pub const NETWORK_BUFFER_SIZE: usize = {};\n",
@@ -215,8 +191,7 @@ fn configure_pod(config: &Config) -> String {
         config.pod.net.mac_addr[3],
         config.pod.net.mac_addr[4],
         config.pod.net.mac_addr[5]
-    ) + &format!("pub const KEEP_ALIVE: u64 = {};\n", config.pod.net.keep_alive)
-        + &format!("pub const HEARTBEAT: u64 = {};\n", config.gs.heartbeat)
+    ) + &format!("pub const HEARTBEAT: u64 = {};\n", config.gs.heartbeat)
 }
 
 fn configure_internal(config: &Config) -> String {

@@ -95,6 +95,8 @@ pub enum Event {
     Prop2SystemCheckSuccess,
     /// Override event for rearming the sdc (only used for testing)
     OverrideRearmSdc,
+    /// <3
+    Heartbeat,
     /// No event happened
     NoEvent,
 

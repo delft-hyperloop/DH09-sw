@@ -289,7 +289,7 @@ async fn main(spawner: Spawner) -> ! {
     //     gs_comms.tx_publisher(),
     //     can2.new_subscriber()
     // )));
-    
+
     unsafe {
        let mut p = cortex_m::Peripherals::steal();
         p.DCB.enable_trace();

@@ -632,7 +632,7 @@ pub async fn check_critical_datapoints(
                 let dtt = critical_datapoints[index];
                 if dtt.0 == Datatype::DefaultDatatype {
                     break;
-                } else if now - dtt.1 >= timeout_time && dtt.2 {
+                } else if now - dtt.1 >= timeout_time {
                     // Send a message to the fsm to enter emergency
                     event_sender
                         .send(Event::Emergency {
@@ -641,15 +641,17 @@ pub async fn check_critical_datapoints(
                         .await;
 
                     // Send the ID of the stale datatype to the ground station
-                    gs_tx
-                        .send(PodToGsMessage {
-                            dp: Datapoint {
-                                datatype: Datatype::EmergencyStaleCriticalData,
-                                value: dtt.0.to_id() as u64,
-                                timestamp: Instant::now().as_ticks(),
-                            },
-                        })
-                        .await;
+                    if dtt.2 {
+                        gs_tx
+                            .send(PodToGsMessage {
+                                dp: Datapoint {
+                                    datatype: Datatype::EmergencyStaleCriticalData,
+                                    value: dtt.0.to_id() as u64,
+                                    timestamp: Instant::now().as_ticks(),
+                                },
+                            })
+                            .await;
+                    }
 
                     // Set the bool value to false to indicate that it shouldn't be sent again.
                     critical_datapoints[index] = (dtt.0, dtt.1, false);

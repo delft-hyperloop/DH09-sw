@@ -31,14 +31,14 @@
                     color = green;
                     shadow = greenShadow;
 
-                    console.log("Color should be green");
+                    // console.log("Color should be green");
                 } else {
                     color = colorOff;
                     shadow = colorOff;
                 }
                 break;
             }
-            case 2: {
+            case 0: {
                 if (isGreen) {
                     color = colorOff;
                     shadow = colorOff;

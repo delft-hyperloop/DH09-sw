@@ -3,6 +3,8 @@
 #![no_main]
 #![no_std]
 
+use cortex_m::peripheral::DCB;
+use cortex_m::peripheral::DWT;
 use defmt::*;
 use defmt_rtt as _;
 use embassy_executor::Spawner;
@@ -287,9 +289,17 @@ async fn main(spawner: Spawner) -> ! {
     //     gs_comms.tx_publisher(),
     //     can2.new_subscriber()
     // )));
+    
+    unsafe {
+       let mut p = cortex_m::Peripherals::steal();
+        p.DCB.enable_trace();
+        p.DWT.enable_cycle_counter();
+    }
 
     // keep main running, or program exits!
     loop {
-        Timer::after_millis(100_000).await;
+        defmt::warn!("total cycles: {}", DWT::cycle_count());
+        defmt::warn!("total sleep: {}", DWT::sleep_count());
+        Timer::after_millis(1000).await;
     }
 }

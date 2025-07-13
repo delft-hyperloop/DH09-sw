@@ -26,8 +26,8 @@ pub struct FSM {
     state: States,
     /// Object used for receive access to the event channel
     event_receiver: EventReceiver,
-    /// Object used to send message over the second CAN bus
-
+    /// Object used for send access to the event channel
+    event_sender: EventSender,
     /// The systems that should be checked in the `SystemCheck` state
     systems: CheckedSystems,
     /// the last time we received a heartbeat from the frontend
@@ -60,16 +60,14 @@ impl FSM {
     /// - A future for an instance of the `FSM` struct
     pub async fn new(
         event_receiver: EventReceiver,
-        event_sender2: EventSender,
-        event_sender_gs: EventSender,
+        event_sender: EventSender,
         rearm_sdc_pin: Output<'static>,
         sdc_pin: Output<'static>,
     ) -> Self {
         Self {
             state: States::Boot,
             event_receiver,
-            event_sender2,
-            event_sender_gs,
+            event_sender,
             systems: CheckedSystems {
                 levitation: false,
                 propulsion1: false,

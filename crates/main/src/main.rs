@@ -19,11 +19,15 @@ use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::signal::Signal;
 use embassy_time::Timer;
 use fsm::FSM;
+use lib::Event;
 use lib::EventChannel;
 use lib::EventReceiver;
 use lib::EventSender;
 use main::can as can2;
 use main::comms_tasks::check_critical_datapoints;
+use main::comms_tasks::forward_can_datapoints;
+use main::comms_tasks::forward_fsm_events;
+use main::comms_tasks::forward_gs_commands;
 use main::comms_tasks::gs_heartbeat;
 use main::ethernet::logic::GsMaster;
 use main::ethernet::types::EthPeripherals;
@@ -49,12 +53,11 @@ bind_interrupts!(
     }
 );
 
-/// fsm priority channel for events
-static EVENT_CHANNEL_FSM: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-/// can 2 priority channel for events
-static EVENT_CHANNEL_CAN2: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
-/// priority channel for events from the fsm to the gs
-static EVENT_CHANNEL_GS: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+/// Priority channel for sending events to the FSM
+static EVENT_CHANNEL_IN: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
+/// Priority channel for sending events from the FSM to CAN and GS (interpreted
+/// to datapoints/commands)
+static EVENT_CHANNEL_OUT: static_cell::StaticCell<EventChannel> = static_cell::StaticCell::new();
 
 /// struct that runs the ethernet stack for connecting to the ground station
 static GS_MASTER: StaticCell<GsMaster> = StaticCell::new();
@@ -67,19 +70,11 @@ static SIGNAL_CONNECTED: StaticCell<Signal<NoopRawMutex, bool>> = StaticCell::ne
 #[embassy_executor::task]
 async fn run_fsm(
     event_receiver: EventReceiver,
-    event_sender2: EventSender,
-    event_sender_gs: EventSender,
+    event_sender: EventSender,
     rearm_sdc_pin: Output<'static>,
     sdc_pin: Output<'static>,
 ) -> ! {
-    let mut fsm = FSM::new(
-        event_receiver,
-        event_sender2,
-        event_sender_gs,
-        rearm_sdc_pin,
-        sdc_pin,
-    )
-    .await;
+    let mut fsm = FSM::new(event_receiver, event_sender, rearm_sdc_pin, sdc_pin).await;
     fsm.run().await;
 }
 
@@ -138,23 +133,6 @@ async fn main(spawner: Spawner) -> ! {
     }
     let p = embassy_stm32::init(config);
 
-    // The event channel that will be used to transmit events to the FSM.
-    let event_channel_fsm: &mut EventChannel = EVENT_CHANNEL_FSM.init(EventChannel::new());
-    let event_receiver_fsm: EventReceiver = event_channel_fsm.receiver().into();
-    let event_sender_can2_to_fsm: EventSender = event_channel_fsm.sender().into();
-    let event_sender_gs_to_fsm: EventSender = event_channel_fsm.sender().into();
-    let event_sender_stale_data_checker: EventSender = event_channel_fsm.sender().into();
-
-    // The event channel that will be used to transmit events from the FSM over the
-    // CAN bus
-    let event_channel_can2: &mut EventChannel = EVENT_CHANNEL_CAN2.init(EventChannel::new());
-    let event_receiver_can2: EventReceiver = event_channel_can2.receiver().into();
-    let event_sender_can2: EventSender = event_channel_can2.sender().into();
-
-    let event_channel_gs: &mut EventChannel = EVENT_CHANNEL_GS.init(EventChannel::new());
-    let event_receiver_fsm_to_gs: EventReceiver = event_channel_gs.receiver().into();
-    let event_sender_fsm_to_gs: EventSender = event_channel_gs.sender().into();
-
     info!("Embassy initialized!");
 
     let can2 = {
@@ -178,29 +156,20 @@ async fn main(spawner: Spawner) -> ! {
     // voltage, pin PA10 rearms the system.
     let rearm_sdc_pin = Output::new(p.PA10, Level::Low, Speed::Medium);
     let mut sdc_pin = Output::new(p.PB0, Level::High, Speed::Medium);
-
     sdc_pin.set_high();
 
+    // Send events to the fsm
+    let event_channel_in_fsm = EVENT_CHANNEL_IN.init(EventChannel::new());
+    // Send events from the FSM to the task that translates them to gs datapoints or
+    // CAN commands
+    let event_channel_out_fsm = EVENT_CHANNEL_OUT.init(EventChannel::new());
+
     // launch the task for the embassy executor to take over
-    spawner
-        .spawn(run_fsm(
-            event_receiver_fsm,
-            event_sender_can2,
-            event_sender_fsm_to_gs,
-            rearm_sdc_pin,
-            sdc_pin,
-        ))
-        .unwrap();
-
-    // tasks for rerouting between communication channels
-    unwrap!(spawner.spawn(forward_fsm_events_to_can2(
-        can2.new_sender(),
-        event_receiver_can2
-    )));
-
-    unwrap!(spawner.spawn(forward_can2_messages_to_fsm(
-        can2.new_subscriber(),
-        event_sender_can2_to_fsm
+    unwrap!(spawner.spawn(run_fsm(
+        event_channel_in_fsm.receiver().into(),
+        event_channel_out_fsm.sender().into(),
+        rearm_sdc_pin,
+        sdc_pin,
     )));
 
     info!("FSM started!");
@@ -237,7 +206,7 @@ async fn main(spawner: Spawner) -> ! {
             gs_tx_receiver,
             gs_rx_transmitter,
             gs_tx_transmitter,
-            event_channel_fsm.sender().into(),
+            event_channel_in_fsm.sender().into(),
         )
         .await,
     );
@@ -249,32 +218,27 @@ async fn main(spawner: Spawner) -> ! {
 
     unwrap!(spawner.spawn(run_gs_master(gs_master, signal)));
 
-    unwrap!(spawner.spawn(forward_gs_to_fsm(
-        gs_comms.rx_receiver(),
-        event_sender_gs_to_fsm,
-    )));
-
-    unwrap!(spawner.spawn(forward_gs_to_can2(
-        gs_comms.rx_receiver(),
+    unwrap!(spawner.spawn(forward_can_datapoints(
         gs_comms.tx_publisher(),
-        can2.new_sender()
-    )));
-
-    unwrap!(spawner.spawn(forward_can2_messages_to_gs(
+        event_channel_in_fsm.sender().into(),
         can2.new_subscriber(),
-        gs_comms.tx_publisher()
     )));
-
-    unwrap!(spawner.spawn(forward_fsm_to_gs(
+    unwrap!(spawner.spawn(forward_fsm_events(
         gs_comms.tx_publisher(),
-        event_receiver_fsm_to_gs
+        can2.new_sender(),
+        event_channel_out_fsm.receiver().into(),
+    )));
+    unwrap!(spawner.spawn(forward_gs_commands(
+        gs_comms.rx_receiver(),
+        event_channel_in_fsm.sender().into(),
+        can2.new_sender(),
     )));
 
     unwrap!(spawner.spawn(gs_heartbeat(gs_comms.tx_publisher())));
 
     unwrap!(spawner.spawn(check_critical_datapoints(
         can2.new_subscriber(),
-        event_sender_stale_data_checker,
+        event_channel_in_fsm.sender().into(),
         gs_comms.tx_publisher(),
         signal
     )));

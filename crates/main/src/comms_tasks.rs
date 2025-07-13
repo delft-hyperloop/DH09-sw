@@ -33,7 +33,8 @@ use crate::matching_methods::match_cmd_to_event;
 use crate::matching_methods::match_event_to_can_envelope;
 use crate::matching_methods::match_event_to_datapoint;
 
-/// Forwards CAN datapoints to the ground station and FSM
+/// Forwards CAN datapoints to the ground station and FSM as datapoints or
+/// events
 #[embassy_executor::task]
 pub async fn forward_can_datapoints(
     gs_tx: ethernet::types::PodToGsPublisher<'static>,
@@ -79,7 +80,8 @@ pub async fn forward_can_datapoints(
     }
 }
 
-/// Forwards ground station commands to the FSM and over CAN
+/// Forwards ground station commands to the FSM and over CAN as events or
+/// commands
 #[embassy_executor::task]
 pub async fn forward_gs_commands(
     mut gs_rx: ethernet::types::GsToPodSubscriber<'static>,
@@ -273,49 +275,6 @@ pub async fn check_critical_datapoints(
         }
 
         Timer::after_micros(10).await;
-    }
-}
-
-/// Forward the messages received from the GS over CAN2.
-///
-/// -`gs_rx`: Receiver object for the GS
-/// -`can_tx`: The sender object for CAN2
-#[embassy_executor::task]
-pub async fn forward_gs_to_can2(
-    mut gs_rx: ethernet::types::GsToPodSubscriber<'static>,
-    gs_tx: ethernet::types::PodToGsPublisher<'static>,
-    can_tx: can2::CanTxSender<'static>,
-) {
-    loop {
-        let msg = gs_rx.next_message_pure().await;
-        trace!("Received message from GS: {:?}", msg);
-        let command = msg.command;
-
-        // Sends the hashes if the GS asks for them
-        if let Command::SendHashes(_) = command {
-            gs_tx
-                .send(PodToGsMessage {
-                    dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
-                })
-                .await;
-            gs_tx
-                .send(PodToGsMessage {
-                    dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),
-                })
-                .await;
-            gs_tx
-                .send(PodToGsMessage {
-                    dp: Datapoint::new(Datatype::ConfigHash, CONFIG_HASH, ticks()),
-                })
-                .await;
-            gs_tx
-                .send(PodToGsMessage {
-                    dp: Datapoint::new(Datatype::FrontendHeartbeating, 0, ticks()),
-                })
-                .await;
-        }
-
-        lib::config::gs_to_can2(command, |frame| can_tx.send(frame)).await;
     }
 }
 

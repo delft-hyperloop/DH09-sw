@@ -4,4 +4,6 @@
 help/
 node_modules
 Cargo.lock
+.vscode
+package-lock.json
 

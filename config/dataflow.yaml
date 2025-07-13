@@ -583,7 +583,7 @@ message-processing:
           name: "HVALState"
           id: 0x3A4
           store:
-            default: 0
+            default: 10
         getter: "u8[1..2]"
         can-conversion: "identity_u8:u8->u8"
         gs:

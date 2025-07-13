@@ -37,7 +37,16 @@
     }
 
     $: {
-        if ($hvalSTate.value == 2 && !isGreen) { // red turned on
+        if ($hvalSTate.value == 2) {
+            if (isGreen) {
+                color = green;
+                shadow = greenShadow;
+                blinkOn = true;
+            } else {
+                startBlinking();
+            }
+        }
+        else if ($hvalSTate.value == 1 && !isGreen) { // red turned on
             startBlinking();
         } else if (!isGreen) {
             color = colorOff;
@@ -46,7 +55,7 @@
                 clearTimeout(blinkInterval);
             }
             blinkOn = true;
-        } else if ($hvalSTate.value == 1) { // green turned
+        } else if ($hvalSTate.value == 0) { // green turned
             color = green;
             shadow = greenShadow;
             blinkOn = true;

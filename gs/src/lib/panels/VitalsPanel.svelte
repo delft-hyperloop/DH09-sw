@@ -1,17 +1,17 @@
 <script lang="ts">
     import {
         Battery,
-        TileGrid,
-        Tile,
         Command,
         GrandDataDistributor,
-        Store,
-        TauriCommand,
         serverStatus,
+        Store,
         Table,
+        TauriCommand,
+        Tile,
+        TileGrid,
     } from '$lib';
     import { AppBar, getToastStore } from '@skeletonlabs/skeleton';
-    import {invoke} from "@tauri-apps/api/tauri";
+    import { invoke } from '@tauri-apps/api/tauri';
     import Localization from '$lib/components/Localization.svelte';
     import Light from '$lib/components/Light.svelte';
     import MainFSM from '$lib/components/MainFSM.svelte';
@@ -29,31 +29,25 @@
     } from '$lib/stores/state';
     import {
         Activity,
-        Wifi,
-        WifiOff,
+        ChargingStation,
+        DownToBottom,
         Flash,
         FlashOff,
-        ChargingStation,
-        Reset,
-        SettingsCheck,
         Meter,
+        Reset,
         RightPanelClose,
+        SettingsCheck,
         SkipForward,
         StopOutline,
         Tools,
-        DownToBottom,
+        Wifi,
+        WifiOff,
     } from 'carbon-icons-svelte';
     import type { SvelteComponent } from 'svelte';
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
     import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
-    import {
-        bmsErrors,
-        imdWarnings,
-        ptcErrorCodes,
-        ptcStates,
-        senorHubEmergencies,
-    } from '$lib/types';
+    import { bmsErrors, imdWarnings, ptcErrorCodes, ptcStates, senorHubEmergencies } from '$lib/types';
     import ValueStore from '$lib/components/generic/ValueStore.svelte';
     import { emergencySources, nextRecommendedStateCmd, nextStateMessage } from '$lib/stores/data';
 
@@ -352,12 +346,23 @@
 <!--                            <SkipForward size={20}/>-->
 <!--                            -->
 <!--                        </button>-->
-                        <Command
-                            cmd={$nextRecommendedStateCmd}
-                            text={`Next State: ${$nextStateMessage}`}
-                            icon={SkipForward}
-                            className="col-span-2 bg-primary-500 text-surface-900"
-                        />
+                        {#if $connectedToMainPCB}
+                            <Command
+                                cmd={$nextRecommendedStateCmd}
+                                text={`Next State: ${$nextStateMessage}`}
+                                icon={SkipForward}
+                                className="col-span-2 bg-primary-500 text-surface-900"
+                            />
+                        {:else}
+                            <TauriCommand
+                                cmd="connect_to_pod"
+                                successCallback={handleSuccess}
+                                errorCallback={handleFailure}
+                                icon={SkipForward}
+                                className="col-span-2 bg-primary-500 text-surface-900"
+                                textOverride="Next State: Connect To Pod"
+                            />
+                        {/if}
 <!--                        <button-->
 <!--                            class="btn rounded-md text-wrap overflow-hidden-->
 <!--                                bg-primary-500 text-surface-900 flex flex-row gap-2 col-span-2-->

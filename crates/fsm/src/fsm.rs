@@ -326,7 +326,7 @@ impl FSM {
                 self.transition(States::Fault).await;
             }
 
-            (_, Event::PTCFailure) => {
+            (_, Event::PTCFailure) if self.state != States::Fault => {
                 // 1. Trigger emergency using the sdc
                 self.sdc_pin.set_low();
                 error!("Going into Fault state with emergency PTC Failure");

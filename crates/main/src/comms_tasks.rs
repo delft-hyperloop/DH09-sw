@@ -239,7 +239,7 @@ fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
     match id {
         831 => {
             let pressure_low = u16::from_be_bytes([payload[0], payload[1]]);
-            if pressure_low < 1500 {
+            if pressure_low < 3500 {
                 Event::EbsPressureDeployed
             } else {
                 Event::EbsPressureRetracted
@@ -271,7 +271,7 @@ fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
         }
 
         // Response from propulsion motor left (2) to the system check
-        877 => {
+        876 => {
             if payload[0] == 1 {
                 Event::Prop1SystemCheckSuccess
             } else {
@@ -285,7 +285,7 @@ fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
         1286 if payload[0] != 255 => Event::Prop2SystemCheckFailure,
 
         // Response from propulsion motor right (1) to the system check
-        876 => {
+        877 => {
             if payload[0] == 1 {
                 Event::Prop2SystemCheckSuccess
             } else {

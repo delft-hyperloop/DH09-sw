@@ -1077,6 +1077,12 @@
         RedHVALTurnedOn.set(!$RedHVALTurnedOn);
     }, 200));
 
+    onMount(() => setInterval(async () => {
+        await invoke('send_command', { cmd_name: 'FrontendHeartbeat' }).catch((e) => {
+            console.error(`Couldn't send frontend heartbeat to the pod: ${e}`);
+        });
+    }, 200));
+
     onMount(() => {
         setInterval(async () => {
             if ($showcasingStates) {

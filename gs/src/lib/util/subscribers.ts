@@ -85,7 +85,6 @@ export function registerSubscribers() {
 
     emergencyStaleData.subscribe(async (store) => {
         if (store.value !== 0) {
-            stalePopupActive.set(true);
             let datatype: string = await invoke('get_datatype_by_id', {
                 id: store.value,
             });
@@ -110,6 +109,7 @@ export function registerSubscribers() {
                 );
                 modalTitle.set('Stale critical datatype!');
                 if (!get(stalePopupActive)) {
+                    stalePopupActive.set(true);
                     modalStore.trigger(MODAL_SETTINGS);
                 }
             }

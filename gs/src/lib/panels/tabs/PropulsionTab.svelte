@@ -1,13 +1,5 @@
 <script lang="ts">
-    import {
-        Command,
-        Tile,
-        TileGrid,
-        Chart,
-        util,
-        EventChannel,
-        type NamedCommand, GrandDataDistributor,
-    } from '$lib';
+    import { Chart, Command, EventChannel, GrandDataDistributor, type NamedCommand, Tile, TileGrid, util } from '$lib';
     import {
         goingForward,
         propControlWord1,
@@ -210,7 +202,7 @@
                         <PropulsionHeartbeat storeName="Word1" labels={propReadLabels}/>
                     </div>
                     <div class="grid grid-cols-9 gap-2 items-center m-4">
-                        <span class="text-center">Propulsion Control Word 1:</span>
+                        <span class="text-center">Propulsion Control Word Right:</span>
                         {#each Array.from({ length: propLabels.length }, (_, i) => propLabels.length - 1 - i) as i}
                             <BinaryInput1 index={i} />
                         {/each}
@@ -237,7 +229,7 @@
                         <PropulsionHeartbeat storeName="Word2" labels={propReadLabels}/>
                     </div>
                     <div class="grid grid-cols-9 gap-2 items-center m-4">
-                        <span class="text-center">Propulsion Control Word 2:</span>
+                        <span class="text-center">Propulsion Control Word Left:</span>
                         {#each Array.from({ length: propLabels.length }, (_, i) => propLabels.length - 1 - i) as i}
                             <BinaryInput2 index={i} />
                         {/each}

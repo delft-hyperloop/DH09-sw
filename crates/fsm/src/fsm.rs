@@ -119,6 +119,7 @@ impl FSM {
                     if self.sdc_pin.is_set_low()
                         && self.state != States::Fault
                         && self.state != States::Discharge
+                        && self.state != States::SystemCheck
                     {
                         error!("SDC pin is low! Sending emergency to the ground station!");
                         self.event_sender_gs

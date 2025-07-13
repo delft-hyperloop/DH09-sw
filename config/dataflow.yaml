@@ -101,12 +101,12 @@ procedures:
   the_fucking_nils_formula_stupid_powertrain_lv:
     input: "u16"
     output: "f32"
-    formula: "4150f32 * 298.15f32 / (4150f32 + (298.15f32 * (log_32::logf(x as f32) - log_32::logf(30_000f32 - x as f32))))"
+    formula: "4150f32 * 298.15f32 / (4150f32 + (298.15f32 * (log_32::logf(x as f32) - log_32::logf(30_000f32 - x as f32)))) / 10.0"
 
   the_fucking_nils_formula_stupid_powertrain_hv:
     input: "u16"
     output: "f32"
-    formula: "3876f32 * 298.15f32 / (3876f32 + (298.15f32 * (log_32::logf(x as f32) - log_32::logf(30_000f32 - x as f32))))"
+    formula: "3876f32 * 298.15f32 / (3876f32 + (298.15f32 * (log_32::logf(x as f32) - log_32::logf(30_000f32 - x as f32)))) / 10.0"
 
   #  f16_to_f32:
   #    input: 'f16'
@@ -681,7 +681,7 @@ message-processing:
                   return curr;
               }
         getter: "u16[6..8]"
-        can-conversion: "the_fucking_nils_formula_stupid_powertrain_lv:u16->f32"
+        can-conversion: "the_fucking_nils_formula_stupid_powertrain_hv:u16->f32"
         display-units: "°C"
         gs:
           conversion: "gs_2p_float:f32"
@@ -1503,7 +1503,7 @@ message-processing:
                   return curr;
               }
         getter: "u16[4..6]"
-        can-conversion: "the_fucking_nils_formula_stupid_powertrain_hv:u16->f32"
+        can-conversion: "the_fucking_nils_formula_stupid_powertrain_lv:u16->f32"
         gs:
           conversion: "gs_2p_float:f32"
       - datapoint:

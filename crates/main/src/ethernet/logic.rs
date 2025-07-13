@@ -223,6 +223,10 @@ impl GsMaster {
         signal_connected.signal(true);
         info!("Connected to the GS");
 
+        while !self.stack.is_link_up() {
+            Timer::after_micros(500).await;
+        }
+        
         loop {
             if !self.stack.is_link_up() {
                 defmt::warn!("link went down, sending disconnect emergency");
@@ -364,6 +368,11 @@ impl GsMaster {
 
         // proceed to reconnect
         info!("Reconnecting to the GS");
+
+        // In case of a physical disconnection, wait for the cable to reconnect
+        while !self.stack.is_link_up() {
+            Timer::after_micros(100).await;
+        }
 
         // // flush whatever was still written to the socket
         // if let Err(e) = self.socket.flush().await {

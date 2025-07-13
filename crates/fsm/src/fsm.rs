@@ -158,7 +158,7 @@ impl FSM {
             (_, Event::Emergency { emergency_type }) if self.state != States::Fault => {
                 // 1. Trigger emergency using the sdc
                 self.sdc_pin.set_low();
-                error!("Going into Fault state with emergency {:?}", emergency_type);
+                error!("Going into Fault state with emergency {emergency_type:?}");
 
                 // 2. send the emergency message to all other devices on the CAN line
                 self.event_sender2

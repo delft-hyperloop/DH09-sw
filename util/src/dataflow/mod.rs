@@ -396,7 +396,8 @@ impl FromStr for GetterSpec {
             return Err(format!("missing range delimiter `..` in {s:?}"));
         };
 
-        let start = start.parse().map_err(|e| format!("invalid range start ({e}) in {s:?}")).unwrap();
+        let start =
+            start.parse().map_err(|e| format!("invalid range start ({e}) in {s:?}")).unwrap();
         let end = end.parse().map_err(|e| format!("invalid range end ({e}) in {s:?}")).unwrap();
 
         if end - start != ty.ty_size() {

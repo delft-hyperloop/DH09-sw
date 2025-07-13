@@ -148,6 +148,7 @@ impl GsMaster {
         unwrap!(spawner.spawn(network_stack_task(runner)));
 
         info!("Waiting for ethernet peripheral to be configured");
+        stack.wait_link_up().await;
         stack.wait_config_up().await;
         info!("Ethernet peripheral configured");
 
@@ -223,6 +224,14 @@ impl GsMaster {
         info!("Connected to the GS");
 
         loop {
+            if !self.stack.is_link_up() {
+                defmt::warn!("link went down, sending disconnect emergency");
+                self.event_sender
+                    .send(Event::Emergency {
+                        emergency_type: EmergencyType::DisconnectionEmergency,
+                    })
+                    .await;
+            }
             if self.should_reconnect {
                 warn!("Should-reconnect triggered");
                 self.reconnect().await;
@@ -290,6 +299,7 @@ impl GsMaster {
         }
 
         debug!("handshaking (sending hashes)");
+        Timer::after_micros(100).await;
 
         // Sends the hash messages to the ground station. If the first one doesn't get
         // sent in 200 milliseconds, it triggers a reconnection (related to the bug
@@ -347,7 +357,7 @@ impl GsMaster {
 
         // and wait a bit before doing anything else,
         // so the fsm task can process it and brakes can be extended.x
-        Timer::after_micros(10).await;
+        Timer::after_micros(50).await;
         // // }
 
         self.connection_is_broken = false;
@@ -355,12 +365,12 @@ impl GsMaster {
         // proceed to reconnect
         info!("Reconnecting to the GS");
 
-        // flush whatever was still written to the socket
-        if let Err(e) = self.socket.flush().await {
-            defmt::error!("could not flush socket: {:?}", e);
-            #[cfg(debug_assertions)]
-            defmt::assert!(false, "could not flush socket: {}/{:?}", e, e);
-        }
+        // // flush whatever was still written to the socket
+        // if let Err(e) = self.socket.flush().await {
+        //     defmt::error!("could not flush socket: {:?}", e);
+        //     #[cfg(debug_assertions)]
+        //     defmt::assert!(false, "could not flush socket: {}/{:?}", e, e);
+        // }
 
         // without an allocator (feature="alloc") smoltcp can only hold 1 active socket
         // at a time. In order to create a brand new connection, we also need a
@@ -408,12 +418,12 @@ impl GsMaster {
     /// Receives messages over ethernet and publishes them to the
     /// GsToPodChannel. If this fails, trigger a reconnection.
     async fn receive(&mut self) {
-        // Buffer should have the size of a message so it can only store one message.
-        let mut buf = [0; GsToPodMessage::SIZE];
-
         if !self.socket.can_recv() {
             return;
         }
+
+        // Buffer should have the size of a message so it can only store one message.
+        let mut buf = [0; GsToPodMessage::SIZE];
 
         // Reads and stores in the buffer an amount of bytes equal to the size of the
         // buffer.
@@ -444,6 +454,6 @@ impl GsMaster {
         self.rx_transmitter
             .publish(GsToPodMessage::read_from_buf(&buf))
             .await;
-        Timer::after_millis(5).await;
+        Timer::after_micros(500).await;
     }
 }

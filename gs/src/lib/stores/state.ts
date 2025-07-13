@@ -28,7 +28,6 @@ export const connectedToMainPCB: Writable<boolean> = writable(false);
 export const goingForward: Writable<boolean> = writable(true);
 
 export const RedHVALTurnedOn: Writable<boolean> = writable(false);
-export const GreenHVALTurnedOn: Writable<boolean> = writable(false);
 
 export const showcaseStateCounter: Writable<number> = writable(0);
 export const showcasingStates: Writable<boolean> = writable(false);
@@ -70,3 +69,4 @@ export const inDropdown: Writable<boolean> = writable(false);
 export const ebsState: Writable<EBSStates> = writable(EBSStates.Triggered);
 
 export const disconnectFromButton: Writable<boolean> = writable(false);
+export const stalePopupActive: Writable<boolean> = writable(false);

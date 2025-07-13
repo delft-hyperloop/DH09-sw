@@ -11,6 +11,7 @@
         logsVisible,
         powertrainChartStore,
         propChartStore,
+        RedHVALTurnedOn,
         showcaseStateCounter,
         showcasingStates,
     } from '$lib/stores/state';
@@ -1071,6 +1072,10 @@
     }, 1000);
 
     registerSubscribers();
+
+    onMount(() => setInterval(() => {
+        RedHVALTurnedOn.set(!$RedHVALTurnedOn);
+    }, 200));
 
     onMount(() => {
         setInterval(async () => {

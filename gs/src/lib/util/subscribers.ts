@@ -20,6 +20,7 @@ import {
     propInitFault1Acknowledged,
     propInitFault2Acknowledged,
     rightMotorTempsAcknowledged,
+    stalePopupActive,
 } from '$lib/stores/state';
 import { get } from 'svelte/store';
 
@@ -84,6 +85,7 @@ export function registerSubscribers() {
 
     emergencyStaleData.subscribe(async (store) => {
         if (store.value !== 0) {
+            stalePopupActive.set(true);
             let datatype: string = await invoke('get_datatype_by_id', {
                 id: store.value,
             });
@@ -96,18 +98,20 @@ export function registerSubscribers() {
                 staleCriticalDatatypes.set(temp);
                 if (temp.length > 1) {
                     modalBody.set(
-                        `${datatype} has been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`
+                        `${get(staleCriticalDatatypes).join(', ')} have been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`
                     );
                 } else {
                     modalBody.set(
-                        `${temp.join(', ')} have been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`
+                        `${temp.join(', ')} has been stale for more than one second! The main PCB went into the Fault state and triggered an emergency brake!`
                     );
                 }
                 console.error(
                     'Stale critical data emergency with id ' + store.value
                 );
                 modalTitle.set('Stale critical datatype!');
-                modalStore.trigger(MODAL_SETTINGS);
+                if (!get(stalePopupActive)) {
+                    modalStore.trigger(MODAL_SETTINGS);
+                }
             }
         }
     });

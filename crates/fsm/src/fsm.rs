@@ -87,8 +87,10 @@ impl FSM {
         loop {
             match select(self.event_receiver.receive(), Timer::after_millis(100)).await {
                 Either::First(event) => {
-                    if self.state != States::Braking && event != Event::Stopped
-                        || self.state == States::Braking
+                    if (self.state != States::Braking && event != Event::Stopped
+                        || self.state == States::Braking)
+                        && event != Event::PTCIdleAck
+                        && event != Event::PTCFailure
                     {
                         defmt::info!(
                             "FSM {{ state: {} }}: Received event: {:?}",
@@ -185,6 +187,7 @@ impl FSM {
 
             (States::Fault, Event::FaultFixed) => {
                 self.sdc_pin.set_high();
+                Timer::after_millis(5).await;
                 self.transition(States::SystemCheck).await
             }
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,

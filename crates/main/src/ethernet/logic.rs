@@ -26,7 +26,6 @@ use embedded_io_async::Read;
 use embedded_io_async::ReadExactError;
 use embedded_io_async::Write;
 use lib::config;
-use lib::config::Command;
 use lib::config::Datatype;
 use lib::config::COMMAND_HASH;
 use lib::config::CONFIG_HASH;
@@ -225,7 +224,7 @@ impl GsMaster {
 
         loop {
             if self.should_reconnect {
-                info!("Should-reconnect triggered");
+                warn!("Should-reconnect triggered");
                 self.reconnect().await;
             }
             let state = self.socket.state();
@@ -336,29 +335,25 @@ impl GsMaster {
 
     /// Reconnects to the GS if the connection drops by creating a new socket.
     async fn reconnect(&mut self) {
-        // trigger emergency braking first,
+        // If the connection is broken, don't trigger an emergency and attempt to
+        // recover. Otherwise, trigger an emergency.
+
+        // // if self.connection_is_broken {
         self.event_sender
             .send(Event::Emergency {
                 emergency_type: EmergencyType::DisconnectionEmergency,
             })
             .await;
+
         // and wait a bit before doing anything else,
-        // so the fsm task can process it and brakes can be extended.
+        // so the fsm task can process it and brakes can be extended.x
         Timer::after_micros(10).await;
+        // // }
+
+        self.connection_is_broken = false;
+
         // proceed to reconnect
         info!("Reconnecting to the GS");
-
-        // If the connection is broken, don't trigger an emergency and attempt to
-        // recover.
-        if !self.connection_is_broken {
-            self.rx_transmitter
-                .publish(GsToPodMessage {
-                    command: Command::ReconnectEmergency(0),
-                })
-                .await;
-        } else {
-            self.connection_is_broken = false;
-        }
 
         // flush whatever was still written to the socket
         if let Err(e) = self.socket.flush().await {
@@ -390,8 +385,8 @@ impl GsMaster {
         }
 
         // Connect to the GS
-        self.connect().await;
         self.should_reconnect = false;
+        self.connect().await;
     }
 
     /// Transmits the messages from the PodToGsChannel.

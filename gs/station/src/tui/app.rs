@@ -23,6 +23,7 @@ use gslib::Datatype;
 use gslib::ProcessedData;
 use ratatui::Frame;
 
+use crate::timestamp;
 use crate::Tui;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -35,7 +36,7 @@ pub enum InputMode {
 #[allow(dead_code)]
 pub struct App {
     pub data: BTreeMap<Datatype, ProcessedData>,
-    pub commands: Vec<Command>,
+    pub commands: Vec<(Command, String)>,
     pub scroll: usize,
     pub is_running: bool,
     pub data_stream: Receiver<ProcessedData>,
@@ -55,8 +56,6 @@ impl App {
 
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let gui_dir = manifest_dir.parent().expect("ooga booga").to_path_buf();
-
-        eprintln!("Spawning GUI from: {}", gui_dir.display());
 
         let mut child = unsafe {
             std::process::Command::new("npm")
@@ -128,14 +127,15 @@ impl App {
             self.dcio.0 += 20;
         }
         while let Ok(cd) = self.cmd_stream.try_recv() {
-            self.commands.insert(0, cd);
+            self.commands.insert(0, (cd, timestamp()));
             self.commands.truncate(200);
             self.dcio.1 += 20;
         }
         if self.seg.elapsed() >= Duration::from_secs(1) {
             self.kbps.insert(0, (self.dcio.0 as f64 / 1000.0, self.dcio.1 as f64 / 1000.0));
-            self.kbps.truncate(60);
+            self.kbps.truncate(180);
             self.dcio = (0,0);
+            self.seg = Instant::now();
         }
     }
 
@@ -212,7 +212,7 @@ fn read_datapoint(s: &str) -> anyhow::Result<Option<ProcessedData>> {
             datatype,
             value,
             timestamp,
-            style: "black".into(),
+            style: crate::timestamp(),
             units: datatype.unit(),
             lower: None,
             upper: None, // todo: get & display limits in tui?

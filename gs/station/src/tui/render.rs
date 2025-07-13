@@ -18,8 +18,8 @@ impl Widget for &App {
 
         let [content_area, commands_area, stats_area, input_area] = Layout::vertical([
             Constraint::Min(10),
-            Constraint::Length(6),
-            Constraint::Length(8),
+            Constraint::Length(5),
+            Constraint::Length(12),
             Constraint::Length(3),
         ])
         .areas(area);
@@ -55,7 +55,7 @@ impl Widget for &App {
                 let row = Row::new(vec![
                     key.clone(),
                     format!("{:.3} ({})", val.value, dt.unit()),
-                    val.timestamp.to_string(),
+                    val.style.clone(),
                 ]);
                 if !key.is_empty()
                     && !self.cur_search.is_empty()
@@ -99,13 +99,13 @@ impl Widget for &App {
         let commands_list = self
             .commands
             .iter()
-            .map(|c| format!("{c:?}").split_once("(").unwrap().0.to_string())
-            .collect::<Vec<String>>();
+            .map(|(c, t)| (format!("{c:?}").split_once("(").unwrap().0.to_string(), t.clone()))
+            .collect::<Vec<(String, String)>>();
 
-        let longest = commands_list.iter().map(|x| x.len()).max().unwrap_or(40);
+        let longest = commands_list.iter().map(|x| x.0.len() + x.1.len()).max().unwrap_or(40);
 
-        let columns = if area.width as usize >= (2 * longest + 4) {
-            area.width as usize / (longest + 2)
+        let columns = if area.width as usize >= (2 * (longest + 4)) {
+            area.width as usize / (longest + 4)
         } else {
             1
         };
@@ -124,8 +124,8 @@ impl Widget for &App {
                 &[]
             };
 
-            let rows = slice.iter().map(|key| {
-                let row = Row::new(vec![key.clone(), timestamp()]);
+            let rows = slice.iter().map(|(key, t)| {
+                let row = Row::new(vec![key.clone(), t.clone()]);
                 if !key.is_empty()
                     && !self.cur_search.is_empty()
                     && key.to_lowercase().contains(&self.cur_search)
@@ -166,35 +166,37 @@ impl Widget for &App {
         // Build two datasets: .0 and .1 values over time
         let data0: Vec<(f64, f64)> = self.kbps
             .iter()
+            .rev()
             .enumerate()
             .map(|(i, &(v0, _v1))| (x_bounds[0] + i as f64 * dt, v0))
             .collect();
         let data1: Vec<(f64, f64)> = self.kbps
             .iter()
+            .rev()
             .enumerate()
             .map(|(i, &(_v0, v1))| (x_bounds[0] + i as f64 * dt, v1))
             .collect();
 
         // Determine y-axis bounds by inspecting all values, with a small margin
-        let all_vals = self.kbps.iter().flat_map(|&(v0, v1)| vec![v0, v1]);
+        let all_vals = self.kbps.iter().rev().flat_map(|&(v0, v1)| vec![v0, v1]);
         let (y_min, y_max) = all_vals.fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), v| {
             (min.min(v), max.max(v))
         });
-        let y_margin = (y_max - y_min) * 0.1;
-        let y_bounds = [y_min - y_margin, y_max + y_margin];
+        let y_margin = (y_max - y_min) * 0.05;
+        let y_bounds = [0.0, y_max + y_margin];
 
         // Create the chart with two lines
         let chart = Chart::new(
             [
                 Dataset::default()
-                    .name("Series 0")
+                    .name("incoming data rate")
                     .marker(Marker::Braille)
-                    .style(Style::default().fg(Color::Cyan))
+                    .style(Style::default().fg(Color::Blue))
                     .data(&data0),
                 Dataset::default()
-                    .name("Series 1")
+                    .name("outgoing data rate")
                     .marker(Marker::Braille)
-                    .style(Style::default().fg(Color::Yellow))
+                    .style(Style::default().fg(Color::Red))
                     .data(&data1),
             ].to_vec())
             .block(

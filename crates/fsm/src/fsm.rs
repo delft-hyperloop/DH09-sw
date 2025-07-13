@@ -99,6 +99,7 @@ impl FSM {
                         && event != Event::PTCFailure
                         && event != Event::EbsPressureDeployed
                         && event != Event::EbsPressureRetracted
+                        && event != Event::Heartbeat
                     {
                         defmt::info!(
                             "FSM {{ state: {} }}: Received event: {:?}",
@@ -142,7 +143,7 @@ impl FSM {
             }
 
             // check heartbeat
-            if self.last_heartbeat.elapsed().as_millis() > IP_TIMEOUT {
+            if self.last_heartbeat.elapsed().as_millis() > IP_TIMEOUT && self.state != States::Boot && self.state != States::Fault {
                 self.transition(States::Fault).await;
             }
         }
@@ -204,6 +205,10 @@ impl FSM {
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,
             (States::ConnectedToGS, Event::StartSystemCheck) => {
                 self.transition(States::SystemCheck).await
+            }
+
+            (States::SystemCheck, Event::StartSystemCheck) => {
+                self.transition(States::SystemCheck).await;
             }
 
             // Add the checked system to the list of checked systems
@@ -370,7 +375,6 @@ impl FSM {
             (_, event) => {
                 if let Some(failed_state_transition) = match event {
                     Event::ResetFSM => Some(States::Boot),
-                    Event::StartSystemCheck => Some(States::SystemCheck),
                     Event::StartPreCharge => Some(States::PreCharge),
                     Event::Charge => Some(States::Charging),
                     Event::StopCharge => Some(States::Active),

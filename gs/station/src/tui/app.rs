@@ -4,11 +4,11 @@ use std::io::BufRead;
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Child;
-use std::process::Command;
 use std::process::Stdio;
 use std::sync::mpsc::Receiver;
 use std::thread;
 use std::time::Duration;
+use std::time::Instant;
 
 use crossterm::event::poll;
 use crossterm::event::Event;
@@ -18,6 +18,7 @@ use crossterm::event::KeyModifiers;
 use crossterm::event::MouseEvent;
 use crossterm::event::MouseEventKind;
 use crossterm::event::{self};
+use gslib::Command;
 use gslib::Datatype;
 use gslib::ProcessedData;
 use ratatui::Frame;
@@ -34,9 +35,14 @@ pub enum InputMode {
 #[allow(dead_code)]
 pub struct App {
     pub data: BTreeMap<Datatype, ProcessedData>,
+    pub commands: Vec<Command>,
     pub scroll: usize,
     pub is_running: bool,
-    pub stream: Receiver<ProcessedData>,
+    pub data_stream: Receiver<ProcessedData>,
+    pub cmd_stream: Receiver<Command>,
+    pub kbps: Vec<(f64, f64)>,
+    pub seg: Instant,
+    pub dcio: (usize, usize),
     pub input_mode: InputMode,
     pub cur_search: String,
     pub child: Child,
@@ -44,7 +50,8 @@ pub struct App {
 
 impl App {
     pub fn new() -> anyhow::Result<Self> {
-        let (tx, rx) = std::sync::mpsc::channel();
+        let (ctx, crx) = std::sync::mpsc::channel();
+        let (dtx, drx) = std::sync::mpsc::channel();
 
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let gui_dir = manifest_dir.parent().expect("ooga booga").to_path_buf();
@@ -52,7 +59,7 @@ impl App {
         eprintln!("Spawning GUI from: {}", gui_dir.display());
 
         let mut child = unsafe {
-            Command::new("npm")
+            std::process::Command::new("npm")
                 .current_dir(&gui_dir)
                 .args(["run", "gui"])
                 .stdout(Stdio::piped())
@@ -70,13 +77,16 @@ impl App {
 
         // thread to read stdout
         if let Some(out) = child.stdout.take() {
-            let tx = tx.clone();
+            let dtx = dtx.clone();
+            let ctx = ctx.clone();
             thread::spawn(move || {
                 let reader = std::io::BufReader::new(out);
                 for line in reader.lines() {
                     if let Ok(line) = line {
                         if let Ok(Some(dp)) = read_datapoint(&line) {
-                            let _ = tx.send(dp);
+                            let _ = dtx.send(dp);
+                        } else if let Ok(Some(cd)) = read_command(&line) {
+                            let _ = ctx.send(cd);
                         }
                     } else {
                         eprintln!("failed to read from child: {line:?}");
@@ -87,10 +97,15 @@ impl App {
 
         Ok(Self {
             data: map,
+            commands: vec![],
             is_running: true,
             scroll: 0,
-            stream: rx,
+            data_stream: drx,
+            cmd_stream: crx,
             child,
+            seg: Instant::now(),
+            kbps: vec![],
+            dcio: (0, 0),
             input_mode: InputMode::Normal,
             cur_search: String::new(),
         })
@@ -108,8 +123,19 @@ impl App {
     fn render_frame(&self, frame: &mut Frame) { frame.render_widget(self, frame.area()); }
 
     fn receive_data(&mut self) {
-        while let Ok(dp) = self.stream.try_recv() {
+        while let Ok(dp) = self.data_stream.try_recv() {
             self.data.insert(dp.datatype, dp);
+            self.dcio.0 += 20;
+        }
+        while let Ok(cd) = self.cmd_stream.try_recv() {
+            self.commands.insert(0, cd);
+            self.commands.truncate(200);
+            self.dcio.1 += 20;
+        }
+        if self.seg.elapsed() >= Duration::from_secs(1) {
+            self.kbps.insert(0, (self.dcio.0 as f64 / 1000.0, self.dcio.1 as f64 / 1000.0));
+            self.kbps.truncate(60);
+            self.dcio = (0,0);
         }
     }
 
@@ -191,6 +217,14 @@ fn read_datapoint(s: &str) -> anyhow::Result<Option<ProcessedData>> {
             lower: None,
             upper: None, // todo: get & display limits in tui?
         }))
+    } else {
+        Ok(None)
+    }
+}
+
+fn read_command(s: &str) -> anyhow::Result<Option<gslib::Command>> {
+    if s.contains("command:") {
+        Ok(s.split_once("command:").map(|(_, x)| gslib::Command::from_string(x, 42)))
     } else {
         Ok(None)
     }

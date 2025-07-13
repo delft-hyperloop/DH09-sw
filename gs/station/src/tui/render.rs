@@ -1,6 +1,10 @@
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
+
 use gslib::Datatype;
 use gslib::ProcessedData;
 use ratatui::prelude::*;
+use ratatui::symbols::Marker;
 use ratatui::widgets::block::*;
 use ratatui::widgets::*;
 
@@ -145,5 +149,89 @@ impl Widget for &App {
 
             ratatui::widgets::Widget::render(table, *chunk_area, buf);
         }
+
+        // Compute current time in seconds since UNIX epoch
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs_f64();
+
+        // Determine time bounds: from one minute ago to now
+        let x_bounds = [now - 60.0, now];
+
+        // Number of samples
+        let n = self.kbps.len();
+        let dt = if n > 1 { 60.0 / (n as f64 - 1.0) } else { 0.0 };
+
+        // Build two datasets: .0 and .1 values over time
+        let data0: Vec<(f64, f64)> = self.kbps
+            .iter()
+            .enumerate()
+            .map(|(i, &(v0, _v1))| (x_bounds[0] + i as f64 * dt, v0))
+            .collect();
+        let data1: Vec<(f64, f64)> = self.kbps
+            .iter()
+            .enumerate()
+            .map(|(i, &(_v0, v1))| (x_bounds[0] + i as f64 * dt, v1))
+            .collect();
+
+        // Determine y-axis bounds by inspecting all values, with a small margin
+        let all_vals = self.kbps.iter().flat_map(|&(v0, v1)| vec![v0, v1]);
+        let (y_min, y_max) = all_vals.fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), v| {
+            (min.min(v), max.max(v))
+        });
+        let y_margin = (y_max - y_min) * 0.1;
+        let y_bounds = [y_min - y_margin, y_max + y_margin];
+
+        // Create the chart with two lines
+        let chart = Chart::new(
+            [
+                Dataset::default()
+                    .name("Series 0")
+                    .marker(Marker::Braille)
+                    .style(Style::default().fg(Color::Cyan))
+                    .data(&data0),
+                Dataset::default()
+                    .name("Series 1")
+                    .marker(Marker::Braille)
+                    .style(Style::default().fg(Color::Yellow))
+                    .data(&data1),
+            ].to_vec())
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("kbps over last minute"),
+            )
+            .x_axis(
+                Axis::default()
+                    .bounds(x_bounds)
+                    .labels(
+                        [
+                            // Label start and end times in HH:MM:SS
+                            format!("{}",
+                                chrono::NaiveDateTime::from_timestamp_opt(x_bounds[0] as i64, 0)
+                                    .unwrap()
+                                    .format("%H:%M:%S")),
+                            format!("{}",
+                                chrono::NaiveDateTime::from_timestamp_opt(x_bounds[1] as i64, 0)
+                                    .unwrap()
+                                    .format("%H:%M:%S")),
+                        ]
+                        .iter()
+                        .cloned(),
+                    ),
+            )
+            .y_axis(
+                Axis::default()
+                    .bounds(y_bounds)
+                    .labels([
+                        format!("{:.2}", y_bounds[0]),
+                        format!("{:.2}", (y_bounds[0] + y_bounds[1]) / 2.0),
+                        format!("{:.2}", y_bounds[1]),
+                    ].iter().cloned()),
+            );
+
+        // Render the chart widget into the buffer
+        chart.render(stats_area, buf);
     }
 }

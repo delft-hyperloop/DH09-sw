@@ -26,10 +26,8 @@ pub struct FSM {
     state: States,
     /// Object used for receive access to the event channel
     event_receiver: EventReceiver,
-    /// Object used to send message over the second CAN bus
-    event_sender2: EventSender,
-    /// Object used to send messages to the ground station
-    event_sender_gs: EventSender,
+    /// Object used for send access to the event channel
+    event_sender: EventSender,
     /// The systems that should be checked in the `SystemCheck` state
     systems: CheckedSystems,
     /// the last time we received a heartbeat from the frontend
@@ -62,16 +60,14 @@ impl FSM {
     /// - A future for an instance of the `FSM` struct
     pub async fn new(
         event_receiver: EventReceiver,
-        event_sender2: EventSender,
-        event_sender_gs: EventSender,
+        event_sender: EventSender,
         rearm_sdc_pin: Output<'static>,
         sdc_pin: Output<'static>,
     ) -> Self {
         Self {
             state: States::Boot,
             event_receiver,
-            event_sender2,
-            event_sender_gs,
+            event_sender,
             systems: CheckedSystems {
                 levitation: false,
                 propulsion1: false,
@@ -111,8 +107,8 @@ impl FSM {
                     self.handle_events(event).await;
 
                     // Sends the FSM state to the ground station
-                    self.event_sender_gs
-                        .send(Event::FSMTransition(self.state.to_index()))
+                    self.event_sender
+                        .send(Event::FSMHeartbeat(self.state.to_index()))
                         .await;
 
                     // Checks if the braking line is still high. If not, send an emergency message
@@ -123,7 +119,7 @@ impl FSM {
                         && self.state != States::SystemCheck
                     {
                         error!("SDC pin is low! Sending emergency to the ground station!");
-                        self.event_sender_gs
+                        self.event_sender
                             .send(Event::Emergency {
                                 emergency_type: EmergencyType::GeneralEmergency,
                             })
@@ -136,16 +132,19 @@ impl FSM {
                 Either::Second(_timeout) => {
                     // ensure the ground station knows the current fsm state
                     // by sending it every at least 100ms
-                    self.event_sender_gs
-                        .send(Event::FSMTransition(self.state.to_index()))
+                    self.event_sender
+                        .send(Event::FSMHeartbeat(self.state.to_index()))
                         .await;
                 }
             }
 
             // check heartbeat
-            if self.last_heartbeat.elapsed().as_millis() > IP_TIMEOUT && self.state != States::Boot && self.state != States::Fault {
-                self.transition(States::Fault).await;
-            }
+            // if self.last_heartbeat.elapsed().as_millis() > IP_TIMEOUT
+            //     && self.state != States::Boot
+            //     && self.state != States::Fault
+            // {
+            //     self.transition(States::Fault).await;
+            // }
         }
     }
 
@@ -171,16 +170,16 @@ impl FSM {
                 error!("Going into Fault state with emergency {emergency_type:?}");
 
                 // 2. send the emergency message to all other devices on the CAN line
-                self.event_sender2
+                self.event_sender
                     .send(Event::Emergency { emergency_type })
                     .await;
 
                 // 3. discharge the batteries
-                self.event_sender2.send(Event::Discharge).await;
+                self.event_sender.send(Event::Discharge).await;
 
                 // 4. inform the ground station about it
                 if emergency_type != EmergencyType::StaleCriticalDataEmergency {
-                    self.event_sender_gs
+                    self.event_sender
                         .send(Event::Emergency { emergency_type })
                         .await;
                 }
@@ -191,7 +190,7 @@ impl FSM {
 
             (_, Event::ResetFSM) => {
                 info!("Reset FSM triggered. Resetting the main PCB...");
-                self.event_sender_gs.send(Event::ResetFSM).await;
+                self.event_sender.send(Event::ResetFSM).await;
                 self.sdc_pin.set_low();
                 Timer::after_millis(5).await;
                 cortex_m::peripheral::SCB::sys_reset();
@@ -225,24 +224,18 @@ impl FSM {
             // Go into fault state if any of the system checks fail
             (States::SystemCheck, Event::Prop1SystemCheckFailure) => {
                 error!("Prop 1 system check failure!");
-                self.event_sender_gs
-                    .send(Event::Prop1SystemCheckFailure)
-                    .await;
+                self.event_sender.send(Event::Prop1SystemCheckFailure).await;
                 self.transition(States::Fault).await;
             }
             (States::SystemCheck, Event::Prop2SystemCheckFailure) => {
                 error!("Prop 2 system check failure!");
-                self.event_sender_gs
-                    .send(Event::Prop2SystemCheckFailure)
-                    .await;
+                self.event_sender.send(Event::Prop2SystemCheckFailure).await;
                 self.transition(States::Fault).await;
             }
             (States::SystemCheck, Event::LeviSystemCheckFailure) => {
                 error!("Levi system check failure!");
                 self.transition(States::Fault).await;
-                self.event_sender_gs
-                    .send(Event::LeviSystemCheckFailure)
-                    .await;
+                self.event_sender.send(Event::LeviSystemCheckFailure).await;
             }
 
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
@@ -277,7 +270,7 @@ impl FSM {
 
             // Start levitating
             (States::Demo, Event::Levitate) => {
-                self.event_sender2
+                self.event_sender
                     .send(Event::FSMTransition(States::Levitating.to_index()))
                     .await;
             }
@@ -287,7 +280,7 @@ impl FSM {
 
             // Stop levitating
             (States::Levitating, Event::StopLevitating) => {
-                self.event_sender2
+                self.event_sender
                     .send(Event::FSMTransition(States::Demo.to_index()))
                     .await
             }
@@ -326,7 +319,7 @@ impl FSM {
                 | States::Fault,
                 Event::EbsPressureRetracted,
             ) => {
-                self.event_sender_gs
+                self.event_sender
                     .send(Event::Emergency {
                         emergency_type: EmergencyType::EmergencyWrongEbsState,
                     })
@@ -337,7 +330,7 @@ impl FSM {
                 States::Demo | States::Levitating | States::Accelerating | States::Braking,
                 Event::EbsPressureDeployed,
             ) => {
-                self.event_sender_gs
+                self.event_sender
                     .send(Event::Emergency {
                         emergency_type: EmergencyType::EmergencyWrongEbsState,
                     })
@@ -351,13 +344,7 @@ impl FSM {
                 error!("Going into Fault state with emergency PTC Failure");
 
                 // 2. send the emergency message to all other devices on the CAN line
-                self.event_sender2
-                    .send(Event::Emergency {
-                        emergency_type: EmergencyType::EmergencyPTC,
-                    })
-                    .await;
-
-                self.event_sender_gs
+                self.event_sender
                     .send(Event::Emergency {
                         emergency_type: EmergencyType::EmergencyPTC,
                     })
@@ -388,7 +375,7 @@ impl FSM {
                     Event::ShutDown => Some(States::Boot),
                     _ => None,
                 } {
-                    self.event_sender_gs
+                    self.event_sender
                         .send(Event::TransitionFail(failed_state_transition.to_index()))
                         .await;
                 }
@@ -405,23 +392,17 @@ impl FSM {
             CheckedSystem::Levitation => {
                 self.systems.levitation = true;
                 info!("Levi system check success!");
-                self.event_sender_gs
-                    .send(Event::LeviSystemCheckSuccess)
-                    .await;
+                self.event_sender.send(Event::LeviSystemCheckSuccess).await;
             }
             CheckedSystem::Propulsion1 => {
                 self.systems.propulsion1 = true;
                 info!("Prop1 system check success!");
-                self.event_sender_gs
-                    .send(Event::Prop1SystemCheckSuccess)
-                    .await;
+                self.event_sender.send(Event::Prop1SystemCheckSuccess).await;
             }
             CheckedSystem::Propulsion2 => {
                 self.systems.propulsion2 = true;
                 info!("Prop2 system check success!");
-                self.event_sender_gs
-                    .send(Event::Prop2SystemCheckSuccess)
-                    .await;
+                self.event_sender.send(Event::Prop2SystemCheckSuccess).await;
             }
         }
 
@@ -440,11 +421,7 @@ impl FSM {
 
         self.state = new_state;
 
-        self.event_sender2
-            .send(Event::FSMTransition(new_state.to_index()))
-            .await;
-
-        self.event_sender_gs
+        self.event_sender
             .send(Event::FSMTransition(new_state.to_index()))
             .await;
 

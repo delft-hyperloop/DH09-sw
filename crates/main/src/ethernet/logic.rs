@@ -226,7 +226,7 @@ impl GsMaster {
         while !self.stack.is_link_up() {
             Timer::after_micros(500).await;
         }
-        
+
         loop {
             if !self.stack.is_link_up() {
                 defmt::warn!("link went down, sending disconnect emergency");

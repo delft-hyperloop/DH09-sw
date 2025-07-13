@@ -39,6 +39,7 @@ pub async fn transmit_commands_to_tcp(
         #[allow(clippy::single_match)]
         match command_receiver.try_recv() {
             Ok(command) => {
+                println!("command:{}", format!("{command:?}").split_once("(").unwrap().0);
                 if matches!(command, Command::Shutdown(_)) {
                     status_transmitter
                         .send(Message::Warning("Closing connection...".into()))

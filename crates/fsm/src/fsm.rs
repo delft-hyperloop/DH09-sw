@@ -9,7 +9,6 @@ use embassy_futures::select::Either;
 use embassy_stm32::gpio::Output;
 use embassy_time::Instant;
 use embassy_time::Timer;
-use lib::config::IP_TIMEOUT;
 use lib::EmergencyType;
 use lib::Event;
 use lib::EventReceiver;

@@ -73,7 +73,7 @@ export function registerSubscribers() {
             const leviFaultMessage = `Levitation drive ${drive} signaled a fault with message: ${leviErrorMessage.join(', ')}`;
 
             addEmergencySource(
-                `Levi drive ${drive}: ${leviErrorMessage.join(', ')}`
+                `Levi drive ${drive.value}: ${leviErrorMessage.join(', ')}`
             );
 
             modalTitle.set('Levi Fault!');

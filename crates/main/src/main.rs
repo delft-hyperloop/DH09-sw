@@ -3,7 +3,7 @@
 #![no_main]
 #![no_std]
 
-use cortex_m::peripheral::DWT;
+// use cortex_m::peripheral::DWT;
 use defmt::*;
 use defmt_rtt as _;
 use embassy_executor::Spawner;
@@ -16,7 +16,7 @@ use embassy_stm32::gpio::Speed;
 use embassy_stm32::peripherals;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::signal::Signal;
-use embassy_time::{Instant, Timer};
+use embassy_time::Timer;
 use fsm::FSM;
 use lib::EventChannel;
 use lib::EventReceiver;
@@ -246,7 +246,7 @@ async fn main(spawner: Spawner) -> ! {
     //     can2.new_subscriber()
     // )));
 
-    let measure_start = Instant::now();
+    // let measure_start = Instant::now();
     unsafe {
         let mut p = cortex_m::Peripherals::steal();
         p.DCB.enable_trace();
@@ -254,10 +254,10 @@ async fn main(spawner: Spawner) -> ! {
     }
 
     // keep main running, or program exits!
-    let mut next = DWT::cycle_count();
+    // let mut next = DWT::cycle_count();
     loop {
-        let prev = next;
-        next = DWT::cycle_count();
+        // let prev = next;
+        // next = DWT::cycle_count();
         // defmt::warn!("total cycles: {}->{}", prev, next);
         // defmt::warn!("delta={}", next - prev);
         // defmt::warn!("total sleep: {}", DWT::sleep_count());

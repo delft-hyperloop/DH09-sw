@@ -126,7 +126,9 @@ pub async fn forward_fsm_events(
 
         // Match the event to a CAN envelope and send it
         let envelope = match_event_to_can_envelope(event);
-        if let Some(envelope) = envelope { can_tx.send(envelope).await }
+        if let Some(envelope) = envelope {
+            can_tx.send(envelope).await
+        }
 
         // Send hashes to the ground station
         if let Event::SendHashes = event {

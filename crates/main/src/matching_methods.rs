@@ -24,14 +24,12 @@ pub fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
 
         // If it gets a ptc logs message from the powertrain controller with state HV
         // on, send ack to fsm
-        1251 => {
-            match payload[0] { 
-                0 => Event::PTCIdleAck,
-                2 => Event::HVOnAck,
-                3 => Event::PTCFailure,
-                _ => Event::NoEvent,
-            }
-        }
+        1251 => match payload[0] {
+            0 => Event::PTCIdleAck,
+            2 => Event::HVOnAck,
+            3 => Event::PTCFailure,
+            _ => Event::NoEvent,
+        },
 
         // Check if the velocity is 0, which means that the pod is not moving (used for
         // transitioning from the braking state to the levitating state)

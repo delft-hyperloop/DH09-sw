@@ -27,9 +27,7 @@ pub struct FSM {
     /// Object used for receive access to the event channel
     event_receiver: EventReceiver,
     /// Object used to send message over the second CAN bus
-    event_sender2: EventSender,
-    /// Object used to send messages to the ground station
-    event_sender_gs: EventSender,
+
     /// The systems that should be checked in the `SystemCheck` state
     systems: CheckedSystems,
     /// the last time we received a heartbeat from the frontend
@@ -143,7 +141,10 @@ impl FSM {
             }
 
             // check heartbeat
-            if self.last_heartbeat.elapsed().as_millis() > IP_TIMEOUT && self.state != States::Boot && self.state != States::Fault {
+            if self.last_heartbeat.elapsed().as_millis() > IP_TIMEOUT
+                && self.state != States::Boot
+                && self.state != States::Fault
+            {
                 self.transition(States::Fault).await;
             }
         }

@@ -291,7 +291,7 @@ async fn main(spawner: Spawner) -> ! {
     // )));
 
     unsafe {
-       let mut p = cortex_m::Peripherals::steal();
+        let mut p = cortex_m::Peripherals::steal();
         p.DCB.enable_trace();
         p.DWT.enable_cycle_counter();
     }

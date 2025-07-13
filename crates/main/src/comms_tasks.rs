@@ -29,18 +29,143 @@ use crate::ethernet;
 use crate::ethernet::ticks;
 use crate::ethernet::types::PodToGsMessage;
 
-
-pub async fn forward_can2() {
-    
+/// Forwards CAN datapoints to the ground station and FSM
+#[embassy_executor::task]
+pub async fn forward_can(
+    gs_tx: ethernet::types::PodToGsPublisher<'static>,
+    event_sender: EventSender,
+    can_rx: can2::CanRxSubscriber<'static>,
+) {
+    loop {
+        
+    }
 }
 
-pub async fn forward_gs() {
-    
+/// Forwards ground station commands to the FSM and over CAN 
+#[embassy_executor::task]
+pub async fn forward_gs(
+    gs_rx: ethernet::types::GsToPodSubscriber<'static>,
+    event_sender: EventSender,
+    can_tx: can2::CanTxSender<'static>,
+) {
+    loop {
+        
+    }
 }
 
-pub async fn forward_fsm() {
-    
+/// Forwards commands and datapoints from the FSM to the ground station and over
+/// CAN
+#[embassy_executor::task]
+pub async fn forward_fsm(
+    gs_tx: ethernet::types::PodToGsPublisher<'static>,
+    can_tx: can2::CanTxSender<'static>,
+    event_receiver: EventReceiver,
+) -> ! {
+    loop {
+        // Get the event from the FSM
+        let event = event_receiver.receive().await;
+
+        // Match the event to a CAN envelope and send it
+        let envelope = match_event_to_can_envelope(event.clone());
+        can_tx.send(envelope).await;
+
+        // Match the event to a GroundStationToPod message and send it
+        let message = match_event_to_datapoint(event);
+        gs_tx.send(message).await;
+    }
 }
+
+/// Matches an event from the FSM to a command and payload, packed into a CAN
+/// envelope
+pub fn match_event_to_can_envelope(event: Event) -> lib::can::can2::CanEnvelope {
+    match event {
+        fsm::Event::FSMTransition(state_number) => {
+            lib::can::can2::CanEnvelope::new_with_id(Command::FSMUpdate(0).to_id(), &[state_number])
+        }
+        fsm::Event::Discharge => {
+            lib::can::can2::CanEnvelope::new_with_id(Command::StopHV(0).to_id(), &[0])
+        }
+        _ => {}
+    }
+}
+
+/// Matches an event from the FSm to a datapoint and payload packed into a
+/// PodToGsMessage
+pub fn match_event_to_datapoint(event: Event) -> PodToGsMessage {
+    match event {
+        Event::FSMTransition(transitioned_state) => PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::FSMState,
+                transitioned_state as u64,
+                embassy_time::Instant::now().as_ticks(),
+            ),
+        },
+        Event::TransitionFail(other_state) => PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::FSMTransitionFail,
+                other_state as u64,
+                embassy_time::Instant::now().as_ticks(),
+            ),
+        },
+        Event::Emergency { emergency_type } => PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::Emergency,
+                (emergency_type as i32 + 1) as u64,
+                embassy_time::Instant::now().as_ticks(),
+            ),
+        },
+        Event::LeviSystemCheckFailure => PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::LeviSystemCheckFailure,
+                0,
+                Instant::now().as_ticks(),
+            ),
+        },
+        Event::LeviSystemCheckSuccess => PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::LeviSystemCheckSuccess,
+                0,
+                Instant::now().as_ticks(),
+            ),
+        },
+        Event::Prop1SystemCheckFailure => PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::Prop1SystemCheckFailure,
+                0,
+                Instant::now().as_ticks(),
+            ),
+        },
+        Event::Prop1SystemCheckSuccess => PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::Prop1SystemCheckSuccess,
+                0,
+                Instant::now().as_ticks(),
+            ),
+        },
+        Event::Prop2SystemCheckSuccess => PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::Prop2SystemCheckSuccess,
+                0,
+                Instant::now().as_ticks(),
+            ),
+        },
+        Event::Prop2SystemCheckFailure => PodToGsMessage {
+            dp: Datapoint::new(
+                Datatype::Prop2SystemCheckFailure,
+                0,
+                Instant::now().as_ticks(),
+            ),
+        },
+        Event::ResetFSM => PodToGsMessage {
+            dp: Datapoint::new(Datatype::ResetFSM, 1, Instant::now().as_ticks()),
+        },
+        _ => {}
+    }
+}
+
+
+
+// -------------------------------------- OLD TASKS -------------------------------------- 
 
 /// Forward the messages received from the GS to the FSM.
 ///
@@ -169,39 +294,6 @@ pub async fn forward_gs_to_can2(
         }
 
         lib::config::gs_to_can2(command, |frame| can_tx.send(frame)).await;
-    }
-}
-
-/// Forward the messages received from the FSM over CAN2.
-///
-/// -`can_tx`: The sender object for CAN2
-/// -`event_receiver`: The receiver object for FSM events
-#[embassy_executor::task]
-pub async fn forward_fsm_events_to_can2(
-    can_tx: can2::CanTxSender<'static>,
-    event_receiver: EventReceiver,
-) {
-    loop {
-        let event = event_receiver.receive().await;
-        match event {
-            fsm::Event::FSMTransition(state_number) => {
-                can_tx
-                    .send(lib::can::can2::CanEnvelope::new_with_id(
-                        Command::FSMUpdate(0).to_id(),
-                        &[state_number],
-                    ))
-                    .await
-            }
-            fsm::Event::Discharge => {
-                can_tx
-                    .send(lib::can::can2::CanEnvelope::new_with_id(
-                        Command::StopHV(0).to_id(),
-                        &[0],
-                    ))
-                    .await
-            }
-            _ => {}
-        }
     }
 }
 
@@ -366,174 +458,51 @@ pub async fn forward_can2_messages_to_gs(
     }
 }
 
-/// Forward the messages received from the FSM to the GS.
-///
-/// -`gs_tx`: Transmitter object for the GS
-/// -`event_receiver`: Receiver object for the FSM
-#[embassy_executor::task]
-pub async fn forward_fsm_to_gs(
-    gs_tx: ethernet::types::PodToGsPublisher<'static>,
-    event_receiver: EventReceiver,
-) {
-    loop {
-        let event = event_receiver.receive().await;
-        match event {
-            Event::FSMTransition(transitioned_state) => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(
-                            Datatype::FSMState,
-                            transitioned_state as u64,
-                            embassy_time::Instant::now().as_ticks(),
-                        ),
-                    })
-                    .await
-            }
-            Event::TransitionFail(other_state) => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(
-                            Datatype::FSMTransitionFail,
-                            other_state as u64,
-                            embassy_time::Instant::now().as_ticks(),
-                        ),
-                    })
-                    .await
-            }
-            Event::Emergency { emergency_type } => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(
-                            Datatype::Emergency,
-                            (emergency_type as i32 + 1) as u64,
-                            embassy_time::Instant::now().as_ticks(),
-                        ),
-                    })
-                    .await
-            }
-            Event::LeviSystemCheckFailure => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(
-                            Datatype::LeviSystemCheckFailure,
-                            0,
-                            Instant::now().as_ticks(),
-                        ),
-                    })
-                    .await;
-            }
-            Event::LeviSystemCheckSuccess => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(
-                            Datatype::LeviSystemCheckSuccess,
-                            0,
-                            Instant::now().as_ticks(),
-                        ),
-                    })
-                    .await;
-            }
-            Event::Prop1SystemCheckFailure => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(
-                            Datatype::Prop1SystemCheckFailure,
-                            0,
-                            Instant::now().as_ticks(),
-                        ),
-                    })
-                    .await;
-            }
-            Event::Prop1SystemCheckSuccess => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(
-                            Datatype::Prop1SystemCheckSuccess,
-                            0,
-                            Instant::now().as_ticks(),
-                        ),
-                    })
-                    .await;
-            }
-            Event::Prop2SystemCheckSuccess => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(
-                            Datatype::Prop2SystemCheckSuccess,
-                            0,
-                            Instant::now().as_ticks(),
-                        ),
-                    })
-                    .await;
-            }
-            Event::Prop2SystemCheckFailure => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(
-                            Datatype::Prop2SystemCheckFailure,
-                            0,
-                            Instant::now().as_ticks(),
-                        ),
-                    })
-                    .await;
-            }
-            Event::ResetFSM => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(Datatype::ResetFSM, 1, Instant::now().as_ticks()),
-                    })
-                    .await;
-            }
-            _ => {}
-        }
-    }
-}
-
 /// Forwards all CAN messages to the ground station for logging
-#[embassy_executor::task]
-pub async fn log_can2_on_gs(
-    gs_tx: ethernet::types::PodToGsPublisher<'static>,
-    mut can_rx: can2::CanRxSubscriber<'static>,
-) {
-    loop {
-        let can_frame = can_rx.next_message_pure().await;
-        let id = match can_frame.id() {
-            Id::Standard(s) => s.as_raw() as u32,
-            Id::Extended(e) => {
-                warn!("Received extended CAN ID on can2 -> gs: {}", e.as_raw());
-                continue;
-            }
-        };
-
-        gs_tx
-            .send(PodToGsMessage {
-                dp: Datapoint::new(
-                    Datatype::CANLog,
-                    u64::from(id),
-                    embassy_time::Instant::now().as_ticks(),
-                ),
-            })
-            .await;
-        // Timer::after_millis(50).await;
-    }
-}
+// #[embassy_executor::task]
+// pub async fn log_can2_on_gs(
+//     gs_tx: ethernet::types::PodToGsPublisher<'static>,
+//     mut can_rx: can2::CanRxSubscriber<'static>,
+// ) {
+//     loop {
+//         let can_frame = can_rx.next_message_pure().await;
+//         let id = match can_frame.id() {
+//             Id::Standard(s) => s.as_raw() as u32,
+//             Id::Extended(e) => {
+//                 warn!("Received extended CAN ID on can2 -> gs: {}", e.as_raw());
+//                 continue;
+//             }
+//         };
+//
+//         gs_tx
+//             .send(PodToGsMessage {
+//                 dp: Datapoint::new(
+//                     Datatype::CANLog,
+//                     u64::from(id),
+//                     embassy_time::Instant::now().as_ticks(),
+//                 ),
+//             })
+//             .await;
+//         // Timer::after_millis(50).await;
+//     }
+// }
 
 /// Only used for testing, should not be run in the final version. Continuously
 /// sends a random message over CAN 2.
-#[embassy_executor::task]
-pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
-    loop {
-        let frame = Frame::new(Id::Standard(StandardId::new(826u16).unwrap()), &[1u8; 6])
-            .expect("Invalid frame");
-
-        can_tx
-            .send(lib::can::can2::CanEnvelope::new_from_frame(frame))
-            .await;
-        info!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SENDING");
-
-        Timer::after_millis(100).await;
-    }
-}
+// #[embassy_executor::task]
+// pub async fn send_random_msg_continuously(can_tx: can2::CanTxSender<'static>) {
+//     loop {
+//         let frame = Frame::new(Id::Standard(StandardId::new(826u16).unwrap()), &[1u8; 6])
+//             .expect("Invalid frame");
+//
+//         can_tx
+//             .send(lib::can::can2::CanEnvelope::new_from_frame(frame))
+//             .await;
+//         info!(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SENDING");
+//
+//         Timer::after_millis(100).await;
+//     }
+// }
 
 /// Sends a heartbeat to the ground station every 100 ms
 #[embassy_executor::task]

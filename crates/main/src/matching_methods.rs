@@ -1,12 +1,11 @@
+//! Methods to match between CAN datapoints, FSM events and ground station
+//! commands.
+
 use defmt::error;
-use embassy_time::Instant;
 use lib::config::Command;
 use lib::config::Datatype;
-use lib::Datapoint;
 use lib::EmergencyType;
 use lib::Event;
-
-use crate::ethernet::types::PodToGsMessage;
 
 /// Matches a CAN ID from the received data to an event for the FSM. This is
 /// different to the method in `config.rs` because it returns an event based on
@@ -121,15 +120,16 @@ pub fn match_event_to_can_envelope(event: Event) -> Option<lib::can::can2::CanEn
 /// PodToGsMessage
 pub fn match_event_to_datapoint(event: Event) -> Option<(Datatype, u64)> {
     match event {
+        Event::Emergency { emergency_type } => {
+            Some((Datatype::Emergency, (emergency_type as i32 + 1) as u64))
+        }
         Event::FSMTransition(transitioned_state) => {
             Some((Datatype::FSMState, transitioned_state as u64))
         }
         Event::TransitionFail(other_state) => {
             Some((Datatype::FSMTransitionFail, other_state as u64))
         }
-        Event::Emergency { emergency_type } => {
-            Some((Datatype::Emergency, (emergency_type as i32 + 1) as u64))
-        }
+        Event::FSMHeartbeat(state) => Some((Datatype::FSMState, state as u64)),
         Event::LeviSystemCheckFailure => Some((Datatype::LeviSystemCheckFailure, 0)),
         Event::LeviSystemCheckSuccess => Some((Datatype::LeviSystemCheckSuccess, 0)),
         Event::Prop1SystemCheckFailure => Some((Datatype::Prop1SystemCheckFailure, 0)),

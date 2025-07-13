@@ -1,7 +1,6 @@
 //! The embassy tasks that handle communications between the FSM, CAN, and the
 //! GS.
 
-use defmt::todo;
 use defmt::*;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::pubsub::WaitResult;
@@ -151,15 +150,12 @@ pub async fn forward_fsm_events(
 
         // Match the event to a GroundStationToPod message and send it
         let message = match_event_to_datapoint(event);
-        match message {
-            Some(message) => {
-                gs_tx
-                    .send(PodToGsMessage {
-                        dp: Datapoint::new(message.0, message.1, Instant::now().as_ticks()),
-                    })
-                    .await
-            }
-            None => {}
+        if let Some(message) = message {
+            gs_tx
+                .send(PodToGsMessage {
+                    dp: Datapoint::new(message.0, message.1, Instant::now().as_ticks()),
+                })
+                .await
         }
     }
 }

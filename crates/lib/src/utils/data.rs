@@ -72,6 +72,9 @@ pub enum Event {
     /// Event sent when transitioning. Used to send the `FSMUpdate` CAN message.
     /// - `u8`: State in which the FSM transitioned
     FSMTransition(u8),
+    /// Event sent periodically to the ground station to indicate the state that
+    /// we are in.
+    FSMHeartbeat(u8),
     /// Acknowledgement received from levi that we are levitating
     LeviOnAck,
     /// Acknowledgement that levi is off (not levitating)

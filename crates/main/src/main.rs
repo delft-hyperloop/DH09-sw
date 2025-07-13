@@ -3,7 +3,6 @@
 #![no_main]
 #![no_std]
 
-use cortex_m::peripheral::DCB;
 use cortex_m::peripheral::DWT;
 use defmt::*;
 use defmt_rtt as _;
@@ -19,7 +18,6 @@ use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::signal::Signal;
 use embassy_time::Timer;
 use fsm::FSM;
-use lib::Event;
 use lib::EventChannel;
 use lib::EventReceiver;
 use lib::EventSender;

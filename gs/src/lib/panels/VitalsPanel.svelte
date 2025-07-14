@@ -20,6 +20,7 @@
         debugModeActive,
         ebsState,
         inStateAccelerating,
+        inStateActive,
         inStateBraking,
         inStateCharging,
         inStateLevitating,
@@ -288,7 +289,9 @@
                             cmd="SystemCheck"
                             icon={SettingsCheck}
                         />
-                        {#if $fsmState.value < 5}
+                        {#if $inStateAccelerating || $inStateLevitating || $inStateDemo || $inStateActive || $inStateBraking || $inStateCharging}
+                            <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
+                        {:else}
                             <Command
                                 cmd="StartHV"
                                 text="Start HV"
@@ -297,8 +300,6 @@
                                 dependencyTitle="Wrong State!"
                                 dependencyMessage="The pod should be in the Idle state to turn on high voltage!"
                             />
-                        {:else}
-                            <Command cmd="StopHV" text="Stop HV" className="text-error-400 border-error-400 border-2" icon={FlashOff}/>
                         {/if}
                         <Command cmd="RearmSDC" text="Rearm SDC" icon={RightPanelClose}/>
                         {#if $inStateAccelerating || $inStateBraking || $inStateLevitating}

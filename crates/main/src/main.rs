@@ -133,7 +133,7 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("Embassy initialized!");
 
-    let mut puppy = IndependentWatchdog::new(p.IWDG1, 2_000_000);
+    let mut puppy = IndependentWatchdog::new(p.IWDG1, 10_000_000);
     #[cfg(not(debug_assertions))]
     puppy.unleash();
 
@@ -274,6 +274,9 @@ async fn main(spawner: Spawner) -> ! {
             Timer::after_millis(1000).await;
         }
     }
+    
+    // Wait to connect to the ground station first, and then 
+    signal.wait().await;
     loop {
         Timer::after_millis(20).await;
         puppy.pet();

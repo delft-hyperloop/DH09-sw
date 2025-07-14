@@ -53,8 +53,7 @@ export function registerSubscribers() {
         'LeviFaultDriveNumber'
     );
 
-    const lowPressureThreshold: number = 30;
-
+    const lowPressureThreshold: number = 35;
     lowPressure.subscribe((store) => {
         if (store.value > lowPressureThreshold) {
             ebsState.set(EBSStates.Armed);
@@ -66,14 +65,12 @@ export function registerSubscribers() {
     leviFault.subscribe((store) => {
         if (store.value !== 0) {
             let drive = get(leviFaultDriveNumber);
-            let leviErrorMessage = leviErrorMessages.filter(
-                (x, index) => ((store.value >> index) & 1) === 1
-            );
+            let leviErrorMessage = leviErrorMessages[store.value];
 
-            const leviFaultMessage = `Levitation drive ${drive} signaled a fault with message: ${leviErrorMessage.join(', ')}`;
+            const leviFaultMessage = `Levitation drive ${drive.value} signaled a fault with message: ${leviErrorMessage.join(', ')}`;
 
             addEmergencySource(
-                `Levi drive ${drive.value}: ${leviErrorMessage.join(', ')}`
+                `Levi drive ${drive.value}: ${leviErrorMessage}`
             );
 
             modalTitle.set('Levi Fault!');

@@ -3,11 +3,6 @@
 #![no_main]
 #![no_std]
 
-<<<<<<< HEAD
-// use cortex_m::peripheral::DWT;
-=======
-use cortex_m::peripheral::DWT;
->>>>>>> 45db8b8 (aaaaaaaaaaaaaaaaaaa)
 use defmt::*;
 use defmt_rtt as _;
 use embassy_executor::Spawner;
@@ -20,7 +15,6 @@ use embassy_stm32::gpio::Speed;
 use embassy_stm32::peripherals;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::signal::Signal;
-use embassy_time::Instant;
 use embassy_time::Timer;
 use fsm::FSM;
 use lib::EventChannel;
@@ -251,22 +245,31 @@ async fn main(spawner: Spawner) -> ! {
     //     can2.new_subscriber()
     // )));
 
-    let measure_start = Instant::now();
-    unsafe {
-        let mut p = cortex_m::Peripherals::steal();
-        p.DCB.enable_trace();
-        p.DWT.enable_cycle_counter();
-    }
+    #[cfg(debug_assertions)]
+    {
+        use cortex_m::peripheral::DWT;
+        use embassy_time::Instant;
 
-    let (mut prev, mut next) = (0, 0);
-    next = DWT::cycle_count();
-    loop {
-        prev = next;
+        let measure_start = Instant::now();
+        unsafe {
+            let mut p = cortex_m::Peripherals::steal();
+            p.DCB.enable_trace();
+            p.DWT.enable_cycle_counter();
+        }
+
+        let (mut prev, mut next) = (0, 0);
         next = DWT::cycle_count();
-        defmt::warn!("total cycles: {}->{}", prev, next);
-        defmt::warn!("delta={}", next - prev);
-        defmt::warn!("total sleep: {}", DWT::sleep_count());
-        defmt::warn!("total elapsed: {}μs", measure_start.elapsed().as_micros());
-        Timer::after_millis(1000).await;
+        loop {
+            prev = next;
+            next = DWT::cycle_count();
+            defmt::warn!("total cycles: {}->{}", prev, next);
+            defmt::warn!("delta={}", next - prev);
+            defmt::warn!("total sleep: {}", DWT::sleep_count());
+            defmt::warn!("total elapsed: {}μs", measure_start.elapsed().as_micros());
+            Timer::after_millis(1000).await;
+        }
+    }
+    loop {
+        Timer::after_millis(1_000_000).await
     }
 }

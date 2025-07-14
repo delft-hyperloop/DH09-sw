@@ -67,7 +67,7 @@ export function registerSubscribers() {
             let drive = get(leviFaultDriveNumber);
             let leviErrorMessage = leviErrorMessages[store.value];
 
-            const leviFaultMessage = `Levitation drive ${drive.value} signaled a fault with message: ${leviErrorMessage.join(', ')}`;
+            const leviFaultMessage = `Levitation drive ${drive.value} signaled a fault with message: ${leviErrorMessage}`;
 
             addEmergencySource(
                 `Levi drive ${drive.value}: ${leviErrorMessage}`

@@ -121,6 +121,9 @@ export class PlotBuffer {
      * @param value
      */
     public addEntry(seriesIndex: number, value: number) {
+        if (value === undefined || seriesIndex === undefined) {
+            console.log(`Value ${value}, index ${seriesIndex}`);
+        }
         this.buffer[seriesIndex].push(value);
     }
 

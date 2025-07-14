@@ -12,15 +12,21 @@ use lib::Event;
 /// the payload or an emergency which also requires the type of emergency.
 pub fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
     match id {
-        // Pressure brakes
-        831 => {
-            let pressure_low = u16::from_be_bytes([payload[0], payload[1]]);
-            if pressure_low < 3500 {
-                Event::EbsPressureDeployed
-            } else {
-                Event::EbsPressureRetracted
+        826 if i32::from_be_bytes([payload[0], payload[1], payload[2], payload[3]]) <= 20400 => {
+            Event::Emergency {
+                emergency_type: EmergencyType::EmergencyPropulsion
             }
-        }
+        } 
+        
+        // Pressure brakes
+        // 831 => {
+        //     let pressure_low = u16::from_be_bytes([payload[0], payload[1]]);
+        //     if pressure_low < 1500 {
+        //         Event::EbsPressureDeployed
+        //     } else {
+        //         Event::EbsPressureRetracted
+        //     }
+        // }
 
         // If it gets a ptc logs message from the powertrain controller with state HV
         // on, send ack to fsm

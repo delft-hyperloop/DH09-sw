@@ -1,5 +1,15 @@
 <script lang="ts">
-    import { Chart, Command, EventChannel, GrandDataDistributor, type NamedCommand, Tile, TileGrid, util } from '$lib';
+    import {
+        Chart,
+        Command,
+        EventChannel,
+        GrandDataDistributor,
+        type NamedCommand,
+        Store,
+        Tile,
+        TileGrid,
+        util,
+    } from '$lib';
     import {
         goingForward,
         propControlWord1,
@@ -8,17 +18,16 @@
         usingTestTrack,
     } from '$lib/stores/state';
     import { invoke } from '@tauri-apps/api/tauri';
-    import PropulsionPoint from '$lib/components/PropulsionPoint.svelte';
     import { propulsionPoints, setPropulsionPoints } from '$lib/stores/data';
     import { onMount } from 'svelte';
     import type { PropPoint } from '$lib/types';
     import { Meter } from 'carbon-icons-svelte';
-    import PropulsionPointDisplay from '$lib/components/PropulsionPointDisplay.svelte';
     import PropulsionHeartbeat from '$lib/components/PropulsionHeartbeat.svelte';
     import PropulsionInitFault from '$lib/components/PropulsionInitFault.svelte';
     import BinaryInput1 from '$lib/components/BinaryInput1.svelte';
     import BinaryInput2 from '$lib/components/BinaryInput2.svelte';
     import CollapsibleTile from '$lib/components/generic/CollapsibleTile.svelte';
+    import Command64Bits from '$lib/components/abstract/Command64Bits.svelte';
 
     let currentDirectionForward: boolean = $goingForward;
     let pointCount: number = 3;
@@ -26,6 +35,10 @@
     const storeManager = GrandDataDistributor.getInstance().stores;
     const ppEmergency1 = storeManager.getWritable("PPEmergency1");
     const ppEmergency2 = storeManager.getWritable("PPEmergency2");
+
+    let maxCurrent = 0;
+
+    // $: ppIbus = ppIbus1
 
     onMount(() => {
         let array: PropPoint[] = [];
@@ -96,6 +109,14 @@
         propulsionConfigSent.set(true);
     }
 
+    let ppControlParams1 = 0 & 0xFFFF;
+    let ppControlParams2 = 0;
+
+    let calculatePPControlParams = () => {
+        // ppControlParams1 = (0 * 10) & 0xFFFF;
+        ppControlParams2 = ((0 & 0xFFFF) << 16) | (maxCurrent & 0xFFFF);
+    }
+
 </script>
 
 <div class="p-4 h-full">
@@ -114,85 +135,106 @@
             <Command cmd="MotorBrake" icon={Meter} iconClass="scale-x-[-1]"/>
         </Tile>
         <CollapsibleTile title="Run Initialization">
-            <div slot="content" class="flex flex-col gap-2 mb-2">
-                <div class="grid grid-cols-5 grid-rows-1">
-                    <div class="grid grid-cols-2 gap-2 row-span-2 col-span-2 py-4">
-                        <!--                <Command cmd="SystemReset" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />-->
-                        <!--                <Command cmd="RearmSDC" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" text="Rearm SDC"/>-->
-                        <!--                    <p class="col-span-2 text-center w-full items-center h-full justify-center">-->
-                        <!--                        Choose Direction:-->
-                        <!--                    </p>-->
-                        <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden"
-                                on:click={() => {currentDirectionForward = true}}
-                                disabled={currentDirectionForward}>
-                            Forward
-                        </button>
-                        <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden"
-                                on:click={() => {currentDirectionForward = false}}
-                                disabled={true}>
-                            Backward
-                        </button>
-                        <!--                    <p class="col-span-2 text-center w-full items-center h-full justify-center">-->
-                        <!--                        Choose Track:-->
-                        <!--                    </p>-->
-                        <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden text-wrap"
-                                on:click={() => {usingTestTrack.set(true)}}
-                                disabled={$usingTestTrack}>
-                            Test Track
-                        </button>
-                        <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden text-wrap"
-                                on:click={() => {usingTestTrack.set(false)}}
-                                disabled={!$usingTestTrack}>
-                            EHC Track
-                        </button>
-                    </div>
-                    <div class="col-span-3 h-full flex justify-center items-center pl-2">
-                        <div class="grid grid-cols-3 overflow-y-auto gap-2 w-full h-full">
-                            {#each Array.from({ length: pointCount }, (_, i) => i) as i}
-                                <PropulsionPoint index={i}/>
-                            {/each}
-                        </div>
-                    </div>
+            <div slot="content" class="items-center justify-center w-full">
+                <div class="flex flex-row gap-4 mb-10">
+                    <div class="text-center content-center">Maximum current per motor</div>
+                    <input bind:value={maxCurrent} type="number" min="0" max="50000" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
                 </div>
-                <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow font-medium overflow-hidden"
-                        on:click={submitRun} disabled={false}>
-                    Submit All Run Parameters
-                </button>
-                <!--            <hr class="col-span-full">-->
-                <p class="col-span-full font-normal text-xl py-3 ">Current Values:</p>
-                <div class="grid grid-cols-4 gap-8">
-                    <div class="flex flex-col gap-4">
-                    <span>
-                        Run Direction:
-                        {#if $propulsionConfigSent}
-                            {#if $goingForward}
-                                <span>Forward</span>
-                            {:else}
-                                <span>Backward</span>
-                            {/if}
-                        {:else}
-                            <span>Not set</span>
-                        {/if}
-                    </span>
-                        <span>
-                        Track:
-                            {#if $propulsionConfigSent}
-                            {#if currentTrack}
-                                <span>Test Track</span>
-                            {:else}
-                                <span>EHC Track</span>
-                            {/if}
-                        {:else}
-                            <span>Not Set</span>
-                        {/if}
-                    </span>
+                <Command64Bits
+                    cmd="PPControlParams"
+                    text="Submit PP Control Params"
+                    values={[ppControlParams1, ppControlParams2]}
+                    onClickMethod={() => {propulsionConfigSent.set(true)}}
+                />
+                <div class="flex flex-col gap-4 mt-10">
+                    <p class="col-span-full font-normal text-xl py-3 ">Current Values:</p>
+                    <div class="flex flex-row gap-4">
+                        <Store datatype="Ibus2" name="Maximum current per motor"/>
+<!--                        <span>{$ppIbus2.value}</span>-->
                     </div>
-                    {#each Array.from({ length: pointCount }, (_, i) => i) as i}
-                        <PropulsionPointDisplay index={i}/>
-                    {/each}
                 </div>
             </div>
         </CollapsibleTile>
+<!--        <CollapsibleTile title="Run Initialization">-->
+<!--            <div slot="content" class="flex flex-col gap-2 mb-2">-->
+<!--                <div class="grid grid-cols-5 grid-rows-1">-->
+<!--                    <div class="grid grid-cols-2 gap-2 row-span-2 col-span-2 py-4">-->
+<!--                        &lt;!&ndash;                <Command cmd="SystemReset" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" />&ndash;&gt;-->
+<!--                        &lt;!&ndash;                <Command cmd="RearmSDC" className="btn flex-grow rounded-md bg-primary-500 text-surface-900 text-wrap overflow-auto" text="Rearm SDC"/>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                    <p class="col-span-2 text-center w-full items-center h-full justify-center">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                        Choose Direction:&ndash;&gt;-->
+<!--                        &lt;!&ndash;                    </p>&ndash;&gt;-->
+<!--                        <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden"-->
+<!--                                on:click={() => {currentDirectionForward = true}}-->
+<!--                                disabled={currentDirectionForward}>-->
+<!--                            Forward-->
+<!--                        </button>-->
+<!--                        <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden"-->
+<!--                                on:click={() => {currentDirectionForward = false}}-->
+<!--                                disabled={true}>-->
+<!--                            Backward-->
+<!--                        </button>-->
+<!--                        &lt;!&ndash;                    <p class="col-span-2 text-center w-full items-center h-full justify-center">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                        Choose Track:&ndash;&gt;-->
+<!--                        &lt;!&ndash;                    </p>&ndash;&gt;-->
+<!--                        <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden text-wrap"-->
+<!--                                on:click={() => {usingTestTrack.set(true)}}-->
+<!--                                disabled={$usingTestTrack}>-->
+<!--                            Test Track-->
+<!--                        </button>-->
+<!--                        <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden text-wrap"-->
+<!--                                on:click={() => {usingTestTrack.set(false)}}-->
+<!--                                disabled={!$usingTestTrack}>-->
+<!--                            EHC Track-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                    <div class="col-span-3 h-full flex justify-center items-center pl-2">-->
+<!--                        <div class="grid grid-cols-3 overflow-y-auto gap-2 w-full h-full">-->
+<!--                            {#each Array.from({ length: pointCount }, (_, i) => i) as i}-->
+<!--                                <PropulsionPoint index={i}/>-->
+<!--                            {/each}-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <button class="btn text-wrap rounded-md bg-primary-500 text-surface-900 col-span-full flex-grow font-medium overflow-hidden"-->
+<!--                        on:click={submitRun} disabled={false}>-->
+<!--                    Submit All Run Parameters-->
+<!--                </button>-->
+<!--                &lt;!&ndash;            <hr class="col-span-full">&ndash;&gt;-->
+<!--                <p class="col-span-full font-normal text-xl py-3 ">Current Values:</p>-->
+<!--                <div class="grid grid-cols-4 gap-8">-->
+<!--                    <div class="flex flex-col gap-4">-->
+<!--                    <span>-->
+<!--                        Run Direction:-->
+<!--                        {#if $propulsionConfigSent}-->
+<!--                            {#if $goingForward}-->
+<!--                                <span>Forward</span>-->
+<!--                            {:else}-->
+<!--                                <span>Backward</span>-->
+<!--                            {/if}-->
+<!--                        {:else}-->
+<!--                            <span>Not set</span>-->
+<!--                        {/if}-->
+<!--                    </span>-->
+<!--                        <span>-->
+<!--                        Track:-->
+<!--                            {#if $propulsionConfigSent}-->
+<!--                            {#if currentTrack}-->
+<!--                                <span>Test Track</span>-->
+<!--                            {:else}-->
+<!--                                <span>EHC Track</span>-->
+<!--                            {/if}-->
+<!--                        {:else}-->
+<!--                            <span>Not Set</span>-->
+<!--                        {/if}-->
+<!--                    </span>-->
+<!--                    </div>-->
+<!--                    {#each Array.from({ length: pointCount }, (_, i) => i) as i}-->
+<!--                        <PropulsionPointDisplay index={i}/>-->
+<!--                    {/each}-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </CollapsibleTile>-->
     </TileGrid>
     <TileGrid columns="1fr 1fr" rows="auto" className="mt-2">
         <CollapsibleTile title="Other Commands">

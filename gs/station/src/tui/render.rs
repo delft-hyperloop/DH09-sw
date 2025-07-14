@@ -106,11 +106,13 @@ impl Widget for &App {
         sb.render(input_area, buf);
         search.render(inner, buf);
 
-        let commands_list = self
+        let mut commands_list = self
             .commands
             .iter()
-            .map(|(c, t)| (format!("{c:?}").split_once("(").unwrap().0.to_string(), t.clone()))
+            .map(|(x,y)| (x.to_string(), y.to_string()))
             .collect::<Vec<(String, String)>>();
+
+        commands_list.sort_by_key(|(_,x)| x.clone());
 
         let longest = commands_list.iter().map(|x| x.0.len() + x.1.len()).max().unwrap_or(40);
 

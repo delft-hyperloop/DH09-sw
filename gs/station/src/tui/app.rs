@@ -18,7 +18,6 @@ use crossterm::event::KeyModifiers;
 use crossterm::event::MouseEvent;
 use crossterm::event::MouseEventKind;
 use crossterm::event::{self};
-use gslib::Command;
 use gslib::Datatype;
 use gslib::ProcessedData;
 use ratatui::Frame;
@@ -36,11 +35,11 @@ pub enum InputMode {
 #[allow(dead_code)]
 pub struct App {
     pub data: BTreeMap<Datatype, ProcessedData>,
-    pub commands: BTreeMap<Command, String>,
+    pub commands: BTreeMap<String, String>,
     pub scroll: usize,
     pub is_running: bool,
     pub data_stream: Receiver<ProcessedData>,
-    pub cmd_stream: Receiver<Command>,
+    pub cmd_stream: Receiver<String>,
     pub kbps: Vec<(f64, f64)>,
     pub seg: Instant,
     pub dcio: (usize, usize),
@@ -96,7 +95,7 @@ impl App {
 
         Ok(Self {
             data: map,
-            commands: vec![],
+            commands: BTreeMap::new(),
             is_running: true,
             scroll: 0,
             data_stream: drx,
@@ -104,7 +103,7 @@ impl App {
             child,
             seg: Instant::now(),
             kbps: vec![],
-            dcio: (150, 250),
+            dcio: (0, 0),
             input_mode: InputMode::Normal,
             cur_search: String::new(),
         })
@@ -127,8 +126,7 @@ impl App {
             self.dcio.0 += 20;
         }
         while let Ok(cd) = self.cmd_stream.try_recv() {
-            self.commands.insert(0, (cd, timestamp()));
-            self.commands.truncate(200);
+            self.commands.insert(cd, timestamp());
             self.dcio.1 += 20;
         }
         if self.seg.elapsed() >= Duration::from_secs(1) {
@@ -222,9 +220,9 @@ fn read_datapoint(s: &str) -> anyhow::Result<Option<ProcessedData>> {
     }
 }
 
-fn read_command(s: &str) -> anyhow::Result<Option<gslib::Command>> {
+fn read_command(s: &str) -> anyhow::Result<Option<String>> {
     if s.contains("command:") {
-        Ok(s.split_once("command:").map(|(_, x)| gslib::Command::from_string(x, 42)))
+        Ok(Some(s.split_once("command:").unwrap().1.to_string()))
     } else {
         Ok(None)
     }

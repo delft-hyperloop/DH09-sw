@@ -13,6 +13,7 @@ use embassy_stm32::gpio::Level;
 use embassy_stm32::gpio::Output;
 use embassy_stm32::gpio::Speed;
 use embassy_stm32::peripherals;
+use embassy_stm32::wdg::IndependentWatchdog;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::signal::Signal;
 use embassy_time::Timer;
@@ -131,6 +132,10 @@ async fn main(spawner: Spawner) -> ! {
     let p = embassy_stm32::init(config);
 
     info!("Embassy initialized!");
+
+    let mut puppy = IndependentWatchdog::new(p.IWDG1, 100_000);
+    #[cfg(not(debug_assertions))]
+    puppy.unleash();
 
     let can2 = {
         let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PB8, p.PB9, Irqs);
@@ -270,6 +275,7 @@ async fn main(spawner: Spawner) -> ! {
         }
     }
     loop {
-        Timer::after_millis(1_000_000).await
+        Timer::after_millis(20).await;
+        puppy.pet();
     }
 }

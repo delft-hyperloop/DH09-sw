@@ -1,3 +1,4 @@
+use std::time::Instant;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
@@ -16,13 +17,22 @@ impl Widget for &App {
     fn render(self, area: Rect, buf: &mut Buffer) {
         // split top and bottom for content & search bar
 
-        let [content_area, commands_area, stats_area, input_area] = Layout::vertical([
-            Constraint::Min(10),
-            Constraint::Length(5),
-            Constraint::Length(12),
-            Constraint::Length(3),
-        ])
-        .areas(area);
+        let [content_area, commands_area, stats_area, input_area] = match self.input_mode {
+            InputMode::Editing => Layout::vertical([
+                Constraint::Min(10),
+                Constraint::Length(5),
+                Constraint::Length(12),
+                Constraint::Length(3),
+            ])
+            .areas(area),
+            InputMode::Normal => Layout::vertical([
+                Constraint::Min(10),
+                Constraint::Length(6),
+                Constraint::Length(13),
+                Constraint::Length(1),
+            ])
+            .areas(area),
+        };
 
         // first get the rows we should render
         let mut entries: Vec<(&Datatype, &ProcessedData)> = self.data.iter().collect();
@@ -138,7 +148,7 @@ impl Widget for &App {
 
             let table_col_widths = vec![Constraint::Percentage(50), Constraint::Percentage(50)];
             let table = Table::new(rows, table_col_widths)
-                .header(Row::new(vec!["command", "timestamp"]))
+                // .header(Row::new(vec!["command", "timestamp"]))
                 .block(Block::default().borders(Borders::ALL).title(format!(
                     "commands sent to pod ({}/{})",
                     i + 1,
@@ -151,10 +161,7 @@ impl Widget for &App {
         }
 
         // Compute current time in seconds since UNIX epoch
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs_f64();
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs_f64();
 
         // Determine time bounds: from one minute ago to now
         let x_bounds = [now - 60.0, now];
@@ -164,13 +171,15 @@ impl Widget for &App {
         let dt = if n > 1 { 60.0 / (n as f64 - 1.0) } else { 0.0 };
 
         // Build two datasets: .0 and .1 values over time
-        let data0: Vec<(f64, f64)> = self.kbps
+        let data0: Vec<(f64, f64)> = self
+            .kbps
             .iter()
             .rev()
             .enumerate()
             .map(|(i, &(v0, _v1))| (x_bounds[0] + i as f64 * dt, v0))
             .collect();
-        let data1: Vec<(f64, f64)> = self.kbps
+        let data1: Vec<(f64, f64)> = self
+            .kbps
             .iter()
             .rev()
             .enumerate()
@@ -179,9 +188,8 @@ impl Widget for &App {
 
         // Determine y-axis bounds by inspecting all values, with a small margin
         let all_vals = self.kbps.iter().rev().flat_map(|&(v0, v1)| vec![v0, v1]);
-        let (y_min, y_max) = all_vals.fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), v| {
-            (min.min(v), max.max(v))
-        });
+        let (y_min, y_max) = all_vals
+            .fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), v| (min.min(v), max.max(v)));
         let y_margin = (y_max - y_min) * 0.05;
         let y_bounds = [0.0, y_max + y_margin];
 
@@ -190,48 +198,54 @@ impl Widget for &App {
             [
                 Dataset::default()
                     .name("incoming data rate")
-                    .marker(Marker::Braille)
+                    .marker(Marker::HalfBlock)
                     .style(Style::default().fg(Color::Blue))
                     .data(&data0),
                 Dataset::default()
                     .name("outgoing data rate")
-                    .marker(Marker::Braille)
+                    .marker(Marker::Bar)
                     .style(Style::default().fg(Color::Red))
                     .data(&data1),
-            ].to_vec())
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .title("kbps over last minute"),
-            )
-            .x_axis(
-                Axis::default()
-                    .bounds(x_bounds)
-                    .labels(
-                        [
-                            // Label start and end times in HH:MM:SS
-                            format!("{}",
-                                chrono::NaiveDateTime::from_timestamp_opt(x_bounds[0] as i64, 0)
-                                    .unwrap()
-                                    .format("%H:%M:%S")),
-                            format!("{}",
-                                chrono::NaiveDateTime::from_timestamp_opt(x_bounds[1] as i64, 0)
-                                    .unwrap()
-                                    .format("%H:%M:%S")),
-                        ]
-                        .iter()
-                        .cloned(),
+            ]
+            .to_vec(),
+        )
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("kbps over last minute, blue:pod->gs, red:gs->pod"),
+        )
+        .x_axis(
+            Axis::default().bounds(x_bounds).labels(
+                [
+                    // Label start and end times in HH:MM:SS
+                    format!(
+                        "{}",
+                        chrono::NaiveDateTime::from_timestamp_opt(x_bounds[0] as i64, 0)
+                            .unwrap()
+                            .format("%H:%M:%S")
                     ),
-            )
-            .y_axis(
-                Axis::default()
-                    .bounds(y_bounds)
-                    .labels([
-                        format!("{:.2}", y_bounds[0]),
-                        format!("{:.2}", (y_bounds[0] + y_bounds[1]) / 2.0),
-                        format!("{:.2}", y_bounds[1]),
-                    ].iter().cloned()),
-            );
+                    format!(
+                        "{}",
+                        chrono::NaiveDateTime::from_timestamp_opt(x_bounds[1] as i64, 0)
+                            .unwrap()
+                            .format("%H:%M:%S")
+                    ),
+                ]
+                .iter()
+                .cloned(),
+            ),
+        )
+        .y_axis(
+            Axis::default().bounds(y_bounds).labels(
+                [
+                    format!("{:.2}", y_bounds[0]),
+                    format!("{:.2}", (y_bounds[0] + y_bounds[1]) / 2.0),
+                    format!("{:.2}", y_bounds[1]),
+                ]
+                .iter()
+                .cloned(),
+            ),
+        );
 
         // Render the chart widget into the buffer
         chart.render(stats_area, buf);

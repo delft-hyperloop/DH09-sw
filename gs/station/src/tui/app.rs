@@ -36,7 +36,7 @@ pub enum InputMode {
 #[allow(dead_code)]
 pub struct App {
     pub data: BTreeMap<Datatype, ProcessedData>,
-    pub commands: Vec<(Command, String)>,
+    pub commands: BTreeMap<Command, String>,
     pub scroll: usize,
     pub is_running: bool,
     pub data_stream: Receiver<ProcessedData>,
@@ -104,7 +104,7 @@ impl App {
             child,
             seg: Instant::now(),
             kbps: vec![],
-            dcio: (0, 0),
+            dcio: (150, 250),
             input_mode: InputMode::Normal,
             cur_search: String::new(),
         })

@@ -133,7 +133,7 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("Embassy initialized!");
 
-    let mut puppy = IndependentWatchdog::new(p.IWDG1, 100_000);
+    let mut puppy = IndependentWatchdog::new(p.IWDG1, 2_000_000);
     #[cfg(not(debug_assertions))]
     puppy.unleash();
 

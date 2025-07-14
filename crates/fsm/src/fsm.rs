@@ -7,7 +7,7 @@ use defmt::info;
 use embassy_futures::select::select;
 use embassy_futures::select::Either;
 use embassy_stm32::gpio::Output;
-use embassy_time::Instant;
+use embassy_time::{Duration, Instant};
 use embassy_time::Timer;
 use lib::EmergencyType;
 use lib::Event;
@@ -35,6 +35,7 @@ pub struct FSM {
     rearm_sdc_pin: Output<'static>,
     /// The pin on the main PCB used for controlling the sdc
     sdc_pin: Output<'static>,
+    last_pressure_check: Option<Instant>,
 }
 
 impl Debug for FSM {
@@ -76,6 +77,7 @@ impl FSM {
             last_heartbeat: Instant::now(),
             rearm_sdc_pin,
             sdc_pin,
+            last_pressure_check: None,
         }
     }
 
@@ -318,24 +320,37 @@ impl FSM {
                 | States::Fault,
                 Event::EbsPressureRetracted,
             ) => {
-                self.event_sender
-                    .send(Event::Emergency {
-                        emergency_type: EmergencyType::EmergencyWrongEbsState,
-                    })
-                    .await;
-                self.transition(States::Fault).await;
+                // Timer::after_secs(1).await;
+                if self.last_pressure_check.is_some_and(|i| i.elapsed() > Duration::from_secs(1)) { 
+                    self.event_sender
+                        .send(Event::Emergency {
+                            emergency_type: EmergencyType::EmergencyWrongEbsState,
+                        })
+                        .await;
+                    self.transition(States::Fault).await;
+                    self.last_pressure_check = None;
+                } else if self.last_pressure_check.is_none() {
+                    self.last_pressure_check = Some(Instant::now());
+                }
             }
             (
-                States::Demo | States::Levitating | States::Accelerating | States::Braking,
+                States::Demo | States::Levitating | States::Accelerating | States::Braking, // todo: in levi/acc/brake, EbsPressureDeployed should cause instant fault
                 Event::EbsPressureDeployed,
             ) => {
-                self.event_sender
-                    .send(Event::Emergency {
-                        emergency_type: EmergencyType::EmergencyWrongEbsState,
-                    })
-                    .await;
-                self.transition(States::Fault).await;
+                if self.last_pressure_check.is_some_and(|i| i.elapsed() > Duration::from_millis(5000)) {
+                    self.event_sender
+                        .send(Event::Emergency {
+                            emergency_type: EmergencyType::EmergencyWrongEbsState,
+                        })
+                        .await;
+                    self.transition(States::Fault).await;
+                    self.last_pressure_check = None;
+                } else if self.last_pressure_check.is_none() {
+                    self.last_pressure_check = Some(Instant::now());
+                }
             }
+            
+            (_, Event::EbsPressureDeployed | Event::EbsPressureRetracted) => self.last_pressure_check = None,
 
             (_, Event::PTCFailure) if self.state != States::Fault => {
                 // 1. Trigger emergency using the sdc

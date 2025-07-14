@@ -129,7 +129,7 @@
                         </button>
                         <button class="btn rounded-md bg-primary-500 text-surface-900 col-span-1 flex-grow font-medium overflow-hidden"
                                 on:click={() => {currentDirectionForward = false}}
-                                disabled={!currentDirectionForward}>
+                                disabled={true}>
                             Backward
                         </button>
                         <!--                    <p class="col-span-2 text-center w-full items-center h-full justify-center">-->

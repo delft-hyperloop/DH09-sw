@@ -2,11 +2,15 @@
 //! GS.
 
 use defmt::*;
+use embassy_futures::select::select;
+use embassy_futures::select::Either;
 use embassy_futures::yield_now;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::pubsub::WaitResult;
 use embassy_sync::signal::Signal;
+use embassy_time::Duration;
 use embassy_time::Instant;
+use embassy_time::Ticker;
 use embassy_time::Timer;
 use embedded_can::Frame;
 use embedded_can::Id;
@@ -173,8 +177,12 @@ pub async fn check_critical_datapoints(
     // Wait for the signal to indicate that you are connected to the ground station
     signal.wait().await;
 
-    // Store the timestamp of the last check.
-    let mut last_critical_datapoint_check = Instant::now().as_millis();
+    // The time in milliseconds after which a datatype is considered stale
+    const STALE_DATA_TIMEOUT: u64 = 2_000;
+    // how often to check for stale data. in the worst case, this is how long the
+    // delay will be between a datatype truly going stale and us going into
+    // fault state.
+    let mut check_ticker = Ticker::every(Duration::from_millis(150));
 
     // Store the timestamps for each checked datapoint
     // u64: the last timestamp when it received the datapoint
@@ -182,96 +190,72 @@ pub async fn check_critical_datapoints(
     // same datatypes multiple times to avoid popups infinitely triggering on the
     // ground station. This value resets whenever we received the datapoint
     // again.
-    let mut critical_datapoints: [(config::Datatype, u64, bool); CRITICAL_DATATYPE_COUNT] =
-        [(config::Datatype::DefaultDatatype, 0, false); CRITICAL_DATATYPE_COUNT];
+    let mut critical_datapoints: [(config::Datatype, Instant, bool); CRITICAL_DATATYPE_COUNT] = [(
+        config::Datatype::DefaultDatatype,
+        Instant::from_ticks(0),
+        false,
+    );
+        CRITICAL_DATATYPE_COUNT];
 
     loop {
-        // Check if the channel for receiving CAN messages is empty
-        if !can_rx.is_empty() {
-            let can_frame = can_rx.next_message_pure().await;
+        match select(check_ticker.next(), can_rx.next_message_pure()).await {
+            Either::First(_check_timeout) => {
+                let now = Instant::now();
 
-            let id = match can_frame.id() {
-                Id::Standard(s) => s.as_raw() as u32,
-                Id::Extended(e) => e.as_raw(),
-            };
-
-            // get the datatypes associated with the ID of the received CAN message
-            let received_datatypes = lib::config::match_can_to_datatypes(id);
-
-            // Check if the received datatypes are critical
-            for datatype in received_datatypes {
-                if datatype == Datatype::DefaultDatatype {
-                    break;
-                }
-                if datatype.is_critical() {
-                    let mut index = 0;
-
-                    // Update the list of critical datatypes
-                    loop {
-                        let dtt = critical_datapoints[index];
-                        if dtt.0 == datatype || dtt.0 == Datatype::DefaultDatatype {
-                            critical_datapoints[index] =
-                                (datatype, Instant::now().as_millis(), true);
-                            break;
-                        }
-
-                        index += 1;
-                        if index == CRITICAL_DATATYPE_COUNT {
-                            error!("Didn't find critical datatype!!");
-                            break;
-                        }
+                for (dt, last_seen, should_send) in critical_datapoints.iter_mut() {
+                    if *dt == Datatype::DefaultDatatype {
+                        break;
                     }
-                }
-            }
-        }
-
-        // The time in milliseconds after which a datatype is considered stale
-        let timeout_time: u64 = 2000;
-
-        // Check if the data is stale every 250 milliseconds
-        let now = Instant::now().as_millis();
-        if now - last_critical_datapoint_check >= 250 {
-            last_critical_datapoint_check = now;
-
-            let mut index = 0;
-
-            loop {
-                let dtt = critical_datapoints[index];
-                if dtt.0 == Datatype::DefaultDatatype {
-                    break;
-                } else if now - dtt.1 >= timeout_time {
-                    // Send a message to the fsm to enter emergency
-                    event_sender
-                        .send(Event::Emergency {
-                            emergency_type: EmergencyType::StaleCriticalDataEmergency,
-                        })
-                        .await;
-
-                    // Send the ID of the stale datatype to the ground station
-                    if dtt.2 {
-                        gs_tx
-                            .send(PodToGsMessage {
-                                dp: Datapoint {
-                                    datatype: Datatype::EmergencyStaleCriticalData,
-                                    value: dtt.0.to_id() as u64,
-                                    timestamp: Instant::now().as_ticks(),
-                                },
+                    if now.duration_since(*last_seen).as_millis() >= STALE_DATA_TIMEOUT {
+                        event_sender
+                            .send(Event::Emergency {
+                                emergency_type: EmergencyType::StaleCriticalDataEmergency,
                             })
                             .await;
+
+                        if *should_send {
+                            gs_tx
+                                .send(PodToGsMessage {
+                                    dp: Datapoint {
+                                        datatype: Datatype::EmergencyStaleCriticalData,
+                                        value: dt.to_id() as u64,
+                                        timestamp: Instant::now().as_ticks(),
+                                    },
+                                })
+                                .await;
+
+                            *should_send = false;
+                        }
                     }
-
-                    // Set the bool value to false to indicate that it shouldn't be sent again.
-                    critical_datapoints[index] = (dtt.0, dtt.1, false);
                 }
-                index += 1;
+            }
+            Either::Second(can_frame) => {
+                let id = match can_frame.id() {
+                    Id::Standard(s) => s.as_raw() as u32,
+                    Id::Extended(e) => e.as_raw(),
+                };
 
-                if index == CRITICAL_DATATYPE_COUNT {
-                    break;
+                // get the datatypes associated with the ID of the received CAN message
+                let received_datatypes = lib::config::match_can_to_datatypes(id);
+
+                // Check if the received datatypes are critical
+                for datatype in received_datatypes {
+                    if datatype == Datatype::DefaultDatatype {
+                        break;
+                    }
+                    if datatype.is_critical() {
+                        if let Some(slot) = critical_datapoints
+                            .iter_mut()
+                            .find(|(d, _, _)| *d == datatype || *d == Datatype::DefaultDatatype)
+                        {
+                            *slot = (datatype, Instant::now(), true);
+                        } else {
+                            error!("Didn't find the critical datatype!!");
+                        }
+                    }
                 }
             }
         }
-
-        Timer::after_micros(10).await;
     }
 }
 

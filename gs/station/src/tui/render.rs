@@ -1,4 +1,3 @@
-use std::time::Instant;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
@@ -11,7 +10,6 @@ use ratatui::widgets::*;
 
 use crate::app::App;
 use crate::app::InputMode;
-use crate::timestamp;
 
 impl Widget for &App {
     fn render(self, area: Rect, buf: &mut Buffer) {
@@ -21,14 +19,14 @@ impl Widget for &App {
             InputMode::Editing => Layout::vertical([
                 Constraint::Min(10),
                 Constraint::Length(5),
-                Constraint::Length(12),
+                Constraint::Length(9),
                 Constraint::Length(3),
             ])
             .areas(area),
             InputMode::Normal => Layout::vertical([
                 Constraint::Min(10),
                 Constraint::Length(6),
-                Constraint::Length(13),
+                Constraint::Length(9),
                 Constraint::Length(1),
             ])
             .areas(area),

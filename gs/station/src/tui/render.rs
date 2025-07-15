@@ -19,14 +19,14 @@ impl Widget for &App {
             InputMode::Editing => Layout::vertical([
                 Constraint::Min(10),
                 Constraint::Length(5),
-                Constraint::Length(9),
+                Constraint::Length(8),
                 Constraint::Length(3),
             ])
             .areas(area),
             InputMode::Normal => Layout::vertical([
                 Constraint::Min(10),
                 Constraint::Length(6),
-                Constraint::Length(9),
+                Constraint::Length(8),
                 Constraint::Length(1),
             ])
             .areas(area),

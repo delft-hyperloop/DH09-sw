@@ -132,7 +132,7 @@ impl App {
         if self.seg.elapsed() >= Duration::from_secs(1) {
             self.kbps.insert(0, (self.dcio.0 as f64 / 1000.0, self.dcio.1 as f64 / 1000.0));
             self.kbps.truncate(180);
-            self.dcio = (0,0);
+            self.dcio = (0, 0);
             self.seg = Instant::now();
         }
     }

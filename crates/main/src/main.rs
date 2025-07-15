@@ -272,7 +272,7 @@ async fn main(spawner: Spawner) -> ! {
             Timer::after_millis(1000).await;
         }
     }
-    
+
     // Wait to connect to the ground station first, and then unleash the watchdog"
     signal.wait().await;
     // #[cfg(not(debug_assertions))]

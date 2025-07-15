@@ -60,6 +60,11 @@ pub async fn handle_incoming_data(
         Datatype::Prop2SystemCheckFailure => {
             msg_sender.send(Message::Error("Prop 2 System Check Failure".to_string()))?;
         },
+        Datatype::LocalizationLimitReached => {
+            msg_sender.send(Message::Error(
+                "Localization limit reached! Transitioning to the braking state!".to_string(),
+            ))?;
+        },
         _ => {},
     }
 

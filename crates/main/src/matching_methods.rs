@@ -13,11 +13,9 @@ use lib::Event;
 pub fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
     match id {
         826 if i32::from_be_bytes([payload[0], payload[1], payload[2], payload[3]]) <= 20400 => {
-            Event::Emergency {
-                emergency_type: EmergencyType::EmergencyPropulsion
-            }
-        } 
-        
+            Event::LocalizationLimitReached
+        }
+
         // Pressure brakes
         // 831 => {
         //     let pressure_low = u16::from_be_bytes([payload[0], payload[1]]);
@@ -147,6 +145,7 @@ pub fn match_event_to_datapoint(event: Event) -> Option<(Datatype, u64)> {
         Event::Prop2SystemCheckSuccess => Some((Datatype::Prop2SystemCheckSuccess, 0)),
         Event::Prop2SystemCheckFailure => Some((Datatype::Prop2SystemCheckFailure, 0)),
         Event::ResetFSM => Some((Datatype::ResetFSM, 1)),
+        Event::LocalizationLimitReached => Some((Datatype::LocalizationLimitReached, 0)),
         _ => None,
     }
 }

@@ -4,10 +4,12 @@ use core::fmt::Debug;
 use core::fmt::Formatter;
 
 use defmt::info;
+use defmt::warn;
 use embassy_futures::select::select;
 use embassy_futures::select::Either;
 use embassy_stm32::gpio::Output;
-use embassy_time::{Duration, Instant};
+use embassy_time::Duration;
+use embassy_time::Instant;
 use embassy_time::Timer;
 use lib::EmergencyType;
 use lib::Event;
@@ -35,6 +37,9 @@ pub struct FSM {
     rearm_sdc_pin: Output<'static>,
     /// The pin on the main PCB used for controlling the sdc
     sdc_pin: Output<'static>,
+    /// The time at which we received the last pressure reading. Used to delay
+    /// the emergency sent when the wrong EBS state is detected when entering
+    /// Demo or discharging
     last_pressure_check: Option<Instant>,
 }
 
@@ -97,6 +102,7 @@ impl FSM {
                         && event != Event::EbsPressureDeployed
                         && event != Event::EbsPressureRetracted
                         && event != Event::Heartbeat
+                        && event != Event::LocalizationLimitReached
                     {
                         defmt::info!(
                             "FSM {{ state: {} }}: Received event: {:?}",
@@ -239,6 +245,14 @@ impl FSM {
                 self.event_sender.send(Event::LeviSystemCheckFailure).await;
             }
 
+            (States::Accelerating, Event::LocalizationLimitReached) => {
+                self.transition(States::Braking).await;
+                self.event_sender
+                    .send(Event::LocalizationLimitReached)
+                    .await;
+                warn!("Localization limit reached! Starting to brake with the motor!");
+            }
+
             (States::Idle, Event::StartPreCharge) => self.transition(States::PreCharge).await,
             (States::PreCharge, Event::HVOnAck) => self.transition(States::Active).await,
             (States::Active, Event::Charge) => self.transition(States::Charging).await,
@@ -321,7 +335,10 @@ impl FSM {
                 Event::EbsPressureRetracted,
             ) => {
                 // Timer::after_secs(1).await;
-                if self.last_pressure_check.is_some_and(|i| i.elapsed() > Duration::from_secs(1)) { 
+                if self
+                    .last_pressure_check
+                    .is_some_and(|i| i.elapsed() > Duration::from_secs(1))
+                {
                     self.event_sender
                         .send(Event::Emergency {
                             emergency_type: EmergencyType::EmergencyWrongEbsState,
@@ -334,10 +351,13 @@ impl FSM {
                 }
             }
             (
-                States::Demo | States::Levitating | States::Accelerating | States::Braking, // todo: in levi/acc/brake, EbsPressureDeployed should cause instant fault
+                States::Demo | States::Levitating | States::Accelerating | States::Braking, /* todo: in levi/acc/brake, EbsPressureDeployed should cause instant fault */
                 Event::EbsPressureDeployed,
             ) => {
-                if self.last_pressure_check.is_some_and(|i| i.elapsed() > Duration::from_millis(5000)) {
+                if self
+                    .last_pressure_check
+                    .is_some_and(|i| i.elapsed() > Duration::from_millis(5000))
+                {
                     self.event_sender
                         .send(Event::Emergency {
                             emergency_type: EmergencyType::EmergencyWrongEbsState,
@@ -349,8 +369,10 @@ impl FSM {
                     self.last_pressure_check = Some(Instant::now());
                 }
             }
-            
-            (_, Event::EbsPressureDeployed | Event::EbsPressureRetracted) => self.last_pressure_check = None,
+
+            (_, Event::EbsPressureDeployed | Event::EbsPressureRetracted) => {
+                self.last_pressure_check = None
+            }
 
             (_, Event::PTCFailure) if self.state != States::Fault => {
                 // 1. Trigger emergency using the sdc

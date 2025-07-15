@@ -75,6 +75,7 @@ struct InternalConfig {
     event_queue_size: usize,
     data_queue_size: usize,
     can_queue_size: usize,
+    end_of_track_limit: u32,
 }
 
 /// Path to config file
@@ -204,6 +205,9 @@ fn configure_internal(config: &Config) -> String {
     ) + &*format!(
         "pub const CAN_QUEUE_SIZE: usize = {};\n",
         config.pod.internal.can_queue_size
+    ) + &*format!(
+        "pub const END_OF_TRACK_LIMIT: u32 = {};\n",
+        config.pod.internal.end_of_track_limit
     ) + &*format!(
         "pub const LV_IDS: [u16;{}] = [{}];\n",
         config.pod.comm.bms_lv_ids.len(),

@@ -109,10 +109,10 @@ impl Widget for &App {
         let mut commands_list = self
             .commands
             .iter()
-            .map(|(x,y)| (x.to_string(), y.to_string()))
+            .map(|(x, y)| (x.to_string(), y.to_string()))
             .collect::<Vec<(String, String)>>();
 
-        commands_list.sort_by_key(|(_,x)| x.clone());
+        commands_list.sort_by_key(|(_, x)| x.clone());
 
         let longest = commands_list.iter().map(|x| x.0.len() + x.1.len()).max().unwrap_or(40);
 

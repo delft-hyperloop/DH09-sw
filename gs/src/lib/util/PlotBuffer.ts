@@ -122,7 +122,7 @@ export class PlotBuffer {
      */
     public addEntry(seriesIndex: number, value: number) {
         if (value === undefined || seriesIndex === undefined) {
-            console.log(`Value ${value}, index ${seriesIndex}`);
+            console.error(`Value ${value}, index ${seriesIndex}`);
         }
         this.buffer[seriesIndex].push(value);
     }

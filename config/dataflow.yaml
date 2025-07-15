@@ -290,6 +290,9 @@ standard-datapoints:
   - datapoint:
       name: "EmergencyStaleCriticalData"
       id: 0x227
+  - datapoint:
+      name: "LocalizationLimitReached"
+      id: 0x228
 
 message-processing:
   - name: "TempMotorLeft"

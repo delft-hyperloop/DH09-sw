@@ -1,6 +1,7 @@
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
+use chrono::DateTime;
 use gslib::Datatype;
 use gslib::ProcessedData;
 use ratatui::prelude::*;
@@ -220,15 +221,11 @@ impl Widget for &App {
                     // Label start and end times in HH:MM:SS
                     format!(
                         "{}",
-                        chrono::NaiveDateTime::from_timestamp_opt(x_bounds[0] as i64, 0)
-                            .unwrap()
-                            .format("%H:%M:%S")
+                        DateTime::from_timestamp(x_bounds[0] as i64, 0).unwrap().format("%H:%M:%S")
                     ),
                     format!(
                         "{}",
-                        chrono::NaiveDateTime::from_timestamp_opt(x_bounds[1] as i64, 0)
-                            .unwrap()
-                            .format("%H:%M:%S")
+                        DateTime::from_timestamp(x_bounds[1] as i64, 0).unwrap().format("%H:%M:%S")
                     ),
                 ]
                 .iter()

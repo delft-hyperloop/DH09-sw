@@ -1,6 +1,7 @@
 #![allow(clippy::manual_flatten)]
 use std::collections::BTreeMap;
 use std::io::BufRead;
+#[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Child;
@@ -56,6 +57,7 @@ impl App {
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let gui_dir = manifest_dir.parent().expect("ooga booga").to_path_buf();
 
+        #[cfg(unix)]
         let mut child = unsafe {
             std::process::Command::new("npm")
                 .current_dir(&gui_dir)
@@ -70,6 +72,17 @@ impl App {
                 .spawn()
                 .expect("Failed to spawn gui")
         };
+        #[cfg(windows)]
+        let mut child = std::process::Command::new("npm.cmd")
+            .current_dir(&gui_dir)
+            .args(["run", "gui"])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|e| {
+                format!("could not run command `{} npm run gui`: {e:?}", gui_dir.display())
+            })
+            .expect("Failed to spawn gui");
 
         let map = BTreeMap::new();
 

@@ -7,7 +7,9 @@ use std::io::Stdout;
 use std::process::Child;
 
 use crossterm::execute;
+#[cfg(unix)]
 use nix::libc::killpg;
+#[cfg(unix)]
 use nix::unistd::Pid;
 use ratatui::prelude::*;
 
@@ -36,6 +38,7 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[cfg(unix)]
 fn kill_tree(child: &mut Child) {
     let pgid = Pid::from_raw(child.id() as i32);
     // send SIGTERM to the whole group
@@ -50,4 +53,10 @@ fn kill_tree(child: &mut Child) {
     // now reap the root child.
     // this will also reap zombies of its children
     let _ = child.wait();
+}
+
+#[cfg(windows)]
+fn kill_tree(child: &mut Child) {
+    child.kill().unwrap();
+    child.wait().unwrap();
 }

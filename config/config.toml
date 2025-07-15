@@ -4,6 +4,7 @@ ips = [
     [192,168,13,100], # pablo
     [192,168,13,69], # andreas
     [192,168,13,42], # also andreas
+    [192,168,13,48], # testing laptop
 ]
 force = true 
 port = 6949

@@ -53,7 +53,8 @@ pub fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
                 Event::LeviSystemCheckSuccess
             } else {
                 error!("Different system check payload for levi: {}", payload[0]);
-                Event::LeviSystemCheckSuccess // TODO: change this back to failure
+                Event::LeviSystemCheckSuccess // TODO: change this back to
+                                              // failure
             }
         }
 

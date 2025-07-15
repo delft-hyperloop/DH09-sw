@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {Chart, TileGrid, Tile, Command} from "$lib";
-  import StartLevitating from '$lib/components/StartLevitating.svelte';
-  import StopLevitating from '$lib/components/StopLevitating.svelte';
-  import type { SvelteComponent } from 'svelte';
-  import { DownToBottom, IbmCloudBackupServiceVpc } from 'carbon-icons-svelte';
+    import { Chart, Command, Store, Tile, TileGrid } from '$lib';
+    import StartLevitating from '$lib/components/StartLevitating.svelte';
+    import StopLevitating from '$lib/components/StopLevitating.svelte';
+    import type { SvelteComponent } from 'svelte';
+    import { DownToBottom, IbmCloudBackupServiceVpc } from 'carbon-icons-svelte';
 
-  const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
+    const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
   const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
 </script>
 
@@ -13,6 +13,9 @@
     <h2 class="text-2xl font-semibold mb-4">Levitation</h2>
 
     <TileGrid columns="1fr 1fr" rows="">
+        <Tile containerClass="col-span-full">
+            <Store datatype="LeviHeartbeat" name="Levi Heartbeat"/>
+        </Tile>
         <Tile insideClass="flex gap-x-4 col-span-full" containerClass="col-span-full">
             <Command cmd="LevitationOn" icon={StartLevitatingIcon}/>
             <Command cmd="LevitationOff" icon={StopLevitatingIcon}/>

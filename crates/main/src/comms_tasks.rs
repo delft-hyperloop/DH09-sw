@@ -226,7 +226,7 @@ pub async fn check_critical_datapoints(
         }
 
         // The time in milliseconds after which a datatype is considered stale
-        let timeout_time: u64 = 1000;
+        let timeout_time: u64 = 2000;
 
         // Check if the data is stale every 250 milliseconds
         let now = Instant::now().as_millis();

@@ -133,8 +133,6 @@ async fn main(spawner: Spawner) -> ! {
 
     info!("Embassy initialized!");
 
-    // let mut puppy = IndependentWatchdog::new(p.IWDG1, 10_000_000);
-
     let can2 = {
         let mut configurator = can::CanConfigurator::new(p.FDCAN1, p.PB8, p.PB9, Irqs);
 
@@ -275,10 +273,11 @@ async fn main(spawner: Spawner) -> ! {
 
     // Wait to connect to the ground station first, and then unleash the watchdog"
     signal.wait().await;
-    // #[cfg(not(debug_assertions))]
-    // puppy.unleash();
+    let mut puppy = IndependentWatchdog::new(p.IWDG1, 2_500_000);
+    #[cfg(not(debug_assertions))]
+    puppy.unleash();
     loop {
         Timer::after_millis(20).await;
-        // puppy.pet();
+        puppy.pet();
     }
 }

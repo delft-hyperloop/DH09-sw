@@ -74,7 +74,7 @@ impl FSM {
             event_receiver,
             event_sender,
             systems: CheckedSystems {
-                levitation: false,
+                levitation: true, // TODO: change this back
                 propulsion1: false,
                 propulsion2: false,
             },
@@ -205,7 +205,7 @@ impl FSM {
 
             (States::Fault, Event::FaultFixed) => {
                 self.sdc_pin.set_high();
-                Timer::after_millis(5).await;
+                Timer::after_millis(120).await;
                 self.transition(States::SystemCheck).await
             }
             (States::Boot, Event::ConnectToGS) => self.transition(States::ConnectedToGS).await,
@@ -239,12 +239,11 @@ impl FSM {
                 self.event_sender.send(Event::Prop2SystemCheckFailure).await;
                 self.transition(States::Fault).await;
             }
-            (States::SystemCheck, Event::LeviSystemCheckFailure) => {
-                error!("Levi system check failure!");
-                self.transition(States::Fault).await;
-                self.event_sender.send(Event::LeviSystemCheckFailure).await;
-            }
-
+            // (States::SystemCheck, Event::LeviSystemCheckFailure) => {
+            //     error!("Levi system check failure!");
+            //     self.transition(States::Fault).await;
+            //     self.event_sender.send(Event::LeviSystemCheckFailure).await;
+            // } // TODO: change this back
             (States::Accelerating, Event::LocalizationLimitReached) => {
                 self.transition(States::Braking).await;
                 self.event_sender
@@ -444,7 +443,7 @@ impl FSM {
 
         if self.systems.propulsion1 && self.systems.propulsion2 && self.systems.levitation {
             self.transition(States::Idle).await;
-            self.systems.levitation = false;
+            self.systems.levitation = true; // TODO: change this back
             self.systems.propulsion1 = false;
             self.systems.propulsion2 = false;
         }

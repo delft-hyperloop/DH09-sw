@@ -2,7 +2,6 @@
     import { Chart, Command, Tile, TileGrid } from '$lib';
     import { ChargingStation, Flash, FlashOff, StopOutline } from 'carbon-icons-svelte';
     import { inStateIdle, ptResetMessage } from '$lib/stores/state';
-    import BinaryInput from '$lib/components/BinaryInput.svelte';
     import { inStateActive, inStateCharging } from '$lib/stores/state.js';
 
     // const ptcState = storeManager.getWritable("PTCState");
@@ -24,6 +23,8 @@
         "Overtemperature",
         "Undertemperature",
     ]
+
+    let ptReset: number = 0;
 
     export const pop_up: boolean = true;
 </script>
@@ -51,9 +52,10 @@
         <Tile containerClass="col-span-full px-10">
             <div class="grid grid-rows-2 grid-cols-7 gap-2 h-full w-full items-center mt-5">
                 <span class="text-wrap text-center">Powertrain Reset Flags</span>
-                {#each Array.from({ length: resetPowertrainLabels.length }, (_, i) => resetPowertrainLabels.length - 1 - i) as i}
-                    <BinaryInput store={ptResetMessage} index={i}/>
-                {/each}
+                <!--{#each Array.from({ length: resetPowertrainLabels.length }, (_, i) => resetPowertrainLabels.length - 1 - i) as i}-->
+                <!--    <BinaryInput store={ptResetMessage} index={i}/>-->
+                <!--{/each}-->
+                <input bind:value={ptReset} type="number" min="0" class="input p-4 rounded-md " on:change={() => {ptResetMessage.set(ptReset)}}>
                 <Command cmd="ResetPowertrain" val={$ptResetMessage} text="Reset"/>
                 <span/>
                 {#each resetPowertrainLabels as l}

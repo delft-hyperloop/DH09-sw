@@ -93,7 +93,7 @@
     );
 
     $: sensorHubEmergencyMessage = senorHubEmergencies.filter((x, index) =>
-        ((($sensorHubEmergency.value >> index - 1) & 1) == 1)
+        ((($sensorHubEmergency.value >> index) & 1) == 1)
     );
 
     $: bmsLowVoltageErrorMessage = bmsErrors.filter((x, index) =>

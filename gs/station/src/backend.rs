@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::time::Instant;
 
 use anyhow::anyhow;
 use gslib::Command;
@@ -48,7 +49,7 @@ impl Backend {
             command_transmitter,
             command_receiver,
             _processed_data_receiver,
-            log: Log { messages: vec![], commands: vec![] },
+            log: Log::now(),
         }
     }
 
@@ -100,16 +101,17 @@ impl Backend {
     }
 
     pub fn save_to_path(log: &Log, path: PathBuf) -> anyhow::Result<Message> {
-        let json = serde_json::to_string_pretty(log)?;
-        match std::fs::write(path.clone(), json) {
-            Ok(_) => Ok(Message::Info(format!("Saved to {:?}", &path))),
-            Err(e) => Ok(Message::Error(format!("Failed to save at {:?}: {:?}", &path, e))),
+        match log.save_csv(path.clone()) {
+            Ok(p) => Ok(Message::Info(format!("Saved to {p:?}"))),
+            Err(e) => Ok(Message::Error(format!("Failed to save at {path:?}: {e:?}"))),
         }
     }
 
-    pub fn log_msg(&mut self, msg: &Message) { self.log.messages.push(msg.clone()); }
+    pub fn log_msg(&mut self, msg: &Message) {
+        self.log.messages.push((msg.clone(), Instant::now()));
+    }
 
-    pub fn log_cmd(&mut self, cmd: &Command) { self.log.commands.push(*cmd); }
+    pub fn log_cmd(&mut self, cmd: &Command) { self.log.commands.push((*cmd, Instant::now())); }
 
     pub fn load_procedures(folder: PathBuf) -> anyhow::Result<Vec<[String; 6]>> {
         let mut r = vec![];

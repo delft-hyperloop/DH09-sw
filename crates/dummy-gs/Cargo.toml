@@ -1,7 +1,0 @@
-[package]
-name = "dummy-gs"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-tokio = { version = "1.29.1", features = ["rt", "time", "rt-multi-thread", "macros", "net", "process", "sync", "io-std", "io-util"] }

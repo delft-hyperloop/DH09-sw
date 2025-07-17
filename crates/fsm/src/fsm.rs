@@ -74,7 +74,7 @@ impl FSM {
             event_receiver,
             event_sender,
             systems: CheckedSystems {
-                levitation: true, // TODO: change this back
+                levitation: false,
                 propulsion1: false,
                 propulsion2: false,
             },
@@ -239,11 +239,11 @@ impl FSM {
                 self.event_sender.send(Event::Prop2SystemCheckFailure).await;
                 self.transition(States::Fault).await;
             }
-            // (States::SystemCheck, Event::LeviSystemCheckFailure) => {
-            //     error!("Levi system check failure!");
-            //     self.transition(States::Fault).await;
-            //     self.event_sender.send(Event::LeviSystemCheckFailure).await;
-            // } // TODO: change this back
+            (States::SystemCheck, Event::LeviSystemCheckFailure) => {
+                error!("Levi system check failure!");
+                self.transition(States::Fault).await;
+                self.event_sender.send(Event::LeviSystemCheckFailure).await;
+            } 
             (States::Accelerating, Event::LocalizationLimitReached) => {
                 self.transition(States::Braking).await;
                 self.event_sender
@@ -350,7 +350,7 @@ impl FSM {
                 }
             }
             (
-                States::Demo | States::Levitating | States::Accelerating | States::Braking, /* todo: in levi/acc/brake, EbsPressureDeployed should cause instant fault */
+                States::Demo,
                 Event::EbsPressureDeployed,
             ) => {
                 if self
@@ -367,6 +367,15 @@ impl FSM {
                 } else if self.last_pressure_check.is_none() {
                     self.last_pressure_check = Some(Instant::now());
                 }
+            }
+            (States::Levitating | States::Accelerating | States::Braking, Event::EbsPressureDeployed) => {
+                self.event_sender
+                    .send(Event::Emergency {
+                        emergency_type: EmergencyType::EmergencyWrongEbsState,
+                    })
+                    .await;
+                self.transition(States::Fault).await;
+                self.last_pressure_check = None;
             }
 
             (_, Event::EbsPressureDeployed | Event::EbsPressureRetracted) => {
@@ -443,7 +452,7 @@ impl FSM {
 
         if self.systems.propulsion1 && self.systems.propulsion2 && self.systems.levitation {
             self.transition(States::Idle).await;
-            self.systems.levitation = true; // TODO: change this back
+            self.systems.levitation = false;
             self.systems.propulsion1 = false;
             self.systems.propulsion2 = false;
         }

@@ -39,7 +39,8 @@ pub fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
         // transitioning from the braking state to the levitating state)
         826 if i16::from_be_bytes([payload[4], payload[5]]) == 0 => Event::Stopped,
 
-        905 if payload[0] == 3 => Event::Emergency {
+        // levi heartbeat or fsm state changed
+        904 | 905 if payload[0] == 3 => Event::Emergency {
             emergency_type: EmergencyType::EmergencyLevitation,
         },
 
@@ -53,8 +54,7 @@ pub fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
                 Event::LeviSystemCheckSuccess
             } else {
                 error!("Different system check payload for levi: {}", payload[0]);
-                Event::LeviSystemCheckSuccess // TODO: change this back to
-                                              // failure
+                Event::LeviSystemCheckFailure
             }
         }
 

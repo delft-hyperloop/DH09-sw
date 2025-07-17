@@ -50,18 +50,18 @@
             </div>
         </Tile>
         <Tile containerClass="col-span-full px-10">
-            <div class="grid grid-rows-2 grid-cols-7 gap-2 h-full w-full items-center mt-5">
+            <div class="flex flex-row gap-4 h-full w-full items-center">
                 <span class="text-wrap text-center">Powertrain Reset Flags</span>
                 <!--{#each Array.from({ length: resetPowertrainLabels.length }, (_, i) => resetPowertrainLabels.length - 1 - i) as i}-->
                 <!--    <BinaryInput store={ptResetMessage} index={i}/>-->
                 <!--{/each}-->
                 <input bind:value={ptReset} type="number" min="0" class="input p-4 rounded-md " on:change={() => {ptResetMessage.set(ptReset)}}>
                 <Command cmd="ResetPowertrain" val={$ptResetMessage} text="Reset"/>
-                <span/>
-                {#each resetPowertrainLabels as l}
-                    <span class="text-center">{l}</span>
-                {/each}
-                <span/>
+<!--                <span/>-->
+<!--                {#each resetPowertrainLabels as l}-->
+<!--                    <span class="text-center">{l}</span>-->
+<!--                {/each}-->
+<!--                <span/>-->
             </div>
         </Tile>
     </TileGrid>

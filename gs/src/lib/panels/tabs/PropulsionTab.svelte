@@ -38,8 +38,6 @@
 
     let maxCurrent = 0;
 
-    // $: ppIbus = ppIbus1
-
     onMount(() => {
         let array: PropPoint[] = [];
         for (let i = 0; i < pointCount; i++) {
@@ -135,22 +133,22 @@
             <Command cmd="MotorBrake" icon={Meter} iconClass="scale-x-[-1]"/>
         </Tile>
         <CollapsibleTile title="Run Initialization">
-            <div slot="content" class="items-center justify-center w-full">
-                <div class="flex flex-row gap-4 mb-10">
-                    <div class="text-center content-center">Maximum current per motor</div>
+            <div slot="content" class="flex flex-col gap-4">
+                <div class="flex flex-row gap-4">
+<!--                    <div class="text-center content-center">Maximum current per motor</div>-->
+                    <Command64Bits
+                        cmd="PPControlParams"
+                        text="Submit Maximum Current per Motor"
+                        values={[ppControlParams1, ppControlParams2]}
+                        onClickMethod={() => {propulsionConfigSent.set(true)}}
+                    />
                     <input bind:value={maxCurrent} type="number" min="0" max="50000" class="input p-4 rounded-md " on:change={calculatePPControlParams}>
                 </div>
-                <Command64Bits
-                    cmd="PPControlParams"
-                    text="Submit PP Control Params"
-                    values={[ppControlParams1, ppControlParams2]}
-                    onClickMethod={() => {propulsionConfigSent.set(true)}}
-                />
-                <div class="flex flex-col gap-4 mt-10">
+                <div class="flex flex-col gap-4 col-span-full">
                     <p class="col-span-full font-normal text-xl py-3 ">Current Values:</p>
                     <div class="flex flex-row gap-4">
-                        <Store datatype="Ibus2" name="Maximum current per motor"/>
-<!--                        <span>{$ppIbus2.value}</span>-->
+                        <Store datatype="Ibus1" name="Maximum current motor 1"/>
+                        <Store datatype="Ibus2" name="Maximum current motor 2"/>
                     </div>
                 </div>
             </div>

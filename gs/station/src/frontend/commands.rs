@@ -171,11 +171,11 @@ pub fn save_logs() -> bool {
     if let Ok(mut backend_mutex) = BACKEND.lock() {
         let log = unsafe { &backend_mutex.assume_init_mut().log };
         let now = Local::now().naive_local();
-        let formatted_time = now.format("%d_%m_%Y at %H_%M_%S").to_string();
+        let formatted_time = now.format("%d_%m_%Y_at_%H_%M_%S").to_string();
 
         let path = dirs::download_dir()
             .unwrap_or_else(|| std::env::current_dir().unwrap())
-            .join(format!("log-{formatted_time}.txt"));
+            .join(format!("log-{formatted_time}.csv"));
 
         if Backend::save_to_path(log, path).is_ok() {
             if let Ok(Some(app)) = APP_HANDLE.try_lock().map(|lock| lock.clone()) {

@@ -77,14 +77,14 @@ pub struct LogRow {
 }
 
 impl LogRow {
-    fn print_datatypes(dmap: &BTreeMap<Datatype, f64>, header: bool) -> String {
+    fn print_datatypes(dmap: &BTreeMap<Datatype, f64>) -> String {
         let mut out = String::new();
         let mut list = dmap.iter().map(|(x, y)| (*x, *y)).collect::<Vec<(Datatype, f64)>>();
         list.sort_by_key(|e| e.0);
 
-        for (d, v) in &list {
-            if header {
-                out.push_str(&format!("{d:?},"));
+        for (_, v) in &list {
+            if v.is_nan() {
+                out.push(',');
             } else {
                 out.push_str(&format!("{v},"));
             }
@@ -95,7 +95,7 @@ impl LogRow {
 
     pub fn to_csv_string(&self) -> String {
         let mut out = format!("{},", self.since_mainpcb_boot);
-        out.push_str(&Self::print_datatypes(&self.datatypes, false));
+        out.push_str(&Self::print_datatypes(&self.datatypes));
         out.push_str(&format!(
             "{},{},{},{},{}",
             self.status, self.info, self.warning, self.error, self.command

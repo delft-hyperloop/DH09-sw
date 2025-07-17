@@ -1075,6 +1075,12 @@
         latestTimestamp.set(Date.now());
     }, 1000);
 
+    setInterval(async () => {
+        await invoke("save_logs").catch((e) => {
+            console.error(`Error saving logs: ${e}`);
+        })
+    }, 5000);
+
     registerSubscribers();
 
     onMount(() => setInterval(() => {

@@ -111,7 +111,11 @@ impl Backend {
         self.log.messages.push((msg.clone(), Instant::now()));
     }
 
-    pub fn log_cmd(&mut self, cmd: &Command) { self.log.commands.push((*cmd, Instant::now())); }
+    pub fn log_cmd(&mut self, cmd: &Command) {
+        if !matches!(cmd, Command::FrontendHeartbeat(_)) {
+            self.log.commands.push((*cmd, Instant::now()));
+        }
+    }
 
     pub fn load_procedures(folder: PathBuf) -> anyhow::Result<Vec<[String; 6]>> {
         let mut r = vec![];

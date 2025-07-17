@@ -1,9 +1,15 @@
 #![allow(dead_code, clippy::match_like_matches_macro)]
+use std::collections::BTreeMap;
+use std::fs::File;
+use std::io::Write;
+use std::path::PathBuf;
 #[cfg(feature = "tui")]
 use std::str::FromStr;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
+use std::time::Instant;
 
+use anyhow::anyhow;
 #[cfg(feature = "tui")]
 use ratatui::prelude::Color;
 
@@ -54,10 +60,216 @@ pub enum Message {
     Error(String),
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Log {
-    pub messages: Vec<Message>,
-    pub commands: Vec<Command>,
+    pub start_time: Instant,
+    pub messages: Vec<(Message, Instant)>,
+    pub commands: Vec<(Command, Instant)>,
+}
+
+pub struct LogRow {
+    pub since_mainpcb_boot: u64,
+    pub datatypes: BTreeMap<Datatype, f64>,
+    pub status: String,
+    pub info: String,
+    pub warning: String,
+    pub error: String,
+    pub command: String,
+}
+
+impl LogRow {
+    fn print_datatypes(dmap: &BTreeMap<Datatype, f64>, header: bool) -> String {
+        let mut out = String::new();
+        let mut list = dmap.iter().map(|(x, y)| (*x, *y)).collect::<Vec<(Datatype, f64)>>();
+        list.sort_by_key(|e| e.0);
+
+        for (d, v) in &list {
+            if header {
+                out.push_str(&format!("{d:?},"));
+            } else {
+                out.push_str(&format!("{v},"));
+            }
+        }
+
+        out
+    }
+
+    pub fn to_csv_string(&self) -> String {
+        let mut out = format!("{},", self.since_mainpcb_boot);
+        out.push_str(&Self::print_datatypes(&self.datatypes, false));
+        out.push_str(&format!(
+            "{},{},{},{},{}",
+            self.status, self.info, self.warning, self.error, self.command
+        ));
+        out
+    }
+}
+
+impl Log {
+    pub fn now() -> Self { Log { start_time: Instant::now(), messages: vec![], commands: vec![] } }
+
+    pub fn save_csv(&self, to: PathBuf) -> anyhow::Result<PathBuf> {
+        // for quick writing during a run,
+        // we save timestamps as Instants,
+        // and convert to microseconds since boot here.
+        // We save the data in a time series,
+        // with one row per timestamp and one column per datatype.
+
+        // Columns:
+        // μs since gs boot | message timestamp (ticks since mainpcb boot) | datatype name |
+
+        let mut table: BTreeMap<u128, LogRow> = BTreeMap::new();
+
+        for (msg, t) in &self.messages {
+            let ts = t.duration_since(self.start_time).as_micros();
+            match msg {
+                Message::Data(d) => {
+                    table
+                        .entry(ts)
+                        .and_modify(|e| {
+                            e.datatypes.insert(d.datatype, d.value);
+                            e.since_mainpcb_boot = d.timestamp;
+                        })
+                        .or_insert(LogRow {
+                            since_mainpcb_boot: d.timestamp,
+                            datatypes: BTreeMap::from([(d.datatype, d.value)]),
+                            status: String::new(),
+                            info: String::new(),
+                            warning: String::new(),
+                            error: String::new(),
+                            command: String::new(),
+                        });
+                },
+                Message::Status(s) => {
+                    table
+                        .entry(ts)
+                        .and_modify(|e| {
+                            e.status = format!("{s:?}");
+                        })
+                        .or_insert(LogRow {
+                            since_mainpcb_boot: 0,
+                            datatypes: BTreeMap::new(),
+                            status: format!("{s:?}"),
+                            info: String::new(),
+                            warning: String::new(),
+                            error: String::new(),
+                            command: String::new(),
+                        });
+                },
+                Message::Info(i) => {
+                    table
+                        .entry(ts)
+                        .and_modify(|e| {
+                            e.info = i.clone();
+                        })
+                        .or_insert(LogRow {
+                            since_mainpcb_boot: 0,
+                            datatypes: BTreeMap::new(),
+                            status: String::new(),
+                            info: i.clone(),
+                            warning: String::new(),
+                            error: String::new(),
+                            command: String::new(),
+                        });
+                },
+                Message::Warning(w) => {
+                    table
+                        .entry(ts)
+                        .and_modify(|e| {
+                            e.warning = w.clone();
+                        })
+                        .or_insert(LogRow {
+                            since_mainpcb_boot: 0,
+                            datatypes: BTreeMap::new(),
+                            status: String::new(),
+                            info: String::new(),
+                            warning: w.clone(),
+                            error: String::new(),
+                            command: String::new(),
+                        });
+                },
+                Message::Error(ee) => {
+                    table
+                        .entry(ts)
+                        .and_modify(|e| {
+                            e.error = ee.clone();
+                        })
+                        .or_insert(LogRow {
+                            since_mainpcb_boot: 0,
+                            datatypes: BTreeMap::new(),
+                            status: String::new(),
+                            info: String::new(),
+                            warning: String::new(),
+                            error: ee.clone(),
+                            command: String::new(),
+                        });
+                },
+            }
+        }
+
+        for (cmd, t) in &self.commands {
+            let ts = t.duration_since(self.start_time).as_micros();
+
+            let cmd_name = format!("{cmd:?}").split_once("(").unwrap().0.to_string();
+            table
+                .entry(ts)
+                .and_modify(|e| {
+                    e.command = cmd_name.clone();
+                })
+                .or_insert(LogRow {
+                    since_mainpcb_boot: 0,
+                    datatypes: BTreeMap::new(),
+                    status: String::new(),
+                    info: String::new(),
+                    warning: String::new(),
+                    error: String::new(),
+                    command: cmd_name,
+                });
+        }
+
+        for (_k, e) in table.iter_mut() {
+            for d in DATA_IDS {
+                let dt = Datatype::from_id(d);
+                e.datatypes.entry(dt).or_insert(f64::NAN);
+            }
+        }
+
+        let data_header = DATA_IDS
+            .iter()
+            .map(|x| Datatype::from_id(*x))
+            .map(|x| format!("{x:?}"))
+            .collect::<Vec<String>>()
+            .join(",");
+
+        let header = format!("μs_since_gs_boot,ticks_since_pcb_boot,{data_header},status,info,warning,error,command_sent");
+
+        let mut content = table.into_iter().collect::<Vec<_>>();
+        content.sort_by_key(|(k, _)| *k);
+        let text_content = [header]
+            .into_iter()
+            .chain(content.into_iter().map(|(k, v)| format!("{k},{}", v.to_csv_string())))
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        let mut path = to;
+        let mut n = 1;
+        while path.is_file() {
+            path = PathBuf::from(format!(
+                "{}_{n}{}",
+                path.parent().unwrap().join(path.file_stem().unwrap()).display(),
+                path.extension().unwrap_or_default().display()
+            ));
+            n += 1;
+        }
+        let mut f = File::create(&path).map_err(|e| {
+            anyhow!("could not open file. error: {e:?}.\nraw log output:\n\n{text_content}\n\n")
+        })?;
+
+        f.write_all(text_content.as_bytes()).map_err(|e| {
+            anyhow!("could not write to file. error: {e:?}.\nraw log output:\n\n{text_content}\n\n")
+        })?;
+
+        Ok(path)
+    }
 }
 
 impl Info {

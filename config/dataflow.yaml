@@ -609,6 +609,24 @@ message-processing:
         can-conversion: "identity_u8:u8->u8"
         gs:
           conversion: "gs_u8:u8"
+      - datapoint:
+          name: "LvBmsState"
+          id: 0x3B1
+          store:
+            default: 0
+        getter: "u8[5..6]"
+        can-conversion: "identity_u8:u8->u8"
+        gs:
+          conversion: "gs_u8:u8"
+      - datapoint:
+          name: "HvBmsState"
+          id: 0x3B1
+          store:
+            default: 0
+        getter: "u8[6..7]"
+        can-conversion: "identity_u8:u8->u8"
+        gs:
+          conversion: "gs_u8:u8"
   - name: "BMSLog1"
     can:
       id: 0x4E5

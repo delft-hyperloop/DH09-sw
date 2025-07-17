@@ -48,7 +48,7 @@
     import StartLevitating from '$lib/components/StartLevitating.svelte';
     import StopLevitating from '$lib/components/StopLevitating.svelte';
     import { inStateDemo, inStateIdle } from '$lib/stores/state.js';
-    import { bmsErrors, imdWarnings, ptcErrorCodes, ptcStates, senorHubEmergencies } from '$lib/types';
+    import { bmsErrorInternal, imdWarnings, ptcErrorCodes, ptcStates, senorHubEmergencies } from '$lib/types';
     import ValueStore from '$lib/components/generic/ValueStore.svelte';
     import { emergencySources, nextRecommendedStateCmd, nextStateMessage } from '$lib/stores/data';
 
@@ -61,8 +61,8 @@
     const imdWarningStore = storeManager.getWritable("IMDWarnings");
     const lowPressure = storeManager.getWritable("PressureLow");
     const sensorHubEmergency = storeManager.getWritable("SensorHubEmergency");
-    const bmsErrorLowVoltage = storeManager.getWritable("BmsErrorLowVoltage");
-    const bmsErrorHighVoltage = storeManager.getWritable("BmsErrorHighVoltage");
+    const bmsLvState = storeManager.getWritable("LvBmsState");
+    const bmsHvState = storeManager.getWritable("HvBmsState");
 
     const StartLevitatingIcon = StartLevitating as unknown as typeof SvelteComponent;
     const StopLevitatingIcon = StopLevitating as unknown as typeof SvelteComponent;
@@ -94,14 +94,6 @@
 
     $: sensorHubEmergencyMessage = senorHubEmergencies.filter((x, index) =>
         ((($sensorHubEmergency.value >> index) & 1) == 1)
-    );
-
-    $: bmsLowVoltageErrorMessage = bmsErrors.filter((x, index) =>
-        ((($bmsErrorLowVoltage.value >> index - 1) & 1) == 1)
-    );
-
-    $: bmsHighVoltageErrorMessage = bmsErrors.filter((x, index) =>
-        ((($bmsErrorHighVoltage.value >> index - 1) & 1) == 1)
     );
 
     async function sendSystemCheckMocks() {
@@ -394,16 +386,6 @@
                                 timestamp={$ptcFaultStore.timestamp}
                             />
                             <ValueStore
-                                name="BMS Low Voltage Fault"
-                                value={bmsLowVoltageErrorMessage.length === 0 ? "None" : bmsLowVoltageErrorMessage.join(", ")}
-                                timestamp={$bmsErrorLowVoltage.timestamp}
-                            />
-                            <ValueStore
-                                name="BMS High Voltage Fault"
-                                value={bmsHighVoltageErrorMessage.length === 0 ? "None" : bmsHighVoltageErrorMessage.join(", ")}
-                                timestamp={$bmsErrorHighVoltage.timestamp}
-                            />
-                            <ValueStore
                                 name="IMD Warning"
                                 value={imdWarningMessage.length === 0 ? "None" : imdWarningMessage.join(", ")}
                                 timestamp={$imdWarningStore.timestamp}
@@ -412,6 +394,16 @@
                                 name="Sensor Hub Fault"
                                 value={sensorHubEmergencyMessage.length === 0 ? "None" : sensorHubEmergencyMessage.join(", ")}
                                 timestamp={$sensorHubEmergency.timestamp}
+                            />
+                            <ValueStore
+                                name="LV BMS State"
+                                value={bmsErrorInternal[$bmsLvState.value]}
+                                timestamp={$bmsLvState.timestamp}
+                            />
+                            <ValueStore
+                                name="HV BMS State"
+                                value={bmsErrorInternal[$bmsHvState.value]}
+                                timestamp={$bmsHvState.timestamp}
                             />
                         </div>
                     </div>

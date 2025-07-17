@@ -1,8 +1,22 @@
 <script lang="ts">
-    import { Chart, Command, Tile, TileGrid } from '$lib';
+    import { Chart, Command, GrandDataDistributor, Tile, TileGrid } from '$lib';
     import { ChargingStation, Flash, FlashOff, StopOutline } from 'carbon-icons-svelte';
     import { inStateIdle, ptResetMessage } from '$lib/stores/state';
     import { inStateActive, inStateCharging } from '$lib/stores/state.js';
+    import ValueStore from '$lib/components/generic/ValueStore.svelte';
+    import { bmsErrors } from '$lib/types';
+
+    const storeManager = GrandDataDistributor.getInstance().stores;
+    const bmsErrorLowVoltage = storeManager.getWritable("BmsErrorLowVoltage");
+    const bmsErrorHighVoltage = storeManager.getWritable("BmsErrorHighVoltage");
+
+    $: bmsLowVoltageErrorMessage = bmsErrors.filter((x, index) =>
+        ((($bmsErrorLowVoltage.value >> index - 1) & 1) == 1)
+    );
+
+    $: bmsHighVoltageErrorMessage = bmsErrors.filter((x, index) =>
+        ((($bmsErrorHighVoltage.value >> index - 1) & 1) == 1)
+    );
 
     // const ptcState = storeManager.getWritable("PTCState");
     // const ptcFaultStore = storeManager.getWritable("PTCErrors");
@@ -63,6 +77,18 @@
 <!--                {/each}-->
 <!--                <span/>-->
             </div>
+        </Tile>
+        <Tile containerClass="col-span-full" insideClass="flex flex-col gap-4">
+            <ValueStore
+                name="BMS Low Voltage Fault"
+                value={bmsLowVoltageErrorMessage.length === 0 ? "None" : bmsLowVoltageErrorMessage.join(", ")}
+                timestamp={$bmsErrorLowVoltage.timestamp}
+            />
+            <ValueStore
+                name="BMS High Voltage Fault"
+                value={bmsHighVoltageErrorMessage.length === 0 ? "None" : bmsHighVoltageErrorMessage.join(", ")}
+                timestamp={$bmsErrorHighVoltage.timestamp}
+            />
         </Tile>
     </TileGrid>
 <!--    <TileGrid columns="1fr 1fr 1fr 1fr 1fr 1fr" rows="auto" className="mt-2">-->

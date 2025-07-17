@@ -395,6 +395,10 @@
 
 		gdd.stores.registerStore<number>("PTCErrors", 0);
 
+		gdd.stores.registerStore<number>("LvBmsState", 0);
+
+		gdd.stores.registerStore<number>("HvBmsState", 0);
+
 		gdd.stores.registerStore<number>("HvVHigh", 0, data => {
     const curr = Number(data);
     $chartStore.get("BMS Voltages")!.addEntry(1, curr);

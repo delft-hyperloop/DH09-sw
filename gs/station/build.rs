@@ -9,7 +9,6 @@ use std::path::PathBuf;
 use anyhow::Result;
 use goose_utils::commands::generate_commands_from_config;
 use goose_utils::datatypes::generate_data_types_from_config;
-use goose_utils::events::generate_events;
 use goose_utils::fmt::run_fmt;
 use goose_utils::fsm_states::FSMState;
 use goose_utils::hash_config;
@@ -47,7 +46,6 @@ struct GS {
 }
 
 pub const CONFIG_PATH: &str = "../../config/config.toml";
-pub const EVENTS_PATH: &str = "../../config/events.toml";
 pub const DATAFLOW_PATH: &str = "../../config/dataflow.yaml";
 
 fn main() -> Result<()> {
@@ -61,7 +59,6 @@ fn main() -> Result<()> {
     let mut content = String::from("//@generated\n");
 
     content.push_str(&goose_utils::logs::diy_ln());
-    // content.push_str(&check_config(EVENTS_PATH, CONFIG_PATH)?);
     content.push_str(&hash_config(CONFIG_PATH)?);
 
     content.push_str(&configure_gs(&config));
@@ -73,7 +70,6 @@ fn main() -> Result<()> {
     content.push_str(&dt);
     let commands = goose_utils::dataflow::collect_commands(&df);
     content.push_str(&generate_commands_from_config(&commands, false));
-    content.push_str(&generate_events(EVENTS_PATH, false)?);
     content.push_str(&generate_fsm_states(&config));
     content.push_str(&configure_channels(&config));
     content.push_str(&goose_utils::info::generate_info(CONFIG_PATH, true)?);
@@ -96,7 +92,6 @@ fn main() -> Result<()> {
     )?;
 
     println!("cargo::rerun-if-changed={CONFIG_PATH}");
-    println!("cargo::rerun-if-changed={EVENTS_PATH}");
     println!("cargo::rerun-if-changed={DATAFLOW_PATH}");
     println!("cargo::rerun-if-changed=build.rs");
     println!("cargo::rerun-if-changed=../../util");

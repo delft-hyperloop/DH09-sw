@@ -45,8 +45,8 @@ pub fn match_can_id_to_event(id: u32, payload: &[u8]) -> Event {
         },
 
         // Levi FSM update ack
-        905 if payload[0] == 2 => Event::LeviOnAck,
-        905 if payload[0] == 1 => Event::LeviOffAck,
+        904 if payload[0] == 2 => Event::LeviOnAck,
+        904 if payload[0] == 1 => Event::LeviOffAck,
 
         // Response from levi to the system check
         906 => {

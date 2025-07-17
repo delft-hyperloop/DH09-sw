@@ -100,10 +100,10 @@ impl Backend {
         }
     }
 
-    pub fn save_to_path(log: &Log, path: PathBuf) -> anyhow::Result<Message> {
-        match log.save_csv(path.clone()) {
+    pub fn save_to_path(log: &mut Log) -> anyhow::Result<Message> {
+        match log.save_csv() {
             Ok(p) => Ok(Message::Info(format!("Saved to {p:?}"))),
-            Err(e) => Ok(Message::Error(format!("Failed to save at {path:?}: {e:?}"))),
+            Err(e) => Ok(Message::Error(format!("Failed to save at {:?}: {e:?}", &log.path))),
         }
     }
 

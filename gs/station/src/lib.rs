@@ -1,6 +1,7 @@
 #![allow(dead_code, clippy::match_like_matches_macro)]
 use std::collections::BTreeMap;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::PathBuf;
 #[cfg(feature = "tui")]
@@ -10,6 +11,7 @@ use std::sync::mpsc::Sender;
 use std::time::Instant;
 
 use anyhow::anyhow;
+use chrono::Local;
 #[cfg(feature = "tui")]
 use ratatui::prelude::Color;
 
@@ -62,6 +64,7 @@ pub enum Message {
 
 pub struct Log {
     pub start_time: Instant,
+    pub path: PathBuf,
     pub messages: Vec<(Message, Instant)>,
     pub commands: Vec<(Command, Instant)>,
 }
@@ -105,9 +108,39 @@ impl LogRow {
 }
 
 impl Log {
-    pub fn now() -> Self { Log { start_time: Instant::now(), messages: vec![], commands: vec![] } }
+    pub fn now() -> Self {
+        let now = Local::now().naive_local();
+        let formatted_time = now.format("%d_%m_%Y_at_%H_%M_%S").to_string();
 
-    pub fn save_csv(&self, to: PathBuf) -> anyhow::Result<PathBuf> {
+        let path = dirs::download_dir()
+            .unwrap_or_else(|| std::env::current_dir().unwrap())
+            .join(format!("log-{formatted_time}.csv"));
+
+        let data_header = DATA_IDS
+            .iter()
+            .map(|x| Datatype::from_id(*x))
+            .map(|x| format!("{x:?}"))
+            .collect::<Vec<String>>()
+            .join(",");
+
+        let header = format!("μs_since_gs_boot,ticks_since_pcb_boot,{data_header},status,info,warning,error,command_sent\n");
+
+        let mut f = File::create(&path)
+            .map_err(|e| {
+                anyhow!("could not open file. error: {e:?}.\nraw log output:\n\n{header}\n\n")
+            })
+            .unwrap();
+
+        f.write_all(header.as_bytes())
+            .map_err(|e| {
+                anyhow!("could not write to file. error: {e:?}.\nraw log output:\n\n{header}\n\n")
+            })
+            .unwrap();
+
+        Log { start_time: Instant::now(), messages: vec![], commands: vec![], path }
+    }
+
+    pub fn save_csv(&mut self) -> anyhow::Result<()> {
         // for quick writing during a run,
         // we save timestamps as Instants,
         // and convert to microseconds since boot here.
@@ -233,34 +266,25 @@ impl Log {
             }
         }
 
-        let data_header = DATA_IDS
-            .iter()
-            .map(|x| Datatype::from_id(*x))
-            .map(|x| format!("{x:?}"))
-            .collect::<Vec<String>>()
-            .join(",");
-
-        let header = format!("μs_since_gs_boot,ticks_since_pcb_boot,{data_header},status,info,warning,error,command_sent");
-
         let mut content = table.into_iter().collect::<Vec<_>>();
         content.sort_by_key(|(k, _)| *k);
-        let text_content = [header]
+        let text_content = content
             .into_iter()
-            .chain(content.into_iter().map(|(k, v)| format!("{k},{}", v.to_csv_string())))
-            .collect::<Vec<String>>()
-            .join("\n");
+            .map(|(k, v)| format!("{k},{}\n", v.to_csv_string()))
+            .collect::<String>();
 
-        let mut path = to;
-        let mut n = 1;
-        while path.is_file() {
-            path = PathBuf::from(format!(
-                "{}_{n}{}",
-                path.parent().unwrap().join(path.file_stem().unwrap()).display(),
-                path.extension().unwrap_or_default().display()
-            ));
-            n += 1;
-        }
-        let mut f = File::create(&path).map_err(|e| {
+        // let mut path = to;
+        // let mut n = 1;
+        // while path.is_file() {
+        //     path = PathBuf::from(format!(
+        //         "{}_{n}{}",
+        //         path.parent().unwrap().join(path.file_stem().unwrap()).display(),
+        //         path.extension().unwrap_or_default().display()
+        //     ));
+        //     n += 1;
+        // }
+
+        let mut f = OpenOptions::new().append(true).open(&self.path).map_err(|e| {
             anyhow!("could not open file. error: {e:?}.\nraw log output:\n\n{text_content}\n\n")
         })?;
 
@@ -268,7 +292,10 @@ impl Log {
             anyhow!("could not write to file. error: {e:?}.\nraw log output:\n\n{text_content}\n\n")
         })?;
 
-        Ok(path)
+        self.messages.clear();
+        self.commands.clear();
+
+        Ok(())
     }
 }
 

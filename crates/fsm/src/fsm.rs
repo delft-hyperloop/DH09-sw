@@ -243,7 +243,7 @@ impl FSM {
                 error!("Levi system check failure!");
                 self.transition(States::Fault).await;
                 self.event_sender.send(Event::LeviSystemCheckFailure).await;
-            } 
+            }
             (States::Accelerating, Event::LocalizationLimitReached) => {
                 self.transition(States::Braking).await;
                 self.event_sender
@@ -349,10 +349,7 @@ impl FSM {
                     self.last_pressure_check = Some(Instant::now());
                 }
             }
-            (
-                States::Demo,
-                Event::EbsPressureDeployed,
-            ) => {
+            (States::Demo, Event::EbsPressureDeployed) => {
                 if self
                     .last_pressure_check
                     .is_some_and(|i| i.elapsed() > Duration::from_millis(5000))
@@ -368,7 +365,10 @@ impl FSM {
                     self.last_pressure_check = Some(Instant::now());
                 }
             }
-            (States::Levitating | States::Accelerating | States::Braking, Event::EbsPressureDeployed) => {
+            (
+                States::Levitating | States::Accelerating | States::Braking,
+                Event::EbsPressureDeployed,
+            ) => {
                 self.event_sender
                     .send(Event::Emergency {
                         emergency_type: EmergencyType::EmergencyWrongEbsState,

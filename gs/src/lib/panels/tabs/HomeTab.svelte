@@ -75,7 +75,8 @@
             </button>
            <!-- <TauriCommand cmd="save_logs"/> -->
 
-
+            <span>Log Data:</span>
+            <input type="checkbox" bind:checked={logging} />
 
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
@@ -83,8 +84,6 @@
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Disable Debug Mode
                 </button>
-                <span>Log Data:</span>
-                <input type="checkbox" bind:checked={logging} />
             {:else}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>

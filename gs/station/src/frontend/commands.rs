@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use chrono::Local;
 use gslib::Datapoint;
@@ -170,7 +169,7 @@ pub fn disconnect() -> bool {
 pub fn save_logs() -> bool {
     if let Ok(mut backend_mutex) = BACKEND.lock() {
         let mut b = unsafe { backend_mutex.assume_init_mut() };
-        
+
         if Backend::save_to_path(&mut b.log).is_ok() {
             if let Ok(Some(app)) = APP_HANDLE.try_lock().map(|lock| lock.clone()) {
                 let _ = app.emit_all("clear_logs", "Logs saved");
@@ -181,6 +180,16 @@ pub fn save_logs() -> bool {
         }
     } else {
         false
+    }
+}
+
+#[macro_export]
+#[allow(unused)]
+#[tauri::command]
+pub fn set_logging(value: bool) {
+    if let Ok(mut backend_mutex) = BACKEND.lock() {
+        let mut b = unsafe { backend_mutex.assume_init_mut() };
+        b.should_log = value;
     }
 }
 

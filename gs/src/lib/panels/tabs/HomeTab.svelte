@@ -7,6 +7,8 @@
     import Icon from '@iconify/svelte';
     import { ViewWindow } from '$lib/util/WindowControl';
     import { ChartLineSmooth, Flash, FlashOff, Wifi, WifiOff } from 'carbon-icons-svelte';
+    import { onMount } from 'svelte';
+    import { invoke } from '@tauri-apps/api/tauri';
 
     const toastStore = getToastStore();
     const handleSuccess = () => {
@@ -31,6 +33,26 @@
 
     let graphVisualizerCount = 0;
 
+    $: logging = true;
+
+    onMount(() => {
+        setInterval(async () => {
+            if (logging) {
+                await invoke('save_logs').catch((e) => {
+                    console.error(`Error saving logs: ${e}`);
+                }).then(() => {
+                    console.log('Logging from frontend...');
+                })
+            }
+
+            await invoke('set_logging', {value: logging}).catch((e) => {
+                    console.error(`Error saving logs: ${e}`);
+                }).then(() => {
+                    console.log('Logging from frontend...');
+                })
+        }, 2000)
+    })
+
 </script>
 
 <div class="h-full w-full p-5 flex flex-col gap-8">
@@ -51,13 +73,18 @@
                 <ChartLineSmooth size={20} class="mr-1"/>
                 Graph Visualizer
             </button>
-           <TauriCommand cmd="save_logs"/>
+           <!-- <TauriCommand cmd="save_logs"/> -->
+
+
+
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(false)}}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Disable Debug Mode
                 </button>
+                <span>Log Data:</span>
+                <input type="checkbox" bind:checked={logging} />
             {:else}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                    bg-primary-500 text-surface-900" on:click={() => {debugModeActive.set(true)}}>

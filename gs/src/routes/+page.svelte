@@ -9,10 +9,10 @@
 
 <main class="w-full flex-grow border-t border-black overflow-auto">
     <Splitpanes theme="modern-theme" dblClickSplitter={false}>
-        <Pane maxSize={50} snapSize={10} minSize={2} size={43} class="bg-surface-700" >
+        <Pane snapSize={10} minSize={2} size={43} class="bg-surface-700" >
             <VitalsPanel />
         </Pane>
-        <Pane minSize={50} class="bg-surface-900">
+        <Pane class="bg-surface-900">
             <Splitpanes horizontal={true} theme="modern-theme-logs" dblClickSplitter={false} on:resize={(event) => {
                 logsPanelSize.set(event.detail[1].size);
                 logsScrollAreaSize.set($logsPanelSize - ($logsPanelSize * 0.05 + 4.5) + window.innerHeight / VIEWPORT_HEIGHT_NORMALIZING_VALUE * 10 - 10);

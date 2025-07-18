@@ -20,6 +20,7 @@ use embassy_stm32::interrupt;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_sync::signal::Signal;
 use embassy_time::Duration;
+use embassy_time::Instant;
 use embassy_time::Timer;
 use embassy_time::WithTimeout;
 use embedded_io_async::Read;
@@ -72,6 +73,8 @@ pub struct GsMaster {
     /// (related to the bug where it only sends a connection established
     /// message, but can't send or transmit anything).
     connection_is_broken: bool,
+    /// the last time the link was caught with its pants down
+    last_link_down: Instant,
 }
 
 impl Debug for GsMaster {
@@ -149,6 +152,7 @@ impl GsMaster {
 
         info!("Waiting for ethernet peripheral to be configured");
         stack.wait_link_up().await;
+        let last_link_down = Instant::now();
         stack.wait_config_up().await;
         info!("Ethernet peripheral configured");
 
@@ -169,6 +173,7 @@ impl GsMaster {
             event_sender,
             should_reconnect: false,
             connection_is_broken: false,
+            last_link_down,
         }
     }
 
@@ -230,6 +235,7 @@ impl GsMaster {
         loop {
             if !self.stack.is_link_up() {
                 defmt::warn!("link went down, sending disconnect emergency");
+                self.last_link_down = Instant::now();
                 self.event_sender
                     .send(Event::Emergency {
                         emergency_type: EmergencyType::DisconnectionEmergency,
@@ -312,12 +318,17 @@ impl GsMaster {
         match self
             .tx_transmitter
             .send(PodToGsMessage {
-                dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
+                dp: Datapoint::new(Datatype::Debug, self.last_link_down.as_ticks(), ticks()),
             })
             .with_timeout(Duration::from_millis(200))
             .await
         {
             Ok(_) => {
+                self.tx_transmitter
+                    .send(PodToGsMessage {
+                        dp: Datapoint::new(Datatype::CommandHash, COMMAND_HASH, ticks()),
+                    })
+                    .await;
                 self.tx_transmitter
                     .send(PodToGsMessage {
                         dp: Datapoint::new(Datatype::DataHash, DATA_HASH, ticks()),

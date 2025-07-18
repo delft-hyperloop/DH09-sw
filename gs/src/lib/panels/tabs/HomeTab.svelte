@@ -3,7 +3,7 @@
     import {getToastStore} from "@skeletonlabs/skeleton";
     import { pinnedCharts, procedures } from '$lib/stores/data';
     import {parseProcedure} from "$lib/util/parsers";
-    import { debugModeActive } from '$lib/stores/state';
+    import { debugModeActive, isLogging } from '$lib/stores/state';
     import Icon from '@iconify/svelte';
     import { ViewWindow } from '$lib/util/WindowControl';
     import { ChartLineSmooth, Flash, FlashOff, Wifi, WifiOff } from 'carbon-icons-svelte';
@@ -33,11 +33,11 @@
 
     let graphVisualizerCount = 0;
 
-    $: logging = true;
+    $: logging = false;
 
     onMount(() => {
         setInterval(async () => {
-            if (logging) {
+            if ($isLogging) {
                 await invoke('save_logs').catch((e) => {
                     console.error(`Error saving logs: ${e}`);
                 }).then(() => {
@@ -45,7 +45,7 @@
                 })
             }
 
-            await invoke('set_logging', {value: logging}).catch((e) => {
+            await invoke('set_logging', {value: $isLogging}).catch((e) => {
                     console.error(`Error saving logs: ${e}`);
                 }).then(() => {
                     console.log('Logging from frontend...');
@@ -75,8 +75,21 @@
             </button>
            <!-- <TauriCommand cmd="save_logs"/> -->
 
-            <span>Log Data:</span>
-            <input type="checkbox" bind:checked={logging} />
+           {#if $isLogging}
+                <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+                    bg-primary-500 text-surface-900" on:click={() => {isLogging.set(false)}}>
+                    <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
+                    Logging Enabled
+                </button>
+            {:else}
+                <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
+                    bg-primary-500 text-surface-900" on:click={() => {isLogging.set(true)}}>
+                    <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
+                    Logging Disabled
+                </button>
+            {/if}
+            <!-- <span>Log Data:</span>
+            <input type="checkbox" bind:checked={logging} /> -->
 
             {#if $debugModeActive}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium

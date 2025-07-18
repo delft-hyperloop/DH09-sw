@@ -198,6 +198,10 @@ standard-datapoints:
       name: "Debug"
       id: 0x69
 
+  - datapoint:
+      name: "MainPcbBoot"
+      id: 0x70
+
     # upper: 42002
   - datapoint:
       name: "CommandHash"

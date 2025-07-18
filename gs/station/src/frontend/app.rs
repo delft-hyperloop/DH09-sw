@@ -18,6 +18,7 @@ use tokio::time::sleep;
 
 use crate::backend::Backend;
 use crate::frontend::commands::*;
+use crate::frontend::logging::start_logging_watch;
 use crate::frontend::BackendState;
 use crate::frontend::BACKEND;
 
@@ -64,6 +65,8 @@ pub fn tauri_main(backend: Backend) {
                     sleep(Duration::from_millis(HEARTBEAT)).await;
                 }
             });
+
+            start_logging_watch();
 
             // set up shortcuts
             let s = app_handle.clone();

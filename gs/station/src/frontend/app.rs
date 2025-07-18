@@ -41,6 +41,7 @@ pub fn tauri_main(backend: Backend) {
             get_datatype_by_id,
             get_ranges_by_datatype_id,
             get_unit_by_datatype,
+            set_logging,
         ])
         .setup(move |app| {
             let app_handle = app.handle();

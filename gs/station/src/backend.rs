@@ -23,6 +23,7 @@ pub struct Backend {
     pub command_receiver: CommandReceiver,
     pub _processed_data_receiver: DataReceiver,
     pub log: Log,
+    pub should_log: bool,
 }
 
 impl Default for Backend {
@@ -50,6 +51,7 @@ impl Backend {
             command_receiver,
             _processed_data_receiver,
             log: Log::now(),
+            should_log: true,
         }
     }
 
@@ -108,12 +110,16 @@ impl Backend {
     }
 
     pub fn log_msg(&mut self, msg: &Message) {
-        self.log.messages.push((msg.clone(), Instant::now()));
+        if self.should_log {
+            self.log.messages.push((msg.clone(), Instant::now()));
+        }
     }
 
     pub fn log_cmd(&mut self, cmd: &Command) {
-        if !matches!(cmd, Command::FrontendHeartbeat(_)) {
+        if self.should_log && !matches!(cmd, Command::FrontendHeartbeat(_)) {
+            // for _ in 0..1000 {
             self.log.commands.push((*cmd, Instant::now()));
+            // }
         }
     }
 

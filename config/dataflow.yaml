@@ -60,7 +60,7 @@ procedures:
 
   scale_1000_i32_f32:
     input: "i32"
-    output: "f64"
+    output: "f32"
     formula: "x as f32 / 1000.0"
 
   scale_10000_u16:
@@ -193,6 +193,11 @@ standard-datapoints:
   - datapoint:
       name: "DefaultDatatype"
       id: 0x00
+
+  - datapoint:
+      name: "Debug"
+      id: 0x69
+
     # upper: 42002
   - datapoint:
       name: "CommandHash"

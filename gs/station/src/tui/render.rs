@@ -210,11 +210,10 @@ impl Widget for &App {
             ]
             .to_vec(),
         )
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title("kbps over last minute, blue:pod->gs, red:gs->pod"),
-        )
+        .block(Block::default().borders(Borders::ALL).title(format!(
+            "kbps over last minute, blue:pod->gs:{}, red:gs->pod:{}",
+            self.dcio.0, self.dcio.1
+        )))
         .x_axis(
             Axis::default().bounds(x_bounds).labels(
                 [

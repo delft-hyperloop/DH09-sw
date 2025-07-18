@@ -58,10 +58,10 @@ procedures:
     output: "f32"
     formula: "(x as f32) / 1000.0"
 
-  scale_1000_i32:
+  scale_1000_i32_f32:
     input: "i32"
-    output: "i32"
-    formula: "x / 1000"
+    output: "f64"
+    formula: "x as f32 / 1000.0"
 
   scale_10000_u16:
     input: "u16"
@@ -1577,10 +1577,10 @@ message-processing:
                   return curr;
               }
         getter: "i32[2..6]"
-        can-conversion: "scale_1000_i32:i32->i32"
+        can-conversion: "scale_1000_i32_f32:i32->f32"
         display-units: "mA"
         gs:
-          conversion: "gs_i32:i32"
+          conversion: "gs_2p_float:f32"
   - name: "LVBMSLog2"
     can:
       id: 0x4E8

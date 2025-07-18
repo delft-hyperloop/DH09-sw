@@ -33,24 +33,32 @@
 
     let graphVisualizerCount = 0;
 
-    $: logging = false;
+    // $: logging = false;
+
+    let updateBackendLogging = () => {
+        await invoke('set_logging', {value: $isLogging}).catch((e) => {
+            console.error(`Error saving logs: ${e}`);
+        }).then(() => {
+            console.log('Logging from frontend...');
+        })
+    };
 
     onMount(() => {
-        setInterval(async () => {
-            if ($isLogging) {
-                await invoke('save_logs').catch((e) => {
-                    console.error(`Error saving logs: ${e}`);
-                }).then(() => {
-                    console.log('Logging from frontend...');
-                })
-            }
-
-            await invoke('set_logging', {value: $isLogging}).catch((e) => {
-                    console.error(`Error saving logs: ${e}`);
-                }).then(() => {
-                    console.log('Logging from frontend...');
-                })
-        }, 2000)
+        // setInterval(async () => {
+        //     // if ($isLogging) {
+        //     //     await invoke('save_logs').catch((e) => {
+        //     //         console.error(`Error saving logs: ${e}`);
+        //     //     }).then(() => {
+        //     //         console.log('Logging from frontend...');
+        //     //     })
+        //     // }
+        //
+        //     await invoke('set_logging', {value: $isLogging}).catch((e) => {
+        //             console.error(`Error saving logs: ${e}`);
+        //         }).then(() => {
+        //             console.log('Logging from frontend...');
+        //         })
+        // }, 5000)
     })
 
 </script>
@@ -77,13 +85,19 @@
 
            {#if $isLogging}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-                    bg-primary-500 text-surface-900" on:click={() => {isLogging.set(false)}}>
+                    bg-primary-500 text-surface-900" on:click={() => {
+                        isLogging.set(false);
+                        updateBackendLogging();
+                    }}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Logging Enabled
                 </button>
             {:else}
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
-                    bg-primary-500 text-surface-900" on:click={() => {isLogging.set(true)}}>
+                    bg-primary-500 text-surface-900" on:click={() => {
+                        isLogging.set(true);
+                        updateBackendLogging();
+                    }}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Logging Disabled
                 </button>

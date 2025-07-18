@@ -70,3 +70,4 @@ export const ebsState: Writable<EBSStates> = writable(EBSStates.Triggered);
 
 export const disconnectFromButton: Writable<boolean> = writable(false);
 export const stalePopupActive: Writable<boolean> = writable(false);
+export const isLogging: Writable<boolean> = writable(false);

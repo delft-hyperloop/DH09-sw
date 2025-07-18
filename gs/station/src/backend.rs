@@ -51,7 +51,7 @@ impl Backend {
             command_receiver,
             _processed_data_receiver,
             log: Log::now(),
-            should_log: true,
+            should_log: false,
         }
     }
 

@@ -163,6 +163,18 @@ impl GsMaster {
         let socket: TcpSocket =
             unsafe { TcpSocket::new(stack, RX_BUFFER.as_mut(), TX_BUFFER.as_mut()) };
 
+        // let the ground station know that the ethernet peripheral was initialised
+        // (useful for detecting reboot)
+        if let Err(e) = tx_transmitter
+            .send(PodToGsMessage {
+                dp: Datapoint::new(Datatype::MainPcbBoot, 6942069, ticks()),
+            })
+            .with_timeout(Duration::from_millis(200))
+            .await
+        {
+            defmt::error!("error sending `MainPcbBoot` over comms channel: {}", e);
+        }
+
         Self {
             stack,
             socket,

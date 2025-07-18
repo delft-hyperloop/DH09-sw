@@ -1,4 +1,5 @@
 pub mod app;
+pub mod logging;
 pub mod commands;
 
 use std::fmt::Debug;

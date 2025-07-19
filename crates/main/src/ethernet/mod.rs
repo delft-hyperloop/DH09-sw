@@ -36,7 +36,7 @@ pub static HASH_TIMEOUT_FLAG: Mutex<CriticalSectionRawMutex, bool> = Mutex::new(
 /// if nothing is sent over tcp for [timeout], send an RST and close the
 /// connection. keep alive will send a TCP_KEEP_ALIVE frame every [duration]
 /// milliseconds.
-pub const SOCKET_KEEP_ALIVE: Duration = Duration::from_millis(100);
+pub const SOCKET_KEEP_ALIVE: Duration = Duration::from_millis(200);
 
 /// max references
 pub const CAP: usize = 8;

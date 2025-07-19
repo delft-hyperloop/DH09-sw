@@ -1,6 +1,6 @@
 pub mod app;
-pub mod logging;
 pub mod commands;
+pub mod logging;
 
 use std::fmt::Debug;
 use std::mem::MaybeUninit;

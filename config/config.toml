@@ -1,10 +1,14 @@
 [gs]
 ips = [
-    [192,168,13,65], # harry
-    [192,168,13,100], # pablo
-    [192,168,13,69], # andreas
-    [192,168,13,42], # also andreas
-    [192,168,13,48], # testing laptop
+#    [192,168,13,65], # harry
+#    [192,168,13,100], # pablo
+#    [192,168,13,69], # andreas
+#    [192,168,13,42], # also andreas
+#    [192,168,13,48], # testing laptop
+    [192,168,10,57], #ehc andreas
+    [192,168,10,196], #ehc harry
+    [192,168,10,19], #ehc pablo
+    [192,168,10,210], #ehc testing laptop;''.//.pp0-[=]
 ]
 force = true 
 port = 6949

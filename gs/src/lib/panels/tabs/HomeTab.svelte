@@ -35,13 +35,13 @@
 
     // $: logging = false;
 
-    let updateBackendLogging = () => {
-        await invoke('set_logging', {value: $isLogging}).catch((e) => {
-            console.error(`Error saving logs: ${e}`);
-        }).then(() => {
-            console.log('Logging from frontend...');
-        })
-    };
+    // let updateBackendLogging = async () => {
+    //     await invoke('set_logging', {value: $isLogging}).catch((e) => {
+    //         console.error(`Error saving logs: ${e}`);
+    //     }).then(() => {
+    //         console.log('Logging from frontend...');
+    //     })
+    // };
 
     onMount(() => {
         // setInterval(async () => {
@@ -87,7 +87,7 @@
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                     bg-primary-500 text-surface-900" on:click={() => {
                         isLogging.set(false);
-                        updateBackendLogging();
+                        // await updateBackendLogging();
                     }}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Logging Enabled
@@ -96,7 +96,7 @@
                 <button class="btn [&>*]:pointer-events-none rounded-md font-number font-medium
                     bg-primary-500 text-surface-900" on:click={() => {
                         isLogging.set(true);
-                        updateBackendLogging();
+                        // await updateBackendLogging();
                     }}>
                     <Icon icon="mdi:bug-outline" class="mr-1 w-6 h-6"/>
                     Logging Disabled
